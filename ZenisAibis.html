@@ -553,6 +553,94 @@ body.is-mob .mob-menu{display:inline-block}
 .zdash .z-empty{text-align:center;color:var(--z-dim);font-size:12px;padding:18px}
 
 </style>
+<style>
+/* ===== z.Aibis Dashboard v2 additions (scoped .zdash) ===== */
+.zdash .z-bento{display:grid;grid-template-columns:repeat(2,1fr);gap:11px;align-items:start;margin-bottom:11px}
+@media(min-width:760px){.zdash .z-bento{grid-template-columns:repeat(4,1fr)}}
+.zdash .z-bento .z-card{margin-bottom:0;padding:14px}
+.zdash .z-card{grid-column:1 / -1}
+.zdash .z-c1{grid-column:span 1}
+.zdash .z-c2{grid-column:1 / -1}.zdash .z-cf{grid-column:1 / -1}
+@media(min-width:760px){.zdash .z-c2{grid-column:span 2}.zdash .z-c3{grid-column:span 3}.zdash .z-cf{grid-column:1 / -1}}
+/* sections */
+.zdash .z-sec-h{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;padding:11px 14px;background:linear-gradient(90deg,rgba(255,255,255,.06),transparent);border:1px solid var(--z-line);border-radius:12px;margin:16px 0 11px;font-weight:800;font-size:14px;color:var(--z-ink)}
+.zdash .z-sec-h .z-ar{margin-left:auto;color:var(--z-dim);font-size:12px}
+.zdash .z-sec.z-collapsed .z-sec-body{display:none}
+/* vbars */
+.zdash .z-vbars{display:flex;align-items:flex-end;gap:4px;height:116px;margin-top:4px}
+.zdash .z-vbar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:3px}
+.zdash .z-vbar i{width:100%;border-radius:4px 4px 0 0;min-height:2px;transition:height .8s}
+.zdash .z-vbar span{font-size:8px;color:var(--z-dim);white-space:nowrap}
+.zdash .z-vbar b{font-family:'Sora',sans-serif;font-size:9px;color:var(--z-mut)}
+.zdash .z-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:10px;color:var(--z-mut);margin-top:6px}
+.zdash .z-legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:middle}
+/* clock */
+.zdash .z-clock{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--z-line)}
+.zdash .z-clock:last-child{border-bottom:none}
+.zdash .z-cdays{font-family:'Sora',sans-serif;font-weight:800;font-size:17px;width:52px;text-align:center}
+.zdash .z-cbar{flex:1;height:7px;border-radius:5px;background:rgba(255,255,255,.07);overflow:hidden}
+.zdash .z-cbar i{display:block;height:100%}
+/* badges */
+.zdash .z-badges{display:flex;gap:9px;flex-wrap:wrap}
+.zdash .z-badge{width:80px;text-align:center;padding:10px 5px;border-radius:11px;background:var(--z-panel2);border:1px solid var(--z-line)}
+.zdash .z-badge.lit{border-color:rgba(255,180,67,.5);background:linear-gradient(135deg,rgba(255,180,67,.14),rgba(255,93,125,.06))}
+.zdash .z-be{font-size:24px}.zdash .z-bt{font-size:10px;font-weight:700;margin-top:3px}.zdash .z-bw{font-size:9px;color:var(--z-amber);font-family:'Sora',sans-serif;margin-top:2px}
+/* mission */
+.zdash .z-mbar{margin-bottom:10px}
+.zdash .z-ml{display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px}
+.zdash .z-ml b{font-family:'Sora',sans-serif}
+.zdash .z-mtrack{height:11px;border-radius:6px;background:rgba(255,255,255,.07);overflow:hidden}
+.zdash .z-mtrack i{display:block;height:100%;border-radius:6px;transition:width 1s}
+/* gauge */
+.zdash .z-gauge{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.zdash .z-gnum{font-family:'Sora',sans-serif;font-size:38px;font-weight:800;color:var(--z-lime)}
+.zdash .z-gnum small{font-size:15px;color:var(--z-dim)}
+.zdash .z-dots{display:flex;gap:6px;flex-wrap:wrap}
+.zdash .z-dot{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:11px;font-weight:800;font-family:'Sora',sans-serif}
+/* tiles */
+.zdash .z-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.zdash .z-tile{background:var(--z-panel2);border:1px solid var(--z-line);border-radius:10px;padding:11px;text-align:center}
+.zdash .z-tile b{font-family:'Sora',sans-serif;font-size:20px;font-weight:800;display:block}
+.zdash .z-tile span{font-size:9.5px;color:var(--z-mut)}
+/* area */
+.zdash .z-toggle{display:inline-flex;background:var(--z-panel2);border:1px solid var(--z-line);border-radius:9px;padding:3px;gap:3px;float:right}
+.zdash .z-toggle button{font-family:inherit;font-size:11px;font-weight:700;color:var(--z-mut);background:none;border:none;padding:5px 12px;border-radius:7px;cursor:pointer}
+.zdash .z-toggle button.on{background:var(--z-cyan);color:#06121f}
+.zdash .z-areagrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:7px}
+.zdash .z-area{padding:9px;border-radius:10px;text-align:center;color:#06121f}
+.zdash .z-area b{font-family:'Sora',sans-serif;font-size:17px;font-weight:800;display:block}
+.zdash .z-area span{font-size:9.5px;font-weight:700}
+.zdash .z-area.z-unk{background:rgba(255,255,255,.06)!important;color:var(--z-mut)!important;border:1px dashed var(--z-line)}
+/* bubble / mini radar */
+.zdash .z-bub{width:100%;height:220px}
+.zdash .z-minirow{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.zdash .z-minir{text-align:center}
+.zdash .z-minir svg{width:116px;height:116px}
+.zdash .z-minir div{font-size:11px;font-weight:700;margin-top:2px}
+.zdash .z-ksub{font-size:10px;color:var(--z-dim)}
+
+</style>
+<style>
+.zdash-rep{--z-panel:rgba(20,30,50,.035);--z-panel2:rgba(20,30,50,.055);--z-line:rgba(20,30,50,.12);--z-ink:#16233a;--z-mut:#5b6b85;--z-dim:#9aa6bb;background:#f6f8fc;background-image:radial-gradient(680px 340px at 8% -12%,rgba(155,225,93,.12),transparent 60%),radial-gradient(620px 320px at 100% -6%,rgba(52,227,208,.10),transparent 55%)}
+.zdash-rep .z-card{box-shadow:0 1px 3px rgba(20,30,50,.05)}
+.zdash-rep .z-ring{background:conic-gradient(#2f9e44 calc(var(--p)*1%),rgba(20,30,50,.10) 0)}
+.zdash-rep .z-ring::after{background:#fff}
+.zdash-rep .z-ring-in b{color:#2f9e44}
+.zdash-rep .z-lv{color:#0c8599}
+.zdash-rep .z-chip b{color:#2f9e44}
+.zdash-rep .z-hero{background:linear-gradient(135deg,rgba(155,225,93,.18),rgba(52,227,208,.10));border-color:rgba(155,225,93,.45)}
+.zdash-rep .z-radar polygon[fill="none"]{stroke:rgba(20,30,50,.14)}
+.zdash-rep .z-radar line{stroke:rgba(20,30,50,.14)}
+.zdash-rep .z-q em{color:#0c8599}
+.zdash-rep .z-spar{background:linear-gradient(135deg,rgba(139,124,255,.12),rgba(52,227,208,.10));border-color:rgba(139,124,255,.35)}
+.zdash-rep .z-bw{color:#e8920c}
+.zdash-rep .z-badge{box-shadow:0 1px 2px rgba(20,30,50,.05)}
+.zdash-rep textarea{background:#fff;color:#16233a;border-color:rgba(20,30,50,.15)}
+.zdash-mgr .z-cmdhead{font-family:'Sora',sans-serif;font-weight:800;font-size:16px;letter-spacing:1px;color:#e8edf7;margin:0 0 12px;display:flex;align-items:baseline;gap:10px}
+.zdash-mgr .z-cmdhead span{font-family:'Zen Kaku Gothic New',sans-serif;font-size:11px;font-weight:500;letter-spacing:1px;color:#6b7894}
+</style>
+<style>.paste-at{font-size:11px;color:#a0aec0;margin-top:4px;text-align:right}.zdash .z-stamp{font-size:10px;color:var(--z-dim);text-align:right;margin-top:6px}</style>
+<style>#planSvBtn:disabled{opacity:.38;cursor:not-allowed}</style>
 </head>
 <body>
 <div class="container">
@@ -749,7 +837,7 @@ body.is-mob .mob-menu{display:inline-block}
               <button onclick="clearAnalysisMemo()" class="no-print" style="background:none;border:1px solid #fc8181;color:#c53030;border-radius:4px;font-size:11px;padding:3px 8px;cursor:pointer;font-family:inherit">🗑 削除</button>
             </div>
           </div>
-          <textarea id="analysisMemo" placeholder="AIの分析結果をここに貼り付けてください" style="width:100%;min-height:200px;border:1px solid #c6f6d5;border-radius:6px;padding:8px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box;background:white" oninput="saveAnalysisMemo()"></textarea>
+          <textarea id="analysisMemo" placeholder="AIの分析結果をここに貼り付けてください" style="width:100%;min-height:200px;border:1px solid #c6f6d5;border-radius:6px;padding:8px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box;background:white" oninput="saveAnalysisMemo()"></textarea><div id="analysisMemoAt" class="paste-at"></div>
         </div>
   </div>
 </div>
@@ -1228,7 +1316,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v4.20";
+var APP_VERSION = "v4.26";
 
 // ===== 状態 =====
 var cards = [];
@@ -1896,6 +1984,7 @@ function doDeleteStaffCards(name){
 window.renameStaff=renameStaff; window.doRenameStaff=doRenameStaff;
 window.deleteStaffCards=deleteStaffCards; window.deleteStaffCards2=deleteStaffCards2; window.doDeleteStaffCards=doDeleteStaffCards;
 var STRATEGY_THEMES=['general','next_visit','motivation','personality','objection','hearing','training'];
+function _fmtStamp(iso){if(!iso)return '';var d=new Date(iso);if(isNaN(d))return '';return d.getFullYear()+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+('0'+d.getDate()).slice(-2)+' '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);}
 function switchStrategyTab(key){
   STRATEGY_THEMES.forEach(function(k){
     var el=document.getElementById('st_'+k);
@@ -2329,58 +2418,98 @@ function _zFunnel(counts){
   return h;
 }
 function _zHeat(v){ var t=Math.max(0,Math.min(100,v))/100; var r=Math.round(255*(1-t)+90*t),g=Math.round(93*(1-t)+225*t),b=Math.round(125*(1-t)+93*t); return 'rgba('+r+','+g+','+b+',.85)'; }
+/* ---- shared dashboard helpers (real data) ---- */
+var _zAreaMode='ward';
+var _zTown2Ward={};
+(function(){var W={
+ '江戸川区':['西小岩','北小岩','南小岩','東小岩','中央','松島','平井','小松川','西葛西','東葛西','中葛西','南葛西','北葛西','清新町','臨海町','一之江','春江町','瑞江','篠崎町','鹿骨','本一色','興宮町','船堀','大杉','西一之江'],
+ '江東区':['亀戸','大島','北砂','南砂','東砂','新砂','住吉','猿江','東陽','木場','平野','白河','永代','門前仲町','富岡','清澄','森下','常盤','豊洲','東雲','有明','枝川','潮見','辰巳','新木場','深川'],
+ '墨田区':['両国','横網','緑','千歳','菊川','立川','江東橋','錦糸','太平','横川','業平','押上','吾妻橋','本所','向島','東向島','墨田','京島','文花','八広','立花','石原','亀沢'],
+ '葛飾区':['立石','四つ木','東四つ木','宝町','東立石','西新小岩','新小岩','東新小岩','小菅','堀切','細田','高砂','柴又','金町','東金町','水元','西水元','亀有','青戸','白鳥','お花茶屋','奥戸','新宿']};
+ Object.keys(W).forEach(function(k){W[k].forEach(function(t){_zTown2Ward[t]=k;});});})();
+function _zParseAddr(addr){
+ if(!addr) return {ward:'未分類',town:'未分類'};
+ var s=String(addr).replace(/[０-９]/g,function(d){return String.fromCharCode(d.charCodeAt(0)-0xFEE0);}).replace(/[\s　]/g,'');
+ s=s.replace(/^東京都/,'').replace(/^.+?[道府県]/,'');
+ var ward='',town='',rest=s,wm=s.match(/^(.+?区)/);
+ if(wm){ward=wm[1];rest=s.slice(wm[1].length);}
+ var tm=rest.match(/^([^0-9\-ー－]+?)(?=[0-9]|$|[一二三四五六七八九十]+丁目)/);
+ if(tm) town=tm[1];
+ town=town.replace(/[一二三四五六七八九十〇]+丁目.*$/,'').replace(/丁目.*$/,'');
+ if(!ward&&town&&_zTown2Ward[town]) ward=_zTown2Ward[town];
+ if(ward&&!town) town='（町名なし）';
+ if(!ward&&!town) return {ward:'未分類',town:'未分類'};
+ if(!ward) ward='区不明';
+ return {ward:ward,town:town};
+}
+function _zMonths(){var d=new Date(),a=[];for(var i=11;i>=0;i--){var x=new Date(d);x.setMonth(x.getMonth()-i);a.push(x.getFullYear()+'-'+('0'+(x.getMonth()+1)).slice(-2));}return a;}
+function _zMonthly(items,getKeys){var M=_zMonths(),m={};M.forEach(function(k){m[k]=0;});items.forEach(function(it){var ks=getKeys(it)||[];(Array.isArray(ks)?ks:[ks]).forEach(function(d){if(d){var mk=String(d).slice(0,7);if(mk in m)m[mk]++;}});});return M.map(function(k){return m[k];});}
+function _zOwnerAge(c){var f=(c.family||[]).filter(function(x){return x.owner;})[0]||(c.family||[])[0];var a=f?parseInt(f.age,10):NaN;return isNaN(a)?null:a;}
+function _zDaysSince(d){if(!d)return null;var t=new Date(d);if(isNaN(t))return null;return Math.round((Date.now()-t)/864e5);}
+function _zVisitDates(c){var a=[];(c.revisits||[]).forEach(function(r){if(r.date)a.push(r.date);});(c.pursuits||[]).forEach(function(p){if(p.date)a.push(p.date);});return a;}
+function _zAppoDates(c){var a=[];(c.revisits||[]).forEach(function(r){if(r.date&&(r.appo==='アポ有り'||r.appo==='仮アポ'))a.push(r.date);});(c.pursuits||[]).forEach(function(p){if(p.date&&(p.appo==='有り'))a.push(p.date);});return a;}
+function _zLine(series){var M=_zMonths(),w=560,h=120,all=[].concat.apply([],series.map(function(s){return s.data;})),mx=Math.max.apply(null,all)||1;
+ var sv='<svg viewBox="0 0 '+w+' '+h+'" style="width:100%;height:128px">';
+ series.forEach(function(s){var pts=s.data.map(function(v,i){return [10+i/(s.data.length-1)*(w-20),h-14-v/mx*(h-26)];});
+  sv+='<path d="'+pts.map(function(p,i){return(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1);}).join(' ')+'" fill="none" stroke="'+s.color+'" stroke-width="2.5" stroke-linecap="round"/>'+pts.map(function(p){return '<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="2.3" fill="'+s.color+'"/>';}).join('');});
+ M.forEach(function(k,i){if(i%2===0)sv+='<text x="'+(10+i/(M.length-1)*(w-20)).toFixed(0)+'" y="'+(h-2)+'" font-size="8" fill="#6b7894" text-anchor="middle">'+k.slice(2)+'</text>';});
+ return sv+'</svg>';}
+function _zVbars(data,labels,colors){var mx=Math.max.apply(null,data)||1;return '<div class="z-vbars">'+data.map(function(v,i){return '<div class="z-vbar"><b>'+v+'</b><i style="height:'+(v/mx*88)+'px;background:'+(colors[i]||colors[0])+'"></i><span>'+labels[i]+'</span></div>';}).join('')+'</div>';}
+function _zRadarC(axes,color){var cx=100,cy=100,R=70,N=axes.length;function pt(i,r){var a=-Math.PI/2+i*2*Math.PI/N;return [cx+Math.cos(a)*r,cy+Math.sin(a)*r];}var g='';[.5,1].forEach(function(s){g+='<polygon points="'+axes.map(function(_x,i){return pt(i,R*s).map(function(z){return z.toFixed(1);}).join(',');}).join(' ')+'" fill="none" stroke="rgba(255,255,255,.1)"/>';});g+='<polygon points="'+axes.map(function(a,i){return pt(i,R*(a[1]||0)/100).map(function(z){return z.toFixed(1);}).join(',');}).join(' ')+'" fill="'+color+'33" stroke="'+color+'" stroke-width="2"/>';return '<svg viewBox="0 0 200 200">'+g+'</svg>';}
+function _zByMgr(arr){var o={};arr.forEach(function(c){var m=c.manager||'';if(!m)return;(o[m]=o[m]||[]).push(c);});return o;}
+function _zPct(a,b){return b?Math.round(a/b*100):0;}
+function _zBadges(){
+ var g=_zByMgr(cards),reps=Object.keys(g);
+ function top(metric){var best=null,bv=-1;reps.forEach(function(r){var v=metric(g[r]);if(v>bv){bv=v;best=r;}});return {rep:best,val:bv};}
+ var defs=[
+  {e:'⛏',t:'発掘王',m:function(a){return a.length;},u:'件'},
+  {e:'🎯',t:'連想突破王',m:function(a){return a.filter(function(c){return +(c.stage||0)>=3;}).length;},u:'件'},
+  {e:'🤝',t:'グリップ王',m:function(a){return _zPct(a.filter(function(c){return getKaiwaLevel(c)>=4;}).length,a.length);},u:'%'},
+  {e:'⚡',t:'スピード王',m:function(a){return 100-_zPct(a.filter(function(c){return calcPaceOverrate(c)>1;}).length,a.length);},u:'pt'},
+  {e:'📞',t:'アポ王',m:function(a){return a.reduce(function(s,c){return s+_zAppoDates(c).length;},0);},u:'件'},
+  {e:'🏯',t:'相続ハンター',m:function(a){return a.filter(function(c){var ag=_zOwnerAge(c);return ag&&ag>=75;}).length;},u:'件'},
+  {e:'🚀',t:'自走王',m:function(a){return a.filter(function(c){return c.mgr_involve==='単独'&&+(c.stage||0)>=3;}).length;},u:'件'},
+  {e:'🔥',t:'活動王',m:function(a){return a.reduce(function(s,c){return s+_zVisitDates(c).length;},0);},u:'回'}
+ ];
+ var res={};reps.forEach(function(r){res[r]=[];});
+ defs.forEach(function(d){var w=top(d.m);if(w.rep&&w.val>0)res[w.rep].push({e:d.e,t:d.t,w:w.val+d.u});});
+ return res;
+}
+var _zAVAS=['#9be15d','#34e3d0','#4aa8ff','#8b7cff','#ffb443','#ff5d7d','#ff8ad1','#5ad1a0'];
 function renderSelfDash(){
-  var host=document.getElementById('selfDashContent'); if(!host) return;
-  var mine=cards.slice(), n=mine.length;
-  if(!n){ host.innerHTML='<div class="zdash zdash-rep"><div class="z-empty">まだ見込みカードがありません</div></div>'; return; }
-  function pct(a,b){return b?Math.round(a/b*100):0;}
-  var stageC=[0,0,0,0,0,0,0,0]; mine.forEach(function(c){var s=+(c.stage||0);if(s>=0&&s<=7)stageC[s]++;});
-  var conn=mine.filter(function(c){return +(c.stage||0)>=3;}).length;
-  var adv=mine.filter(function(c){return +(c.stage||0)>=4;}).length;
-  var rensoRate=pct(conn,n);
-  var late=mine.filter(function(c){return calcPaceOverrate(c)>1;}).length;
-  var gS=0,gC=0; mine.forEach(function(c){var l=getKaiwaLevel(c);if(l>=0){gS+=l;gC++;}});
-  var grip=gC?Math.round(gS/gC/4*100):0;
-  var inputAvg=Math.round(mine.reduce(function(s,c){return s+(basicInputStat(c).pct||0);},0)/n);
-  var avgScore=Math.round(mine.reduce(function(s,c){return s+calcScore(c);},0)/n*10)/10;
-  var axes=[['発掘量',Math.min(Math.round(n/40*100),100),'#9be15d'],['グリップ深度',grip,'#34e3d0'],['ヒアリング',inputAvg,'#4aa8ff'],['連想到達',rensoRate,'#ffb443'],['テスクロ',pct(adv,conn),'#8b7cff'],['追客ペース',Math.max(0,100-pct(late,n)),'#ff5d7d']];
-  var lvl=avgScore>=22?['LV.9','MASTER']:avgScore>=18?['LV.7','HUNTER']:avgScore>=14?['LV.5','CHALLENGER']:avgScore>=10?['LV.3','ROOKIE']:['LV.1','STARTER'];
-  var leg=axes.map(function(a){return '<div><i style="background:'+a[2]+'"></i><b>'+a[1]+'</b> '+a[0]+'</div>';}).join('');
-  var lateList=mine.map(function(c){return {c:c,d:lastContactDays(c)};}).filter(function(o){return o.d>=21;}).sort(function(a,b){return b.d-a.d;});
-  var c3=mine.filter(function(c){return +(c.stage||0)===3;});
-  var incFam=mine.filter(function(c){return !c.family_headcount;}).length;
-  var ping=mine.filter(function(c){return getKaiwaLevel(c)===0;}).length;
-  var quests=[];
-  if(lateList.length) quests.push(['rgba(255,93,125,.16)','🚶',lateList.length+'件が21日以上ご無沙汰',e(lateList.slice(0,2).map(function(o){return (o.c.name||'無名')+'様';}).join('・'))+' から再訪アポを1本入れよう。']);
-  if(c3.length) quests.push(['rgba(255,180,67,.16)','🎯',c3.length+'件が「連想」に到達','テストクロージングの好機。「一度、数字を出してみますか？」と許可取りを。']);
-  if(incFam) quests.push(['rgba(74,168,255,.16)','📋',incFam+'件で家族人数が未把握','次回ヒアリングで空欄を1つ埋めると判定が早まる。']);
-  if(ping&&quests.length<3) quests.push(['rgba(52,227,208,.16)','💬',ping+'件がピンポン止まり','立ち話→玄関内へ一段深める一言を用意しよう。']);
-  if(!quests.length) quests.push(['rgba(155,225,93,.16)','🎉','大きな課題は見当たりません','今の良いペースを維持しよう！']);
-  var questHTML=quests.slice(0,3).map(function(q){return '<div class="z-quest"><div class="z-qic" style="background:'+q[0]+'">'+q[1]+'</div><div class="z-qbd"><b>'+q[2]+'</b><p>'+q[3]+'</p></div></div>';}).join('');
-  var spar=(c3[0]||mine.filter(function(c){return +(c.stage||0)>=3&&c.name;})[0]||{}).name||'お客様';
-  var H='<div class="zdash zdash-rep">';
-  H+='<div class="z-hero"><div class="z-ring" style="--p:'+rensoRate+'"><div class="z-ring-in"><b>'+rensoRate+'<small>%</small></b><span>連想到達率</span></div></div>'
-    +'<div class="z-hmeta"><div class="z-lv">'+lvl[0]+' ・ '+lvl[1]+'</div><h2>'+e(uName||'あなた')+'さんの成長コンソール</h2>'
-    +'<div class="z-chips"><span class="z-chip">担当 <b>'+n+'</b>件</span><span class="z-chip">連想到達 <b>'+conn+'</b>件</span><span class="z-chip">入力充実 <b>'+inputAvg+'</b>%</span><span class="z-chip">平均スコア <b>'+avgScore+'</b></span></div></div></div>';
-  H+='<div class="z-grid2">';
-  H+='<div class="z-card"><h3>🧭 スキルレーダー</h3><div class="z-sub">6軸で自分の「型」を可視化。凹んだ軸が次の伸びしろ。</div><div class="z-radar-wrap">'+_zRadar(axes)+'<div class="z-radar-leg">'+leg+'</div></div></div>';
-  H+='<div class="z-card"><h3>🔻 マイ・パイプライン <span style="font-size:10px;color:var(--z-dim);font-weight:500">転換率つき</span></h3><div class="z-sub">どのステージで詰まっているか。連想(3)の壁を越えているか。</div>'+_zFunnel(stageC)+'</div>';
-  H+='</div>';
-  H+='<div class="z-grid2">';
-  H+='<div class="z-card"><h3>🎯 今日の3手</h3><div class="z-sub">迷ったらここから。1日1手でも前進。</div>'+questHTML+'</div>';
-  H+='<div class="z-card z-spar"><h3>🥊 今日の壁打ちワーク</h3><div class="z-sub">AI相手に1問だけ自問自答。これがスキルの筋トレ。</div>'
-    +'<div class="z-q">「連想まで来た<em>'+e(spar)+'様</em>に、<em>提案依頼の許可</em>を取るなら、最初の一言は？ なぜその言い方？」</div>'
-    +(isMob?'<div style="font-size:11px;color:var(--z-mut)">PC（Chrome）でAI壁打ち＆印刷が使えます。</div>':'<button class="z-btn-spar" onclick="copySelfPrompt();openCopilot()">🥊 AIと壁打ちする</button>')
-    +'<div class="z-foot">壁打ち後、AIが「良かった点／次の改善」を返す → 翌日の問いに反映。自分専用のコーチが育つ。</div></div>';
-  H+='</div>';
-  if(!isMob){
-    H+='<div class="z-card"><h3>💭 AI分析結果（貼り付け）</h3>'
-      +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"><button class="z-mini" onclick="copySelfPrompt()">🤖 分析用に抽出</button><button class="z-mini" onclick="openCopilot()">🤖 AI分析</button><button class="z-mini" onclick="printSelfReport()">🖨 印刷</button></div>'
-      +'<textarea id="selfAnalysisMemo" placeholder="AIの分析結果をここに貼り付け（印刷に使われます）" oninput="saveSelfMemo()"></textarea></div>';
-  }
-  H+='</div>';
-  host.innerHTML=H;
-  if(!isMob) loadSelfMemo();
+ var host=document.getElementById('selfDashContent'); if(!host) return;
+ var mine=cards.slice(), n=mine.length;
+ if(!n){ host.innerHTML='<div class="zdash zdash-rep"><div class="z-empty">まだ見込みカードがありません</div></div>'; return; }
+ var conn=mine.filter(function(c){return +(c.stage||0)>=3;}).length, adv=mine.filter(function(c){return +(c.stage||0)>=4;}).length;
+ var renso=_zPct(conn,n), late=mine.filter(function(c){return calcPaceOverrate(c)>1;}).length;
+ var gS=0,gC=0;mine.forEach(function(c){var l=getKaiwaLevel(c);if(l>=0){gS+=l;gC++;}});var grip=gC?Math.round(gS/gC/4*100):0;
+ var inputAvg=Math.round(mine.reduce(function(s,c){return s+(basicInputStat(c).pct||0);},0)/n);
+ var avg=Math.round(mine.reduce(function(s,c){return s+calcScore(c);},0)/n*10)/10;
+ var axes=[['発掘量',Math.min(Math.round(n/30*100),100),'#9be15d'],['グリップ',grip],['ヒアリング',inputAvg],['連想到達',renso],['テスクロ',_zPct(adv,conn)],['追客ペース',Math.max(0,100-_zPct(late,n))]];
+ var lvl=avg>=22?['LV.9','MASTER']:avg>=18?['LV.7','HUNTER']:avg>=14?['LV.5','CHALLENGER']:avg>=10?['LV.3','ROOKIE']:['LV.1','STARTER'];
+ var leg=axes.map(function(a){return '<div><i style="background:'+(a[2]||'#34e3d0')+'"></i><b>'+a[1]+'</b> '+a[0]+'</div>';}).join('');
+ var sc=[0,0,0,0,0,0,0,0];mine.forEach(function(c){var s=+(c.stage||0);if(s>=0&&s<=7)sc[s]++;});
+ var mDisc=_zMonthly(mine,function(c){return c.discovery_date;}), mVis=_zMonthly(mine,_zVisitDates), mApo=_zMonthly(mine,_zAppoDates);
+ var cum=[],run=0;mDisc.forEach(function(v){run+=v;cum.push(run);});
+ var myA=mine.filter(function(c){return (c.pursuit_judge==='A'||c.pursuit_judge==='S')&&c.pursuit_judge_date;}).map(function(c){return {c:c,left:45-_zDaysSince(c.pursuit_judge_date)};}).sort(function(a,b){return a.left-b.left;}).slice(0,6);
+ var bd=_zBadges(), myBadges=bd[uName]||[];
+ var lateL=mine.map(function(c){return {c:c,d:lastContactDays(c)};}).filter(function(o){return o.d>=21;}).sort(function(a,b){return b.d-a.d;});
+ var c3=mine.filter(function(c){return +(c.stage||0)===3;}); var inc=mine.filter(function(c){return !c.family_headcount;}).length; var ping=mine.filter(function(c){return getKaiwaLevel(c)===0;}).length;
+ var q=[];if(lateL.length)q.push(['rgba(255,93,125,.16)','🚶',lateL.length+'件が21日以上ご無沙汰',e(lateL.slice(0,2).map(function(o){return (o.c.name||'無名')+'様';}).join('・'))+' から再訪アポを1本。']);if(c3.length)q.push(['rgba(255,180,67,.16)','🎯',c3.length+'件が連想到達','テストクロージングの好機。']);if(inc)q.push(['rgba(74,168,255,.16)','📋',inc+'件で家族未把握','次回で空欄を1つ埋めよう。']);if(ping&&q.length<3)q.push(['rgba(52,227,208,.16)','💬',ping+'件がピンポン止まり','一段深める一言を用意。']);if(!q.length)q.push(['rgba(155,225,93,.16)','🎉','大きな課題なし','今の良いペースを維持！']);
+ var spar=(c3[0]||mine.filter(function(c){return +(c.stage||0)>=3&&c.name;})[0]||{}).name||'お客様';
+ var H='<div class="zdash zdash-rep"><div class="z-bento">';
+ H+='<div class="z-card z-hero z-cf"><div class="z-ring" style="--p:'+renso+'"><div class="z-ring-in"><b>'+renso+'<small>%</small></b><span>連想到達率</span></div></div><div class="z-hmeta"><div class="z-lv">'+lvl[0]+' ・ '+lvl[1]+'</div><h2>'+e(uName||'あなた')+'さんの GROWTH DASHBOARD</h2><div class="z-chips"><span class="z-chip">担当 <b>'+n+'</b>件</span><span class="z-chip">連想到達 <b>'+conn+'</b>件</span><span class="z-chip">入力充実 <b>'+inputAvg+'</b>%</span><span class="z-chip">平均 <b>'+avg+'</b></span></div></div></div>';
+ H+='<div class="z-card z-c2"><h3>🧭 スキルレーダー</h3><div class="z-sub">凹んだ軸が伸びしろ。</div><div class="z-radar-wrap"><svg class="z-radar" viewBox="0 0 200 200">'+_zRadar(axes).replace(/^<svg[^>]*>|<\/svg>$/g,'')+'</svg><div class="z-radar-leg">'+leg+'</div></div></div>';
+ H+='<div class="z-card z-c2"><h3>🔻 マイ・パイプライン <span style="font-size:10px;color:var(--z-dim)">転換率つき</span></h3><div class="z-sub">連想(3)の壁を越えているか。</div>'+_zFunnel(sc)+'</div>';
+ H+='<div class="z-card z-cf"><h3>📈 活動の足あと（直近12ヶ月）</h3><div class="z-sub">発掘・訪問・アポの月別量。右肩上がりが努力の証。</div>'+_zLine([{data:mDisc,color:'#2f9e44'},{data:mVis,color:'#1971c2'},{data:mApo,color:'#e8920c'}])+'<div class="z-legend"><span><i style="background:#9be15d"></i>発掘</span><span><i style="background:#4aa8ff"></i>訪問</span><span><i style="background:#ffb443"></i>アポ</span></div><div class="z-sub" style="margin:8px 0 2px">累計発掘（積み上がり）</div>'+_zLine([{data:cum,color:'#0c8599'}])+'</div>';
+ H+='<div class="z-card z-c2"><h3>⏱ 45日契約クロック</h3><div class="z-sub">A昇格(追撃判定)から45日が契約の目安。赤は超過。</div>'+(myA.length?myA.map(function(o){var p=Math.max(0,Math.min(100,(45-o.left)/45*100));var col=o.left<0?'#e03131':o.left<=10?'#e8920c':'#2f9e44';return '<div class="z-clock"><div class="z-cdays" style="color:'+col+'">'+(o.left<0?'超過':'残'+o.left)+'</div><div class="z-cbar"><i style="width:'+p+'%;background:'+col+'"></i></div><div class="z-who" style="width:84px"><b>'+e(o.c.name||'無名')+'様</b><span>'+['面識','注意','興味','連想','欲求','比較','信念','決心'][+(o.c.stage||0)]+'・'+e(o.c.pursuit_judge||'')+'</span></div></div>';}).join(''):'<div class="z-sub">A・S案件が出ると表示されます</div>')+'</div>';
+ H+='<div class="z-card z-c2"><h3>🏅 獲得した称号</h3><div class="z-sub">いろんな軸で輝ける。今の自分の勲章。</div><div class="z-badges">'+(myBadges.length?myBadges.map(function(b){return '<div class="z-badge lit"><div class="z-be">'+b.e+'</div><div class="z-bt">'+b.t+'</div><div class="z-bw">'+b.w+'</div></div>';}).join(''):'<div class="z-sub">あと一歩！どれかの軸でトップを狙おう</div>')+'</div></div>';
+ H+='<div class="z-card z-c2"><h3>🎯 今日の3手</h3><div class="z-sub">迷ったらここから。</div>'+q.slice(0,3).map(function(x){return '<div class="z-quest"><div class="z-qic" style="background:'+x[0]+'">'+x[1]+'</div><div class="z-qbd"><b>'+x[2]+'</b><p>'+x[3]+'</p></div></div>';}).join('')+'</div>';
+ H+='<div class="z-card z-spar z-c2"><h3>🥊 今日の壁打ちワーク</h3><div class="z-sub">AI相手に1問だけ自問自答。</div><div class="z-q">「連想まで来た<em>'+e(spar)+'様</em>に、<em>提案依頼の許可</em>を取る最初の一言は？」</div>'+(isMob?'<div style="font-size:11px;color:var(--z-mut)">PC（Chrome）でAI壁打ち＆印刷が使えます。</div>':'<button class="z-btn-spar" onclick="copySelfPrompt();openCopilot()">🥊 AIと壁打ちする</button>')+'</div>';
+ if(!isMob){ H+='<div class="z-card z-cf"><h3>💭 AI分析結果（貼り付け）</h3><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"><button class="z-mini" onclick="copySelfPrompt()">🤖 分析用に抽出</button><button class="z-mini" onclick="openCopilot()">🤖 AI分析</button><button class="z-mini" onclick="printSelfReport()">🖨 印刷</button><button class="z-mini" onclick="clearSelfMemo()" style="background:none;border:1px solid #fc8181;color:#c53030">🗑 削除</button></div><textarea id="selfAnalysisMemo" placeholder="AIの分析結果をここに貼り付け（印刷に使われます）" oninput="saveSelfMemo()"></textarea><div id="selfMemoAt" class="z-stamp"></div></div>'; }
+ H+='</div></div>';
+ host.innerHTML=H;
+ if(!isMob) loadSelfMemo();
 }
 window.toggleSelfDash=toggleSelfDash; window.renderSelfDash=renderSelfDash;
 // ===== 一覧 =====
@@ -2957,17 +3086,19 @@ function fillForm(c) {
   if(window.applyPursuitLock) applyPursuitLock();
   updateAiRankDisp(c.pursuit_judge||'');
   var ag=document.getElementById('f_analog'); if(ag) ag.value=c.analog_memo||'';
+  var agAt=document.getElementById('analog_at'); if(agAt) agAt.textContent=c.analog_memo_at?('📌 '+_fmtStamp(c.analog_memo_at)):'';
   // テーマ別分析結果を読み込み
   ['general','next_visit','motivation','personality','objection','hearing','training'].forEach(function(k){
     var el=document.getElementById('f_ai_'+k);
     if(el) el.value=c['ai_'+k]||'';
+    var at=document.getElementById('at_ai_'+k); if(at) at.textContent=c['ai_'+k+'_at']?('📌 '+_fmtStamp(c['ai_'+k+'_at'])):'';
     var ac=document.getElementById('ac_'+k);
     if(ac) ac.style.display='none';
   });
   // 最優先事項・備考
   var sm=document.getElementById('f_ai_summary'); if(sm) sm.value=c.ai_summary||'';
   var memo=document.getElementById('f_ai_memo'); if(memo) memo.value=c.ai_memo||'';
-  updTsubo(); updChiku(); updateFamHeadcountBtn(); updateDoukouBtn(); if(window.updateRyokuchiBtn) window.updateRyokuchiBtn(); if(window.applyAssetSeal) applyAssetSeal(); if(window.updateTabProgress) updateTabProgress(); if(window.AibisVoice) window.AibisVoice.refresh();
+  updTsubo(); updChiku(); updateFamHeadcountBtn(); updateDoukouBtn(); if(window.updateRyokuchiBtn) window.updateRyokuchiBtn(); if(window.applyAssetSeal) applyAssetSeal(); if(window.updateTabProgress) updateTabProgress(); if(window.updatePlanSvBtn) updatePlanSvBtn(); if(window.AibisVoice) window.AibisVoice.refresh();
 }
 
 function collectForm() {
@@ -3006,11 +3137,11 @@ function collectForm() {
   c.pursuits=Array.from(document.querySelectorAll('.pi')).map(function(el,i){
     return {num:i+1,date:el.querySelector('[data-f="date"]').value,appo:el.querySelector('[data-f="appo"]').value,interviewer:el.querySelector('[data-f="iv"]').value,next_appo_date:el.querySelector('[data-f="nad"]').value,visit_type:el.querySelector('[data-f="vtype"]')?.value||'',content:el.querySelector('[data-f="content"]').value,rec:el.querySelector('[data-f="rec"]')?.value||'',instruction:el.querySelector('[data-f="inst"]').value};
   });
-  // テーマ別分析結果を保存
+  // テーマ別分析結果を保存（変更時に貼り付け日時を記録）
   ['general','next_visit','motivation','personality','objection','hearing','training'].forEach(function(k){
-    var el=document.getElementById('f_ai_'+k); if(el) c['ai_'+k]=el.value;
+    var el=document.getElementById('f_ai_'+k); if(el){ var nv=el.value; if(nv!==(c['ai_'+k]||'')){ c['ai_'+k+'_at']=nv.trim()?new Date().toISOString():''; } c['ai_'+k]=nv; }
   });
-  var ag=document.getElementById('f_analog'); if(ag) c.analog_memo=ag.value;
+  var ag=document.getElementById('f_analog'); if(ag){ var av=ag.value; if(av!==(c.analog_memo||'')){ c.analog_memo_at=av.trim()?new Date().toISOString():''; } c.analog_memo=av; }
   c.updated_at=new Date().toISOString();
   return c;
 }
@@ -3677,10 +3808,20 @@ function mapStation(){
   // near: 計画地 + 駅 で検索し、地図上でピンをタップ→ルート案内が使える
   window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent('駅')+'&near='+encodeURIComponent(p),'_blank');
 }
+function planStreetView(){
+  collectForm();
+  var p=(document.getElementById('f_plan')?.value||'').trim();
+  if(!p){toast('計画地を入力してください');return;}
+  window.open('https://www.google.com/maps?q='+encodeURIComponent(p)+'&layer=c','_blank');
+}
+window.planStreetView=planStreetView;
+function updatePlanSvBtn(){ var b=document.getElementById('planSvBtn'); if(!b)return; var v=(document.getElementById('f_plan')?.value||'').trim(); b.disabled=!v; }
+window.updatePlanSvBtn=updatePlanSvBtn;
 function copyAddrToPlan(){
   var addr=document.getElementById('f_addr')?.value||'';
   var plan=document.getElementById('f_plan');
   if(plan) plan.value=addr;
+  updatePlanSvBtn();
 }
 function copyPlanToClipboard(){
   var plan=(document.getElementById('f_plan')?.value||'').trim();
@@ -4801,90 +4942,103 @@ document.addEventListener('click', function(){ closeMobMenu(); closePcMenu(); cl
 window.togglePcMenu=togglePcMenu; window.closePcMenu=closePcMenu;
 
 // ===== 課分析 =====
+function _zc(emoji,title,sub,body,sp){return '<div class="z-card '+(sp||'z-cf')+'"><h3>'+emoji+' '+title+'</h3>'+(sub?'<div class="z-sub">'+sub+'</div>':'')+body+'</div>';}
+function _zsec(k,title,body){return '<div class="z-sec" data-k="'+k+'"><div class="z-sec-h" onclick="zToggleSec(this)">'+title+'<span class="z-ar">▼</span></div><div class="z-sec-body"><div class="z-bento">'+body+'</div></div></div>';}
+window.zToggleSec=function(h){var s=h.parentNode;s.classList.toggle('z-collapsed');var a=h.querySelector('.z-ar');if(a)a.textContent=s.classList.contains('z-collapsed')?'▶':'▼';};
+window.zSetArea=function(m){_zAreaMode=m;renderAnalysis();var el=document.querySelector('#cmdCenter .z-sec[data-k=area]');if(el)el.scrollIntoView({block:'center'});};
+function _zAreaCard(target){
+ var byWard={},byTown={};
+ target.forEach(function(c){var p=_zParseAddr(c.address);byWard[p.ward]=(byWard[p.ward]||0)+1;var key=p.ward+' '+p.town;byTown[key]=(byTown[key]||0)+1;});
+ function grid(obj){var mx=Math.max.apply(null,Object.keys(obj).map(function(k){return obj[k];}))||1;return '<div class="z-areagrid">'+Object.keys(obj).sort(function(a,b){return obj[b]-obj[a];}).map(function(k){var v=obj[k],unk=/未分類|区不明|町名なし/.test(k),disp=k.replace('（町名なし）','(町なし)');return '<div class="z-area'+(unk?' z-unk':'')+'" style="'+(unk?'':'background:'+_zHeat(v/mx*100))+'"><b>'+v+'</b><span>'+e(disp)+'</span></div>';}).join('')+'</div>';}
+ var body='<div class="z-toggle"><button class="'+(_zAreaMode==='ward'?'on':'')+'" onclick="zSetArea(\'ward\')">区</button><button class="'+(_zAreaMode==='town'?'on':'')+'" onclick="zSetArea(\'town\')">町</button></div><div class="z-sub" style="clear:both;padding-top:6px">件数の濃淡。区のみ・町のみ・不明も全部拾います。</div>'+(_zAreaMode==='ward'?grid(byWard):grid(byTown));
+ return _zc('🗺','エリア別ヒートマップ（区⇔町 切替）','',body,'z-cf');
+}
 function renderAnalysis(){
-  if(!isMgrUnlocked()) return;
-  var host=document.getElementById('cmdCenter'); if(!host) return;
-  var sel=document.getElementById('analysisMember');
-  var members=[]; cards.forEach(function(c){var m=c.manager||''; if(m&&members.indexOf(m)<0)members.push(m);}); members.sort();
-  if(sel){ var curv=sel.value; sel.innerHTML='<option value="all">全担当（'+cards.length+'件）</option>'; members.forEach(function(m){ sel.innerHTML+='<option value="'+e(m)+'"'+(curv===m?' selected':'')+'>'+e(m)+'</option>'; }); }
-  var scope=(sel&&sel.value)||'all';
-  var target=scope==='all'?cards:cards.filter(function(c){return (c.manager||'')===scope;});
-  function pct(a,b){return b?Math.round(a/b*100):0;}
-  if(!target.length){ host.innerHTML='<div class="zdash zdash-mgr"><div class="z-card"><div class="z-empty">対象データがありません</div></div></div>'; return; }
-  var scored=target.map(function(c){return calcScore(c);});
-  var avgScore=Math.round(scored.reduce(function(s,v){return s+v;},0)/scored.length*10)/10;
-  var conn=target.filter(function(c){return +(c.stage||0)>=3;}).length;
-  var late=target.filter(function(c){return calcPaceOverrate(c)>1;}).length;
-  // monthly discovery (real trend)
-  var mm={}; target.forEach(function(c){var d=(c.discovery_date||'').slice(0,7); if(d)mm[d]=(mm[d]||0)+1;});
-  var mks=Object.keys(mm).sort().slice(-9); var trend=mks.map(function(k){return mm[k];});
-  var thisM=trend.length?trend[trend.length-1]:0, lastM=trend.length>1?trend[trend.length-2]:0, dDelta=thisM-lastM;
-  var stageC=[0,0,0,0,0,0,0,0]; target.forEach(function(c){var s=+(c.stage||0);if(s>=0&&s<=7)stageC[s]++;});
-  // KPI row
-  var deltaHTML=trend.length>1?'<span class="z-delta '+(dDelta>=0?'up':'dn')+'">'+(dDelta>=0?'▲':'▼')+' '+Math.abs(dDelta)+'</span>':'';
-  var H='<div class="zdash zdash-mgr">';
-  H+='<div class="z-kpis">';
-  H+='<div class="z-card z-kpi"><span class="z-klab">新規発掘（今月）</span>'+deltaHTML+'<div class="z-kval z-num">'+thisM+'<small>件</small></div>'+(trend.length>1?_zSpark(trend,'#34e3d0'):'<div class="z-ksub">先月比データ蓄積中</div>')+'</div>';
-  H+='<div class="z-card z-kpi"><span class="z-klab">課スコア平均</span><div class="z-kval z-num" style="color:#8b7cff">'+avgScore+'<small>/40</small></div><div class="z-ksub">対象 '+target.length+'件</div></div>';
-  H+='<div class="z-card z-kpi"><span class="z-klab">連想以上 率</span><div class="z-kval z-num" style="color:#9be15d">'+pct(conn,target.length)+'<small>%</small></div><div class="z-ksub">'+conn+'件が連想(3)以上</div></div>';
-  H+='<div class="z-card z-kpi"><span class="z-klab">ペース遅れ</span><div class="z-kval z-num" style="color:#ff5d7d">'+late+'<small>件</small></div><div class="z-ksub">'+pct(late,target.length)+'% が放置</div></div>';
-  H+='</div>';
-  // deals + funnel
-  var rw={S:35,A:28,B:15,C:8,D:3,E:0,X:0};
-  function prox(c){var s=+(c.stage||0); return Math.max(0,Math.min(100, Math.round(s/7*45)+(rw[c.pursuit_judge||'']||0)+(calcPaceOverrate(c)>1?0:15)));}
-  var STG=['面識','注意','興味','連想','欲求','比較','信念','決心'];
-  var deals=target.filter(function(c){var r=c.pursuit_judge||'';return ['S','A','B'].indexOf(r)>=0||+(c.stage||0)>=3;})
-    .map(function(c){return {c:c,p:prox(c)};}).sort(function(a,b){return b.p-a.p;}).slice(0,6);
-  var rc={S:'#c53030',A:'#e53e3e',B:'#dd6b20',C:'#d69e2e',D:'#38a169',E:'#718096',X:'#4a5568'};
-  var dealsHTML=deals.length?deals.map(function(o){var c=o.c,r=c.pursuit_judge||'-';return '<div class="z-deal"><div class="z-rk" style="background:'+(rc[r]||'#4a5568')+'">'+e(r)+'</div><div class="z-who"><b>'+e(c.name||'無名')+'様</b><span>'+STG[+(c.stage||0)]+(c.manager?' ・ '+e(c.manager):'')+'</span></div><div class="z-track"><i style="width:'+o.p+'%"></i></div><div class="z-pc">'+o.p+'%</div></div>';}).join(''):'<div class="z-empty">対象案件がありません</div>';
-  H+='<div class="z-m2">';
-  H+='<div class="z-card"><h3>💼 契約クローズ・トラッカー <span class="z-pill" style="background:rgba(139,124,255,.18);color:#8b7cff">CLOSING</span></h3><div class="z-sub">契約に最も近い案件＝今フォローすべき的。近接度＝ステージ×ランク×ペース。</div>'+dealsHTML+'</div>';
-  H+='<div class="z-card"><h3>🔻 購買心理ファネル</h3><div class="z-sub">課全体。どの段で離脱しているかを転換率で。</div>'+_zFunnel(stageC)+'</div>';
-  H+='</div>';
-  // leaderboard + heatmap (team-wide)
-  var g={}; cards.forEach(function(c){var m=c.manager||''; if(!m)return; (g[m]=g[m]||[]).push(c);});
-  var mgrList=Object.keys(g).sort();
-  var avas=['#9be15d','#34e3d0','#4aa8ff','#8b7cff','#ffb443','#ff5d7d','#c97cff','#5ad1a0'];
-  H+='<div class="z-m2">';
-  if(mgrList.length>=2){
-    var board=mgrList.map(function(m){var arr=g[m];var av=arr.length?Math.round(arr.reduce(function(s,c){return s+calcScore(c);},0)/arr.length*10)/10:0;return {m:m,av:av,n:arr.length};}).sort(function(a,b){return b.av-a.av;});
-    var mxAv=Math.max.apply(null,board.map(function(b){return b.av;}))||1;
-    var lbHTML=board.map(function(b,i){var col=avas[i%avas.length];return '<div class="z-lb"><div class="z-lrank'+(i===0?' top':'')+'">'+(i===0?'👑':'#'+(i+1))+'</div><div class="z-av" style="background:'+col+'">'+e((b.m||'?').slice(0,1))+'</div><div class="z-lnm">'+e(b.m)+'<span>'+b.n+'件</span></div><div class="z-lbar"><i style="width:'+Math.round(b.av/mxAv*100)+'%"></i></div><div class="z-lsc" style="color:'+col+'">'+b.av+'</div></div>';}).join('');
-    H+='<div class="z-card"><h3>🏆 担当リーダーボード</h3><div class="z-sub">平均スコア順。部下に見せて健全な競争を。</div>'+lbHTML+'</div>';
-    var cols=['ペース','連想率','家族','KP面談','グリップ'];
-    function mMetrics(arr){var t=arr.length||1;
-      var lt=arr.filter(function(c){return calcPaceOverrate(c)>1;}).length;
-      var rn=arr.filter(function(c){return +(c.stage||0)>=3;}).length;
-      var fm=arr.filter(function(c){return c.family_headcount;}).length;
-      var kp=arr.filter(function(c){return (c.family||[]).some(function(x){return x.met&&(x.owner||x.kp);});}).length;
-      var gs=0,gc=0; arr.forEach(function(c){var l=getKaiwaLevel(c);if(l>=0){gs+=l;gc++;}});
-      return [Math.round(100-lt/t*100),Math.round(rn/t*100),Math.round(fm/t*100),Math.round(kp/t*100),gc?Math.round(gs/gc/4*100):0];
-    }
-    var heat='<tr><th></th>'+cols.map(function(c){return '<th>'+c+'</th>';}).join('')+'</tr>';
-    board.forEach(function(b){var mt=mMetrics(g[b.m]);heat+='<tr><td class="z-hnm">'+e(b.m)+'</td>'+mt.map(function(v){return '<td class="z-cell" style="background:'+_zHeat(v)+'">'+v+'</td>';}).join('')+'</tr>';});
-    H+='<div class="z-card"><h3>🌡 チーム・ヒートマップ</h3><div class="z-sub">担当 × 指標。赤が要フォロー。傾向が一目で。</div><div style="overflow-x:auto"><table class="z-heat">'+heat+'</table></div></div>';
-  } else {
-    H+='<div class="z-card"><h3>🏆 担当リーダーボード</h3><div class="z-empty">複数担当のデータが集まると表示されます</div></div>';
-    H+='<div class="z-card"><h3>🌡 チーム・ヒートマップ</h3><div class="z-empty">複数担当のデータが集まると表示されます</div></div>';
-  }
-  H+='</div>';
-  // insights (dynamic, team-wide)
-  var ins=[];
-  if(mgrList.length){
-    var pingStat=mgrList.map(function(m){var arr=g[m];var t=arr.length||1;var p=arr.filter(function(c){return getKaiwaLevel(c)===0;}).length;return {m:m,r:Math.round(p/t*100),n:arr.length};}).filter(function(o){return o.n>=3;}).sort(function(a,b){return b.r-a.r;});
-    if(pingStat.length&&pingStat[0].r>=40) ins.push(['rgba(255,93,125,.16)','⚠',e(pingStat[0].m)+'さん：ピンポン止まりが'+pingStat[0].r+'%','GRIP','rgba(255,93,125,.16);color:#ff5d7d','会話深度が浅く連想に届きにくい。同行1回で「立ち話→玄関内」の突破を実演すると効果大。']);
-  }
-  var saLate=cards.filter(function(c){var r=c.pursuit_judge||'';return (r==='S'||r==='A')&&calcPaceOverrate(c)>1;}).length;
-  if(saLate>0) ins.push(['rgba(255,180,67,.16)','⏰','最優先（A・S）の放置が'+saLate+'件','PACE','rgba(255,180,67,.16);color:#ffb443','契約に近い客がご無沙汰。朝礼で名指し再訪を指示すれば契約近接が一気に進む。']);
-  if(mgrList.length>=2){
-    var rensoStat=mgrList.map(function(m){var arr=g[m];var t=arr.length||1;return {m:m,r:Math.round(arr.filter(function(c){return +(c.stage||0)>=3;}).length/t*100),n:arr.length};}).filter(function(o){return o.n>=3;}).sort(function(a,b){return b.r-a.r;});
-    if(rensoStat.length&&rensoStat[0].r>=40) ins.push(['rgba(155,225,93,.16)','✅',e(rensoStat[0].m)+'さん：連想到達が'+rensoStat[0].r+'%と好調','WIN','rgba(155,225,93,.16);color:#9be15d','テスクロの型が確立。トーク録音を教材化して横展開すると課全体が底上げ。']);
-  }
-  if(!ins.length) ins.push(['rgba(74,168,255,.16)','📈','大きな偏りは見当たりません','STABLE','rgba(74,168,255,.16);color:#4aa8ff','各指標が安定。契約近接トラッカー上位から確実にクロージングを。']);
-  var insHTML=ins.map(function(o){return '<div class="z-ins"><div class="z-iic" style="background:'+o[0]+'">'+o[1]+'</div><div><b>'+o[2]+'<span class="z-pill" style="background:'+o[4]+'">'+o[3]+'</span></b><p>'+o[5]+'</p></div></div>';}).join('');
-  H+='<div class="z-card"><h3>🧠 傾向と対策（AIインサイト）</h3><div class="z-sub">データから自動抽出。多忙でも30秒で打ち手が決まる。</div>'+insHTML+'</div>';
-  H+='</div>';
-  host.innerHTML=H;
+ if(!isMgrUnlocked()) return;
+ var host=document.getElementById('cmdCenter'); if(!host) return;
+ var sel=document.getElementById('analysisMember');
+ var members=[]; cards.forEach(function(c){var m=c.manager||'';if(m&&members.indexOf(m)<0)members.push(m);}); members.sort();
+ if(sel){var cv=sel.value;sel.innerHTML='<option value="all">全担当（'+cards.length+'件）</option>';members.forEach(function(m){sel.innerHTML+='<option value="'+e(m)+'"'+(cv===m?' selected':'')+'>'+e(m)+'</option>';});}
+ var scope=(sel&&sel.value)||'all';
+ var t=scope==='all'?cards:cards.filter(function(c){return (c.manager||'')===scope;});
+ if(!t.length){host.innerHTML='<div class="zdash zdash-mgr"><div class="z-card"><div class="z-empty">対象データがありません</div></div></div>';return;}
+ var STG=['面識','注意','興味','連想','欲求','比較','信念','決心'];
+ var RC={S:'#c53030',A:'#e53e3e',B:'#dd6b20',C:'#d69e2e',D:'#38a169',E:'#718096',X:'#4a5568'};
+ var n=t.length, avg=Math.round(t.reduce(function(s,c){return s+calcScore(c);},0)/n*10)/10;
+ var conn=t.filter(function(c){return +(c.stage||0)>=3;}).length, late=t.filter(function(c){return calcPaceOverrate(c)>1;}).length;
+ var mDisc=_zMonthly(t,function(c){return c.discovery_date;}), thisM=mDisc[11],lastM=mDisc[10],dd=thisM-lastM;
+ var sc=[0,0,0,0,0,0,0,0];t.forEach(function(c){var s=+(c.stage||0);if(s>=0&&s<=7)sc[s]++;});
+ // team活動（フル稼働）
+ var g=_zByMgr(cards), reps=Object.keys(g).sort(), curMonth=_zMonths()[11];
+ var active=reps.filter(function(r){return g[r].some(function(c){return (c.discovery_date||'').slice(0,7)===curMonth||_zVisitDates(c).some(function(d){return d.slice(0,7)===curMonth;});});});
+ var H='<div class="zdash zdash-mgr"><div class="z-cmdhead">⌘ COMMAND CENTER <span>課ダッシュボード</span></div>';
+ // KPI + gauge
+ H+='<div class="z-bento"><div class="z-card z-kpi z-c1"><span class="z-klab">新規発掘（今月）</span>'+(thisM||lastM?'<span class="z-delta '+(dd>=0?'up':'dn')+'">'+(dd>=0?'▲':'▼')+' '+Math.abs(dd)+'</span>':'')+'<div class="z-kval z-num">'+thisM+'<small>件</small></div>'+_zSpark(mDisc,'#34e3d0')+'</div>'
+  +'<div class="z-card z-kpi z-c1"><span class="z-klab">課スコア平均</span><div class="z-kval z-num" style="color:#8b7cff">'+avg+'<small>/40</small></div><div class="z-ksub">対象 '+n+'件</div></div>'
+  +'<div class="z-card z-kpi z-c1"><span class="z-klab">連想以上 率</span><div class="z-kval z-num" style="color:#9be15d">'+_zPct(conn,n)+'<small>%</small></div><div class="z-ksub">'+conn+'件</div></div>'
+  +'<div class="z-card z-kpi z-c1"><span class="z-klab">ペース遅れ</span><div class="z-kval z-num" style="color:#ff5d7d">'+late+'<small>件</small></div><div class="z-ksub">'+_zPct(late,n)+'%</div></div></div>';
+ H+='<div class="z-card z-cf"><h3>🟢 課フル稼働メーター</h3><div class="z-sub">今月、発掘か訪問で動いた担当。全員稼働を目指そう。</div><div class="z-gauge"><div class="z-gnum">'+active.length+'<small>/'+reps.length+'</small></div><div class="z-dots">'+reps.map(function(r,i){var on=active.indexOf(r)>=0;return '<div class="z-dot" style="background:'+(on?_zAVAS[i%8]:'rgba(255,255,255,.08)')+';color:'+(on?'#06121f':'var(--z-dim)')+'" title="'+e(r)+'">'+e(r.slice(0,1))+'</div>';}).join('')+'</div></div><div class="z-sub" style="margin-top:8px">'+(active.length>=reps.length?'🎉 全員稼働！':'あと '+(reps.length-active.length)+' 人でフル稼働')+'</div></div>';
+ // process
+ var mVis=_zMonthly(t,_zVisitDates), mApo=_zMonthly(t,_zAppoDates), cum=[],r0=0;mDisc.forEach(function(v){r0+=v;cum.push(r0);});
+ H+=_zsec('process','📈 プロセス（活動量の伸び）',
+   _zc('📊','課の活動量（直近12ヶ月）','発掘・訪問・アポの月別量。',_zLine([{data:mDisc,color:'#9be15d'},{data:mVis,color:'#4aa8ff'},{data:mApo,color:'#ffb443'}])+'<div class="z-legend"><span><i style="background:#9be15d"></i>発掘</span><span><i style="background:#4aa8ff"></i>訪問</span><span><i style="background:#ffb443"></i>アポ</span></div>','z-cf')
+  +_zc('🧗','累計発掘（積み上がり）','努力が積み上がる様子。',_zLine([{data:cum,color:'#34e3d0'}]),'z-c2')
+  +_zc('👥','担当別 今月の発掘','誰がエンジンか。',_zVbars(reps.map(function(r){return g[r].filter(function(c){return (c.discovery_date||'').slice(0,7)===curMonth;}).length;}),reps.map(function(r){return r.slice(0,1);}),_zAVAS),'z-c2'));
+ // contract
+ var rw={S:35,A:28,B:15,C:8,D:3};function prox(c){return Math.max(0,Math.min(100,Math.round(+(c.stage||0)/7*45)+(rw[c.pursuit_judge]||0)+(calcPaceOverrate(c)>1?0:15)));}
+ var deals=t.filter(function(c){return['S','A','B'].indexOf(c.pursuit_judge)>=0||+(c.stage||0)>=3;}).map(function(c){return {c:c,p:prox(c)};}).sort(function(a,b){return b.p-a.p;}).slice(0,6);
+ var dealsH=deals.length?deals.map(function(o){return '<div class="z-deal"><div class="z-rk" style="background:'+(RC[o.c.pursuit_judge]||'#4a5568')+'">'+e(o.c.pursuit_judge||'-')+'</div><div class="z-who"><b>'+e(o.c.name||'無名')+'様</b><span>'+STG[+(o.c.stage||0)]+'・'+e(o.c.manager||'')+'</span></div><div class="z-track"><i style="width:'+o.p+'%"></i></div><div class="z-pc">'+o.p+'%</div></div>';}).join(''):'<div class="z-empty">対象案件なし</div>';
+ var allA=t.filter(function(c){return (c.pursuit_judge==='A'||c.pursuit_judge==='S')&&c.pursuit_judge_date;}).map(function(c){return {c:c,left:45-_zDaysSince(c.pursuit_judge_date)};}).sort(function(a,b){return a.left-b.left;}).slice(0,6);
+ var clockH=allA.length?allA.map(function(o){var col=o.left<0?'#ff5d7d':o.left<=10?'#ffb443':'#9be15d';return '<div class="z-clock"><div class="z-cdays" style="color:'+col+'">'+(o.left<0?'超過':'残'+o.left)+'</div><div class="z-cbar"><i style="width:'+Math.max(0,Math.min(100,(45-o.left)/45*100))+'%;background:'+col+'"></i></div><div class="z-who" style="width:90px"><b>'+e(o.c.name||'無名')+'様</b><span>'+e(o.c.manager||'')+'・'+e(o.c.pursuit_judge)+'</span></div></div>';}).join(''):'<div class="z-sub">A・S案件＋追撃判定日が必要</div>';
+ var dwell=[0,0,0,0,0,0,0,0],dc=[0,0,0,0,0,0,0,0];t.forEach(function(c){var s=+(c.stage||0);dwell[s]+=lastContactDays(c);dc[s]++;});var dwAvg=dwell.map(function(v,i){return dc[i]?Math.round(v/dc[i]):0;});var slow=dwAvg.indexOf(Math.max.apply(null,dwAvg));
+ var fc5=t.filter(function(c){return +(c.stage||0)>=5;}).length, proj=Math.round(fc5*0.4+conn*0.12);
+ H+=_zsec('contract','💼 契約（着実に進める）',
+   _zc('💼','契約クローズ・トラッカー','今フォローすべき的を近接度順に。<span class="z-pill" style="background:rgba(139,124,255,.18);color:#8b7cff">CLOSING</span>',dealsH,'z-c2')
+  +_zc('⏱','45日契約クロック','A昇格(追撃判定)→45日。赤は超過。',clockH,'z-c2')
+  +_zc('🏎','パイプライン・ベロシティ','各段の平均滞留日数。長い段が失速＝<b style="color:#ff5d7d">'+STG[slow]+'</b>。',_zVbars(dwAvg,STG.map(function(s){return s.slice(0,2);}),dwAvg.map(function(v){return v>=50?'#ff5d7d':v>=30?'#ffb443':'#38a169';})),'z-c2')
+  +_zc('🔮','着地予測（今月見込み）','現パイプライン×転換率の概算。','<div class="z-tiles"><div class="z-tile"><b>'+proj+'</b><span>契約見込</span></div><div class="z-tile"><b>'+Math.round(conn*0.35)+'</b><span>提案依頼見込</span></div><div class="z-tile"><b>'+fc5+'</b><span>比較以上</span></div></div><div class="z-sub" style="margin-top:8px">※過去転換率の蓄積で精度UP</div>','z-c2')
+  +_zc('🕳','リーク分析（離脱の場所）','転換率が落ちる段を発見。',_zFunnel(sc),'z-cf'));
+ // rank & game (team)
+ var board=reps.map(function(r){var a=g[r];return {r:r,av:a.length?Math.round(a.reduce(function(s,c){return s+calcScore(c);},0)/a.length*10)/10:0,n:a.length};}).sort(function(a,b){return b.av-a.av;});
+ var mxAv=Math.max.apply(null,board.map(function(b){return b.av;}))||1;
+ var lbH=board.map(function(b,i){var col=_zAVAS[reps.indexOf(b.r)%8];return '<div class="z-lb"><div class="z-lrank'+(i===0?' top':'')+'">'+(i===0?'👑':'#'+(i+1))+'</div><div class="z-av" style="background:'+col+'">'+e(b.r.slice(0,1))+'</div><div class="z-lnm">'+e(b.r)+'<span>'+b.n+'件</span></div><div class="z-lbar"><i style="width:'+Math.round(b.av/mxAv*100)+'%"></i></div><div class="z-lsc" style="color:'+col+'">'+b.av+'</div></div>';}).join('');
+ var bd=_zBadges();
+ var badgeH=reps.map(function(r){var bs=bd[r]||[];if(!bs.length)return '';return '<div style="margin-bottom:7px"><span style="font-size:12px;font-weight:700">'+e(r)+'</span> '+bs.map(function(b){return '<span class="z-pill" style="background:rgba(255,180,67,.14);color:var(--z-amber);margin-left:4px">'+b.e+' '+b.t+'</span>';}).join('')+'</div>';}).join('')||'<div class="z-sub">集計中</div>';
+ var allConn=cards.filter(function(c){return +(c.stage||0)>=3;}).length, allVisM=_zMonthly(cards,_zVisitDates)[11], allAS=cards.filter(function(c){return c.pursuit_judge==='A'||c.pursuit_judge==='S';}).length;
+ var miss=[['連想到達数',allConn,40,'#9be15d'],['今月の訪問数',allVisM,120,'#4aa8ff'],['A・S案件数',allAS,20,'#8b7cff']];
+ var missH=miss.map(function(m){var p=Math.min(100,Math.round(m[1]/m[2]*100));return '<div class="z-mbar"><div class="z-ml"><span>'+m[0]+'</span><b>'+m[1]+' / '+m[2]+'（'+p+'%）</b></div><div class="z-mtrack"><i style="width:'+p+'%;background:'+m[3]+'"></i></div></div>';}).join('');
+ var cols=['ペース','連想率','家族','KP面談','グリップ'];
+ function mm(a){var T=a.length||1;return [100-_zPct(a.filter(function(c){return calcPaceOverrate(c)>1;}).length,T),_zPct(a.filter(function(c){return +(c.stage||0)>=3;}).length,T),_zPct(a.filter(function(c){return c.family_headcount;}).length,T),_zPct(a.filter(function(c){return (c.family||[]).some(function(x){return x.met&&(x.owner||x.kp);});}).length,T),(function(){var s=0,nn=0;a.forEach(function(c){var l=getKaiwaLevel(c);if(l>=0){s+=l;nn++;}});return nn?Math.round(s/nn/4*100):0;})()];}
+ var heat='<tr><th></th>'+cols.map(function(c){return '<th>'+c+'</th>';}).join('')+'</tr>'+board.map(function(b){return '<tr><td class="z-hnm">'+e(b.r)+'</td>'+mm(g[b.r]).map(function(v){return '<td class="z-cell" style="background:'+_zHeat(v)+'">'+v+'</td>';}).join('')+'</tr>';}).join('');
+ H+=_zsec('rank','🏆 ランキング & ゲーム',
+   _zc('🏆','担当リーダーボード','平均スコア順。',lbH,'z-c2')
+  +_zc('🎖','課ミッション・プログレス','今月の課目標。みんなで達成。',missH,'z-c2')
+  +_zc('🏅','称号バッジ（多軸＝全員に出番）','色々な軸でトップを称える。',badgeH,'z-c2')
+  +_zc('🌡','チーム・ヒートマップ','担当×指標。赤が要フォロー。','<div style="overflow-x:auto"><table class="z-heat">'+heat+'</table></div>','z-c2'));
+ // area
+ H+=_zsec('area','🗺 エリア分析',_zAreaCard(t));
+ // multi
+ var asMap={'1億以下':1,'3億以下':2,'5億以下':3,'10億未満':4,'10億以上':5};
+ var bub='<svg class="z-bub" viewBox="0 0 560 230">';t.forEach(function(c){var x=20+calcScore(c)/40*520;var av=(asMap[c.land_asset]||0)+(+(c.m2||0)>=200?2:+(c.m2||0)>=100?1:0);var y=210-av/7*190;var rr=4+calcScore(c)/40*11;bub+='<circle cx="'+x.toFixed(0)+'" cy="'+y.toFixed(0)+'" r="'+rr.toFixed(0)+'" fill="'+(RC[c.pursuit_judge]||'#888')+'" opacity=".6" stroke="#fff" stroke-width="1"/>';});bub+='<text x="280" y="228" font-size="9" fill="#6b7894" text-anchor="middle">熱量（スコア）→</text></svg>';
+ var ageT=[['〜64',0,64],['65〜74',65,74],['75〜',75,200]];var agH=ageT.map(function(a){var arr=t.filter(function(c){var ag=_zOwnerAge(c);return ag!==null&&ag>=a[1]&&ag<=a[2];});var av2=arr.length?(arr.reduce(function(s,c){return s+ +(c.stage||0);},0)/arr.length).toFixed(1):'0';return '<div class="z-tile"><b>'+arr.length+'</b><span>'+a[0]+'歳／平均St '+av2+'</span></div>';}).join('');var noAge=t.filter(function(c){return _zOwnerAge(c)===null;}).length;
+ var pot=Math.round(t.filter(function(c){return c.pursuit_judge==='A'||c.pursuit_judge==='S';}).reduce(function(s,c){return s+(parseFloat(c.rosenka)||0)*1000*(parseFloat(c.m2)||0);},0)/1e8);
+ var miniR=board.slice(0,4).map(function(b){var a=g[b.r];var ax=[['発掘',Math.min(Math.round(a.length/30*100),100)],['グリ',(function(){var s=0,nn=0;a.forEach(function(c){var l=getKaiwaLevel(c);if(l>=0){s+=l;nn++;}});return nn?Math.round(s/nn/4*100):0;})()],['ヒア',_zPct(a.filter(function(c){return c.family_headcount;}).length,a.length)],['連想',_zPct(a.filter(function(c){return +(c.stage||0)>=3;}).length,a.length)],['テス',_zPct(a.filter(function(c){return +(c.stage||0)>=4;}).length,Math.max(1,a.filter(function(c){return +(c.stage||0)>=3;}).length))],['ペース',100-_zPct(a.filter(function(c){return calcPaceOverrate(c)>1;}).length,a.length)]];var col=_zAVAS[reps.indexOf(b.r)%8];return '<div class="z-minir">'+_zRadarC(ax,col)+'<div style="color:'+col+'">'+e(b.r)+'</div></div>';}).join('');
+ H+=_zsec('multi','🔬 多角分析',
+   _zc('💎','お宝度マトリクス','熱量×資産規模。右上＝お宝。色＝ランク。',bub,'z-cf')
+  +_zc('🏯','相続緊急度 × 進捗','高齢×低ステージは要対応。','<div class="z-tiles">'+agH+'</div>'+(noAge?'<div class="z-sub" style="margin-top:6px">所有者年齢 未入力 '+noAge+'件</div>':''),'z-c2')
+  +_zc('💰','課の総ポテンシャル金額','A・S案件の路線価×面積の概算。','<div style="text-align:center;padding:10px"><div class="z-num" style="font-size:38px;font-weight:800;color:#ffb443">約'+pot+'<span style="font-size:17px">億円</span></div><div class="z-sub">規模感の目安（概算）</div></div>','z-c2')
+  +_zc('🧬','担当スキルレーダー（上位4名）','型の違いで育成ポイント発見。','<div class="z-minirow">'+miniR+'</div>','z-cf'));
+ // insights
+ var pingStat=reps.map(function(r){var a=g[r],T=a.length||1;return {r:r,v:_zPct(a.filter(function(c){return getKaiwaLevel(c)===0;}).length,T),n:a.length};}).filter(function(o){return o.n>=3;}).sort(function(a,b){return b.v-a.v;});
+ var saLate=cards.filter(function(c){return (c.pursuit_judge==='A'||c.pursuit_judge==='S')&&calcPaceOverrate(c)>1;}).length;
+ var ins='';
+ ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(255,93,125,.16)">⚠</div><div><b>失速ポイントは「'+STG[slow]+'」段<span class="z-pill" style="background:rgba(255,93,125,.16);color:#ff5d7d">PACE</span></b><p>この段の滞留が最長。'+STG[slow]+'を越える一手（提案依頼・連れ出し）を朝礼で共有を。</p></div></div>';
+ if(saLate>0) ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(255,180,67,.16)">⏱</div><div><b>A・Sの放置が'+saLate+'件<span class="z-pill" style="background:rgba(255,180,67,.16);color:#ffb443">CLOSE</span></b><p>契約に近い客がご無沙汰。今週中にクロージング判断を。</p></div></div>';
+ if(pingStat.length&&pingStat[0].v>=40) ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(74,168,255,.16)">🤝</div><div><b>'+e(pingStat[0].r)+'さん：ピンポン止まり'+pingStat[0].v+'%<span class="z-pill" style="background:rgba(74,168,255,.16);color:#4aa8ff">GRIP</span></b><p>同行1回で「立ち話→玄関内」の突破を実演すると効果大。</p></div></div>';
+ ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(155,225,93,.16)">✅</div><div><b>フル稼働まであと'+(reps.length-active.length)+'人<span class="z-pill" style="background:rgba(155,225,93,.16);color:#9be15d">TEAM</span></b><p>未稼働の担当へ1声。全員が動くと発掘量が跳ね上がる。</p></div></div>';
+ H+=_zc('🧠','傾向と対策（AIインサイト）','データから打ち手を自動抽出。',ins,'z-cf');
+ H+='</div>';
+ host.innerHTML=H;
 }
 
 function renderExtraAnalysis(){
@@ -5210,11 +5364,12 @@ function getAmKey(){
 }
 function saveAnalysisMemo(){
   var ta=document.getElementById('analysisMemo'); if(!ta) return;
-  try{ localStorage.setItem(getAmKey(),ta.value); }catch(ex){}
+  try{ localStorage.setItem(getAmKey(),ta.value); var at=ta.value.trim()?new Date().toISOString():''; localStorage.setItem(getAmKey()+'_at',at); var l=document.getElementById('analysisMemoAt'); if(l)l.textContent=at?('📌 '+_fmtStamp(at)):''; }catch(ex){}
 }
 function loadAnalysisMemo(){
   var ta=document.getElementById('analysisMemo'); if(!ta) return;
   ta.value=localStorage.getItem(getAmKey())||'';
+  var _at=localStorage.getItem(getAmKey()+'_at')||''; var _l=document.getElementById('analysisMemoAt'); if(_l)_l.textContent=_at?('📌 '+_fmtStamp(_at)):'';
   var sel=document.getElementById('analysisMember');
   var v=sel?sel.value:'all';
   var title=document.getElementById('analysisMemoTitle');
@@ -5302,10 +5457,12 @@ function copySelfPrompt(){
   p+='\n※ 数値評価や順位ではなく、明日からの行動が変わる具体的アドバイスを中心に、前向きな表現でお願いします。';
   navigator.clipboard.writeText(p).then(function(){ toast('📋 自分の見込み分析プロンプトをコピーしました！'); }).catch(function(){ toast('コピーできませんでした'); });
 }
-function saveSelfMemo(){ var ta=document.getElementById('selfAnalysisMemo'); if(!ta)return; try{localStorage.setItem('analysis_memo_self_v1',ta.value);}catch(ex){} }
-function loadSelfMemo(){ var ta=document.getElementById('selfAnalysisMemo'); if(!ta)return; try{ta.value=localStorage.getItem('analysis_memo_self_v1')||'';}catch(ex){} }
+function saveSelfMemo(){ var ta=document.getElementById('selfAnalysisMemo'); if(!ta)return; try{localStorage.setItem('analysis_memo_self_v1',ta.value); var at=ta.value.trim()?new Date().toISOString():''; localStorage.setItem('analysis_memo_self_at_v1',at); var l=document.getElementById('selfMemoAt'); if(l)l.textContent=at?('📌 '+_fmtStamp(at)):''; }catch(ex){} }
+function loadSelfMemo(){ var ta=document.getElementById('selfAnalysisMemo'); if(!ta)return; try{ta.value=localStorage.getItem('analysis_memo_self_v1')||''; var at=localStorage.getItem('analysis_memo_self_at_v1')||''; var l=document.getElementById('selfMemoAt'); if(l)l.textContent=at?('📌 '+_fmtStamp(at)):''; }catch(ex){} }
 function printSelfReport(){ var ta=document.getElementById('selfAnalysisMemo'); var memo=ta?ta.value:''; if(!memo.trim()){ toast('貼り付け欄が空です'); return; } printAnalysisReport(memo,(uName||'自分')+' 見込み分析レポート'); }
-window.copySelfPrompt=copySelfPrompt; window.saveSelfMemo=saveSelfMemo; window.loadSelfMemo=loadSelfMemo; window.printSelfReport=printSelfReport;
+function clearSelfMemo(){ var ta=document.getElementById('selfAnalysisMemo'); if(!ta)return; if(!ta.value){toast('すでに空です');return;} aibisAlert('この分析結果を削除するよ。よろしい？<br><br><div style="display:flex;gap:8px;margin-top:8px"><button onclick="closeAibisAlert();doClearSelfMemo()" style="flex:1;padding:8px;background:#c53030;color:white;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit">削除する</button><button onclick="closeAibisAlert()" style="flex:1;padding:8px;background:#e2e8f0;color:#2d3748;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit">やめる</button></div>'); }
+function doClearSelfMemo(){ var ta=document.getElementById('selfAnalysisMemo'); if(ta)ta.value=''; try{localStorage.removeItem('analysis_memo_self_v1');localStorage.removeItem('analysis_memo_self_at_v1');}catch(ex){} var l=document.getElementById('selfMemoAt'); if(l)l.textContent=''; toast('削除しました'); }
+window.copySelfPrompt=copySelfPrompt; window.saveSelfMemo=saveSelfMemo; window.loadSelfMemo=loadSelfMemo; window.printSelfReport=printSelfReport; window.clearSelfMemo=clearSelfMemo; window.doClearSelfMemo=doClearSelfMemo;
 function toggleAnalysis(){
   var content=document.getElementById('analysisContent');
   var icon=document.getElementById('analysisToggleIcon');
@@ -6106,13 +6263,14 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <div>
           <label>住所（自宅）</label>
           <input type="text" id="f_addr" placeholder="例: 東京都江戸川区...">
-          <div style="margin-top:4px">
+          <div style="margin-top:4px;display:flex;gap:4px;align-items:center">
             <button type="button" onclick="getCurrentAddress()" style="font-size:11px;padding:5px 10px;border:1px solid #cbd5e0;border-radius:6px;background:white;cursor:pointer;color:#4a5568;white-space:nowrap">📍 現在地取得</button>
+            <button type="button" id="planSvBtn" onclick="planStreetView()" disabled title="計画地のストリートビュー（計画地を入力すると押せます）" style="flex-shrink:0;font-size:14px;line-height:1;padding:4px 9px;border:1px solid #cbd5e0;border-radius:6px;background:white;cursor:pointer;color:#4a5568">🌐</button>
           </div>
         </div>
         <div>
           <label>計画地</label>
-          <input type="text" id="f_plan" placeholder="計画地の住所">
+          <input type="text" id="f_plan" placeholder="計画地の住所" oninput="updatePlanSvBtn()">
           <!-- スマホ：ボタンを下段に -->
           <div class="plan-btns-mob" style="display:none;gap:4px;margin-top:4px">
             <button type="button" onclick="copyAddrToPlan()" style="flex:1;font-size:11px;padding:6px;border:1px solid #cbd5e0;border-radius:6px;background:white;cursor:pointer;color:#4a5568">同左</button>
@@ -6556,7 +6714,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
             <div style="font-size:12px;font-weight:700;color:#553c9a">💭 総合分析 − 貼り付け欄</div>
             <button type="button" onclick="clearStrategyField('f_ai_general')" style="font-size:11px;padding:3px 10px;border:1px solid #e2e8f0;border-radius:4px;background:white;cursor:pointer;color:#718096">🗑</button>
           </div>
-          <textarea id="f_ai_general" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('general');autoDetectJudge(this.value);autoDetectSummary(this.value)"></textarea>
+          <textarea id="f_ai_general" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('general');autoDetectJudge(this.value);autoDetectSummary(this.value)"></textarea><div id="at_ai_general" class="paste-at"></div>
           <div id="ac_general" style="display:none;margin-top:8px;background:#fffbeb;border:1px solid #f6e05e;border-radius:6px;padding:8px;font-size:12px;color:#744210"></div>
         </div>
         <!-- 最優先事項 -->
@@ -6572,7 +6730,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <div style="font-size:12px;font-weight:700;color:#276749;margin-bottom:6px">📝 備考（打ち合わせメモ）</div>
           <div style="display:flex;gap:6px;align-items:center">
             <input type="text" id="f_ai_memo" placeholder="1行メモ" style="flex:1;min-width:0;font-size:12px;border:1px solid #c6f6d5;border-radius:4px;padding:6px 8px;background:white;font-family:inherit">
-            <button type="button" class="mic-btn" onclick="micStart('f_ai_memo',this)" style="flex-shrink:0" title="音声入力">🎤</button>
+            <button type="button" class="mic-btn" onclick="micStart('f_ai_memo',this)" style="flex-shrink:0" title="音声入力">🎤</button><button type="button" onclick="clearStrategyField('f_ai_memo')" style="flex-shrink:0;background:none;border:1px solid #e2e8f0;border-radius:4px;color:#a0aec0;font-size:13px;padding:4px 8px;cursor:pointer;font-family:inherit" title="削除">🗑</button>
           </div>
         </div>
       </div>
@@ -6582,7 +6740,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
             <div style="font-size:12px;font-weight:700;color:#2b6cb0">🎯 次回作戦 − 貼り付け欄</div>
             <button type="button" onclick="clearStrategyField('f_ai_next_visit')" style="font-size:11px;padding:3px 10px;border:1px solid #bee3f8;border-radius:4px;background:white;cursor:pointer;color:#718096">🗑</button>
           </div>
-          <textarea id="f_ai_next_visit" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('next_visit')"></textarea>
+          <textarea id="f_ai_next_visit" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('next_visit')"></textarea><div id="at_ai_next_visit" class="paste-at"></div>
           <div id="ac_next_visit" style="display:none;margin-top:8px;background:#fffbeb;border:1px solid #f6e05e;border-radius:6px;padding:8px;font-size:12px;color:#744210"></div>
         </div>
       </div>
@@ -6592,7 +6750,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
             <div style="font-size:12px;font-weight:700;color:#c53030">🔥 動機引揚 − 貼り付け欄</div>
             <button type="button" onclick="clearStrategyField('f_ai_motivation')" style="font-size:11px;padding:3px 10px;border:1px solid #fed7d7;border-radius:4px;background:white;cursor:pointer;color:#718096">🗑</button>
           </div>
-          <textarea id="f_ai_motivation" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('motivation')"></textarea>
+          <textarea id="f_ai_motivation" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('motivation')"></textarea><div id="at_ai_motivation" class="paste-at"></div>
           <div id="ac_motivation" style="display:none;margin-top:8px;background:#fffbeb;border:1px solid #f6e05e;border-radius:6px;padding:8px;font-size:12px;color:#744210"></div>
         </div>
       </div>
@@ -6602,7 +6760,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
             <div style="font-size:12px;font-weight:700;color:#6b46c1">🧠 性格応対 − 貼り付け欄</div>
             <button type="button" onclick="clearStrategyField('f_ai_personality')" style="font-size:11px;padding:3px 10px;border:1px solid #e9d8fd;border-radius:4px;background:white;cursor:pointer;color:#718096">🗑</button>
           </div>
-          <textarea id="f_ai_personality" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('personality')"></textarea>
+          <textarea id="f_ai_personality" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('personality')"></textarea><div id="at_ai_personality" class="paste-at"></div>
           <div id="ac_personality" style="display:none;margin-top:8px;background:#fffbeb;border:1px solid #f6e05e;border-radius:6px;padding:8px;font-size:12px;color:#744210"></div>
         </div>
       </div>
@@ -6612,7 +6770,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
             <div style="font-size:12px;font-weight:700;color:#c05621">🛡 反論対応 − 貼り付け欄</div>
             <button type="button" onclick="clearStrategyField('f_ai_objection')" style="font-size:11px;padding:3px 10px;border:1px solid #fbd38d;border-radius:4px;background:white;cursor:pointer;color:#718096">🗑</button>
           </div>
-          <textarea id="f_ai_objection" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('objection')"></textarea>
+          <textarea id="f_ai_objection" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('objection')"></textarea><div id="at_ai_objection" class="paste-at"></div>
           <div id="ac_objection" style="display:none;margin-top:8px;background:#fffbeb;border:1px solid #f6e05e;border-radius:6px;padding:8px;font-size:12px;color:#744210"></div>
         </div>
       </div>
@@ -6622,7 +6780,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
             <div style="font-size:12px;font-weight:700;color:#276749">👂 聞取補充 − 貼り付け欄</div>
             <button type="button" onclick="clearStrategyField('f_ai_hearing')" style="font-size:11px;padding:3px 10px;border:1px solid #c6f6d5;border-radius:4px;background:white;cursor:pointer;color:#718096">🗑</button>
           </div>
-          <textarea id="f_ai_hearing" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('hearing')"></textarea>
+          <textarea id="f_ai_hearing" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('hearing')"></textarea><div id="at_ai_hearing" class="paste-at"></div>
           <div id="ac_hearing" style="display:none;margin-top:8px;background:#fffbeb;border:1px solid #f6e05e;border-radius:6px;padding:8px;font-size:12px;color:#744210"></div>
         </div>
       </div>
@@ -6632,7 +6790,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
             <div style="font-size:12px;font-weight:700;color:#2c5282">📝 会話訓練 − 貼り付け欄</div>
             <button type="button" onclick="clearStrategyField('f_ai_training')" style="font-size:11px;padding:3px 10px;border:1px solid #bee3f8;border-radius:4px;background:white;cursor:pointer;color:#718096">🗑</button>
           </div>
-          <textarea id="f_ai_training" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('training')"></textarea>
+          <textarea id="f_ai_training" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('training')"></textarea><div id="at_ai_training" class="paste-at"></div>
           <div id="ac_training" style="display:none;margin-top:8px;background:#fffbeb;border:1px solid #f6e05e;border-radius:6px;padding:8px;font-size:12px;color:#744210"></div>
         </div>
       </div>
@@ -6645,7 +6803,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <button type="button" onclick="clearStrategyField('f_analog')" style="font-size:11px;padding:3px 10px;border:1px solid #fefcbf;border-radius:4px;background:white;cursor:pointer;color:#718096">🗑</button>
         </div>
       </div>
-      <textarea id="f_analog" rows="6" placeholder="課長との対面協議メモ・ホワイトボード内容などを記録" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:100px"></textarea>
+      <textarea id="f_analog" rows="6" placeholder="課長との対面協議メモ・ホワイトボード内容などを記録" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:100px"></textarea><div id="analog_at" class="paste-at"></div>
     </div>
   </div>
 
