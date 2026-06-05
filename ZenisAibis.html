@@ -631,6 +631,26 @@ body.is-mob .mob-menu{display:inline-block}
 .zdash .z-minir{text-align:center}
 .zdash .z-minir svg{width:116px;height:116px}
 .zdash .z-minir div{font-size:11px;font-weight:700;margin-top:2px}
+.zdash .z-heroes{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.zdash .z-hero2{width:150px;border-radius:14px;padding:9px 10px 11px;background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid var(--z-line);position:relative;overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,.28)}
+.zdash .z-hero2::before{content:'';position:absolute;left:0;top:0;right:0;height:3px;background:var(--stg)}
+.zdash .z-hero2[data-stg="3"]{border-color:rgba(183,121,31,.55);box-shadow:0 0 22px rgba(183,121,31,.30),0 6px 18px rgba(0,0,0,.3)}
+.zdash .z-hero2[data-stg="2"]{border-color:rgba(49,130,206,.45)}
+.zdash .z-h2-top{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:800;margin-bottom:1px}
+.zdash .z-h2-rank{font-size:14px;color:var(--z-ink)}
+.zdash .z-h2-lv{color:var(--z-dim);font-size:9px;letter-spacing:.5px;font-family:'Sora',sans-serif}
+.zdash .z-h2-lv b{color:var(--ac);font-size:14px;margin-left:3px}
+.zdash .z-h2-radar{position:relative;display:flex;justify-content:center}
+.zdash .z-h2-svg{width:128px;height:128px}
+.zdash .z-h2-emoji{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:23px;filter:drop-shadow(0 2px 5px rgba(0,0,0,.6))}
+.zdash .z-h2-name{text-align:center;font-weight:800;font-size:14px;color:var(--ac);margin-top:1px}
+.zdash .z-h2-type{text-align:center;font-weight:800;font-size:13px;color:var(--stg);line-height:1.2}
+.zdash .z-h2-stars{text-align:center;font-size:11px;color:var(--stg);letter-spacing:2px}
+.zdash .z-h2-stars span{color:var(--z-dim);font-size:9px;letter-spacing:0;margin-left:3px}
+.zdash .z-h2-bar{height:5px;border-radius:3px;background:rgba(255,255,255,.10);overflow:hidden;margin:6px 2px}
+.zdash .z-h2-bar i{display:block;height:100%;background:var(--stg)}
+.zdash .z-h2-foot{display:flex;justify-content:space-between;font-size:9px;color:var(--z-mut);gap:4px}
+.zdash .z-h2-foot span{white-space:nowrap}
 .zdash .z-ksub{font-size:10px;color:var(--z-dim)}
 
 </style>
@@ -1333,7 +1353,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v4.48";
+var APP_VERSION = "v4.49";
 
 // ===== 状態 =====
 var cards = [];
@@ -2457,6 +2477,35 @@ function _radarTypePanel(axes){
     +'<div class="z-sub" style="margin-top:5px;line-height:1.85">発掘量＝新規発掘の件数（30件で満点）／グリップ＝会話レベル4以上の割合／ヒアリング＝基本情報の入力充足度／連想到達＝ステージ3(連想)以上の割合／テスクロ＝連想到達者がステージ4(欲求)以上へ進んだ割合／追客ペース＝ペース遅れでない割合。<br>型＝<b>最も高い軸＝あなたの武器</b>（6種）×<b>総合力の3段階</b>（見習い40未満・一人前40〜69・達人70以上）＝<b>18タイプ</b>。</div></details></div>';
 }
 function _radarAxisHelp(){ return '<details style="margin-top:9px;border-top:1px solid var(--z-line);padding-top:8px"><summary style="cursor:pointer;font-size:11px;color:var(--z-mut);font-weight:700">\ud83d\udd0d \u5404\u8ef8\u306e\u30d5\u30e9\u30b0\uff0f18\u30bf\u30a4\u30d7\u306e\u4ed5\u7d44\u307f</summary><div class="z-sub" style="margin-top:6px;line-height:1.9">\u767a\u6398\u91cf\uff1d\u65b0\u898f\u767a\u6398\u306e\u4ef6\u6570\uff0830\u4ef6\u3067\u6e80\u70b9\uff09\uff0f\u30b0\u30ea\u30c3\u30d7\uff1d\u4f1a\u8a71\u30ec\u30d9\u30eb4\u4ee5\u4e0a\u306e\u5272\u5408\uff0f\u30d2\u30a2\u30ea\u30f3\u30b0\uff1d\u57fa\u672c\u60c5\u5831\u306e\u5165\u529b\u5145\u8db3\u5ea6\uff0f\u9023\u60f3\u5230\u9054\uff1d\u30b9\u30c6\u30fc\u30b83(\u9023\u60f3)\u4ee5\u4e0a\u306e\u5272\u5408\uff0f\u30c6\u30b9\u30af\u30ed\uff1d\u9023\u60f3\u5230\u9054\u8005\u304c\u30b9\u30c6\u30fc\u30b84(\u6b32\u6c42)\u4ee5\u4e0a\u3078\u9032\u3093\u3060\u5272\u5408\uff0f\u8ffd\u5ba2\u30da\u30fc\u30b9\uff1d\u30da\u30fc\u30b9\u9045\u308c\u3067\u306a\u3044\u5272\u5408\u3002<br><b>\u6700\u3082\u9ad8\u3044\u8ef8\uff1d\u6b66\u5668</b>\uff1a\ud83c\udff9\u30cf\u30f3\u30bf\u30fc/\ud83e\udd1d\u30b0\u30ea\u30c3\u30d1\u30fc/\ud83d\udc42\u30ea\u30b9\u30ca\u30fc/\ud83e\udded\u30ca\u30d3\u30b2\u30fc\u30bf\u30fc/\ud83c\udfaf\u30af\u30ed\u30fc\u30b6\u30fc/\ud83c\udfc3\u30c1\u30a7\u30a4\u30b5\u30fc\uff086\u7a2e\uff09<br><b>\u7dcf\u5408\u529b\uff1d\u6bb5\u968e</b>\uff1a<span style="color:#a0aec0">\u898b\u7fd2\u3044</span>(40\u672a\u6e80)\u2192<span style="color:#3182ce">\u4e00\u4eba\u524d</span>(40\u301c69)\u2192<span style="color:#b7791f">\u9054\u4eba</span>(70\u4ee5\u4e0a) \uff1d <b>6\u00d73\uff1d18\u30bf\u30a4\u30d7</b>\u3002\u51f9\u3093\u3060\u8ef8\u304c\u4f38\u3073\u3057\u308d\u3002</div></details>'; }
+function _zRadarHero(axes,color){
+ var cx=70,cy=70,R=44,N=axes.length;
+ function pt(i,r){var a=-Math.PI/2+i*2*Math.PI/N;return [cx+Math.cos(a)*r,cy+Math.sin(a)*r];}
+ var g='';
+ [0.34,0.67,1].forEach(function(s){g+='<polygon points="'+axes.map(function(_x,i){return pt(i,R*s).map(function(z){return z.toFixed(1);}).join(',');}).join(' ')+'" fill="none" stroke="rgba(255,255,255,.10)" stroke-width="1"/>';});
+ axes.forEach(function(_x,i){var p=pt(i,R);g+='<line x1="'+cx+'" y1="'+cy+'" x2="'+p[0].toFixed(1)+'" y2="'+p[1].toFixed(1)+'" stroke="rgba(255,255,255,.07)" stroke-width="1"/>';});
+ var dp=axes.map(function(a,i){return pt(i,R*Math.max(0.05,(+(a[1]||0))/100));});
+ g+='<polygon points="'+dp.map(function(p){return p.map(function(z){return z.toFixed(1);}).join(',');}).join(' ')+'" fill="'+color+'40" stroke="'+color+'" stroke-width="2.2" stroke-linejoin="round"/>';
+ g+=dp.map(function(p){return '<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="2.3" fill="'+color+'"/>';}).join('');
+ g+=axes.map(function(a,i){var p=pt(i,R+11);return '<text x="'+p[0].toFixed(1)+'" y="'+(p[1]+3).toFixed(1)+'" font-size="7.5" fill="#8a97b2" text-anchor="middle">'+e(a[0]).slice(0,2)+'</text>';}).join('');
+ return '<svg viewBox="0 0 140 140" class="z-h2-svg">'+g+'</svg>';
+}
+function _radarHero(name,axes,color,rank){
+ var ty=_salesType(axes);
+ var medal=rank===0?'\u{1F947}':rank===1?'\u{1F948}':rank===2?'\u{1F949}':'#'+(rank+1);
+ var stars='\u2605\u2605\u2605'.slice(0,ty.stage)+'\u2606\u2606\u2606'.slice(0,3-ty.stage);
+ var lv=ty.avg, lo=ty.stage===1?0:ty.stage===2?40:70, hi=ty.stage===1?40:ty.stage===2?70:100;
+ var prog=Math.max(4,Math.min(100,(lv-lo)/(hi-lo)*100));
+ return '<div class="z-hero2" data-stg="'+ty.stage+'" style="--ac:'+color+';--stg:'+ty.color+'">'
+  +'<div class="z-h2-top"><span class="z-h2-rank">'+medal+'</span><span class="z-h2-lv">POWER<b>'+lv+'</b></span></div>'
+  +'<div class="z-h2-radar">'+_zRadarHero(axes,color)+'<div class="z-h2-emoji">'+ty.arche.e+'</div></div>'
+  +'<div class="z-h2-name">'+e(name)+'</div>'
+  +'<div class="z-h2-type">'+ty.label+'</div>'
+  +'<div class="z-h2-stars">'+stars+' <span>'+ty.stageName+'</span></div>'
+  +'<div class="z-h2-bar"><i style="width:'+prog.toFixed(0)+'%"></i></div>'
+  +'<div class="z-h2-foot"><span>\u2694 '+e(axes[ty.domIdx][0])+'</span><span>\u{1F331} '+e(ty.weakAxis)+'</span></div>'
+  +'</div>';
+}
+
 
 function _zFunnel(counts){
   var st=['面識','注意','興味','連想','欲求','比較','信念','決心'];
@@ -5186,12 +5235,12 @@ function renderAnalysis(){
  var bub='<svg class="z-bub" viewBox="0 0 560 230">';t.forEach(function(c){var x=20+calcScore(c)/40*520;var av=(asMap[c.land_asset]||0)+(+(c.m2||0)>=200?2:+(c.m2||0)>=100?1:0);var y=210-av/7*190;var rr=5+calcScore(c)/40*11;var rk=_zRevReg('\ud83d\udc8e \u304a\u5b9d\u5ba2',[{name:c.name,score:calcScore(c),sub:STG[+(c.stage||0)]+'\u30fb'+e(c.manager||'')}]);bub+='<circle cx="'+x.toFixed(0)+'" cy="'+y.toFixed(0)+'" r="'+rr.toFixed(0)+'" fill="'+(RC[c.pursuit_judge]||'#888')+'" opacity=".62" stroke="#fff" stroke-width="1" style="cursor:pointer" onpointerdown="zRevShow(this,\''+rk+'\')" onpointerup="zRevHide()" onpointerleave="zRevHide()" onpointercancel="zRevHide()" oncontextmenu="return false"/>';});bub+='<text x="280" y="228" font-size="9" fill="#6b7894" text-anchor="middle">熱量（スコア）→</text></svg>';
  var ageT=[['〜64',0,64],['65〜74',65,74],['75〜',75,200]];var agH=ageT.map(function(a){var arr=t.filter(function(c){var ag=_zOwnerAge(c);return ag!==null&&ag>=a[1]&&ag<=a[2];});var av2=arr.length?(arr.reduce(function(s,c){return s+ +(c.stage||0);},0)/arr.length).toFixed(1):'0';return '<div class="z-tile"><b>'+arr.length+'</b><span>'+a[0]+'歳／平均St '+av2+'</span></div>';}).join('');var noAge=t.filter(function(c){return _zOwnerAge(c)===null;}).length;
  var pot=Math.round(t.filter(function(c){return c.pursuit_judge==='A'||c.pursuit_judge==='S';}).reduce(function(s,c){return s+(parseFloat(c.rosenka)||0)*1000*(parseFloat(c.m2)||0);},0)/1e8);
- var miniR=board.map(function(b){var a=g[b.r];var ax=[['発掘',Math.min(Math.round(a.length/30*100),100)],['グリ',(function(){var s=0,nn=0;a.forEach(function(c){var l=getKaiwaLevel(c);if(l>=0){s+=l;nn++;}});return nn?Math.round(s/nn/4*100):0;})()],['ヒア',_zPct(a.filter(function(c){return c.family_headcount;}).length,a.length)],['連想',_zPct(a.filter(function(c){return +(c.stage||0)>=3;}).length,a.length)],['テス',_zPct(a.filter(function(c){return +(c.stage||0)>=4;}).length,Math.max(1,a.filter(function(c){return +(c.stage||0)>=3;}).length))],['ペース',100-_zPct(a.filter(function(c){return calcPaceOverrate(c)>1;}).length,a.length)]];var col=_zAVAS[reps.indexOf(b.r)%8];var ty=_salesType(ax);return '<div class="z-minir">'+_zRadarC(ax,col)+'<div style="color:'+col+'">'+e(b.r)+'</div><div style="font-size:9px;color:'+ty.color+';font-weight:800;text-align:center">'+ty.arche.e+ty.label+'</div></div>';}).join('');
+ var miniR=board.map(function(b,_bi){var a=g[b.r];var ax=[['発掘',Math.min(Math.round(a.length/30*100),100)],['グリ',(function(){var s=0,nn=0;a.forEach(function(c){var l=getKaiwaLevel(c);if(l>=0){s+=l;nn++;}});return nn?Math.round(s/nn/4*100):0;})()],['ヒア',_zPct(a.filter(function(c){return c.family_headcount;}).length,a.length)],['連想',_zPct(a.filter(function(c){return +(c.stage||0)>=3;}).length,a.length)],['テス',_zPct(a.filter(function(c){return +(c.stage||0)>=4;}).length,Math.max(1,a.filter(function(c){return +(c.stage||0)>=3;}).length))],['ペース',100-_zPct(a.filter(function(c){return calcPaceOverrate(c)>1;}).length,a.length)]];var col=_zAVAS[reps.indexOf(b.r)%8];return _radarHero(b.r,ax,col,_bi);}).join('');
  H+=_zsec('multi','🔬 多角分析',
    _zc('💎','お宝度マトリクス','熱量×資産規模。右上＝お宝。色＝ランク。泡を長押しで客名。',bub,'z-cf')
   +_zc('🏯','相続緊急度 × 進捗','高齢×低ステージは要対応。','<div class="z-tiles">'+agH+'</div>'+(noAge?'<div class="z-sub" style="margin-top:6px">所有者年齢 未入力 '+noAge+'件</div>':''),'z-c2')
   +_zc('💰','課の総ポテンシャル金額','A・S案件の路線価×面積の概算。','<div style="text-align:center;padding:10px"><div class="z-num" style="font-size:38px;font-weight:800;color:#ffb443">約'+pot+'<span style="font-size:17px">億円</span></div><div class="z-sub">規模感の目安（概算）</div></div>','z-c2')
-  +_zc('🧬','担当スキルレーダー（全員）','最も高い軸×3段階で18タイプに自動分類。色付きチップが各担当の型（段階で色分け）。','<div class="z-minirow">'+miniR+'</div>'+_radarAxisHelp(),'z-cf'));
+  +_zc('🧬','営業タイプ図鑑（全員）','レーダーの形で営業の「型」を判定。武器を伸ばし、達人を目指せ！（6種×3段階＝18タイプ）','<div class="z-heroes">'+miniR+'</div>'+_radarAxisHelp(),'z-cf'));
 
 
  // ===== 担当の特性・保有状況（チーム管理） =====
