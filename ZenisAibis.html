@@ -1271,7 +1271,9 @@ function calcScore(c){
   var laMap={'1億以下':1,'3億以下':2,'5億以下':3,'10億未満':4,'10億以上':5};
   var assetScore=invScore+(laMap[c.land_asset]||0); // 最大10点
 
-  return Math.round(s+r+k+landFinal+famScore+assetScore);
+  // ⑧ 最寄り駅 徒歩区分（〜10分+3 / 21分以上-3）
+  var ekiScore=(c.ekitoho==='〜10分')?3:(c.ekitoho==='21分以上')?-3:0;
+  return Math.max(0, Math.round(s+r+k+landFinal+famScore+assetScore+ekiScore));
 }
 function basicInputStat(c){
   c=c||{};
@@ -1316,7 +1318,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v4.28";
+var APP_VERSION = "v4.31";
 
 // ===== 状態 =====
 var cards = [];
@@ -1711,6 +1713,7 @@ var AIBIS_FAQ=[
   {q:'ソーシャル',a:'ソーシャルスタイルは4タイプだよ！<br><b>ドライバー</b>…決断が早く結果重視。手短に要点を。<br><b>エクスプレッシブ</b>…感情豊か。共感を示して。<br><b>アナリティカル</b>…データ・論理重視。根拠をしっかり。<br><b>エミアブル</b>…協調性が高い。急がせず丁寧に。'},
   {q:'Judgmentって何？',a:'Judgmentはお客様の現状を課長と協議して判定するもの。<br><br>【再訪Judgment】追客開始 / 継続訪問 / 打ち切り の3択<br>【追撃Judgment】A見込み / 訪問継続 / 打ち切り の3択<br><br>🔒 再訪Judgmentは再訪3回目（日付・訪問内容・録音要約のいずれか）を記録すると押せるよ。追撃カードの発行には先に再訪Judgmentが必要。15回超の追撃追加には追撃Judgmentが必要。<br>ボタンはもう一度押すと選択解除（未選択ならAIの判定を優先）。A見込み=A・訪問継続=B・打ち切り=X。<br><br>必ず課長との協議のうえで選択してね！'},
   {q:'スコアってどう計算するの？',a:function(){return isMgrUnlocked()?'ステージ8点＋会話状況10点＋追客ランク7点＋土地面積5点（路線価補正）＋資産背景10点＋KP面談2点の合計で約40点満点！上り込み・100〜200坪の土地・資産背景が大きいお客様ほど高得点になるよ。スコア順の並び替えで今週誰に行くべきかが一目でわかるよ📊':'スコアは「今週どのお客様を優先するか」を見やすくする並び替え用の目安だよ📊 細かい配点は内部設定なので、まずはスコア順の上位から動いてみてね！';}},
+  {q:'駅徒歩フラグって何？',a:'計画地の最寄り駅からの徒歩区分だよ🚉 計画地の「🚉最寄り駅 徒歩」ボタンをタップで 未確認→〜10分→〜20分→21分以上 と切り替わるよ（同行ボタンと同じ要領）。〜10分は加点(+3)、21分以上は減点(-3)＆赤フラグ（一覧・課分析にも表示）。分数は地図で一度確認して印を付けるだけでOK😊'},
   {q:'現在地ボタンって何？',a:'初訪タブの住所欄の下にある📍現在地取得ボタン！GPSで現在地を取得して住所をクリップボードにコピーするよ。訪問先でそのまま貼り付けて使えるね😊'},
   {q:'家族構成ってどう入れるの？',a:'初訪タブの「家族構成」セクションから入力できるよ！<br><br>＋ボタンで追加→続柄・氏名・年齢・居住形態を入力<br>★所有者 / KP（キーパーソン）/ 面談済 も記録できるよ<br>スタンス（ポジティブ/ネガティブ）も記録して戦略に活かしてね！<br>👶 子世代・兄弟姉妹は婚姻状況と子の人数も記録できるよ（相続人の把握に役立つ）。'},
   {q:'課分析ダッシュボードって何？',a:function(){ return isMgrUnlocked()?'管理職のPC版でのみ使える「コマンドセンター」だよ📊<br><br>・KPIスコアカード（新規発掘の月次トレンド／課スコア平均／連想以上率／ペース遅れ）<br>・💼 契約クローズ・トラッカー（契約に近い案件＝今フォローすべき的を近接度順に）<br>・🔻 購買心理ファネル（転換率つき）<br>・🏆 担当リーダーボード<br>・🌡 チーム・ヒートマップ（担当×指標、赤が要フォロー）<br>・🧠 傾向と対策（AIインサイト）<br><br>担当者セレクトで個人・全体を切替。「🤖 分析用に抽出」→「🤖 AI分析」でCopilotに課分析も依頼できるよ。':'それは課長・支店長向けの機能だよ😊 担当のみんなは「🔭 見込み分析」で自分の見込みをチェックしてね！'; }},
@@ -2759,6 +2762,7 @@ function renderCards() {
     karr.forEach(function(v){ var idx=KAIWA_LABELS.indexOf(v); if(idx>kmax) kmax=idx; });
     var kTag=kmax>=0?'<span style="font-size:11px;font-weight:600;padding:2px 7px;border-radius:10px;background:'+KAIWA_COLORS[kmax]+'20;color:'+KAIWA_COLORS[kmax]+';border:1px solid '+KAIWA_COLORS[kmax]+'50;white-space:nowrap">💬 '+KAIWA_LABELS[kmax]+'</span>':'';
     var pj=c.pursuit_judge||'';
+    var ekiTag=(c.ekitoho==='21分以上')?'<span style="font-size:11px;font-weight:700;padding:1px 7px;border-radius:8px;background:#fdecec;color:#c53030;border:1px solid #f5b5b5">🚶21分+</span>':'';
     var pjColor=RANK_COLOR[pj]||'#cbd5e0';
     var pjTag='<span style="font-size:12px;font-weight:900;padding:1px 8px;border-radius:8px;background:'+pjColor+'18;color:'+(pj?pjColor:'#aaa')+';border:1.5px solid '+pjColor+'60;min-width:22px;text-align:center;flex-shrink:0">'+(pj?pj:'—')+'</span>';
     var arcTag=isArc?'<span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:8px;background:#e2e8f0;color:#718096">📦 アーカイブ</span>':'';
@@ -2775,6 +2779,7 @@ function renderCards() {
       +'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
       +pjTag
       +'<span class="lstage" style="background:'+sc+'18;color:'+sc+';border:1px solid '+sc+'40">'+sl+'</span>'
+      +ekiTag
       +'<span style="font-size:12px;color:#718096">'+e(c.address||'')+'</span>'
       +(lv?'<span style="font-size:11px;color:#a0aec0;margin-left:auto">🚶 '+lv+'</span>':'')
       +(kTag?'<span style="margin-left:auto">'+kTag+'</span>':'')
@@ -2953,7 +2958,7 @@ function mkBlank() {
     revisits:[{num:1,date:'',appo:'',content:'',instruction:''},{num:2,date:'',appo:'',content:'',instruction:''},{num:3,date:'',appo:'',content:'',instruction:''}],
     revisit_judge_date:'', revisit_judge:'',
     pursuits:[], pursuit_judge_date:'', pursuit_judge:'', pursuit_judge_sel:'', pursuit_judge_ai:'',
-    ai_memo:'', family_headcount:false, family_bikou:'', doukou:false, mgr_involve:'単独', asset_type:false,
+    ai_memo:'', family_headcount:false, family_bikou:'', doukou:false, mgr_involve:'単独', asset_type:false, ekitoho:'',
     created_at:new Date().toISOString(), updated_at:new Date().toISOString()
   };
 }
@@ -3098,7 +3103,7 @@ function fillForm(c) {
   // 最優先事項・備考
   var sm=document.getElementById('f_ai_summary'); if(sm) sm.value=c.ai_summary||'';
   var memo=document.getElementById('f_ai_memo'); if(memo) memo.value=c.ai_memo||'';
-  updTsubo(); updChiku(); updateFamHeadcountBtn(); updateDoukouBtn(); if(window.updateRyokuchiBtn) window.updateRyokuchiBtn(); if(window.applyAssetSeal) applyAssetSeal(); if(window.updateTabProgress) updateTabProgress(); if(window.updatePlanSvBtn) updatePlanSvBtn(); if(window.AibisVoice) window.AibisVoice.refresh();
+  updTsubo(); updChiku(); updateFamHeadcountBtn(); updateDoukouBtn(); if(window.updateEkitohoBtn) updateEkitohoBtn(); if(window.updateRyokuchiBtn) window.updateRyokuchiBtn(); if(window.applyAssetSeal) applyAssetSeal(); if(window.updateTabProgress) updateTabProgress(); if(window.updatePlanSvBtn) updatePlanSvBtn(); if(window.AibisVoice) window.AibisVoice.refresh();
 }
 
 function collectForm() {
@@ -5033,6 +5038,8 @@ function renderAnalysis(){
  var saLate=cards.filter(function(c){return (c.pursuit_judge==='A'||c.pursuit_judge==='S')&&calcPaceOverrate(c)>1;}).length;
  var ins='';
  ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(255,93,125,.16)">⚠</div><div><b>失速ポイントは「'+STG[slow]+'」段<span class="z-pill" style="background:rgba(255,93,125,.16);color:#ff5d7d">PACE</span></b><p>この段の滞留が最長。'+STG[slow]+'を越える一手（提案依頼・連れ出し）を朝礼で共有を。</p></div></div>';
+ var ekiFar=t.filter(function(c){return c.ekitoho==='21分以上';}).length;
+ if(ekiFar>0) ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(255,93,125,.16)">🚶</div><div><b>駅遠（徒歩21分以上）が'+ekiFar+'件<span class="z-pill" style="background:rgba(255,93,125,.16);color:#ff5d7d">EKI</span></b><p>賃貸需要が弱くなりがち。駐車場・特化型など計画地に合う提案を検討。</p></div></div>';
  if(saLate>0) ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(255,180,67,.16)">⏱</div><div><b>A・Sの放置が'+saLate+'件<span class="z-pill" style="background:rgba(255,180,67,.16);color:#ffb443">CLOSE</span></b><p>契約に近い客がご無沙汰。今週中にクロージング判断を。</p></div></div>';
  if(pingStat.length&&pingStat[0].v>=40) ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(74,168,255,.16)">🤝</div><div><b>'+e(pingStat[0].r)+'さん：ピンポン止まり'+pingStat[0].v+'%<span class="z-pill" style="background:rgba(74,168,255,.16);color:#4aa8ff">GRIP</span></b><p>同行1回で「立ち話→玄関内」の突破を実演すると効果大。</p></div></div>';
  ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(155,225,93,.16)">✅</div><div><b>フル稼働まであと'+(reps.length-active.length)+'人<span class="z-pill" style="background:rgba(155,225,93,.16);color:#9be15d">TEAM</span></b><p>未稼働の担当へ1声。全員が動くと発掘量が跳ね上がる。</p></div></div>';
@@ -6162,6 +6169,24 @@ function updateDoukouBtn(){
   btn.textContent=s.t; btn.style.background=s.bg; btn.style.borderColor=s.bd; btn.style.color=s.fg; btn.style.boxShadow=s.sh;
 }
 window.toggleDoukou=toggleDoukou; window.updateDoukouBtn=updateDoukouBtn;
+function toggleEkitoho(){
+  if(!cur) return;
+  var order=['','〜10分','〜20分','21分以上'];
+  var i=order.indexOf(cur.ekitoho||''); i=(i+1)%order.length;
+  cur.ekitoho=order[i];
+  updateEkitohoBtn();
+}
+function updateEkitohoBtn(){
+  var btn=document.getElementById('ekitohoBtn'); if(!btn) return;
+  var lv=cur?(cur.ekitoho||''):'';
+  var map={'':{t:'🚉 未確認',bg:'white',bd:'#cbd5e0',fg:'#718096',sh:'none'},
+   '〜10分':{t:'🚶 〜10分',bg:'linear-gradient(135deg,#38a169,#2f855a)',bd:'#2f855a',fg:'#fff',sh:'0 2px 6px rgba(47,133,90,.3)'},
+   '〜20分':{t:'🚲 〜20分',bg:'white',bd:'#3182ce',fg:'#3182ce',sh:'none'},
+   '21分以上':{t:'🚗 21分以上',bg:'linear-gradient(135deg,#e53e3e,#c53030)',bd:'#c53030',fg:'#fff',sh:'0 2px 6px rgba(197,48,48,.3)'}};
+  var sm=map[lv]||map[''];
+  btn.textContent=sm.t; btn.style.background=sm.bg; btn.style.borderColor=sm.bd; btn.style.color=sm.fg; btn.style.boxShadow=sm.sh;
+}
+window.toggleEkitoho=toggleEkitoho; window.updateEkitohoBtn=updateEkitohoBtn;
 function onEmailDomainChange(){
   var sel=document.getElementById('f_email_domain'); var cust=document.getElementById('f_email_domain_custom');
   if(!sel||!cust) return;
@@ -6286,6 +6311,11 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
         <button type="button" class="bc" style="padding:8px;font-size:12px" onclick="mapRoute()">🚗 計画地から自宅</button>
         <button type="button" class="bc" style="padding:8px;font-size:12px" onclick="mapStation()">🚉 計画地から最寄り駅</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+        <span style="font-size:12px;color:#4a5568;flex-shrink:0">🚉 最寄り駅 徒歩</span>
+        <button type="button" id="ekitohoBtn" onclick="toggleEkitoho()" style="flex-shrink:0;padding:9px 18px;border:2px solid #cbd5e0;border-radius:7px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:13px;color:#718096;white-space:nowrap;min-height:40px;min-width:104px">🚉 未確認</button>
+        <span style="font-size:10px;color:#a0aec0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">タップで切替</span>
       </div>
     </div>
     <!-- 購買ステージ + 資産背景 -->
