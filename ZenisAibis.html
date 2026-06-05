@@ -1353,7 +1353,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v4.49";
+var APP_VERSION = "v4.50";
 
 // ===== 状態 =====
 var cards = [];
@@ -2644,6 +2644,8 @@ function renderSelfDash(){
  var H='<div class="zdash zdash-rep"><div class="z-bento">';
  H+='<div class="z-card z-hero z-cf"><div class="z-ring" style="--p:'+renso+'"><div class="z-ring-in"><b>'+renso+'<small>%</small></b><span>連想到達率</span></div></div><div class="z-hmeta"><div class="z-lv">'+lvl[0]+' ・ '+lvl[1]+'</div><h2>'+e(uName||'あなた')+'さんの GROWTH DASHBOARD</h2><div class="z-chips"><span class="z-chip">担当 <b>'+n+'</b>件</span><span class="z-chip">連想到達 <b>'+conn+'</b>件</span><span class="z-chip">入力充実 <b>'+inputAvg+'</b>%</span><span class="z-chip">平均 <b>'+avg+'</b></span></div></div></div>';
  H+='<div class="z-card z-c2"><h3>🧭 スキルレーダー</h3><div class="z-sub">凹んだ軸が伸びしろ。</div><div class="z-radar-wrap"><svg class="z-radar" viewBox="0 0 200 200">'+_zRadar(axes).replace(/^<svg[^>]*>|<\/svg>$/g,'')+'</svg><div class="z-radar-leg">'+leg+'</div></div>'+_radarTypePanel(axes)+'</div>';
+ var _myNow=_kpi3Now(mine);
+ H+='<div class="z-card z-cf"><h3>📌 重要3指標トレンド（直近6ヶ月）</h3><div class="z-sub">提案依頼・同行・家族構成コンプの月別件数。今月：提案 '+_myNow[0]+'・同行 '+_myNow[1]+'・家族 '+_myNow[2]+'。<br><span style="color:var(--z-dim)">※家族構成は人数把握まで。氏名・年齢・職業まで深掘りを。</span></div>'+_kpi3Chart(mine)+'</div>';
  H+='<div class="z-card z-c2"><h3>🔻 マイ・パイプライン <span style="font-size:10px;color:var(--z-dim)">転換率つき</span></h3><div class="z-sub">連想(3)の壁を越えているか。</div>'+_zFunnel(sc)+'</div>';
  H+='<div class="z-card z-cf"><h3>📈 活動の足あと（直近12ヶ月）</h3><div class="z-sub">発掘・訪問・アポの月別量。右肩上がりが努力の証。</div>'+_zLine([{data:mDisc,color:'#2f9e44'},{data:mVis,color:'#1971c2'},{data:mApo,color:'#e8920c'}])+'<div class="z-legend"><span><i style="background:#9be15d"></i>発掘</span><span><i style="background:#4aa8ff"></i>訪問</span><span><i style="background:#ffb443"></i>アポ</span></div><div class="z-sub" style="margin:8px 0 2px">累計発掘（積み上がり）</div>'+_zLine([{data:cum,color:'#0c8599'}])+'</div>';
  H+='<div class="z-card z-c2"><h3>⏱ 45日契約クロック</h3><div class="z-sub">A昇格(追撃判定)から45日が契約の目安。赤は超過。</div>'+(myA.length?myA.map(function(o){var p=Math.max(0,Math.min(100,(45-o.left)/45*100));var col=o.left<0?'#e03131':o.left<=10?'#e8920c':'#2f9e44';return '<div class="z-clock"><div class="z-cdays" style="color:'+col+'">'+(o.left<0?'超過':'残'+o.left)+'</div><div class="z-cbar"><i style="width:'+p+'%;background:'+col+'"></i></div><div class="z-who" style="width:84px"><b>'+e(o.c.name||'無名')+'様</b><span>'+['面識','注意','興味','連想','欲求','比較','信念','決心'][+(o.c.stage||0)]+'・'+e(o.c.pursuit_judge||'')+'</span></div></div>';}).join(''):'<div class="z-sub">A・S案件が出ると表示されます</div>')+'</div>';
@@ -2651,10 +2653,8 @@ function renderSelfDash(){
  H+='<div class="z-card z-c2"><h3>🎯 今日の3手</h3><div class="z-sub">迷ったらここから。</div>'+q.slice(0,3).map(function(x){return '<div class="z-quest"><div class="z-qic" style="background:'+x[0]+'">'+x[1]+'</div><div class="z-qbd"><b>'+x[2]+'</b><p>'+x[3]+'</p></div></div>';}).join('')+'</div>';
  H+='<div class="z-card z-spar z-c2"><h3>🥊 今日の壁打ちワーク</h3><div class="z-sub">AI相手に1問だけ自問自答。</div><div class="z-q">「連想まで来た<em>'+e(spar)+'様</em>に、<em>提案依頼の許可</em>を取る最初の一言は？」</div>'+(isMob?'<div style="font-size:11px;color:var(--z-mut)">PC（Chrome）でAI壁打ち＆印刷が使えます。</div>':'<button class="z-btn-spar" onclick="copySelfPrompt();openCopilot()">🥊 AIと壁打ちする</button>')+'</div>';
  if(!isMob){ H+='<div class="z-card z-cf"><h3>💭 AI分析結果（貼り付け）</h3><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"><button class="z-mini" onclick="copySelfPrompt()">🤖 分析用に抽出</button><button class="z-mini" onclick="openCopilot()">🤖 AI分析</button><button class="z-mini" onclick="printSelfReport()">🖨 印刷</button><span id="selfMemoAt" style="margin-left:auto;align-self:center;font-size:11px;font-weight:700;color:#2f9e44;white-space:nowrap"></span><button class="z-mini" onclick="clearSelfMemo()" style="background:none;border:1px solid #fc8181;color:#c53030">🗑 削除</button></div><textarea id="selfAnalysisMemo" placeholder="AIの分析結果をここに貼り付け（印刷に使われます）" oninput="saveSelfMemo()"></textarea></div>'; }
- var _myNow=_kpi3Now(mine);
  H+='<div class="z-card z-c2"><h3>🌳 生産緑地 保有率</h3>'+_ryokuchiRing(mine)+'</div>';
  H+='<div class="z-card z-c2"><h3>🥧 現況の内訳</h3><div class="z-sub">担当先の現状区分の分布。</div>'+_genjoPie(mine)+'</div>';
- H+='<div class="z-card z-cf"><h3>📌 重要3指標トレンド（直近6ヶ月）</h3><div class="z-sub">提案依頼・同行・家族構成コンプの月別件数。今月：提案 '+_myNow[0]+'・同行 '+_myNow[1]+'・家族 '+_myNow[2]+'。<br><span style="color:var(--z-dim)">※家族構成は人数把握まで。氏名・年齢・職業まで深掘りを。</span></div>'+_kpi3Chart(mine)+'</div>';
  H+='</div></div>';
  host.innerHTML=H;
  if(!isMob) loadSelfMemo();
@@ -5187,6 +5187,11 @@ function renderAnalysis(){
   +'<div class="z-card z-kpi z-c1"><span class="z-klab">課スコア平均</span><div class="z-kval z-num" style="color:#8b7cff">'+avg+'<small>/40</small></div><div class="z-ksub">対象 '+n+'件</div></div>'
   +'<div class="z-card z-kpi z-c1"><span class="z-klab">連想以上 率</span><div class="z-kval z-num" style="color:#9be15d">'+_zPct(conn,n)+'<small>%</small></div><div class="z-ksub">'+conn+'件</div></div>'
   +'<div class="z-card z-kpi z-c1"><span class="z-klab">ペース遅れ</span><div class="z-kval z-num" style="color:#ff5d7d">'+late+'<small>件</small></div><div class="z-ksub">'+_zPct(late,n)+'%</div></div></div>';
+ var _k3=reps.map(function(r){var cc=_kpi3Now(g[r]);return {r:r,p:cc[0],d:cc[1],f:cc[2],tot:cc[0]+cc[1]+cc[2]};}).sort(function(a,b){return b.tot-a.tot;});
+ var _k3rows=_k3.some(function(x){return x.tot>0;})?_k3.map(function(x,i){return '<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--z-line)"><div style="width:20px;height:20px;border-radius:50%;background:'+_zAVAS[reps.indexOf(x.r)%8]+';color:#06121f;font-weight:800;font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(i+1)+'</div><div style="width:70px;flex-shrink:0;font-weight:700;font-size:12px;color:var(--z-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e(x.r)+'</div><div style="display:flex;gap:9px;margin-left:auto;flex-shrink:0;align-items:center">'+[['#e03131',x.p],['#2f9e44',x.d],['#efc010',x.f]].map(function(m){return '<div style="font-size:15px;font-weight:800;color:'+m[0]+';min-width:24px;text-align:center">'+m[1]+'</div>';}).join('')+'<div style="font-weight:800;color:var(--z-ink);font-size:13px;min-width:30px;text-align:right;border-left:1px solid var(--z-line);padding-left:8px">'+x.tot+'</div></div></div>';}).join('')+'<div class="z-legend" style="margin-top:7px"><span><i style="background:#e03131"></i>提案依頼</span><span><i style="background:#2f9e44"></i>同行</span><span><i style="background:#efc010"></i>家族構成</span></div>':'<div class="z-empty">今月の記録がまだありません（各項目を設定すると当月から計上）</div>';
+ H+=_zsec('kpi3','📌 重要3指標（提案依頼・同行・家族構成）',
+   _zc('🏆','今月の重要3指標ランキング','今月件数で順位。※家族構成コンプは人数把握まで。氏名・年齢・職業の深掘りが本来の狙い。',_k3rows,'z-c2')
+  +_zc('📈','重要3指標トレンド（直近6ヶ月）','3指標を重ねて推移。提案=赤・同行=緑・家族=黄。',_kpi3Chart(t),'z-c2'));
  H+=workMeterSection();
  // process
  var mVis=_zMonthly(t,_zVisitDates), mApo=_zMonthly(t,_zAppoDates), cum=[],r0=0;mDisc.forEach(function(v){r0+=v;cum.push(r0);});
@@ -5238,6 +5243,8 @@ function renderAnalysis(){
  var miniR=board.map(function(b,_bi){var a=g[b.r];var ax=[['発掘',Math.min(Math.round(a.length/30*100),100)],['グリ',(function(){var s=0,nn=0;a.forEach(function(c){var l=getKaiwaLevel(c);if(l>=0){s+=l;nn++;}});return nn?Math.round(s/nn/4*100):0;})()],['ヒア',_zPct(a.filter(function(c){return c.family_headcount;}).length,a.length)],['連想',_zPct(a.filter(function(c){return +(c.stage||0)>=3;}).length,a.length)],['テス',_zPct(a.filter(function(c){return +(c.stage||0)>=4;}).length,Math.max(1,a.filter(function(c){return +(c.stage||0)>=3;}).length))],['ペース',100-_zPct(a.filter(function(c){return calcPaceOverrate(c)>1;}).length,a.length)]];var col=_zAVAS[reps.indexOf(b.r)%8];return _radarHero(b.r,ax,col,_bi);}).join('');
  H+=_zsec('multi','🔬 多角分析',
    _zc('💎','お宝度マトリクス','熱量×資産規模。右上＝お宝。色＝ランク。泡を長押しで客名。',bub,'z-cf')
+  +_zc('🌳','生産緑地 保有率（データ）','',_ryokuchiRing(t),'z-c2')
+  +_zc('🥧','現況（現状）の内訳（データ）','現状区分の分布。',_genjoPie(t),'z-c2')
   +_zc('🏯','相続緊急度 × 進捗','高齢×低ステージは要対応。','<div class="z-tiles">'+agH+'</div>'+(noAge?'<div class="z-sub" style="margin-top:6px">所有者年齢 未入力 '+noAge+'件</div>':''),'z-c2')
   +_zc('💰','課の総ポテンシャル金額','A・S案件の路線価×面積の概算。','<div style="text-align:center;padding:10px"><div class="z-num" style="font-size:38px;font-weight:800;color:#ffb443">約'+pot+'<span style="font-size:17px">億円</span></div><div class="z-sub">規模感の目安（概算）</div></div>','z-c2')
   +_zc('🧬','営業タイプ図鑑（全員）','レーダーの形で営業の「型」を判定。武器を伸ばし、達人を目指せ！（6種×3段階＝18タイプ）','<div class="z-heroes">'+miniR+'</div>'+_radarAxisHelp(),'z-cf'));
@@ -5274,13 +5281,6 @@ function renderAnalysis(){
   +_zc('📝','入力充実度（担当別）','カードの作り込み度。低い担当は質のフォローを。',_zVbars(inpBars,reps.map(function(r){return r.slice(0,1);}),inpBars.map(function(v){return v>=70?'#2f9e44':v>=50?'#ffb443':'#ff5d7d';})),'z-c2')
   +_zc('🕳','未入力の傾向（課全体）','どの項目が抜けやすいか。高い＝チームの弱点。',_zVbars(blankRates,FCHK.map(function(f){return f[0];}),blankRates.map(function(){return '#ff8aa0';})),'z-c2')
   +_zc('🧬','担当の特性（自動所見）','カード全体から見た各担当のタイプ。',traitRows||'<div class="z-sub">担当データなし</div>','z-cf'));
- var _k3=reps.map(function(r){var cc=_kpi3Now(g[r]);return {r:r,p:cc[0],d:cc[1],f:cc[2],tot:cc[0]+cc[1]+cc[2]};}).sort(function(a,b){return b.tot-a.tot;});
- var _k3rows=_k3.some(function(x){return x.tot>0;})?_k3.map(function(x,i){return '<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--z-line)"><div style="width:20px;height:20px;border-radius:50%;background:'+_zAVAS[reps.indexOf(x.r)%8]+';color:#06121f;font-weight:800;font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(i+1)+'</div><div style="width:70px;flex-shrink:0;font-weight:700;font-size:12px;color:var(--z-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e(x.r)+'</div><div style="display:flex;gap:9px;margin-left:auto;flex-shrink:0;align-items:center">'+[['#e03131',x.p],['#2f9e44',x.d],['#efc010',x.f]].map(function(m){return '<div style="font-size:15px;font-weight:800;color:'+m[0]+';min-width:24px;text-align:center">'+m[1]+'</div>';}).join('')+'<div style="font-weight:800;color:var(--z-ink);font-size:13px;min-width:30px;text-align:right;border-left:1px solid var(--z-line);padding-left:8px">'+x.tot+'</div></div></div>';}).join('')+'<div class="z-legend" style="margin-top:7px"><span><i style="background:#e03131"></i>提案依頼</span><span><i style="background:#2f9e44"></i>同行</span><span><i style="background:#efc010"></i>家族構成</span></div>':'<div class="z-empty">今月の記録がまだありません（各項目を設定すると当月から計上）</div>';
- H+=_zsec('kpi3','📌 重要3指標（同行・家族構成・提案依頼）',
-   _zc('🌳','生産緑地 保有率','',_ryokuchiRing(t),'z-c2')
-  +_zc('🥧','現況（現状）の内訳','現状区分の分布。',_genjoPie(t),'z-c2')
-  +_zc('🏆','今月の重要3指標ランキング','今月件数で順位。※家族構成コンプは人数把握まで。氏名・年齢・職業の深掘りが本来の狙い。',_k3rows,'z-c2')
-  +_zc('📈','重要3指標トレンド（直近6ヶ月）','3指標を重ねて推移。提案=赤・同行=緑・家族=黄。',_kpi3Chart(t),'z-c2'));
  // insights
  var pingStat=reps.map(function(r){var a=g[r],T=a.length||1;return {r:r,v:_zPct(a.filter(function(c){return getKaiwaLevel(c)===0;}).length,T),n:a.length};}).filter(function(o){return o.n>=3;}).sort(function(a,b){return b.v-a.v;});
  var saLate=cards.filter(function(c){return (c.pursuit_judge==='A'||c.pursuit_judge==='S')&&calcPaceOverrate(c)>1;}).length;
