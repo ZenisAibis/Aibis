@@ -606,11 +606,22 @@ body.is-mob .mob-menu{display:inline-block}
 .zdash .z-toggle{display:inline-flex;background:var(--z-panel2);border:1px solid var(--z-line);border-radius:9px;padding:3px;gap:3px;float:right}
 .zdash .z-toggle button{font-family:inherit;font-size:11px;font-weight:700;color:var(--z-mut);background:none;border:none;padding:5px 12px;border-radius:7px;cursor:pointer}
 .zdash .z-toggle button.on{background:var(--z-cyan);color:#06121f}
-.zdash .z-areagrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:7px}
-.zdash .z-area{padding:9px;border-radius:10px;text-align:center;color:#06121f}
-.zdash .z-area b{font-family:'Sora',sans-serif;font-size:17px;font-weight:800;display:block}
-.zdash .z-area span{font-size:9.5px;font-weight:700}
+.zdash .z-areagrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:5px}
+.zdash .z-area{padding:6px 4px;border-radius:8px;text-align:center;color:#06121f;cursor:pointer;position:relative;-webkit-user-select:none;user-select:none;touch-action:none}
+.zdash .z-area b{font-family:'Sora',sans-serif;font-size:14px;font-weight:800;display:block;line-height:1.05}
+.zdash .z-area span{font-size:8px;font-weight:700;line-height:1.05;display:block;word-break:break-all}
 .zdash .z-area.z-unk{background:rgba(255,255,255,.06)!important;color:var(--z-mut)!important;border:1px dashed var(--z-line)}
+.z-reveal-pop{position:fixed;z-index:99999;min-width:148px;max-width:260px;background:linear-gradient(160deg,rgba(22,32,52,.97),rgba(13,21,37,.98));border:1px solid rgba(120,150,200,.35);border-radius:13px;padding:10px 12px;box-shadow:0 16px 44px rgba(0,0,0,.55);color:#eaf0fb;opacity:0;transform:translateY(8px) scale(.96);transition:opacity .16s ease,transform .18s ease;pointer-events:none}
+.z-reveal-pop.on{opacity:1;transform:translateY(0) scale(1)}
+.z-reveal-pop .z-rev-h{font-size:11px;font-weight:800;color:#9fb3d6;letter-spacing:.4px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.z-reveal-pop .z-rev-h em{font-size:9px;color:#6b7d9e;font-weight:700;font-style:normal}
+.z-reveal-pop .z-rev-row{display:flex;align-items:center;gap:7px;padding:4px 0;border-bottom:1px solid rgba(120,150,200,.12)}
+.z-reveal-pop .z-rev-row:last-child{border-bottom:none}
+.z-reveal-pop .z-rev-rk{width:16px;height:16px;border-radius:50%;background:rgba(120,150,200,.28);font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.z-reveal-pop .z-rev-nm{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.z-reveal-pop .z-rev-sub{font-size:9px;color:#8aa0c4;flex-shrink:0}
+.z-reveal-pop .z-rev-sc{font-size:11px;font-weight:800;color:#ffd479;margin-left:auto;flex-shrink:0}
+.z-reveal-pop .z-rev-more{font-size:9px;color:#6b7d9e;text-align:center;margin-top:6px}
 /* bubble / mini radar */
 .zdash .z-bub{width:100%;height:220px}
 .zdash .z-minirow{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
@@ -1319,7 +1330,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v4.44";
+var APP_VERSION = "v4.45";
 
 // ===== 状態 =====
 var cards = [];
@@ -2442,6 +2453,7 @@ function _radarTypePanel(axes){
     +'<details style="margin-top:6px"><summary style="cursor:pointer;font-size:11px;color:var(--z-mut)">🔍 各軸が何で決まる？／タイプの仕組み</summary>'
     +'<div class="z-sub" style="margin-top:5px;line-height:1.85">発掘量＝新規発掘の件数（30件で満点）／グリップ＝会話レベル4以上の割合／ヒアリング＝基本情報の入力充足度／連想到達＝ステージ3(連想)以上の割合／テスクロ＝連想到達者がステージ4(欲求)以上へ進んだ割合／追客ペース＝ペース遅れでない割合。<br>型＝<b>最も高い軸＝あなたの武器</b>（6種）×<b>総合力の3段階</b>（見習い40未満・一人前40〜69・達人70以上）＝<b>18タイプ</b>。</div></details></div>';
 }
+function _radarAxisHelp(){ return '<details style="margin-top:9px;border-top:1px solid var(--z-line);padding-top:8px"><summary style="cursor:pointer;font-size:11px;color:var(--z-mut);font-weight:700">\ud83d\udd0d \u5404\u8ef8\u306e\u30d5\u30e9\u30b0\uff0f18\u30bf\u30a4\u30d7\u306e\u4ed5\u7d44\u307f</summary><div class="z-sub" style="margin-top:6px;line-height:1.9">\u767a\u6398\u91cf\uff1d\u65b0\u898f\u767a\u6398\u306e\u4ef6\u6570\uff0830\u4ef6\u3067\u6e80\u70b9\uff09\uff0f\u30b0\u30ea\u30c3\u30d7\uff1d\u4f1a\u8a71\u30ec\u30d9\u30eb4\u4ee5\u4e0a\u306e\u5272\u5408\uff0f\u30d2\u30a2\u30ea\u30f3\u30b0\uff1d\u57fa\u672c\u60c5\u5831\u306e\u5165\u529b\u5145\u8db3\u5ea6\uff0f\u9023\u60f3\u5230\u9054\uff1d\u30b9\u30c6\u30fc\u30b83(\u9023\u60f3)\u4ee5\u4e0a\u306e\u5272\u5408\uff0f\u30c6\u30b9\u30af\u30ed\uff1d\u9023\u60f3\u5230\u9054\u8005\u304c\u30b9\u30c6\u30fc\u30b84(\u6b32\u6c42)\u4ee5\u4e0a\u3078\u9032\u3093\u3060\u5272\u5408\uff0f\u8ffd\u5ba2\u30da\u30fc\u30b9\uff1d\u30da\u30fc\u30b9\u9045\u308c\u3067\u306a\u3044\u5272\u5408\u3002<br><b>\u6700\u3082\u9ad8\u3044\u8ef8\uff1d\u6b66\u5668</b>\uff1a\ud83c\udff9\u30cf\u30f3\u30bf\u30fc/\ud83e\udd1d\u30b0\u30ea\u30c3\u30d1\u30fc/\ud83d\udc42\u30ea\u30b9\u30ca\u30fc/\ud83e\udded\u30ca\u30d3\u30b2\u30fc\u30bf\u30fc/\ud83c\udfaf\u30af\u30ed\u30fc\u30b6\u30fc/\ud83c\udfc3\u30c1\u30a7\u30a4\u30b5\u30fc\uff086\u7a2e\uff09<br><b>\u7dcf\u5408\u529b\uff1d\u6bb5\u968e</b>\uff1a<span style="color:#a0aec0">\u898b\u7fd2\u3044</span>(40\u672a\u6e80)\u2192<span style="color:#3182ce">\u4e00\u4eba\u524d</span>(40\u301c69)\u2192<span style="color:#b7791f">\u9054\u4eba</span>(70\u4ee5\u4e0a) \uff1d <b>6\u00d73\uff1d18\u30bf\u30a4\u30d7</b>\u3002\u51f9\u3093\u3060\u8ef8\u304c\u4f38\u3073\u3057\u308d\u3002</div></details>'; }
 
 function _zFunnel(counts){
   var st=['面識','注意','興味','連想','欲求','比較','信念','決心'];
@@ -2456,6 +2468,10 @@ function _zFunnel(counts){
   return h;
 }
 function _zHeat(v){ var t=Math.max(0,Math.min(100,v))/100; var r=Math.round(255*(1-t)+90*t),g=Math.round(93*(1-t)+225*t),b=Math.round(125*(1-t)+93*t); return 'rgba('+r+','+g+','+b+',.85)'; }
+var _zRev={},_zRevSeq=0;
+function _zRevReg(title,items){ var k='zr'+(_zRevSeq++); _zRev[k]={t:title,a:items}; return k; }
+window.zRevShow=function(el,k){ var d=_zRev[k]; if(!d||!d.a.length) return; var pop=document.getElementById('zRevPop'); if(!pop){pop=document.createElement('div');pop.id='zRevPop';pop.className='z-reveal-pop';document.body.appendChild(pop);} var top=d.a.slice().sort(function(a,b){return (b.score||0)-(a.score||0);}); var multi=d.a.length>1; var show=top.slice(0,5),more=top.length-show.length; pop.innerHTML='<div class="z-rev-h">'+e(d.t||'\u8a72\u5f53\u306e\u304a\u5ba2\u69d8')+(multi?'<em>'+d.a.length+'\u540d</em>':'')+'</div>'+show.map(function(it,i){return '<div class="z-rev-row">'+(multi?'<span class="z-rev-rk">'+(i+1)+'</span>':'')+'<span class="z-rev-nm">'+e(it.name||'\u7121\u540d')+'\u69d8</span>'+(it.sub?'<span class="z-rev-sub">'+e(it.sub)+'</span>':'')+(it.score!=null?'<span class="z-rev-sc">'+it.score+'</span>':'')+'</div>';}).join('')+(more>0?'<div class="z-rev-more">\uff0b\u4ed6 '+more+' \u540d</div>':''); var r=el.getBoundingClientRect(); var pw=pop.offsetWidth,ph=pop.offsetHeight,vw=window.innerWidth; var cx=r.left+r.width/2; var left=Math.max(8,Math.min(vw-pw-8,cx-pw/2)); var tp=r.top-ph-10; if(tp<8) tp=r.bottom+10; pop.style.left=left+'px'; pop.style.top=tp+'px'; pop.classList.add('on'); };
+window.zRevHide=function(){ var p=document.getElementById('zRevPop'); if(p) p.classList.remove('on'); };
 /* ---- shared dashboard helpers (real data) ---- */
 var _zAreaMode='ward';
 var _zTown2Ward={};
@@ -2467,7 +2483,7 @@ var _zTown2Ward={};
  Object.keys(W).forEach(function(k){W[k].forEach(function(t){_zTown2Ward[t]=k;});});})();
 function _zParseAddr(addr){
  if(!addr) return {ward:'未分類',town:'未分類'};
- var s=String(addr).replace(/[０-９]/g,function(d){return String.fromCharCode(d.charCodeAt(0)-0xFEE0);}).replace(/[\s　]/g,'');
+ var s=String(addr).replace(/[０-９]/g,function(d){return String.fromCharCode(d.charCodeAt(0)-0xFEE0);}).replace(/[\s　]/g,'').replace(/〒\d{3}-?\d{4}/g,'').replace(/〒/g,'').replace(/^\d{3}-?\d{4}/,'');
  s=s.replace(/^東京都/,'').replace(/^.+?[道府県]/,'');
  var ward='',town='',rest=s,wm=s.match(/^(.+?区)/);
  if(wm){ward=wm[1];rest=s.slice(wm[1].length);}
@@ -4991,10 +5007,10 @@ function _zsecPlain(k,title,body){var op=!!_zOpen[k];return '<div class="z-sec'+
 window.zToggleSec=function(h){var s=h.parentNode;s.classList.toggle('z-collapsed');var k=s.getAttribute('data-k');var open=!s.classList.contains('z-collapsed');if(k)_zOpen[k]=open;var a=h.querySelector('.z-ar');if(a)a.textContent=open?'▼':'▶';};
 window.zSetArea=function(m){_zAreaMode=m;renderAnalysis();var el=document.querySelector('#cmdCenter .z-sec[data-k=area]');if(el)el.scrollIntoView({block:'center'});};
 function _zAreaCard(target){
- var byWard={},byTown={};
- target.forEach(function(c){var p=_zParseAddr(c.address);byWard[p.ward]=(byWard[p.ward]||0)+1;var key=p.ward+' '+p.town;byTown[key]=(byTown[key]||0)+1;});
- function grid(obj){var mx=Math.max.apply(null,Object.keys(obj).map(function(k){return obj[k];}))||1;return '<div class="z-areagrid">'+Object.keys(obj).sort(function(a,b){return obj[b]-obj[a];}).map(function(k){var v=obj[k],unk=/未分類|区不明|町名なし/.test(k),disp=k.replace('（町名なし）','(町なし)');return '<div class="z-area'+(unk?' z-unk':'')+'" style="'+(unk?'':'background:'+_zHeat(v/mx*100))+'"><b>'+v+'</b><span>'+e(disp)+'</span></div>';}).join('')+'</div>';}
- var body='<div class="z-toggle"><button class="'+(_zAreaMode==='ward'?'on':'')+'" onclick="zSetArea(\'ward\')">区</button><button class="'+(_zAreaMode==='town'?'on':'')+'" onclick="zSetArea(\'town\')">町</button></div><div class="z-sub" style="clear:both;padding-top:6px">件数の濃淡。区のみ・町のみ・不明も全部拾います。</div>'+(_zAreaMode==='ward'?grid(byWard):grid(byTown));
+ var byWard={},byTown={},byWardC={},byTownC={};
+ target.forEach(function(c){var p=_zParseAddr(c.address);byWard[p.ward]=(byWard[p.ward]||0)+1;(byWardC[p.ward]=byWardC[p.ward]||[]).push(c);var key=p.ward+' '+p.town;byTown[key]=(byTown[key]||0)+1;(byTownC[key]=byTownC[key]||[]).push(c);});
+ function grid(obj,cmap){var mx=Math.max.apply(null,Object.keys(obj).map(function(k){return obj[k];}))||1;return '<div class="z-areagrid">'+Object.keys(obj).sort(function(a,b){return obj[b]-obj[a];}).map(function(k){var v=obj[k],unk=/未分類|区不明|町名なし/.test(k),disp=k.replace('（町名なし）','(町なし)');var items=(cmap[k]||[]).map(function(c){return {name:c.name,score:calcScore(c),sub:e(c.manager||'')};});var rk=_zRevReg(disp,items);return '<div class="z-area'+(unk?' z-unk':'')+'" style="'+(unk?'':'background:'+_zHeat(v/mx*100))+'" onpointerdown="zRevShow(this,\''+rk+'\')" onpointerup="zRevHide()" onpointerleave="zRevHide()" onpointercancel="zRevHide()" oncontextmenu="return false"><b>'+v+'</b><span>'+e(disp)+'</span></div>';}).join('')+'</div>';}
+ var body='<div class="z-toggle"><button class="'+(_zAreaMode==='ward'?'on':'')+'" onclick="zSetArea(\'ward\')">区</button><button class="'+(_zAreaMode==='town'?'on':'')+'" onclick="zSetArea(\'town\')">町</button></div><div class="z-sub" style="clear:both;padding-top:6px">件数の濃淡。マスを長押しで該当客名。区・町・不明も全部拾います。</div>'+(_zAreaMode==='ward'?grid(byWard,byWardC):grid(byTown,byTownC));
  return _zc('🗺','エリア別ヒートマップ（区⇔町 切替）','',body,'z-cf');
 }
 var _wkP='m0';
@@ -5122,15 +5138,15 @@ function renderAnalysis(){
  H+=_zsec('area','🗺 エリア分析',_zAreaCard(t));
  // multi
  var asMap={'1億以下':1,'3億以下':2,'5億以下':3,'10億未満':4,'10億以上':5};
- var bub='<svg class="z-bub" viewBox="0 0 560 230">';t.forEach(function(c){var x=20+calcScore(c)/40*520;var av=(asMap[c.land_asset]||0)+(+(c.m2||0)>=200?2:+(c.m2||0)>=100?1:0);var y=210-av/7*190;var rr=4+calcScore(c)/40*11;bub+='<circle cx="'+x.toFixed(0)+'" cy="'+y.toFixed(0)+'" r="'+rr.toFixed(0)+'" fill="'+(RC[c.pursuit_judge]||'#888')+'" opacity=".6" stroke="#fff" stroke-width="1"/>';});bub+='<text x="280" y="228" font-size="9" fill="#6b7894" text-anchor="middle">熱量（スコア）→</text></svg>';
+ var bub='<svg class="z-bub" viewBox="0 0 560 230">';t.forEach(function(c){var x=20+calcScore(c)/40*520;var av=(asMap[c.land_asset]||0)+(+(c.m2||0)>=200?2:+(c.m2||0)>=100?1:0);var y=210-av/7*190;var rr=5+calcScore(c)/40*11;var rk=_zRevReg('\ud83d\udc8e \u304a\u5b9d\u5ba2',[{name:c.name,score:calcScore(c),sub:STG[+(c.stage||0)]+'\u30fb'+e(c.manager||'')}]);bub+='<circle cx="'+x.toFixed(0)+'" cy="'+y.toFixed(0)+'" r="'+rr.toFixed(0)+'" fill="'+(RC[c.pursuit_judge]||'#888')+'" opacity=".62" stroke="#fff" stroke-width="1" style="cursor:pointer" onpointerdown="zRevShow(this,\''+rk+'\')" onpointerup="zRevHide()" onpointerleave="zRevHide()" onpointercancel="zRevHide()" oncontextmenu="return false"/>';});bub+='<text x="280" y="228" font-size="9" fill="#6b7894" text-anchor="middle">熱量（スコア）→</text></svg>';
  var ageT=[['〜64',0,64],['65〜74',65,74],['75〜',75,200]];var agH=ageT.map(function(a){var arr=t.filter(function(c){var ag=_zOwnerAge(c);return ag!==null&&ag>=a[1]&&ag<=a[2];});var av2=arr.length?(arr.reduce(function(s,c){return s+ +(c.stage||0);},0)/arr.length).toFixed(1):'0';return '<div class="z-tile"><b>'+arr.length+'</b><span>'+a[0]+'歳／平均St '+av2+'</span></div>';}).join('');var noAge=t.filter(function(c){return _zOwnerAge(c)===null;}).length;
  var pot=Math.round(t.filter(function(c){return c.pursuit_judge==='A'||c.pursuit_judge==='S';}).reduce(function(s,c){return s+(parseFloat(c.rosenka)||0)*1000*(parseFloat(c.m2)||0);},0)/1e8);
- var miniR=board.slice(0,4).map(function(b){var a=g[b.r];var ax=[['発掘',Math.min(Math.round(a.length/30*100),100)],['グリ',(function(){var s=0,nn=0;a.forEach(function(c){var l=getKaiwaLevel(c);if(l>=0){s+=l;nn++;}});return nn?Math.round(s/nn/4*100):0;})()],['ヒア',_zPct(a.filter(function(c){return c.family_headcount;}).length,a.length)],['連想',_zPct(a.filter(function(c){return +(c.stage||0)>=3;}).length,a.length)],['テス',_zPct(a.filter(function(c){return +(c.stage||0)>=4;}).length,Math.max(1,a.filter(function(c){return +(c.stage||0)>=3;}).length))],['ペース',100-_zPct(a.filter(function(c){return calcPaceOverrate(c)>1;}).length,a.length)]];var col=_zAVAS[reps.indexOf(b.r)%8];var ty=_salesType(ax);return '<div class="z-minir">'+_zRadarC(ax,col)+'<div style="color:'+col+'">'+e(b.r)+'</div><div style="font-size:9px;color:var(--z-dim);font-weight:700;text-align:center">'+ty.arche.e+ty.label+'</div></div>';}).join('');
+ var miniR=board.map(function(b){var a=g[b.r];var ax=[['発掘',Math.min(Math.round(a.length/30*100),100)],['グリ',(function(){var s=0,nn=0;a.forEach(function(c){var l=getKaiwaLevel(c);if(l>=0){s+=l;nn++;}});return nn?Math.round(s/nn/4*100):0;})()],['ヒア',_zPct(a.filter(function(c){return c.family_headcount;}).length,a.length)],['連想',_zPct(a.filter(function(c){return +(c.stage||0)>=3;}).length,a.length)],['テス',_zPct(a.filter(function(c){return +(c.stage||0)>=4;}).length,Math.max(1,a.filter(function(c){return +(c.stage||0)>=3;}).length))],['ペース',100-_zPct(a.filter(function(c){return calcPaceOverrate(c)>1;}).length,a.length)]];var col=_zAVAS[reps.indexOf(b.r)%8];var ty=_salesType(ax);return '<div class="z-minir">'+_zRadarC(ax,col)+'<div style="color:'+col+'">'+e(b.r)+'</div><div style="font-size:9px;color:'+ty.color+';font-weight:800;text-align:center">'+ty.arche.e+ty.label+'</div></div>';}).join('');
  H+=_zsec('multi','🔬 多角分析',
-   _zc('💎','お宝度マトリクス','熱量×資産規模。右上＝お宝。色＝ランク。',bub,'z-cf')
+   _zc('💎','お宝度マトリクス','熱量×資産規模。右上＝お宝。色＝ランク。泡を長押しで客名。',bub,'z-cf')
   +_zc('🏯','相続緊急度 × 進捗','高齢×低ステージは要対応。','<div class="z-tiles">'+agH+'</div>'+(noAge?'<div class="z-sub" style="margin-top:6px">所有者年齢 未入力 '+noAge+'件</div>':''),'z-c2')
   +_zc('💰','課の総ポテンシャル金額','A・S案件の路線価×面積の概算。','<div style="text-align:center;padding:10px"><div class="z-num" style="font-size:38px;font-weight:800;color:#ffb443">約'+pot+'<span style="font-size:17px">億円</span></div><div class="z-sub">規模感の目安（概算）</div></div>','z-c2')
-  +_zc('🧬','担当スキルレーダー（上位4名）','最も高い軸×3段階で18タイプに自動分類。育成ポイント発見。','<div class="z-minirow">'+miniR+'</div>','z-cf'));
+  +_zc('🧬','担当スキルレーダー（全員）','最も高い軸×3段階で18タイプに自動分類。色付きチップが各担当の型（段階で色分け）。','<div class="z-minirow">'+miniR+'</div>'+_radarAxisHelp(),'z-cf'));
 
  // ===== 担当の特性・保有状況（チーム管理） =====
  var avgHold=reps.length?cards.length/reps.length:0;
