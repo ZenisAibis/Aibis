@@ -639,7 +639,7 @@ body.is-mob .mob-menu{display:inline-block}
 .zdash-mgr .z-cmdhead{font-family:'Sora',sans-serif;font-weight:800;font-size:16px;letter-spacing:1px;color:#e8edf7;margin:0 0 12px;display:flex;align-items:baseline;gap:10px}
 .zdash-mgr .z-cmdhead span{font-family:'Zen Kaku Gothic New',sans-serif;font-size:11px;font-weight:500;letter-spacing:1px;color:#6b7894}
 </style>
-<style>.paste-at{font-size:11px;color:#a0aec0;margin-top:4px;text-align:right}.zdash .z-stamp{font-size:10px;color:var(--z-dim);text-align:right;margin-top:6px}</style>
+<style>.paste-at{font-size:11px;color:#5a6b85;font-weight:600;margin-top:4px;text-align:right}.zdash .z-stamp{font-size:10px;color:var(--z-dim);text-align:right;margin-top:6px}</style>
 <style>#planSvBtn:disabled{opacity:.38;cursor:not-allowed}</style>
 </head>
 <body>
@@ -1273,7 +1273,9 @@ function calcScore(c){
 
   // ⑧ 最寄り駅 徒歩区分（〜10分+3 / 21分以上-3）
   var ekiScore=(c.ekitoho==='〜10分')?3:(c.ekitoho==='21分以上')?-3:0;
-  return Math.max(0, Math.round(s+r+k+landFinal+famScore+assetScore+ekiScore));
+  // ⑨ 提案依頼取得＝顧客の意思表示（最重要・高スコア）
+  var proposalScore=c.proposal_req?10:0;
+  return Math.max(0, Math.round(s+r+k+landFinal+famScore+assetScore+ekiScore+proposalScore));
 }
 function basicInputStat(c){
   c=c||{};
@@ -1318,7 +1320,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v4.31";
+var APP_VERSION = "v4.33";
 
 // ===== 状態 =====
 var cards = [];
@@ -1713,6 +1715,7 @@ var AIBIS_FAQ=[
   {q:'ソーシャル',a:'ソーシャルスタイルは4タイプだよ！<br><b>ドライバー</b>…決断が早く結果重視。手短に要点を。<br><b>エクスプレッシブ</b>…感情豊か。共感を示して。<br><b>アナリティカル</b>…データ・論理重視。根拠をしっかり。<br><b>エミアブル</b>…協調性が高い。急がせず丁寧に。'},
   {q:'Judgmentって何？',a:'Judgmentはお客様の現状を課長と協議して判定するもの。<br><br>【再訪Judgment】追客開始 / 継続訪問 / 打ち切り の3択<br>【追撃Judgment】A見込み / 訪問継続 / 打ち切り の3択<br><br>🔒 再訪Judgmentは再訪3回目（日付・訪問内容・録音要約のいずれか）を記録すると押せるよ。追撃カードの発行には先に再訪Judgmentが必要。15回超の追撃追加には追撃Judgmentが必要。<br>ボタンはもう一度押すと選択解除（未選択ならAIの判定を優先）。A見込み=A・訪問継続=B・打ち切り=X。<br><br>必ず課長との協議のうえで選択してね！'},
   {q:'スコアってどう計算するの？',a:function(){return isMgrUnlocked()?'ステージ8点＋会話状況10点＋追客ランク7点＋土地面積5点（路線価補正）＋資産背景10点＋KP面談2点の合計で約40点満点！上り込み・100〜200坪の土地・資産背景が大きいお客様ほど高得点になるよ。スコア順の並び替えで今週誰に行くべきかが一目でわかるよ📊':'スコアは「今週どのお客様を優先するか」を見やすくする並び替え用の目安だよ📊 細かい配点は内部設定なので、まずはスコア順の上位から動いてみてね！';}},
+  {q:'提案依頼ボタンって何？',a:'再訪タブの「連続留守カウント」の右にあるボタン！タップで ❌提案依頼未取得 ⇔ ⭕提案依頼取得 を切替。提案依頼の取得はお客様の意思表示なのでスコアが大きく上がるよ(+10)😊 ベストは「3:連想」でテストクロージングし、動機を引き上げながら取得すること💡 取得すると10客・40客リストにも⭕提案依頼が出るよ。'},
   {q:'駅徒歩フラグって何？',a:'計画地の最寄り駅からの徒歩区分だよ🚉 計画地の「🚉最寄り駅 徒歩」ボタンをタップで 未確認→〜10分→〜20分→21分以上 と切り替わるよ（同行ボタンと同じ要領）。〜10分は加点(+3)、21分以上は減点(-3)＆赤フラグ（一覧・課分析にも表示）。分数は地図で一度確認して印を付けるだけでOK😊'},
   {q:'現在地ボタンって何？',a:'初訪タブの住所欄の下にある📍現在地取得ボタン！GPSで現在地を取得して住所をクリップボードにコピーするよ。訪問先でそのまま貼り付けて使えるね😊'},
   {q:'家族構成ってどう入れるの？',a:'初訪タブの「家族構成」セクションから入力できるよ！<br><br>＋ボタンで追加→続柄・氏名・年齢・居住形態を入力<br>★所有者 / KP（キーパーソン）/ 面談済 も記録できるよ<br>スタンス（ポジティブ/ネガティブ）も記録して戦略に活かしてね！<br>👶 子世代・兄弟姉妹は婚姻状況と子の人数も記録できるよ（相続人の把握に役立つ）。'},
@@ -2958,7 +2961,7 @@ function mkBlank() {
     revisits:[{num:1,date:'',appo:'',content:'',instruction:''},{num:2,date:'',appo:'',content:'',instruction:''},{num:3,date:'',appo:'',content:'',instruction:''}],
     revisit_judge_date:'', revisit_judge:'',
     pursuits:[], pursuit_judge_date:'', pursuit_judge:'', pursuit_judge_sel:'', pursuit_judge_ai:'',
-    ai_memo:'', family_headcount:false, family_bikou:'', doukou:false, mgr_involve:'単独', asset_type:false, ekitoho:'',
+    ai_memo:'', family_headcount:false, family_bikou:'', doukou:false, mgr_involve:'単独', asset_type:false, ekitoho:'', proposal_req:false,
     created_at:new Date().toISOString(), updated_at:new Date().toISOString()
   };
 }
@@ -3103,7 +3106,7 @@ function fillForm(c) {
   // 最優先事項・備考
   var sm=document.getElementById('f_ai_summary'); if(sm) sm.value=c.ai_summary||'';
   var memo=document.getElementById('f_ai_memo'); if(memo) memo.value=c.ai_memo||'';
-  updTsubo(); updChiku(); updateFamHeadcountBtn(); updateDoukouBtn(); if(window.updateEkitohoBtn) updateEkitohoBtn(); if(window.updateRyokuchiBtn) window.updateRyokuchiBtn(); if(window.applyAssetSeal) applyAssetSeal(); if(window.updateTabProgress) updateTabProgress(); if(window.updatePlanSvBtn) updatePlanSvBtn(); if(window.AibisVoice) window.AibisVoice.refresh();
+  updTsubo(); updChiku(); updateFamHeadcountBtn(); updateDoukouBtn(); if(window.updateEkitohoBtn) updateEkitohoBtn(); if(window.updateProposalReqBtn) updateProposalReqBtn(); if(window.updateRyokuchiBtn) window.updateRyokuchiBtn(); if(window.applyAssetSeal) applyAssetSeal(); if(window.updateTabProgress) updateTabProgress(); if(window.updatePlanSvBtn) updatePlanSvBtn(); if(window.AibisVoice) window.AibisVoice.refresh();
 }
 
 function collectForm() {
@@ -5033,6 +5036,38 @@ function renderAnalysis(){
   +_zc('🏯','相続緊急度 × 進捗','高齢×低ステージは要対応。','<div class="z-tiles">'+agH+'</div>'+(noAge?'<div class="z-sub" style="margin-top:6px">所有者年齢 未入力 '+noAge+'件</div>':''),'z-c2')
   +_zc('💰','課の総ポテンシャル金額','A・S案件の路線価×面積の概算。','<div style="text-align:center;padding:10px"><div class="z-num" style="font-size:38px;font-weight:800;color:#ffb443">約'+pot+'<span style="font-size:17px">億円</span></div><div class="z-sub">規模感の目安（概算）</div></div>','z-c2')
   +_zc('🧬','担当スキルレーダー（上位4名）','型の違いで育成ポイント発見。','<div class="z-minirow">'+miniR+'</div>','z-cf'));
+
+ // ===== 担当の特性・保有状況（チーム管理） =====
+ var avgHold=reps.length?cards.length/reps.length:0;
+ var holdBars=reps.map(function(r){return g[r].length;});
+ var prGot=cards.filter(function(c){return c.proposal_req;}).length;
+ var prBars=reps.map(function(r){return g[r].filter(function(c){return c.proposal_req;}).length;});
+ var inpBars=reps.map(function(r){var a=g[r];return a.length?Math.round(a.reduce(function(s,c){return s+basicInputStat(c).pct;},0)/a.length):0;});
+ var FCHK=[['氏名',function(c){return !(c.name&&String(c.name).trim());}],['現状',function(c){return !(c.genjo&&String(c.genjo).trim());}],['住所',function(c){return !(c.address&&String(c.address).trim());}],['会話',function(c){var kw=Array.isArray(c.kaiwa)?c.kaiwa:(c.kaiwa?[c.kaiwa]:[]);return kw.length===0;}],['ステージ',function(c){return c.stage===''||c.stage==null;}],['資産',function(c){return !(c.land_asset&&String(c.land_asset).trim());}],['想定',function(c){return !(c.souteim&&String(c.souteim).trim());}],['家族',function(c){var fam=Array.isArray(c.family)?c.family:[];return !(fam.length>0||c.family_headcount);}]];
+ var blankRates=FCHK.map(function(fc){return _zPct(cards.filter(fc[1]).length,cards.length);});
+ var traitRows=reps.map(function(r){
+   var a=g[r],T=a.length||1;
+   var renso=_zPct(a.filter(function(c){return +(c.stage||0)>=3;}).length,T);
+   var inp=a.length?Math.round(a.reduce(function(s,c){return s+basicInputStat(c).pct;},0)/a.length):0;
+   var pace=100-_zPct(a.filter(function(c){return calcPaceOverrate(c)>1;}).length,T);
+   var prr=_zPct(a.filter(function(c){return c.proposal_req;}).length,T);
+   var grip=(function(){var sv=0,n=0;a.forEach(function(c){var l=getKaiwaLevel(c);if(l>=0){sv+=l;n++;}});return n?Math.round(sv/n/4*100):0;})();
+   var tr=[];
+   if(a.length>=avgHold*1.25) tr.push(['量型(保有多)','#34e3d0']); else if(a.length>0&&a.length<=avgHold*0.7) tr.push(['厳選型(保有少)','#8b7cff']);
+   if(inp>=70) tr.push(['入力丁寧','#2f9e44']); else if(inp<50) tr.push(['入力薄め','#ff5d7d']);
+   if(renso>=40) tr.push(['連想到達◎','#2f9e44']); else if(renso<20) tr.push(['連想前で停滞','#ffb443']);
+   if(grip>=60) tr.push(['グリップ強','#2f9e44']);
+   if(pace<70) tr.push(['追客遅れ','#ff5d7d']);
+   if(prr>=15) tr.push(['提案依頼◎','#2f9e44']);
+   if(!tr.length) tr.push(['標準','#718096']);
+   return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--z-line)"><span style="font-weight:700;font-size:13px;min-width:60px;flex-shrink:0">'+e(r)+'</span><span style="display:flex;gap:5px;flex-wrap:wrap">'+tr.map(function(x){return '<span class="z-pill" style="background:'+x[1]+'22;color:'+x[1]+'">'+x[0]+'</span>';}).join('')+'</span></div>';
+ }).join('');
+ H+=_zsec('team','🧑‍💼 担当の特性・保有状況',
+   _zc('📇','見込み保有数（全体・担当別）','課全体の母数と担当別の保有件数。','<div style="text-align:center;margin-bottom:8px"><span style="font-family:Sora,sans-serif;font-size:30px;font-weight:800;color:#34e3d0">'+cards.length+'</span><span style="font-size:12px;color:var(--z-dim)"> 件（全体）／平均 '+avgHold.toFixed(1)+'件</span></div>'+_zVbars(holdBars,reps.map(function(r){return r.slice(0,1);}),_zAVAS),'z-c2')
+  +_zc('⭕','提案依頼の取得状況','顧客の意思表示＝契約への最短サイン。','<div style="text-align:center;margin-bottom:8px"><span style="font-family:Sora,sans-serif;font-size:30px;font-weight:800;color:#2f9e44">'+prGot+'</span><span style="font-size:12px;color:var(--z-dim)"> 件取得／'+cards.length+'件中（'+_zPct(prGot,cards.length)+'%）</span></div>'+_zVbars(prBars,reps.map(function(r){return r.slice(0,1);}),reps.map(function(){return '#2f9e44';})),'z-c2')
+  +_zc('📝','入力充実度（担当別）','カードの作り込み度。低い担当は質のフォローを。',_zVbars(inpBars,reps.map(function(r){return r.slice(0,1);}),inpBars.map(function(v){return v>=70?'#2f9e44':v>=50?'#ffb443':'#ff5d7d';})),'z-c2')
+  +_zc('🕳','未入力の傾向（課全体）','どの項目が抜けやすいか。高い＝チームの弱点。',_zVbars(blankRates,FCHK.map(function(f){return f[0];}),blankRates.map(function(){return '#ff8aa0';})),'z-c2')
+  +_zc('🧬','担当の特性（自動所見）','カード全体から見た各担当のタイプ。',traitRows||'<div class="z-sub">担当データなし</div>','z-cf'));
  // insights
  var pingStat=reps.map(function(r){var a=g[r],T=a.length||1;return {r:r,v:_zPct(a.filter(function(c){return getKaiwaLevel(c)===0;}).length,T),n:a.length};}).filter(function(o){return o.n>=3;}).sort(function(a,b){return b.v-a.v;});
  var saLate=cards.filter(function(c){return (c.pursuit_judge==='A'||c.pursuit_judge==='S')&&calcPaceOverrate(c)>1;}).length;
@@ -5829,6 +5864,7 @@ function doListPrint(mode){
   function tsubo(m2){ var t=parseFloat(m2||0)/3.30578; return t>0?Math.round(t)+'坪':''; }
   function headcount(c){ return c.family_headcount?'<span style="color:#276749;font-weight:700">コンプ</span>':'<span style="color:#c53030">不足</span>'; }
   function rankBadge(r){ if(!r) return '<span style="color:#a0aec0;font-size:9px">未</span>'; var col=RANK_COLOR_MAP[r]||'#718096'; return '<span style="display:inline-block;min-width:15px;padding:1px 4px;border-radius:8px;font-size:9px;font-weight:700;background:'+col+';color:white;text-align:center">'+e(r)+'</span>'; }
+  function proposalBadge(c){ return c.proposal_req?'<span style="display:inline-block;margin-top:2px;font-size:8px;font-weight:700;background:#2f9e44;color:#fff;border-radius:3px;padding:1px 5px;white-space:nowrap">⭕提案依頼</span>':''; }
 
   var css='@page{size:A4 landscape;margin:5mm 8mm}'
     +'*{box-sizing:border-box}'
@@ -5916,7 +5952,7 @@ function doListPrint(mode){
       html+='<tr>'
         +'<td class="n">'+(i+1)+'</td>'
         +'<td style="text-align:center"><div class="lns">'+rankBadge(c.pursuit_judge)+'</div><div class="lns">'+stageBadge(c.stage)+'</div><div class="lns">'+(kacho?'<span style="font-size:8px;background:#2c5282;color:#fff;border-radius:3px;padding:1px 4px;font-weight:700;white-space:nowrap">同行済</span>':'')+'</div></td>'
-        +'<td class="nm"><div style="line-height:1.2">'+(c.name?e(c.name)+'<span style="font-size:10px;font-weight:600">様</span>':'(未入力)')+'</div><div style="font-size:9px;color:#718096;font-weight:400;margin-top:2px">'+e(c.discovery_date||'-')+'</div></td>'
+        +'<td class="nm"><div style="line-height:1.2">'+(c.name?e(c.name)+'<span style="font-size:10px;font-weight:600">様</span>':'(未入力)')+'</div><div style="font-size:9px;color:#718096;font-weight:400;margin-top:2px">'+e(c.discovery_date||'-')+'</div>'+proposalBadge(c)+'</td>'
         +'<td style="color:#2d3748">'
           +'<div class="ln"><span style="color:#a0aec0;font-weight:700">自宅</span> '+(c.address?e(c.address):dash)+'</div>'
           +'<div class="ln"><span style="color:#2c5282;font-weight:700">計画</span> '+(c.plan_address?e(c.plan_address):dash)+'</div>'
@@ -5955,7 +5991,7 @@ function doListPrint(mode){
           +'<td class="n">'+(i+1+offset)+'</td>'
           +'<td style="text-align:center">'+rankBadge(c.pursuit_judge)+'</td>'
           +'<td style="text-align:center">'+stageBadge(c.stage)+'</td>'
-          +'<td class="nm">'+(c.name?e(c.name)+'様':'')+(kacho?' <span style="font-size:7px;background:#2c5282;color:#fff;border-radius:2px;padding:0 2px;font-weight:700">同行</span>':'')+'</td>'
+          +'<td class="nm">'+(c.name?e(c.name)+'様':'')+(kacho?' <span style="font-size:7px;background:#2c5282;color:#fff;border-radius:2px;padding:0 2px;font-weight:700">同行</span>':'')+proposalBadge(c)+'</td>'
           +'<td class="ad">'+e(c.plan_address)+'</td>'
           +'<td class="ad">'+e(c.address)+'</td>'
           +'<td class="ad" style="text-align:center">'+e(tsubo(c.m2))+'</td>'
@@ -6187,6 +6223,13 @@ function updateEkitohoBtn(){
   btn.textContent=sm.t; btn.style.background=sm.bg; btn.style.borderColor=sm.bd; btn.style.color=sm.fg; btn.style.boxShadow=sm.sh;
 }
 window.toggleEkitoho=toggleEkitoho; window.updateEkitohoBtn=updateEkitohoBtn;
+function toggleProposalReq(){ if(!cur) return; cur.proposal_req=!cur.proposal_req; updateProposalReqBtn(); }
+function updateProposalReqBtn(){
+  var btn=document.getElementById('proposalReqBtn'); if(!btn) return;
+  if(cur && cur.proposal_req){ btn.textContent='⭕ 提案依頼取得'; btn.style.background='linear-gradient(135deg,#2f9e44,#2b8a3e)'; btn.style.borderColor='#2b8a3e'; btn.style.color='#fff'; btn.style.boxShadow='0 2px 6px rgba(43,138,62,.3)'; }
+  else { btn.textContent='❌ 提案依頼未取得'; btn.style.background='white'; btn.style.borderColor='#cbd5e0'; btn.style.color='#718096'; btn.style.boxShadow='none'; }
+}
+window.toggleProposalReq=toggleProposalReq; window.updateProposalReqBtn=updateProposalReqBtn;
 function onEmailDomainChange(){
   var sel=document.getElementById('f_email_domain'); var cust=document.getElementById('f_email_domain_custom');
   if(!sel||!cust) return;
@@ -6638,6 +6681,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       </div>
       <div style="margin-top:10px">
         <label>連続留守カウント</label>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <div class="cg" style="flex-wrap:nowrap">
           <label class="ci"><input type="radio" name="rusu" value="0"><span>0</span></label>
           <label class="ci"><input type="radio" name="rusu" value="1"><span>1</span></label>
@@ -6645,6 +6689,8 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <label class="ci"><input type="radio" name="rusu" value="3"><span>3</span></label>
           <label class="ci"><input type="radio" name="rusu" value="4"><span>4</span></label>
           <label class="ci"><input type="radio" name="rusu" value="5"><span>5</span></label>
+        </div>
+          <button type="button" id="proposalReqBtn" onclick="toggleProposalReq()" style="margin-left:auto;flex-shrink:0;padding:8px 14px;border:2px solid #cbd5e0;border-radius:7px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;color:#718096;white-space:nowrap;min-height:38px">❌ 提案依頼未取得</button>
         </div>
       </div>
     </div>
