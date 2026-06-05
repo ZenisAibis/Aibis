@@ -809,6 +809,7 @@ body.is-mob .mob-menu{display:inline-block}
             <button onclick="openCopilot()" style="background:#0078d4;color:white;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:inherit">🤖 AI分析</button>
             <button onclick="showAnalysisPaste()" class="analysis-paste-btn" style="background:#276749;color:white;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">💭 結果貼り付け</button>
             <button onclick="printAnalysisReport()" class="no-print analysis-print-btn" style="background:#2c5282;color:white;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:inherit">🖨 レポート印刷</button>
+            <button onclick="printDashboard('cmdCenter','課コマンドセンター')" class="no-print" style="background:#553c9a;color:white;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:inherit">📊 画面を印刷</button>
           </div>
         </div>
         <div id="cmdCenter"></div>
@@ -1317,7 +1318,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v4.35";
+var APP_VERSION = "v4.36";
 
 // ===== 状態 =====
 var cards = [];
@@ -5524,6 +5525,32 @@ function closeAnalysisPaste(){
   document.getElementById('listView').style.display=(hasFSA&&!isMob)?'flex':'block';
 }
 window.showAnalysisPaste=showAnalysisPaste; window.closeAnalysisPaste=closeAnalysisPaste;
+var DASH_PRINT_CSS="@page{size:A4;margin:9mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}body{margin:0;background:#fff;font-family:'Zen Kaku Gothic New',sans-serif}"
++".zdash,.zdash-mgr,.zdash-rep{background:#fff !important;background-image:none !important;padding:0 !important;--z-bg:#fff;--z-panel:#fff;--z-panel2:#f3f6fb;--z-line:#d7deea;--z-ink:#15233a;--z-mut:#475569;--z-dim:#8593a8;color:#15233a !important}"
++".zdash .z-card{background:#fff !important;border:1px solid #d7deea !important;box-shadow:none !important;break-inside:avoid;page-break-inside:avoid}"
++".zdash .z-sec-body{display:block !important}.zdash .z-sec-h{background:#eef2f8 !important;color:#15233a !important;border:1px solid #d7deea !important;break-after:avoid;page-break-after:avoid}.zdash .z-sec-h .z-ar{display:none}"
++".zdash .z-cmdhead{color:#15233a !important}.zdash .z-cmdhead span{color:#5a6b85 !important}"
++".zdash .z-bento{display:grid !important;grid-template-columns:repeat(2,1fr) !important;gap:8px !important}.zdash .z-c1,.zdash .z-c2{grid-column:span 1 !important}.zdash .z-cf{grid-column:1 / -1 !important}"
++".zdash .z-gnum{color:#2f9e44 !important}.zdash .z-klab,.zdash .z-ksub,.zdash .z-sub{color:#475569 !important}"
++".zdash textarea,.zdash .z-spar,.zdash .z-btn-spar,.zdash .z-mini,.no-print{display:none !important}"
++".zdash .z-radar polygon[fill=\"none\"]{stroke:#cdd5e3 !important}.zdash .z-radar line{stroke:#cdd5e3 !important}";
+function printDashboard(hostId,title){
+  var host=document.getElementById(hostId);
+  if(!host || !host.innerHTML.replace(/\s/g,'')){ toast('先にダッシュボードを表示してください'); return; }
+  var styles=Array.prototype.map.call(document.querySelectorAll('style'),function(st){return st.textContent;}).join('\n');
+  var w=window.open('','_blank');
+  if(!w){ toast('ポップアップを許可してください'); return; }
+  var dstr=new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'});
+  w.document.open();
+  w.document.write('<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><title>'+e(title||'ダッシュボード')+'</title>'
+    +'<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">'
+    +'<style>'+styles+'</style><style>'+DASH_PRINT_CSS+'</style></head><body>'
+    +'<div style="font:800 16px Sora,sans-serif;color:#15233a;margin:0 0 8px">'+e(title||'ダッシュボード')+' <span style="font-weight:500;font-size:11px;color:#5a6b85">'+dstr+'</span></div>'
+    +host.innerHTML+'</body></html>');
+  w.document.close();
+  setTimeout(function(){ try{w.focus();w.print();}catch(ex){} }, 600);
+}
+window.printDashboard=printDashboard;
 /* ===== 本日の予定表（フェーズ1・PC専用） ===== */
 function _p2(n){ return (n<10?'0':'')+n; }
 function planKey(d){ d=d||new Date(); return 'plan_'+d.getFullYear()+_p2(d.getMonth()+1)+_p2(d.getDate()); }
