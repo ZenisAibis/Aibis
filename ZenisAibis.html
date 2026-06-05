@@ -100,6 +100,7 @@ body.is-mob .pc-only-btn{display:none!important}
 body.is-mob .analysis-print-btn{display:none!important}
 body.is-mob .analysis-paste-btn{display:none!important}
 header{background:linear-gradient(135deg,#1e3a5f,#2c5282);color:white;padding:14px 12px;border-radius:8px 8px 0 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;position:sticky;top:0;z-index:50}
+body.is-mob header{border-radius:0}
 header h1{font-size:16px;font-weight:600}
 .ha{display:flex;gap:4px;flex-wrap:wrap}
 button{cursor:pointer;border:none;border-radius:6px;padding:8px 10px;font-size:12px;font-weight:500;font-family:inherit;min-height:36px;touch-action:manipulation}
@@ -607,6 +608,8 @@ body.is-mob .mob-menu{display:inline-block}
 .zdash .z-toggle button{font-family:inherit;font-size:11px;font-weight:700;color:var(--z-mut);background:none;border:none;padding:5px 12px;border-radius:7px;cursor:pointer}
 .zdash .z-toggle button.on{background:var(--z-cyan);color:#06121f}
 .zdash .z-areagrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:5px}
+.zdash .z-dc{fill:var(--z-ink);font-family:'Sora',sans-serif;font-weight:800}.zdash .z-ds{fill:var(--z-dim);font-weight:600}
+.z-wkscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}body.is-mob .z-wkmin{min-width:540px}
 .zdash .z-area{padding:6px 4px;border-radius:8px;text-align:center;color:#06121f;cursor:pointer;position:relative;-webkit-user-select:none;user-select:none;touch-action:none}
 .zdash .z-area b{font-family:'Sora',sans-serif;font-size:14px;font-weight:800;display:block;line-height:1.05}
 .zdash .z-area span{font-size:8px;font-weight:700;line-height:1.05;display:block;word-break:break-all}
@@ -1330,7 +1333,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v4.45";
+var APP_VERSION = "v4.48";
 
 // ===== 状態 =====
 var cards = [];
@@ -2508,6 +2511,44 @@ function _zLine(series){var M=_zMonths(),w=560,h=120,all=[].concat.apply([],seri
   sv+='<path d="'+pts.map(function(p,i){return(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1);}).join(' ')+'" fill="none" stroke="'+s.color+'" stroke-width="2.5" stroke-linecap="round"/>'+pts.map(function(p){return '<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="2.3" fill="'+s.color+'"/>';}).join('');});
  M.forEach(function(k,i){if(i%2===0)sv+='<text x="'+(10+i/(M.length-1)*(w-20)).toFixed(0)+'" y="'+(h-2)+'" font-size="8" fill="#6b7894" text-anchor="middle">'+k.slice(2)+'</text>';});
  return sv+'</svg>';}
+function _zDonut(segs,center,sub){
+ var tot=segs.reduce(function(s,x){return s+(x.value||0);},0)||1;
+ var R=52,r=33,cx=60,cy=60,acc=-Math.PI/2;
+ var sv='<svg viewBox="0 0 120 120" style="width:116px;height:116px;flex-shrink:0">';
+ var nz=segs.filter(function(x){return (x.value||0)>0;});
+ if(nz.length===0){ sv+='<circle cx="60" cy="60" r="42.5" fill="none" stroke="rgba(130,150,180,.2)" stroke-width="19"/>'; }
+ else if(nz.length===1){ sv+='<circle cx="60" cy="60" r="42.5" fill="none" stroke="'+nz[0].color+'" stroke-width="19"/>'; }
+ else { segs.forEach(function(x){ if(!x.value)return; var ang=x.value/tot*2*Math.PI; var a2=acc+ang;
+   var lx=cx+Math.cos(acc)*R,ly=cy+Math.sin(acc)*R,lx2=cx+Math.cos(a2)*R,ly2=cy+Math.sin(a2)*R;
+   var sx=cx+Math.cos(a2)*r,sy=cy+Math.sin(a2)*r,sx2=cx+Math.cos(acc)*r,sy2=cy+Math.sin(acc)*r;
+   var big=ang>Math.PI?1:0;
+   sv+='<path d="M'+lx.toFixed(1)+' '+ly.toFixed(1)+' A'+R+' '+R+' 0 '+big+' 1 '+lx2.toFixed(1)+' '+ly2.toFixed(1)+' L'+sx.toFixed(1)+' '+sy.toFixed(1)+' A'+r+' '+r+' 0 '+big+' 0 '+sx2.toFixed(1)+' '+sy2.toFixed(1)+' Z" fill="'+x.color+'" stroke="rgba(0,0,0,.10)" stroke-width=".5"/>'; acc=a2; }); }
+ sv+='<text x="60" y="57" text-anchor="middle" class="z-dc" font-size="21">'+center+'</text>';
+ sv+='<text x="60" y="73" text-anchor="middle" class="z-ds" font-size="9">'+sub+'</text>';
+ return sv+'</svg>';
+}
+function _zTrend6(series,labels){
+ var w=560,h=132,pad=12,n=labels.length;
+ var all=[].concat.apply([],series.map(function(s){return s.data;})); var mx=Math.max.apply(null,all)||1; if(mx<4)mx=4;
+ function X(i){return pad+i/(n-1)*(w-pad*2);} function Y(v){return h-20-v/mx*(h-36);}
+ var sv='<svg viewBox="0 0 '+w+' '+h+'" style="width:100%;height:148px">';
+ [0,0.5,1].forEach(function(tt){var yy=Y(mx*tt);sv+='<line x1="'+pad+'" y1="'+yy.toFixed(1)+'" x2="'+(w-pad)+'" y2="'+yy.toFixed(1)+'" stroke="rgba(130,150,180,.14)" stroke-width="1"/>';});
+ series.forEach(function(s){ var pts=s.data.map(function(v,i){return [X(i),Y(v)];});
+  sv+='<path d="'+pts.map(function(p,i){return (i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1);}).join(' ')+'" fill="none" stroke="'+s.color+'" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>';
+  sv+=pts.map(function(p,i){return '<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="2.7" fill="'+s.color+'"/>'+(s.data[i]>0?'<text x="'+p[0].toFixed(1)+'" y="'+(p[1]-5).toFixed(1)+'" font-size="8.5" fill="'+s.color+'" text-anchor="middle" font-weight="800">'+s.data[i]+'</text>':'');}).join(''); });
+ labels.forEach(function(k,i){sv+='<text x="'+X(i).toFixed(0)+'" y="'+(h-4)+'" font-size="8.5" fill="#6b7894" text-anchor="middle">'+String(k).slice(2)+'</text>';});
+ return sv+'</svg>';
+}
+function _kpiKeyProp(c){return c.proposal_req&&c.proposal_req_at?c.proposal_req_at:null;}
+function _kpiKeyDk(c){return c.doukou&&c.doukou_at?c.doukou_at:null;}
+function _kpiKeyFam(c){return c.family_headcount&&c.family_headcount_at?c.family_headcount_at:null;}
+var _KPI3=[['提案依頼','#e03131',_kpiKeyProp],['同行','#2f9e44',_kpiKeyDk],['家族構成','#efc010',_kpiKeyFam]];
+function _kpi3Chart(arr){ var lab=_zMonths().slice(6); var ser=_KPI3.map(function(k){return {data:_zMonthly(arr,k[2]).slice(6),color:k[1]};}); var legend='<div class="z-legend">'+_KPI3.map(function(k){return '<span><i style="background:'+k[1]+'"></i>'+k[0]+'</span>';}).join('')+'</div>'; return _zTrend6(ser,lab)+legend; }
+function _kpi3Now(arr){ var ym=_zMonths()[11]; return _KPI3.map(function(k){return arr.filter(function(c){var d=k[2](c);return d&&String(d).slice(0,7)===ym;}).length;}); }
+var _GENJO=[['P','P(駐車場)','#4aa8ff'],['老朽','老朽','#ff5d7d'],['店舗','店舗','#8b7cff'],['自宅','自宅','#34e3d0'],['雑種地','雑種地','#ffb443'],['都外','都外','#9be15d'],['','未設定','#6b7894']];
+function _genjoPie(arr){ var cnt={}; _GENJO.forEach(function(x){cnt[x[0]]=0;}); arr.forEach(function(c){var gj=(c.genjo||''); if(!(gj in cnt))gj=''; cnt[gj]++;}); var rows=_GENJO.filter(function(x){return cnt[x[0]]>0;}); var segs=rows.map(function(x){return {value:cnt[x[0]],color:x[2]};}); var tot=arr.length||1; var leg='<div style="display:flex;flex-direction:column;gap:3px;font-size:11px">'+rows.map(function(x){var v=cnt[x[0]];return '<div style="display:flex;align-items:center;gap:6px"><i style="width:9px;height:9px;border-radius:2px;background:'+x[2]+';flex-shrink:0;display:inline-block"></i><span style="color:var(--z-mut)">'+x[1]+'</span><b style="margin-left:auto;color:var(--z-ink)">'+v+'</b><span style="color:var(--z-dim);width:36px;text-align:right">'+Math.round(v/tot*100)+'%</span></div>';}).join('')+'</div>'; return '<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'+_zDonut(segs,arr.length,'件')+'<div style="flex:1;min-width:128px">'+leg+'</div></div>'; }
+function _ryokuchiRing(arr){ var own=arr.filter(function(c){return (parseFloat(c.ryokuchi)||0)>0;}).length; var tot=arr.length||1; var pct=Math.round(own/tot*100); var segs=[{value:own,color:'#2f9e44'},{value:tot-own,color:'rgba(130,150,180,.22)'}]; return '<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'+_zDonut(segs,pct+'%','生産緑地')+'<div style="flex:1;min-width:120px"><div style="font-size:13px;color:var(--z-ink);font-weight:700"><b style="font-size:24px;color:#2f9e44;font-family:Sora,sans-serif">'+own+'</b> / '+arr.length+' 人が保有</div><div class="z-sub" style="margin-top:4px">生産緑地（1枚以上）を持つ見込み客の割合。2022年問題・納税猶予の打ち手対象。</div></div></div>'; }
+
 function _zVbars(data,labels,colors){var mx=Math.max.apply(null,data)||1;return '<div class="z-vbars">'+data.map(function(v,i){return '<div class="z-vbar"><b>'+v+'</b><i style="height:'+(v/mx*88)+'px;background:'+(colors[i]||colors[0])+'"></i><span>'+labels[i]+'</span></div>';}).join('')+'</div>';}
 function _zRadarC(axes,color){var cx=100,cy=100,R=70,N=axes.length;function pt(i,r){var a=-Math.PI/2+i*2*Math.PI/N;return [cx+Math.cos(a)*r,cy+Math.sin(a)*r];}var g='';[.5,1].forEach(function(s){g+='<polygon points="'+axes.map(function(_x,i){return pt(i,R*s).map(function(z){return z.toFixed(1);}).join(',');}).join(' ')+'" fill="none" stroke="rgba(255,255,255,.1)"/>';});g+='<polygon points="'+axes.map(function(a,i){return pt(i,R*(a[1]||0)/100).map(function(z){return z.toFixed(1);}).join(',');}).join(' ')+'" fill="'+color+'33" stroke="'+color+'" stroke-width="2"/>';return '<svg viewBox="0 0 200 200">'+g+'</svg>';}
 function _zByMgr(arr){var o={};arr.forEach(function(c){var m=c.manager||'';if(!m)return;(o[m]=o[m]||[]).push(c);});return o;}
@@ -2561,6 +2602,10 @@ function renderSelfDash(){
  H+='<div class="z-card z-c2"><h3>🎯 今日の3手</h3><div class="z-sub">迷ったらここから。</div>'+q.slice(0,3).map(function(x){return '<div class="z-quest"><div class="z-qic" style="background:'+x[0]+'">'+x[1]+'</div><div class="z-qbd"><b>'+x[2]+'</b><p>'+x[3]+'</p></div></div>';}).join('')+'</div>';
  H+='<div class="z-card z-spar z-c2"><h3>🥊 今日の壁打ちワーク</h3><div class="z-sub">AI相手に1問だけ自問自答。</div><div class="z-q">「連想まで来た<em>'+e(spar)+'様</em>に、<em>提案依頼の許可</em>を取る最初の一言は？」</div>'+(isMob?'<div style="font-size:11px;color:var(--z-mut)">PC（Chrome）でAI壁打ち＆印刷が使えます。</div>':'<button class="z-btn-spar" onclick="copySelfPrompt();openCopilot()">🥊 AIと壁打ちする</button>')+'</div>';
  if(!isMob){ H+='<div class="z-card z-cf"><h3>💭 AI分析結果（貼り付け）</h3><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"><button class="z-mini" onclick="copySelfPrompt()">🤖 分析用に抽出</button><button class="z-mini" onclick="openCopilot()">🤖 AI分析</button><button class="z-mini" onclick="printSelfReport()">🖨 印刷</button><span id="selfMemoAt" style="margin-left:auto;align-self:center;font-size:11px;font-weight:700;color:#2f9e44;white-space:nowrap"></span><button class="z-mini" onclick="clearSelfMemo()" style="background:none;border:1px solid #fc8181;color:#c53030">🗑 削除</button></div><textarea id="selfAnalysisMemo" placeholder="AIの分析結果をここに貼り付け（印刷に使われます）" oninput="saveSelfMemo()"></textarea></div>'; }
+ var _myNow=_kpi3Now(mine);
+ H+='<div class="z-card z-c2"><h3>🌳 生産緑地 保有率</h3>'+_ryokuchiRing(mine)+'</div>';
+ H+='<div class="z-card z-c2"><h3>🥧 現況の内訳</h3><div class="z-sub">担当先の現状区分の分布。</div>'+_genjoPie(mine)+'</div>';
+ H+='<div class="z-card z-cf"><h3>📌 重要3指標トレンド（直近6ヶ月）</h3><div class="z-sub">提案依頼・同行・家族構成コンプの月別件数。今月：提案 '+_myNow[0]+'・同行 '+_myNow[1]+'・家族 '+_myNow[2]+'。<br><span style="color:var(--z-dim)">※家族構成は人数把握まで。氏名・年齢・職業まで深掘りを。</span></div>'+_kpi3Chart(mine)+'</div>';
  H+='</div></div>';
  host.innerHTML=H;
  if(!isMob) loadSelfMemo();
@@ -3009,7 +3054,7 @@ function mkBlank() {
     revisits:[{num:1,date:'',appo:'',content:'',instruction:''},{num:2,date:'',appo:'',content:'',instruction:''},{num:3,date:'',appo:'',content:'',instruction:''}],
     revisit_judge_date:'', revisit_judge:'',
     pursuits:[], pursuit_judge_date:'', pursuit_judge:'', pursuit_judge_sel:'', pursuit_judge_ai:'',
-    ai_memo:'', family_headcount:false, family_bikou:'', doukou:false, mgr_involve:'単独', asset_type:false, ekitoho:'', proposal_req:false, proposal_req_at:'',
+    ai_memo:'', family_headcount:false, family_headcount_at:'', family_bikou:'', doukou:false, doukou_at:'', mgr_involve:'単独', asset_type:false, ekitoho:'', proposal_req:false, proposal_req_at:'',
     created_at:new Date().toISOString(), updated_at:new Date().toISOString()
   };
 }
@@ -5052,7 +5097,7 @@ function workMeterInner(){
         +'<div style="flex:1"><div style="font-size:9px;color:var(--z-dim);margin-bottom:2px">今月 '+to+'%</div>'+_wkBar(x.t.overall,_wkCol(x.t.overall))+'</div>'
         +'<div style="width:54px;text-align:right;flex-shrink:0;font-size:13px;font-weight:800;color:'+(dl>=0?'#2f9e44':'#e03131')+'">'+(dl>=0?'▲+'+dl:'▼'+Math.abs(dl))+'</div></div>';
     }).join(''):'<div class="z-empty">今月・先月とも稼働なし</div>';
-    return head+rows;
+    return head+'<div class="z-wkscroll"><div class="z-wkmin">'+rows+'</div></div>';
   }
   var rng=_wkP==='m3'?{start:new Date(y,mo-2,1),end:now,months:3}:_wkP==='m6'?{start:new Date(y,mo-5,1),end:now,months:6}:{start:new Date(y,mo,1),end:now,months:1};
   var stats=reps.map(function(r){return {r:r,s:_wkStats(g[r],rng.start,rng.end,rng.months)};});
@@ -5064,7 +5109,7 @@ function workMeterInner(){
       +'<div style="display:flex;gap:5px;flex-shrink:0">'+metric('発',s.disc,s.tD,s.rD)+metric('提',s.prop,s.tP,s.rP)+metric('再',s.rej,s.tR,s.rR)+metric('追',s.puj,s.tPu,s.rPu)+'</div></div>';
   }).join(''):'<div class="z-empty">この期間に稼働した担当がいません</div>';
   var inactH=inact.length?'<div class="z-sub" style="margin-top:8px">😴 未稼働：'+inact.map(function(x){return e(x);}).join('・')+'</div>':'';
-  return head+rows+inactH;
+  return head+'<div class="z-wkscroll"><div class="z-wkmin">'+rows+'</div></div>'+inactH;
 }
 function workMeterCard(){ return '<div class="z-card z-cf" id="zWorkCard">'+workMeterInner()+'</div>'; }
 function workMeterSection(){ return _zsecPlain('work','🟢 稼働率モニター <span style="font-size:10px;color:var(--z-dim);font-weight:600">基準達成度ランキング</span>','<div id="zWorkCard">'+workMeterInner()+'</div>'); }
@@ -5148,6 +5193,7 @@ function renderAnalysis(){
   +_zc('💰','課の総ポテンシャル金額','A・S案件の路線価×面積の概算。','<div style="text-align:center;padding:10px"><div class="z-num" style="font-size:38px;font-weight:800;color:#ffb443">約'+pot+'<span style="font-size:17px">億円</span></div><div class="z-sub">規模感の目安（概算）</div></div>','z-c2')
   +_zc('🧬','担当スキルレーダー（全員）','最も高い軸×3段階で18タイプに自動分類。色付きチップが各担当の型（段階で色分け）。','<div class="z-minirow">'+miniR+'</div>'+_radarAxisHelp(),'z-cf'));
 
+
  // ===== 担当の特性・保有状況（チーム管理） =====
  var avgHold=reps.length?cards.length/reps.length:0;
  var holdBars=reps.map(function(r){return g[r].length;});
@@ -5179,6 +5225,13 @@ function renderAnalysis(){
   +_zc('📝','入力充実度（担当別）','カードの作り込み度。低い担当は質のフォローを。',_zVbars(inpBars,reps.map(function(r){return r.slice(0,1);}),inpBars.map(function(v){return v>=70?'#2f9e44':v>=50?'#ffb443':'#ff5d7d';})),'z-c2')
   +_zc('🕳','未入力の傾向（課全体）','どの項目が抜けやすいか。高い＝チームの弱点。',_zVbars(blankRates,FCHK.map(function(f){return f[0];}),blankRates.map(function(){return '#ff8aa0';})),'z-c2')
   +_zc('🧬','担当の特性（自動所見）','カード全体から見た各担当のタイプ。',traitRows||'<div class="z-sub">担当データなし</div>','z-cf'));
+ var _k3=reps.map(function(r){var cc=_kpi3Now(g[r]);return {r:r,p:cc[0],d:cc[1],f:cc[2],tot:cc[0]+cc[1]+cc[2]};}).sort(function(a,b){return b.tot-a.tot;});
+ var _k3rows=_k3.some(function(x){return x.tot>0;})?_k3.map(function(x,i){return '<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--z-line)"><div style="width:20px;height:20px;border-radius:50%;background:'+_zAVAS[reps.indexOf(x.r)%8]+';color:#06121f;font-weight:800;font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(i+1)+'</div><div style="width:70px;flex-shrink:0;font-weight:700;font-size:12px;color:var(--z-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e(x.r)+'</div><div style="display:flex;gap:9px;margin-left:auto;flex-shrink:0;align-items:center">'+[['#e03131',x.p],['#2f9e44',x.d],['#efc010',x.f]].map(function(m){return '<div style="font-size:15px;font-weight:800;color:'+m[0]+';min-width:24px;text-align:center">'+m[1]+'</div>';}).join('')+'<div style="font-weight:800;color:var(--z-ink);font-size:13px;min-width:30px;text-align:right;border-left:1px solid var(--z-line);padding-left:8px">'+x.tot+'</div></div></div>';}).join('')+'<div class="z-legend" style="margin-top:7px"><span><i style="background:#e03131"></i>提案依頼</span><span><i style="background:#2f9e44"></i>同行</span><span><i style="background:#efc010"></i>家族構成</span></div>':'<div class="z-empty">今月の記録がまだありません（各項目を設定すると当月から計上）</div>';
+ H+=_zsec('kpi3','📌 重要3指標（同行・家族構成・提案依頼）',
+   _zc('🌳','生産緑地 保有率','',_ryokuchiRing(t),'z-c2')
+  +_zc('🥧','現況（現状）の内訳','現状区分の分布。',_genjoPie(t),'z-c2')
+  +_zc('🏆','今月の重要3指標ランキング','今月件数で順位。※家族構成コンプは人数把握まで。氏名・年齢・職業の深掘りが本来の狙い。',_k3rows,'z-c2')
+  +_zc('📈','重要3指標トレンド（直近6ヶ月）','3指標を重ねて推移。提案=赤・同行=緑・家族=黄。',_kpi3Chart(t),'z-c2'));
  // insights
  var pingStat=reps.map(function(r){var a=g[r],T=a.length||1;return {r:r,v:_zPct(a.filter(function(c){return getKaiwaLevel(c)===0;}).length,T),n:a.length};}).filter(function(o){return o.n>=3;}).sort(function(a,b){return b.v-a.v;});
  var saLate=cards.filter(function(c){return (c.pursuit_judge==='A'||c.pursuit_judge==='S')&&calcPaceOverrate(c)>1;}).length;
@@ -5690,7 +5743,7 @@ var DASH_PRINT_CSS="@page{size:A4;margin:9mm}*{-webkit-print-color-adjust:exact;
 +".zdash,.zdash-mgr,.zdash-rep{background:#fff !important;background-image:none !important;padding:0 !important;--z-bg:#fff;--z-panel:#fff;--z-panel2:#f3f6fb;--z-line:#d7deea;--z-ink:#15233a;--z-mut:#475569;--z-dim:#8593a8;color:#15233a !important}"
 +".zdash .z-card{background:#fff !important;border:1px solid #d7deea !important;box-shadow:none !important;break-inside:avoid;page-break-inside:avoid}"
 +".zdash .z-sec-body{display:block !important;border:1px solid #d7deea !important;border-top:none !important;border-radius:0 0 10px 10px !important}.zdash .z-sec-h{background:#eef2f8 !important;color:#15233a !important;border:1px solid #d7deea !important;border-bottom-left-radius:0 !important;border-bottom-right-radius:0 !important;break-after:avoid;page-break-after:avoid}.zdash .z-sec-h .z-ar{display:none}"
-+".zdash .z-cmdhead{color:#15233a !important}.zdash .z-cmdhead span{color:#5a6b85 !important}"
++".zdash .z-dc{fill:#15233a !important}.zdash .z-ds{fill:#5a6b85 !important}.zdash .z-cmdhead{color:#15233a !important}.zdash .z-cmdhead span{color:#5a6b85 !important}"
 +".zdash .z-bento{display:grid !important;grid-template-columns:repeat(2,1fr) !important;gap:8px !important;grid-auto-flow:dense !important}.zdash .z-c1,.zdash .z-c2{grid-column:span 1 !important}.zdash .z-cf{grid-column:1 / -1 !important}"
 +".zdash .z-gnum{color:#2f9e44 !important}.zdash .z-klab,.zdash .z-ksub,.zdash .z-sub{color:#475569 !important}"
 +".zdash textarea,.zdash .z-spar,.zdash .z-btn-spar,.zdash .z-mini,.no-print{display:none !important}"
@@ -6405,6 +6458,7 @@ window.famOpenAdd=famOpenAdd; window.famOpenEdit=famOpenEdit; window.famClose=fa
 function toggleFamHeadcount(){
   if(!cur) return;
   cur.family_headcount=!cur.family_headcount;
+  cur.family_headcount_at=cur.family_headcount?(cur.family_headcount_at||todayStr()):'';
   updateFamHeadcountBtn();
 }
 function updateFamHeadcountBtn(){
@@ -6433,6 +6487,7 @@ function toggleDoukou(){
   var i=order.indexOf(cur.mgr_involve||'単独'); i=(i+1)%order.length;
   cur.mgr_involve=order[i];
   cur.doukou=(cur.mgr_involve==='同行');
+  cur.doukou_at=cur.doukou?(cur.doukou_at||todayStr()):'';
   updateDoukouBtn();
 }
 function updateDoukouBtn(){
