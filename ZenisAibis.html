@@ -651,6 +651,9 @@ body.is-mob .mob-menu{display:inline-block}
 .zdash .z-h2-bar i{display:block;height:100%;background:var(--stg)}
 .zdash .z-h2-foot{display:flex;justify-content:space-between;font-size:9px;color:var(--z-mut);gap:4px}
 .zdash .z-h2-foot span{white-space:nowrap}
+.zdash .z-k3card{position:relative}
+.zdash .z-k3card::after{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--mc);border-radius:16px 0 0 16px;opacity:.9}
+.zdash .z-k3card .z-kval{font-size:34px}
 .zdash .z-ksub{font-size:10px;color:var(--z-dim)}
 
 </style>
@@ -1353,7 +1356,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v4.50";
+var APP_VERSION = "v4.51";
 
 // ===== 状態 =====
 var cards = [];
@@ -2594,6 +2597,12 @@ function _kpiKeyFam(c){return c.family_headcount&&c.family_headcount_at?c.family
 var _KPI3=[['提案依頼','#e03131',_kpiKeyProp],['同行','#2f9e44',_kpiKeyDk],['家族構成','#efc010',_kpiKeyFam]];
 function _kpi3Chart(arr){ var lab=_zMonths().slice(6); var ser=_KPI3.map(function(k){return {data:_zMonthly(arr,k[2]).slice(6),color:k[1]};}); var legend='<div class="z-legend">'+_KPI3.map(function(k){return '<span><i style="background:'+k[1]+'"></i>'+k[0]+'</span>';}).join('')+'</div>'; return _zTrend6(ser,lab)+legend; }
 function _kpi3Now(arr){ var ym=_zMonths()[11]; return _KPI3.map(function(k){return arr.filter(function(c){var d=k[2](c);return d&&String(d).slice(0,7)===ym;}).length;}); }
+function _ymOff(o){var d=new Date();d.setMonth(d.getMonth()-o);return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2);}
+function _halfRange(){var d=new Date(),y=d.getFullYear(),m=d.getMonth()+1; if(m>=4&&m<=9)return {s:y+'-04',e:y+'-09',label:'4-9月'}; if(m>=10)return {s:y+'-10',e:(y+1)+'-03',label:'10-3月'}; return {s:(y-1)+'-10',e:y+'-03',label:'10-3月'};}
+function _kpiCnt(arr,fn,ym){return arr.filter(function(c){var dd=fn(c);return dd&&String(dd).slice(0,7)===ym;}).length;}
+function _kpiHalf(arr,fn){var h=_halfRange();return arr.filter(function(c){var dd=fn(c);if(!dd)return false;var mk=String(dd).slice(0,7);return mk>=h.s&&mk<=h.e;}).length;}
+function _kpi3Cards(arr){var n0=_ymOff(0),p1=_ymOff(1),h=_halfRange();return _KPI3.map(function(k){var fn=k[2],col=k[1],lab=k[0];var now=_kpiCnt(arr,fn,n0),prev=_kpiCnt(arr,fn,p1),half=_kpiHalf(arr,fn),d=now-prev;var spark=_zMonthly(arr,fn).slice(6);return '<div class="z-card z-kpi z-c1 z-k3card" style="--mc:'+col+'"><span class="z-klab" style="color:'+col+'">'+lab+'</span>'+((now||prev)?'<span class="z-delta '+(d>=0?'up':'dn')+'">'+(d>=0?'\u25b2':'\u25bc')+' '+Math.abs(d)+'</span>':'')+'<div class="z-kval z-num" style="color:'+col+'">'+now+'<small>\u4ef6</small></div><div class="z-ksub">\u524d\u6708 '+prev+' \u30fb \u534a\u671f('+h.label+') <b style="color:'+col+'">'+half+'</b></div>'+_zSpark(spark,col)+'</div>';}).join('');}
+
 var _GENJO=[['P','P(駐車場)','#4aa8ff'],['老朽','老朽','#ff5d7d'],['店舗','店舗','#8b7cff'],['自宅','自宅','#34e3d0'],['雑種地','雑種地','#ffb443'],['都外','都外','#9be15d'],['','未設定','#6b7894']];
 function _genjoPie(arr){ var cnt={}; _GENJO.forEach(function(x){cnt[x[0]]=0;}); arr.forEach(function(c){var gj=(c.genjo||''); if(!(gj in cnt))gj=''; cnt[gj]++;}); var rows=_GENJO.filter(function(x){return cnt[x[0]]>0;}); var segs=rows.map(function(x){return {value:cnt[x[0]],color:x[2]};}); var tot=arr.length||1; var leg='<div style="display:flex;flex-direction:column;gap:3px;font-size:11px">'+rows.map(function(x){var v=cnt[x[0]];return '<div style="display:flex;align-items:center;gap:6px"><i style="width:9px;height:9px;border-radius:2px;background:'+x[2]+';flex-shrink:0;display:inline-block"></i><span style="color:var(--z-mut)">'+x[1]+'</span><b style="margin-left:auto;color:var(--z-ink)">'+v+'</b><span style="color:var(--z-dim);width:36px;text-align:right">'+Math.round(v/tot*100)+'%</span></div>';}).join('')+'</div>'; return '<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'+_zDonut(segs,arr.length,'件')+'<div style="flex:1;min-width:128px">'+leg+'</div></div>'; }
 function _ryokuchiRing(arr){ var own=arr.filter(function(c){return (parseFloat(c.ryokuchi)||0)>0;}).length; var tot=arr.length||1; var pct=Math.round(own/tot*100); var segs=[{value:own,color:'#2f9e44'},{value:tot-own,color:'rgba(130,150,180,.22)'}]; return '<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'+_zDonut(segs,pct+'%','生産緑地')+'<div style="flex:1;min-width:120px"><div style="font-size:13px;color:var(--z-ink);font-weight:700"><b style="font-size:24px;color:#2f9e44;font-family:Sora,sans-serif">'+own+'</b> / '+arr.length+' 人が保有</div><div class="z-sub" style="margin-top:4px">生産緑地（1枚以上）を持つ見込み客の割合。2022年問題・納税猶予の打ち手対象。</div></div></div>'; }
@@ -2645,6 +2654,7 @@ function renderSelfDash(){
  H+='<div class="z-card z-hero z-cf"><div class="z-ring" style="--p:'+renso+'"><div class="z-ring-in"><b>'+renso+'<small>%</small></b><span>連想到達率</span></div></div><div class="z-hmeta"><div class="z-lv">'+lvl[0]+' ・ '+lvl[1]+'</div><h2>'+e(uName||'あなた')+'さんの GROWTH DASHBOARD</h2><div class="z-chips"><span class="z-chip">担当 <b>'+n+'</b>件</span><span class="z-chip">連想到達 <b>'+conn+'</b>件</span><span class="z-chip">入力充実 <b>'+inputAvg+'</b>%</span><span class="z-chip">平均 <b>'+avg+'</b></span></div></div></div>';
  H+='<div class="z-card z-c2"><h3>🧭 スキルレーダー</h3><div class="z-sub">凹んだ軸が伸びしろ。</div><div class="z-radar-wrap"><svg class="z-radar" viewBox="0 0 200 200">'+_zRadar(axes).replace(/^<svg[^>]*>|<\/svg>$/g,'')+'</svg><div class="z-radar-leg">'+leg+'</div></div>'+_radarTypePanel(axes)+'</div>';
  var _myNow=_kpi3Now(mine);
+ H+=_kpi3Cards(mine);
  H+='<div class="z-card z-cf"><h3>📌 重要3指標トレンド（直近6ヶ月）</h3><div class="z-sub">提案依頼・同行・家族構成コンプの月別件数。今月：提案 '+_myNow[0]+'・同行 '+_myNow[1]+'・家族 '+_myNow[2]+'。<br><span style="color:var(--z-dim)">※家族構成は人数把握まで。氏名・年齢・職業まで深掘りを。</span></div>'+_kpi3Chart(mine)+'</div>';
  H+='<div class="z-card z-c2"><h3>🔻 マイ・パイプライン <span style="font-size:10px;color:var(--z-dim)">転換率つき</span></h3><div class="z-sub">連想(3)の壁を越えているか。</div>'+_zFunnel(sc)+'</div>';
  H+='<div class="z-card z-cf"><h3>📈 活動の足あと（直近12ヶ月）</h3><div class="z-sub">発掘・訪問・アポの月別量。右肩上がりが努力の証。</div>'+_zLine([{data:mDisc,color:'#2f9e44'},{data:mVis,color:'#1971c2'},{data:mApo,color:'#e8920c'}])+'<div class="z-legend"><span><i style="background:#9be15d"></i>発掘</span><span><i style="background:#4aa8ff"></i>訪問</span><span><i style="background:#ffb443"></i>アポ</span></div><div class="z-sub" style="margin:8px 0 2px">累計発掘（積み上がり）</div>'+_zLine([{data:cum,color:'#0c8599'}])+'</div>';
@@ -5190,7 +5200,7 @@ function renderAnalysis(){
  var _k3=reps.map(function(r){var cc=_kpi3Now(g[r]);return {r:r,p:cc[0],d:cc[1],f:cc[2],tot:cc[0]+cc[1]+cc[2]};}).sort(function(a,b){return b.tot-a.tot;});
  var _k3rows=_k3.some(function(x){return x.tot>0;})?_k3.map(function(x,i){return '<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--z-line)"><div style="width:20px;height:20px;border-radius:50%;background:'+_zAVAS[reps.indexOf(x.r)%8]+';color:#06121f;font-weight:800;font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(i+1)+'</div><div style="width:70px;flex-shrink:0;font-weight:700;font-size:12px;color:var(--z-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e(x.r)+'</div><div style="display:flex;gap:9px;margin-left:auto;flex-shrink:0;align-items:center">'+[['#e03131',x.p],['#2f9e44',x.d],['#efc010',x.f]].map(function(m){return '<div style="font-size:15px;font-weight:800;color:'+m[0]+';min-width:24px;text-align:center">'+m[1]+'</div>';}).join('')+'<div style="font-weight:800;color:var(--z-ink);font-size:13px;min-width:30px;text-align:right;border-left:1px solid var(--z-line);padding-left:8px">'+x.tot+'</div></div></div>';}).join('')+'<div class="z-legend" style="margin-top:7px"><span><i style="background:#e03131"></i>提案依頼</span><span><i style="background:#2f9e44"></i>同行</span><span><i style="background:#efc010"></i>家族構成</span></div>':'<div class="z-empty">今月の記録がまだありません（各項目を設定すると当月から計上）</div>';
  H+=_zsec('kpi3','📌 重要3指標（提案依頼・同行・家族構成）',
-   _zc('🏆','今月の重要3指標ランキング','今月件数で順位。※家族構成コンプは人数把握まで。氏名・年齢・職業の深掘りが本来の狙い。',_k3rows,'z-c2')
+   _kpi3Cards(t)+_zc('🏆','今月の重要3指標ランキング','今月件数で順位。※家族構成コンプは人数把握まで。氏名・年齢・職業の深掘りが本来の狙い。',_k3rows,'z-c2')
   +_zc('📈','重要3指標トレンド（直近6ヶ月）','3指標を重ねて推移。提案=赤・同行=緑・家族=黄。',_kpi3Chart(t),'z-c2'));
  H+=workMeterSection();
  // process
