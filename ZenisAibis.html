@@ -807,14 +807,11 @@ body.is-mob .mob-menu{display:inline-block}
             </select>
             <button onclick="copyAnalysisPrompt()" style="background:#2d3748;color:white;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:inherit">🤖 分析用に抽出</button>
             <button onclick="openCopilot()" style="background:#0078d4;color:white;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:inherit">🤖 AI分析</button>
-            <button onclick="printAnalysisReport()" class="no-print analysis-print-btn" style="background:#2c5282;color:white;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:inherit">🖨 印刷</button>
+            <button onclick="showAnalysisPaste()" class="analysis-paste-btn" style="background:#276749;color:white;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">💭 結果貼り付け</button>
+            <button onclick="printAnalysisReport()" class="no-print analysis-print-btn" style="background:#2c5282;color:white;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:inherit">🖨 レポート印刷</button>
           </div>
         </div>
         <div id="cmdCenter"></div>
-        <!-- AI分析結果貼り付けエリア -->
-        <div style="margin-top:12px;text-align:center">
-          <button onclick="showAnalysisPaste()" class="analysis-paste-btn" style="background:#276749;color:white;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">💭 AI分析結果の貼り付けページへ →</button>
-        </div>
       </div>
     </div>
   </div>
@@ -834,10 +831,10 @@ body.is-mob .mob-menu{display:inline-block}
             <div style="display:flex;gap:6px">
               <button type="button" class="mic-btn" onclick="micStart('analysisMemo',this)">🎤</button>
               <button onclick="printAnalysisReport()" class="no-print analysis-print-btn" style="background:#2c5282;color:white;border:none;border-radius:4px;font-size:11px;padding:3px 10px;cursor:pointer;font-family:inherit">🖨 印刷</button>
-              <button onclick="clearAnalysisMemo()" class="no-print" style="background:none;border:1px solid #fc8181;color:#c53030;border-radius:4px;font-size:11px;padding:3px 8px;cursor:pointer;font-family:inherit">🗑 削除</button>
+              <span id="analysisMemoAt" style="align-self:center;font-size:11px;font-weight:700;color:#2f855a;white-space:nowrap;margin-right:2px"></span><button onclick="clearAnalysisMemo()" class="no-print" style="background:none;border:1px solid #fc8181;color:#c53030;border-radius:4px;font-size:11px;padding:3px 8px;cursor:pointer;font-family:inherit">🗑 削除</button>
             </div>
           </div>
-          <textarea id="analysisMemo" placeholder="AIの分析結果をここに貼り付けてください" style="width:100%;min-height:200px;border:1px solid #c6f6d5;border-radius:6px;padding:8px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box;background:white" oninput="saveAnalysisMemo()"></textarea><div id="analysisMemoAt" class="paste-at"></div>
+          <textarea id="analysisMemo" placeholder="AIの分析結果をここに貼り付けてください" style="width:100%;min-height:200px;border:1px solid #c6f6d5;border-radius:6px;padding:8px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box;background:white" oninput="saveAnalysisMemo()"></textarea>
         </div>
   </div>
 </div>
@@ -1320,7 +1317,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v4.33";
+var APP_VERSION = "v4.35";
 
 // ===== 状態 =====
 var cards = [];
@@ -1991,6 +1988,7 @@ window.renameStaff=renameStaff; window.doRenameStaff=doRenameStaff;
 window.deleteStaffCards=deleteStaffCards; window.deleteStaffCards2=deleteStaffCards2; window.doDeleteStaffCards=doDeleteStaffCards;
 var STRATEGY_THEMES=['general','next_visit','motivation','personality','objection','hearing','training'];
 function _fmtStamp(iso){if(!iso)return '';var d=new Date(iso);if(isNaN(d))return '';return d.getFullYear()+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+('0'+d.getDate()).slice(-2)+' '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);}
+function _fmtDateJP(iso){if(!iso)return '';var d=new Date(iso);if(isNaN(d))return '';return d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日';}
 function switchStrategyTab(key){
   STRATEGY_THEMES.forEach(function(k){
     var el=document.getElementById('st_'+k);
@@ -2512,7 +2510,7 @@ function renderSelfDash(){
  H+='<div class="z-card z-c2"><h3>🏅 獲得した称号</h3><div class="z-sub">いろんな軸で輝ける。今の自分の勲章。</div><div class="z-badges">'+(myBadges.length?myBadges.map(function(b){return '<div class="z-badge lit"><div class="z-be">'+b.e+'</div><div class="z-bt">'+b.t+'</div><div class="z-bw">'+b.w+'</div></div>';}).join(''):'<div class="z-sub">あと一歩！どれかの軸でトップを狙おう</div>')+'</div></div>';
  H+='<div class="z-card z-c2"><h3>🎯 今日の3手</h3><div class="z-sub">迷ったらここから。</div>'+q.slice(0,3).map(function(x){return '<div class="z-quest"><div class="z-qic" style="background:'+x[0]+'">'+x[1]+'</div><div class="z-qbd"><b>'+x[2]+'</b><p>'+x[3]+'</p></div></div>';}).join('')+'</div>';
  H+='<div class="z-card z-spar z-c2"><h3>🥊 今日の壁打ちワーク</h3><div class="z-sub">AI相手に1問だけ自問自答。</div><div class="z-q">「連想まで来た<em>'+e(spar)+'様</em>に、<em>提案依頼の許可</em>を取る最初の一言は？」</div>'+(isMob?'<div style="font-size:11px;color:var(--z-mut)">PC（Chrome）でAI壁打ち＆印刷が使えます。</div>':'<button class="z-btn-spar" onclick="copySelfPrompt();openCopilot()">🥊 AIと壁打ちする</button>')+'</div>';
- if(!isMob){ H+='<div class="z-card z-cf"><h3>💭 AI分析結果（貼り付け）</h3><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"><button class="z-mini" onclick="copySelfPrompt()">🤖 分析用に抽出</button><button class="z-mini" onclick="openCopilot()">🤖 AI分析</button><button class="z-mini" onclick="printSelfReport()">🖨 印刷</button><button class="z-mini" onclick="clearSelfMemo()" style="background:none;border:1px solid #fc8181;color:#c53030">🗑 削除</button></div><textarea id="selfAnalysisMemo" placeholder="AIの分析結果をここに貼り付け（印刷に使われます）" oninput="saveSelfMemo()"></textarea><div id="selfMemoAt" class="z-stamp"></div></div>'; }
+ if(!isMob){ H+='<div class="z-card z-cf"><h3>💭 AI分析結果（貼り付け）</h3><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"><button class="z-mini" onclick="copySelfPrompt()">🤖 分析用に抽出</button><button class="z-mini" onclick="openCopilot()">🤖 AI分析</button><button class="z-mini" onclick="printSelfReport()">🖨 印刷</button><span id="selfMemoAt" style="margin-left:auto;align-self:center;font-size:11px;font-weight:700;color:#2f9e44;white-space:nowrap"></span><button class="z-mini" onclick="clearSelfMemo()" style="background:none;border:1px solid #fc8181;color:#c53030">🗑 削除</button></div><textarea id="selfAnalysisMemo" placeholder="AIの分析結果をここに貼り付け（印刷に使われます）" oninput="saveSelfMemo()"></textarea></div>'; }
  H+='</div></div>';
  host.innerHTML=H;
  if(!isMob) loadSelfMemo();
@@ -4991,7 +4989,7 @@ function renderAnalysis(){
  H+=_zsec('process','📈 プロセス（活動量の伸び）',
    _zc('📊','課の活動量（直近12ヶ月）','発掘・訪問・アポの月別量。',_zLine([{data:mDisc,color:'#9be15d'},{data:mVis,color:'#4aa8ff'},{data:mApo,color:'#ffb443'}])+'<div class="z-legend"><span><i style="background:#9be15d"></i>発掘</span><span><i style="background:#4aa8ff"></i>訪問</span><span><i style="background:#ffb443"></i>アポ</span></div>','z-cf')
   +_zc('🧗','累計発掘（積み上がり）','努力が積み上がる様子。',_zLine([{data:cum,color:'#34e3d0'}]),'z-c2')
-  +_zc('👥','担当別 今月の発掘','誰がエンジンか。',_zVbars(reps.map(function(r){return g[r].filter(function(c){return (c.discovery_date||'').slice(0,7)===curMonth;}).length;}),reps.map(function(r){return r.slice(0,1);}),_zAVAS),'z-c2'));
+  +_zc('👥','担当別 今月の発掘','誰がエンジンか。',_zVbars(reps.map(function(r){return g[r].filter(function(c){return (c.discovery_date||'').slice(0,7)===curMonth;}).length;}),reps.map(function(r){return r.slice(0,1);}),_zAVAS),'z-c2')+_zc('📇','担当別 保有数','各担当が今持つ見込みカード数（合計）。',_zVbars(reps.map(function(r){return g[r].length;}),reps.map(function(r){return r.slice(0,1);}),_zAVAS),'z-c2'));
  // contract
  var rw={S:35,A:28,B:15,C:8,D:3};function prox(c){return Math.max(0,Math.min(100,Math.round(+(c.stage||0)/7*45)+(rw[c.pursuit_judge]||0)+(calcPaceOverrate(c)>1?0:15)));}
  var deals=t.filter(function(c){return['S','A','B'].indexOf(c.pursuit_judge)>=0||+(c.stage||0)>=3;}).map(function(c){return {c:c,p:prox(c)};}).sort(function(a,b){return b.p-a.p;}).slice(0,6);
@@ -5406,12 +5404,12 @@ function getAmKey(){
 }
 function saveAnalysisMemo(){
   var ta=document.getElementById('analysisMemo'); if(!ta) return;
-  try{ localStorage.setItem(getAmKey(),ta.value); var at=ta.value.trim()?new Date().toISOString():''; localStorage.setItem(getAmKey()+'_at',at); var l=document.getElementById('analysisMemoAt'); if(l)l.textContent=at?('📌 '+_fmtStamp(at)):''; }catch(ex){}
+  try{ localStorage.setItem(getAmKey(),ta.value); var at=ta.value.trim()?new Date().toISOString():''; localStorage.setItem(getAmKey()+'_at',at); var l=document.getElementById('analysisMemoAt'); if(l)l.textContent=at?('📌 '+_fmtDateJP(at)):''; }catch(ex){}
 }
 function loadAnalysisMemo(){
   var ta=document.getElementById('analysisMemo'); if(!ta) return;
   ta.value=localStorage.getItem(getAmKey())||'';
-  var _at=localStorage.getItem(getAmKey()+'_at')||''; var _l=document.getElementById('analysisMemoAt'); if(_l)_l.textContent=_at?('📌 '+_fmtStamp(_at)):'';
+  var _at=localStorage.getItem(getAmKey()+'_at')||''; var _l=document.getElementById('analysisMemoAt'); if(_l)_l.textContent=_at?('📌 '+_fmtDateJP(_at)):'';
   var sel=document.getElementById('analysisMember');
   var v=sel?sel.value:'all';
   var title=document.getElementById('analysisMemoTitle');
@@ -5499,8 +5497,8 @@ function copySelfPrompt(){
   p+='\n※ 数値評価や順位ではなく、明日からの行動が変わる具体的アドバイスを中心に、前向きな表現でお願いします。';
   navigator.clipboard.writeText(p).then(function(){ toast('📋 自分の見込み分析プロンプトをコピーしました！'); }).catch(function(){ toast('コピーできませんでした'); });
 }
-function saveSelfMemo(){ var ta=document.getElementById('selfAnalysisMemo'); if(!ta)return; try{localStorage.setItem('analysis_memo_self_v1',ta.value); var at=ta.value.trim()?new Date().toISOString():''; localStorage.setItem('analysis_memo_self_at_v1',at); var l=document.getElementById('selfMemoAt'); if(l)l.textContent=at?('📌 '+_fmtStamp(at)):''; }catch(ex){} }
-function loadSelfMemo(){ var ta=document.getElementById('selfAnalysisMemo'); if(!ta)return; try{ta.value=localStorage.getItem('analysis_memo_self_v1')||''; var at=localStorage.getItem('analysis_memo_self_at_v1')||''; var l=document.getElementById('selfMemoAt'); if(l)l.textContent=at?('📌 '+_fmtStamp(at)):''; }catch(ex){} }
+function saveSelfMemo(){ var ta=document.getElementById('selfAnalysisMemo'); if(!ta)return; try{localStorage.setItem('analysis_memo_self_v1',ta.value); var at=ta.value.trim()?new Date().toISOString():''; localStorage.setItem('analysis_memo_self_at_v1',at); var l=document.getElementById('selfMemoAt'); if(l)l.textContent=at?('📌 '+_fmtDateJP(at)):''; }catch(ex){} }
+function loadSelfMemo(){ var ta=document.getElementById('selfAnalysisMemo'); if(!ta)return; try{ta.value=localStorage.getItem('analysis_memo_self_v1')||''; var at=localStorage.getItem('analysis_memo_self_at_v1')||''; var l=document.getElementById('selfMemoAt'); if(l)l.textContent=at?('📌 '+_fmtDateJP(at)):''; }catch(ex){} }
 function printSelfReport(){ var ta=document.getElementById('selfAnalysisMemo'); var memo=ta?ta.value:''; if(!memo.trim()){ toast('貼り付け欄が空です'); return; } printAnalysisReport(memo,(uName||'自分')+' 見込み分析レポート'); }
 function clearSelfMemo(){ var ta=document.getElementById('selfAnalysisMemo'); if(!ta)return; if(!ta.value){toast('すでに空です');return;} aibisAlert('この分析結果を削除するよ。よろしい？<br><br><div style="display:flex;gap:8px;margin-top:8px"><button onclick="closeAibisAlert();doClearSelfMemo()" style="flex:1;padding:8px;background:#c53030;color:white;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit">削除する</button><button onclick="closeAibisAlert()" style="flex:1;padding:8px;background:#e2e8f0;color:#2d3748;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit">やめる</button></div>'); }
 function doClearSelfMemo(){ var ta=document.getElementById('selfAnalysisMemo'); if(ta)ta.value=''; try{localStorage.removeItem('analysis_memo_self_v1');localStorage.removeItem('analysis_memo_self_at_v1');}catch(ex){} var l=document.getElementById('selfMemoAt'); if(l)l.textContent=''; toast('削除しました'); }
