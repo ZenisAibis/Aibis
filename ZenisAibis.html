@@ -555,7 +555,7 @@ body.is-mob .mob-menu{display:inline-block}
 </style>
 <style>
 /* ===== z.Aibis Dashboard v2 additions (scoped .zdash) ===== */
-.zdash .z-bento{display:grid;grid-template-columns:repeat(2,1fr);gap:11px;align-items:start;margin-bottom:11px}
+.zdash .z-bento{display:grid;grid-template-columns:repeat(2,1fr);gap:11px;align-items:start;grid-auto-flow:dense;margin-bottom:11px}
 @media(min-width:760px){.zdash .z-bento{grid-template-columns:repeat(4,1fr)}}
 .zdash .z-bento .z-card{margin-bottom:0;padding:14px}
 .zdash .z-card{grid-column:1 / -1}
@@ -830,9 +830,9 @@ body.is-mob .mob-menu{display:inline-block}
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
             <div id="analysisMemoTitle" style="font-size:12px;font-weight:600;color:#276749">💭 AI分析結果</div>
             <div style="display:flex;gap:6px">
-              <button type="button" class="mic-btn" onclick="micStart('analysisMemo',this)">🎤</button>
+              <span id="analysisMemoAt" style="align-self:center;font-size:11px;font-weight:700;color:#2f855a;white-space:nowrap;margin-right:4px"></span><button type="button" class="mic-btn" onclick="micStart('analysisMemo',this)">🎤</button>
               <button onclick="printAnalysisReport()" class="no-print analysis-print-btn" style="background:#2c5282;color:white;border:none;border-radius:4px;font-size:11px;padding:3px 10px;cursor:pointer;font-family:inherit">🖨 印刷</button>
-              <span id="analysisMemoAt" style="align-self:center;font-size:11px;font-weight:700;color:#2f855a;white-space:nowrap;margin-right:2px"></span><button onclick="clearAnalysisMemo()" class="no-print" style="background:none;border:1px solid #fc8181;color:#c53030;border-radius:4px;font-size:11px;padding:3px 8px;cursor:pointer;font-family:inherit">🗑 削除</button>
+              <button onclick="clearAnalysisMemo()" class="no-print" style="background:none;border:1px solid #fc8181;color:#c53030;border-radius:4px;font-size:11px;padding:3px 8px;cursor:pointer;font-family:inherit">🗑 削除</button>
             </div>
           </div>
           <textarea id="analysisMemo" placeholder="AIの分析結果をここに貼り付けてください" style="width:100%;min-height:200px;border:1px solid #c6f6d5;border-radius:6px;padding:8px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box;background:white" oninput="saveAnalysisMemo()"></textarea>
@@ -1318,7 +1318,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v4.37";
+var APP_VERSION = "v4.40";
 
 // ===== 状態 =====
 var cards = [];
@@ -5530,7 +5530,7 @@ var DASH_PRINT_CSS="@page{size:A4;margin:9mm}*{-webkit-print-color-adjust:exact;
 +".zdash .z-card{background:#fff !important;border:1px solid #d7deea !important;box-shadow:none !important;break-inside:avoid;page-break-inside:avoid}"
 +".zdash .z-sec-body{display:block !important}.zdash .z-sec-h{background:#eef2f8 !important;color:#15233a !important;border:1px solid #d7deea !important;break-after:avoid;page-break-after:avoid}.zdash .z-sec-h .z-ar{display:none}"
 +".zdash .z-cmdhead{color:#15233a !important}.zdash .z-cmdhead span{color:#5a6b85 !important}"
-+".zdash .z-bento{display:grid !important;grid-template-columns:repeat(2,1fr) !important;gap:8px !important}.zdash .z-c1,.zdash .z-c2{grid-column:span 1 !important}.zdash .z-cf{grid-column:1 / -1 !important}"
++".zdash .z-bento{display:grid !important;grid-template-columns:repeat(2,1fr) !important;gap:8px !important;grid-auto-flow:dense !important}.zdash .z-c1,.zdash .z-c2{grid-column:span 1 !important}.zdash .z-cf{grid-column:1 / -1 !important}"
 +".zdash .z-gnum{color:#2f9e44 !important}.zdash .z-klab,.zdash .z-ksub,.zdash .z-sub{color:#475569 !important}"
 +".zdash textarea,.zdash .z-spar,.zdash .z-btn-spar,.zdash .z-mini,.no-print{display:none !important}"
 +".zdash .z-radar polygon[fill=\"none\"]{stroke:#cdd5e3 !important}.zdash .z-radar line{stroke:#cdd5e3 !important}";
@@ -5597,9 +5597,17 @@ function plannerTab(t){
   document.querySelectorAll('.pl-tab').forEach(function(b){ b.classList.toggle('pl-on', b.getAttribute('data-t')===t); });
   if(t==='input') renderPlanner(); else renderPlannerSheet();
 }
-function sortPlan(){ _plan.entries.sort(function(a,b){ return (a.time||'99').localeCompare(b.time||'99'); }); }
+function planWard(c){ if(!c||!c.address) return ''; var a=getArea(c.address); var m=a.match(/(.+?[都道府県])(.+?[市区町村郡])/); return m?m[2]:a; }
+function planAreaOf(en){ if(!en||!en.cardId) return ''; var c=cards.filter(function(x){return x.id===en.cardId;})[0]; return c?planWard(c):''; }
+function sortPlan(){ var mode=(_plan&&_plan.sort)||'time';
+  if(mode==='area'){ _plan.entries.sort(function(a,b){ var aa=planAreaOf(a)||'\uffff', ba=planAreaOf(b)||'\uffff'; if(aa!==ba) return aa.localeCompare(ba,'ja'); return (a.time||'99').localeCompare(b.time||'99'); }); }
+  else { _plan.entries.sort(function(a,b){ return (a.time||'99').localeCompare(b.time||'99'); }); }
+}
+function planSort(mode){ if(!_plan)return; _plan.sort=mode; savePlan(); renderPlanner(); }
+function planPick(id){ if(id) planAddCard(id); }
 function renderPlanner(){
   var host=document.getElementById('plannerInput'); if(!host) return; sortPlan();
+  var sm=(_plan.sort||'time');
   var appoCards=cards.filter(function(c){ return planHasTodayAppo(c) && !_plan.entries.some(function(e){return e.cardId===c.id;}); });
   var sug='';
   if(appoCards.length){
@@ -5607,17 +5615,32 @@ function renderPlanner(){
       +appoCards.map(function(c){ return '<span onclick="planAddCard(\''+c.id+'\')" style="display:inline-block;background:#fff;border:1px solid #9ae6b4;color:#276749;border-radius:20px;padding:5px 12px;font-size:12px;cursor:pointer;margin:0 6px 6px 0">＋ '+e(c.name||'(無名)')+'</span>'; }).join('')+'</div>';
   }
   var slots=planSlots().map(function(s){return '<option>'+s+'</option>';}).join('');
+  var pickList=cards.filter(function(c){ return !_plan.entries.some(function(e){return e.cardId===c.id;}); }).map(function(c){ return {c:c,w:planWard(c)}; }).sort(function(a,b){ var wa=a.w||'\uffff',wb=b.w||'\uffff'; if(wa!==wb)return wa.localeCompare(wb,'ja'); return (a.c.name||'').localeCompare(b.c.name||'','ja'); });
+  var pickOpts='<option value="">＋ お客様を選択して追加…</option>'+pickList.map(function(o){ return '<option value="'+o.c.id+'">'+e(o.c.name||'(無名)')+(o.w?'（'+e(o.w)+'）':'')+'</option>'; }).join('');
+  var sortToggle='<span style="display:inline-flex;border:1px solid #cbd5e0;border-radius:7px;overflow:hidden;margin-right:8px"><button onclick="planSort(\'time\')" style="border:none;padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit;background:'+(sm==='time'?'#2c5282':'#fff')+';color:'+(sm==='time'?'#fff':'#718096')+'">🕒 時刻順</button><button onclick="planSort(\'area\')" style="border:none;padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit;background:'+(sm==='area'?'#2c5282':'#fff')+';color:'+(sm==='area'?'#fff':'#718096')+'">📍 エリア順</button></span>';
   var addForm='<div style="border:1px dashed #cbd5e0;border-radius:8px;padding:12px;margin-bottom:14px;background:#fafcff">'
     +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:8px">'
-    +'<div><label style="font-size:11px;color:#718096">時刻</label><br><select id="plTime" style="padding:6px;border:1px solid #cbd5e0;border-radius:6px">'+slots+'</select></div>'
-    +'<div style="flex:1;min-width:160px"><label style="font-size:11px;color:#718096">お客様を検索して追加</label><br><input id="plSearch" oninput="planSearch(this.value)" placeholder="名前で検索" style="width:100%;padding:6px 8px;border:1px solid #cbd5e0;border-radius:6px"></div>'
-    +'</div><div id="plSearchResults" style="margin-bottom:8px"></div>'
+    +'<div><label style="font-size:11px;color:#718096">時刻</label><br><select id="plTime" style="padding:7px;border:1px solid #cbd5e0;border-radius:6px;font-size:13px">'+slots+'</select></div>'
+    +'<div style="flex:1;min-width:200px"><label style="font-size:11px;color:#718096">お客様（プルダウンで選択）</label><br><select id="plPick" onchange="planPick(this.value)" style="width:100%;padding:7px 8px;border:1px solid #cbd5e0;border-radius:6px;font-size:13px">'+pickOpts+'</select></div>'
+    +'</div>'
+    +'<div style="margin-bottom:8px"><label style="font-size:11px;color:#718096">名前で検索して追加</label><br><input id="plSearch" oninput="planSearch(this.value)" placeholder="氏名を入力…" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font-size:13px;box-sizing:border-box"></div>'
+    +'<div id="plSearchResults" style="margin-bottom:8px"></div>'
     +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
     +['本社イベント','本社講習','支店イベント','支店講習'].map(function(ev){ return '<button onclick="planAddEvent(\''+ev+'\')" style="background:#553c9a;color:#fff;border:none;border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer;font-family:inherit">＋'+ev+'</button>'; }).join('')
     +'<button onclick="planAddFree()" style="background:#718096;color:#fff;border:none;border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer;font-family:inherit">＋自由入力</button>'
     +'</div></div>';
-  var list=_plan.entries.length?_plan.entries.map(function(en,i){ return planEntryHTML(en,i); }).join(''):'<div style="text-align:center;color:#a0aec0;font-size:12px;padding:10px">予定がありません。検索やイベントから追加してください。</div>';
-  host.innerHTML='<div style="background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.07);padding:14px"><div style="font-size:13px;color:#718096;margin-bottom:10px">'+planDateLabel()+'　担当：'+e(uName||'')+'</div>'+sug+addForm+'<div id="plList">'+list+'</div></div>';
+  var _pw=null;
+  var list=_plan.entries.length?_plan.entries.map(function(en,i){ var h=''; if(sm==='area'){ var w=planAreaOf(en)||'その他'; if(w!==_pw){ _pw=w; h+='<div style="font-size:12px;font-weight:800;color:#2c5282;margin:8px 2px 4px;border-bottom:1px solid #e2e8f0;padding-bottom:3px">📍 '+e(w)+'</div>'; } } return h+planEntryHTML(en,i); }).join(''):'<div style="text-align:center;color:#a0aec0;font-size:12px;padding:10px">予定がありません。プルダウンや検索から追加してください。</div>';
+  host.innerHTML='<div style="background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.07);padding:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px"><div style="font-size:13px;color:#718096">'+planDateLabel()+'　担当：'+e(uName||'')+'</div><div style="display:flex;align-items:center">'+sortToggle+'<button onclick="resetPlanner()" style="background:#fff;color:#e53e3e;border:1px solid #fed7d7;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap">🗑 全リセット</button></div></div>'+sug+addForm+'<div id="plList">'+list+'</div></div>';
+}
+function planEntryTags(en){
+  if(en.cardId){ var s=''; var w=planAreaOf(en);
+    if(w) s+='<span style="font-size:11px;color:#2c5282;background:#ebf8ff;border:1px solid #bee3f8;border-radius:10px;padding:1px 8px;white-space:nowrap">📍'+e(w)+'</span>';
+    var stg=(en.sub&&en.sub.indexOf('・')>=0)?en.sub.split('・').pop():'';
+    if(stg) s+='<span style="font-size:11px;color:#553c9a;background:#faf5ff;border:1px solid #e9d8fd;border-radius:10px;padding:1px 8px;white-space:nowrap">'+e(stg)+'</span>';
+    return s;
+  }
+  return en.sub?'<span style="font-size:11px;font-weight:500;color:#718096">'+e(en.sub)+'</span>':'';
 }
 function planEntryHTML(en,i){
   var timeSel='<select onchange="planSet('+i+',\'time\',this.value)" style="border:1px solid #e2e8f0;border-radius:6px;padding:4px;font-size:13px;font-weight:700"><option value="">時刻</option>'+planSlots().map(function(s){return '<option'+(en.time===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select>';
@@ -5627,12 +5650,19 @@ function planEntryHTML(en,i){
     '<select onchange="planSet('+i+',\'purpose\',this.value)" style="margin-left:8px;border:1px solid #cbd5e0;border-radius:6px;padding:5px;font-size:12px">'+PLAN_PURPOSES.map(function(p){return '<option'+(en.purpose===p?' selected':'')+'>'+p+'</option>';}).join('')+'</select>';
   return '<div style="border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;margin-bottom:10px">'
     +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'+timeSel
-    +'<span style="flex:1;font-size:14px;font-weight:700;color:#1a202c">'+e(en.target)+(en.sub?'<span style="font-size:11px;font-weight:500;color:#718096"> '+e(en.sub)+'</span>':'')+'</span>'
+    +'<span style="flex:1;display:flex;align-items:center;gap:7px;flex-wrap:wrap"><span style="font-size:15px;font-weight:800;color:#1a202c">'+e(en.target)+'</span>'+planEntryTags(en)+'</span>'
     +'<button onclick="planDel('+i+')" style="border:none;background:none;color:#cbd5e0;font-size:18px;cursor:pointer">✕</button></div>'
     +'<div>'+kindSeg+purp+'</div>'
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px"><input value="'+planEsc(en.note)+'" oninput="planSet('+i+',\'note\',this.value)" placeholder="備考" style="padding:6px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px"><input value="'+planEsc(en.result)+'" oninput="planSet('+i+',\'result\',this.value)" placeholder="結果（夜に記入）" style="padding:6px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px"></div></div>';
 }
 function planSet(i,k,v){ if(!_plan.entries[i])return; _plan.entries[i][k]=v; savePlan(); if(k==='time'||k==='kind'){ renderPlanner(); } }
+function resetPlanner(){ if(!_plan.entries||!_plan.entries.length){ toast('リセットする予定がありません'); return; }
+  aibisAlert('本日の予定表（全'+_plan.entries.length+'件）をリセットするよ⚠<br>前回の予定をまとめて消去します。この操作は取り消せません。<br><br>'
+    +'<div style="display:flex;gap:8px;margin-top:8px">'
+    +'<button onclick="closeAibisAlert();doResetPlanner()" style="flex:1;padding:8px;background:#c53030;color:white;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit">リセットする</button>'
+    +'<button onclick="closeAibisAlert()" style="flex:1;padding:8px;background:#e2e8f0;color:#2d3748;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit">やめる</button>'
+    +'</div>'); }
+function doResetPlanner(){ _plan={entries:[]}; savePlan(); renderPlanner(); toast('予定表をリセットしました'); }
 function planDel(i){ _plan.entries.splice(i,1); savePlan(); renderPlanner(); }
 function planAddCard(id){
   if(_plan.entries.some(function(e){return e.cardId===id;})){ toast('既に追加済みです'); return; }
@@ -5643,8 +5673,9 @@ function planAddCard(id){
 function planSearch(q){
   var box=document.getElementById('plSearchResults'); if(!box)return; q=(q||'').trim();
   if(!q){ box.innerHTML=''; return; }
-  var hits=cards.filter(function(c){ return (c.name||'').indexOf(q)>=0 && !_plan.entries.some(function(e){return e.cardId===c.id;}); }).slice(0,8);
-  box.innerHTML=hits.length?hits.map(function(c){ return '<span onclick="planAddCard(\''+c.id+'\');var s=document.getElementById(\'plSearch\');if(s)s.value=\'\';planSearch(\'\')" style="display:inline-block;background:#ebf8ff;border:1px solid #90cdf4;color:#2c5282;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;margin:0 6px 6px 0">'+e(c.name||'(無名)')+'</span>'; }).join(''):'<span style="font-size:11px;color:#a0aec0">該当なし（既に追加済みの可能性）</span>';
+  var hits=cards.filter(function(c){ return (c.name||'').indexOf(q)>=0 && !_plan.entries.some(function(e){return e.cardId===c.id;}); }).slice(0,10);
+  if(!hits.length){ box.innerHTML='<span style="font-size:12px;color:#a0aec0">該当なし（既に追加済みの可能性）</span>'; return; }
+  box.innerHTML=hits.map(function(c){ var w=planWard(c); return '<div onclick="planAddCard(\''+c.id+'\')" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px;cursor:pointer;background:#fff"><span style="font-weight:700;font-size:14px;color:#1a202c">'+e(c.name||'(無名)')+'</span>'+(w?'<span style="font-size:11px;color:#2c5282;background:#ebf8ff;border:1px solid #bee3f8;border-radius:10px;padding:1px 8px;white-space:nowrap">📍'+e(w)+'</span>':'')+(c.pursuit_judge?'<span style="font-size:11px;color:#718096">'+e(c.pursuit_judge)+'</span>':'')+'<span style="margin-left:auto;color:#2c5282;font-size:12px;font-weight:700">＋ 追加</span></div>'; }).join('');
 }
 function planAddEvent(label){ var t=document.getElementById('plTime'); _plan.entries.push({cardId:'',target:label,sub:'行事',kind:'ev',purpose:'—',time:t?t.value:'',note:'',result:''}); savePlan(); renderPlanner(); }
 function planAddFree(){ var name=prompt('対象名を入力'); if(!name)return; var t=document.getElementById('plTime'); _plan.entries.push({cardId:'',target:name,sub:'',kind:'k3',purpose:'情報収集',time:t?t.value:'',note:'',result:''}); savePlan(); renderPlanner(); }
@@ -5687,7 +5718,7 @@ function plannerToPhone(){
   var body='本日の予定のカード\n日付:'+ts+'\n件数:'+sel.length+'\nファイル:'+fn;
   setTimeout(function(){ URL.revokeObjectURL(url); window.location.href='mailto:'+encodeURIComponent(selfEmail||'')+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body); aibisAlert('予定表のカード'+sel.length+'件をスマホ宛に送りました📧<br>スマホで📥読込→マージしてね。'); },500);
 }
-window.openPlannerFromSelected=openPlannerFromSelected; window.openPlannerToday=openPlannerToday; window.closePlanner=closePlanner; window.plannerTab=plannerTab; window.planSet=planSet; window.planDel=planDel; window.planAddCard=planAddCard; window.planSearch=planSearch; window.planAddEvent=planAddEvent; window.planAddFree=planAddFree; window.printPlanner=printPlanner; window.plannerToPhone=plannerToPhone;
+window.openPlannerFromSelected=openPlannerFromSelected; window.openPlannerToday=openPlannerToday; window.closePlanner=closePlanner; window.plannerTab=plannerTab; window.planSet=planSet; window.planDel=planDel; window.planAddCard=planAddCard; window.planSearch=planSearch; window.planAddEvent=planAddEvent; window.planAddFree=planAddFree; window.printPlanner=printPlanner; window.plannerToPhone=plannerToPhone; window.resetPlanner=resetPlanner; window.doResetPlanner=doResetPlanner; window.planPick=planPick; window.planSort=planSort;
 
 function showSyncGuide(){
   document.getElementById('syncModal').classList.add('show');
@@ -6343,7 +6374,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <label>現状</label>
           <select id="f_genjo">
             <option value="">-</option><option value="P">P（駐車場）</option>
-            <option value="老朽">老朽</option><option value="店舗">店舗</option><option value="自宅">自宅</option>
+            <option value="老朽">老朽</option><option value="店舗">店舗</option><option value="自宅">自宅</option><option value="雑種地">雑種地</option><option value="都外">都外</option>
           </select>
         </div>
       </div>
@@ -6814,9 +6845,9 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <div style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:6px;padding:12px;margin-bottom:8px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
             <div style="font-size:12px;font-weight:700;color:#553c9a">💭 総合分析 − 貼り付け欄</div>
-            <button type="button" onclick="clearStrategyField('f_ai_general')" style="font-size:11px;padding:3px 10px;border:1px solid #e2e8f0;border-radius:4px;background:white;cursor:pointer;color:#718096">🗑</button>
+            <span id="at_ai_general" class="paste-at" style="margin-left:auto;align-self:center;margin-top:0;margin-right:6px"></span><button type="button" onclick="clearStrategyField('f_ai_general')" style="font-size:11px;padding:3px 10px;border:1px solid #e2e8f0;border-radius:4px;background:white;cursor:pointer;color:#718096">🗑</button>
           </div>
-          <textarea id="f_ai_general" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('general');autoDetectJudge(this.value);autoDetectSummary(this.value)"></textarea><div id="at_ai_general" class="paste-at"></div>
+          <textarea id="f_ai_general" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('general');autoDetectJudge(this.value);autoDetectSummary(this.value)"></textarea>
           <div id="ac_general" style="display:none;margin-top:8px;background:#fffbeb;border:1px solid #f6e05e;border-radius:6px;padding:8px;font-size:12px;color:#744210"></div>
         </div>
         <!-- 最優先事項 -->
@@ -6840,9 +6871,9 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <div style="background:#ebf8ff;border:1px solid #bee3f8;border-radius:6px;padding:12px;margin-bottom:8px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
             <div style="font-size:12px;font-weight:700;color:#2b6cb0">🎯 次回作戦 − 貼り付け欄</div>
-            <button type="button" onclick="clearStrategyField('f_ai_next_visit')" style="font-size:11px;padding:3px 10px;border:1px solid #bee3f8;border-radius:4px;background:white;cursor:pointer;color:#718096">🗑</button>
+            <span id="at_ai_next_visit" class="paste-at" style="margin-left:auto;align-self:center;margin-top:0;margin-right:6px"></span><button type="button" onclick="clearStrategyField('f_ai_next_visit')" style="font-size:11px;padding:3px 10px;border:1px solid #bee3f8;border-radius:4px;background:white;cursor:pointer;color:#718096">🗑</button>
           </div>
-          <textarea id="f_ai_next_visit" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('next_visit')"></textarea><div id="at_ai_next_visit" class="paste-at"></div>
+          <textarea id="f_ai_next_visit" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('next_visit')"></textarea>
           <div id="ac_next_visit" style="display:none;margin-top:8px;background:#fffbeb;border:1px solid #f6e05e;border-radius:6px;padding:8px;font-size:12px;color:#744210"></div>
         </div>
       </div>
@@ -6850,9 +6881,9 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <div style="background:#fff5f5;border:1px solid #fed7d7;border-radius:6px;padding:12px;margin-bottom:8px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
             <div style="font-size:12px;font-weight:700;color:#c53030">🔥 動機引揚 − 貼り付け欄</div>
-            <button type="button" onclick="clearStrategyField('f_ai_motivation')" style="font-size:11px;padding:3px 10px;border:1px solid #fed7d7;border-radius:4px;background:white;cursor:pointer;color:#718096">🗑</button>
+            <span id="at_ai_motivation" class="paste-at" style="margin-left:auto;align-self:center;margin-top:0;margin-right:6px"></span><button type="button" onclick="clearStrategyField('f_ai_motivation')" style="font-size:11px;padding:3px 10px;border:1px solid #fed7d7;border-radius:4px;background:white;cursor:pointer;color:#718096">🗑</button>
           </div>
-          <textarea id="f_ai_motivation" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('motivation')"></textarea><div id="at_ai_motivation" class="paste-at"></div>
+          <textarea id="f_ai_motivation" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('motivation')"></textarea>
           <div id="ac_motivation" style="display:none;margin-top:8px;background:#fffbeb;border:1px solid #f6e05e;border-radius:6px;padding:8px;font-size:12px;color:#744210"></div>
         </div>
       </div>
@@ -6860,9 +6891,9 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <div style="background:#faf5ff;border:1px solid #e9d8fd;border-radius:6px;padding:12px;margin-bottom:8px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
             <div style="font-size:12px;font-weight:700;color:#6b46c1">🧠 性格応対 − 貼り付け欄</div>
-            <button type="button" onclick="clearStrategyField('f_ai_personality')" style="font-size:11px;padding:3px 10px;border:1px solid #e9d8fd;border-radius:4px;background:white;cursor:pointer;color:#718096">🗑</button>
+            <span id="at_ai_personality" class="paste-at" style="margin-left:auto;align-self:center;margin-top:0;margin-right:6px"></span><button type="button" onclick="clearStrategyField('f_ai_personality')" style="font-size:11px;padding:3px 10px;border:1px solid #e9d8fd;border-radius:4px;background:white;cursor:pointer;color:#718096">🗑</button>
           </div>
-          <textarea id="f_ai_personality" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('personality')"></textarea><div id="at_ai_personality" class="paste-at"></div>
+          <textarea id="f_ai_personality" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('personality')"></textarea>
           <div id="ac_personality" style="display:none;margin-top:8px;background:#fffbeb;border:1px solid #f6e05e;border-radius:6px;padding:8px;font-size:12px;color:#744210"></div>
         </div>
       </div>
@@ -6870,9 +6901,9 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <div style="background:#fffaf0;border:1px solid #fbd38d;border-radius:6px;padding:12px;margin-bottom:8px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
             <div style="font-size:12px;font-weight:700;color:#c05621">🛡 反論対応 − 貼り付け欄</div>
-            <button type="button" onclick="clearStrategyField('f_ai_objection')" style="font-size:11px;padding:3px 10px;border:1px solid #fbd38d;border-radius:4px;background:white;cursor:pointer;color:#718096">🗑</button>
+            <span id="at_ai_objection" class="paste-at" style="margin-left:auto;align-self:center;margin-top:0;margin-right:6px"></span><button type="button" onclick="clearStrategyField('f_ai_objection')" style="font-size:11px;padding:3px 10px;border:1px solid #fbd38d;border-radius:4px;background:white;cursor:pointer;color:#718096">🗑</button>
           </div>
-          <textarea id="f_ai_objection" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('objection')"></textarea><div id="at_ai_objection" class="paste-at"></div>
+          <textarea id="f_ai_objection" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('objection')"></textarea>
           <div id="ac_objection" style="display:none;margin-top:8px;background:#fffbeb;border:1px solid #f6e05e;border-radius:6px;padding:8px;font-size:12px;color:#744210"></div>
         </div>
       </div>
@@ -6880,9 +6911,9 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <div style="background:#f0fff4;border:1px solid #c6f6d5;border-radius:6px;padding:12px;margin-bottom:8px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
             <div style="font-size:12px;font-weight:700;color:#276749">👂 聞取補充 − 貼り付け欄</div>
-            <button type="button" onclick="clearStrategyField('f_ai_hearing')" style="font-size:11px;padding:3px 10px;border:1px solid #c6f6d5;border-radius:4px;background:white;cursor:pointer;color:#718096">🗑</button>
+            <span id="at_ai_hearing" class="paste-at" style="margin-left:auto;align-self:center;margin-top:0;margin-right:6px"></span><button type="button" onclick="clearStrategyField('f_ai_hearing')" style="font-size:11px;padding:3px 10px;border:1px solid #c6f6d5;border-radius:4px;background:white;cursor:pointer;color:#718096">🗑</button>
           </div>
-          <textarea id="f_ai_hearing" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('hearing')"></textarea><div id="at_ai_hearing" class="paste-at"></div>
+          <textarea id="f_ai_hearing" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('hearing')"></textarea>
           <div id="ac_hearing" style="display:none;margin-top:8px;background:#fffbeb;border:1px solid #f6e05e;border-radius:6px;padding:8px;font-size:12px;color:#744210"></div>
         </div>
       </div>
@@ -6890,9 +6921,9 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <div style="background:#ebf4ff;border:1px solid #bee3f8;border-radius:6px;padding:12px;margin-bottom:8px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
             <div style="font-size:12px;font-weight:700;color:#2c5282">📝 会話訓練 − 貼り付け欄</div>
-            <button type="button" onclick="clearStrategyField('f_ai_training')" style="font-size:11px;padding:3px 10px;border:1px solid #bee3f8;border-radius:4px;background:white;cursor:pointer;color:#718096">🗑</button>
+            <span id="at_ai_training" class="paste-at" style="margin-left:auto;align-self:center;margin-top:0;margin-right:6px"></span><button type="button" onclick="clearStrategyField('f_ai_training')" style="font-size:11px;padding:3px 10px;border:1px solid #bee3f8;border-radius:4px;background:white;cursor:pointer;color:#718096">🗑</button>
           </div>
-          <textarea id="f_ai_training" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('training')"></textarea><div id="at_ai_training" class="paste-at"></div>
+          <textarea id="f_ai_training" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('training')"></textarea>
           <div id="ac_training" style="display:none;margin-top:8px;background:#fffbeb;border:1px solid #f6e05e;border-radius:6px;padding:8px;font-size:12px;color:#744210"></div>
         </div>
       </div>
