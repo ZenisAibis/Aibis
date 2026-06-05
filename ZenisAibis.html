@@ -1318,7 +1318,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v4.36";
+var APP_VERSION = "v4.37";
 
 // ===== 状態 =====
 var cards = [];
@@ -5548,7 +5548,8 @@ function printDashboard(hostId,title){
     +'<div style="font:800 16px Sora,sans-serif;color:#15233a;margin:0 0 8px">'+e(title||'ダッシュボード')+' <span style="font-weight:500;font-size:11px;color:#5a6b85">'+dstr+'</span></div>'
     +host.innerHTML+'</body></html>');
   w.document.close();
-  setTimeout(function(){ try{w.focus();w.print();}catch(ex){} }, 600);
+  w.onafterprint=function(){ try{w.close();}catch(e){} };
+  setTimeout(function(){ try{ w.focus(); w.print(); setTimeout(function(){ try{ if(!w.closed) w.close(); }catch(e){} }, 1500); }catch(ex){} }, 600);
 }
 window.printDashboard=printDashboard;
 /* ===== 本日の予定表（フェーズ1・PC専用） ===== */
