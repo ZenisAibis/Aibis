@@ -671,7 +671,7 @@ body.is-mob .mob-menu{display:inline-block}
     </h1>
     <div style="display:flex;gap:6px;align-items:center;flex-wrap:nowrap">
       <button onclick="newCard()" style="background:#c53030;color:white;border:none;border-radius:6px;padding:7px 12px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600">＋ 新規</button>
-      <button class="bp" onclick="loadFile()">📥 読込</button>
+      <button class="bp" onclick="loadFile()" style="background:#3182ce">📥 読込</button>
       <button class="bs" onclick="saveAll()">💾 保存</button>
       <div class="mob-menu" style="position:relative">
         <button onclick="togglePcMenu(event)" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:6px;font-size:16px;padding:4px 8px;cursor:pointer;font-family:inherit;line-height:1.6;min-height:36px;width:36px">⋮</button>
@@ -847,7 +847,7 @@ body.is-mob .mob-menu{display:inline-block}
       <span style="font-size:16px;font-weight:700;color:#2c5282">📅 本日の予定表</span>
     </div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
-      <button onclick="closePlanner()" style="background:#e2e8f0;color:#2d3748;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">← 一覧に戻る</button><button class="pl-tab pl-on" data-t="input" onclick="plannerTab('input')">✏️ 入力</button>
+      <button onclick="history.back()" style="background:#e2e8f0;color:#2d3748;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">← 一覧に戻る</button><button class="pl-tab pl-on" data-t="input" onclick="plannerTab('input')">✏️ 入力</button>
       <button class="pl-tab" data-t="prev" onclick="plannerTab('prev')">🖨 プレビュー</button>
       <button onclick="plannerToPhone()" style="margin-left:auto;background:#3182ce;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">📧 スマホへ</button>
     </div>
@@ -864,7 +864,7 @@ body.is-mob .mob-menu{display:inline-block}
       <h1 style="font-size:15px;margin:0">？ 使い方マニュアル</h1>
     </div>
     <div class="ha">
-      <button class="bg" onclick="showList()">← 戻る</button>
+      <button class="bg" onclick="history.back()">← 戻る</button>
     </div>
   </header>
   <div class="panel">
@@ -1319,7 +1319,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v4.43";
+var APP_VERSION = "v4.44";
 
 // ===== 状態 =====
 var cards = [];
@@ -2271,6 +2271,7 @@ function showHelp(){
   var _mgr=(typeof isMgrUnlocked==='function')&&isMgrUnlocked();
   document.querySelectorAll('.mgr-only').forEach(function(el){ el.style.display=_mgr?'':'none'; });
   window.scrollTo(0,0);
+  _navGo('help');
 }
 window.showHelp=showHelp;
 function showSetup() {
@@ -2411,6 +2412,37 @@ function _zRadar(axes){
   axes.forEach(function(a,i){var p=pt(i,R*(a[1]||0)/100);g+='<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="3" fill="'+a[2]+'"/>';});
   return '<svg class="z-radar" viewBox="0 0 200 200">'+g+'</svg>';
 }
+
+var _SALES_ARCHE=[
+ {e:'🏹',n:'ハンター',d:'新規発掘で前線を切り開く開拓型。'},
+ {e:'🤝',n:'グリッパー',d:'深い信頼で握る関係構築型。'},
+ {e:'👂',n:'リスナー',d:'傾聴で本音とニーズを引き出す型。'},
+ {e:'🧭',n:'ナビゲーター',d:'動機を高め連想まで導く心理設計型。'},
+ {e:'🎯',n:'クローザー',d:'欲求を引き上げ決めにいく勝負型。'},
+ {e:'🏃',n:'チェイサー',d:'切らさぬ追客で機を逃さない継続型。'}
+];
+var _SALES_STAGE=[null,{n:'見習い',c:'#a0aec0'},{n:'一人前',c:'#3182ce'},{n:'達人',c:'#b7791f'}];
+function _salesType(axes){
+  var vals=axes.map(function(a){return +(a[1]||0);});
+  var di=0,wi=0,i;
+  for(i=1;i<vals.length;i++){ if(vals[i]>vals[di])di=i; if(vals[i]<vals[wi])wi=i; }
+  var avg=Math.round(vals.reduce(function(s,v){return s+v;},0)/vals.length);
+  var st=avg>=70?3:avg>=40?2:1;
+  var ar=_SALES_ARCHE[di]||{e:'🎖',n:'オールラウンダー',d:'バランス型。'};
+  var stg=_SALES_STAGE[st];
+  return {arche:ar,stage:st,stageName:stg.n,color:stg.c,avg:avg,domIdx:di,weakIdx:wi,weakAxis:axes[wi][0],weakVal:vals[wi],label:stg.n+ar.n};
+}
+function _radarTypePanel(axes){
+  var ty=_salesType(axes);
+  return '<div style="margin-top:10px;border-top:1px solid var(--z-line);padding-top:10px">'
+    +'<div style="display:flex;align-items:center;gap:10px"><div style="font-size:30px">'+ty.arche.e+'</div>'
+    +'<div><div style="font-size:9px;color:var(--z-dim);font-weight:700;letter-spacing:1px">あなたの営業タイプ</div>'
+    +'<div style="font-size:17px;font-weight:800;color:'+ty.color+'">'+ty.label+'型 <span style="font-size:10px;color:var(--z-dim)">（'+ty.stageName+'／全18タイプ）</span></div></div></div>'
+    +'<div class="z-sub" style="margin-top:6px">'+ty.arche.d+' 総合力 '+ty.avg+'。<b style="color:#ffb443">伸びしろは「'+ty.weakAxis+'」</b>（'+ty.weakVal+'）。</div>'
+    +'<details style="margin-top:6px"><summary style="cursor:pointer;font-size:11px;color:var(--z-mut)">🔍 各軸が何で決まる？／タイプの仕組み</summary>'
+    +'<div class="z-sub" style="margin-top:5px;line-height:1.85">発掘量＝新規発掘の件数（30件で満点）／グリップ＝会話レベル4以上の割合／ヒアリング＝基本情報の入力充足度／連想到達＝ステージ3(連想)以上の割合／テスクロ＝連想到達者がステージ4(欲求)以上へ進んだ割合／追客ペース＝ペース遅れでない割合。<br>型＝<b>最も高い軸＝あなたの武器</b>（6種）×<b>総合力の3段階</b>（見習い40未満・一人前40〜69・達人70以上）＝<b>18タイプ</b>。</div></details></div>';
+}
+
 function _zFunnel(counts){
   var st=['面識','注意','興味','連想','欲求','比較','信念','決心'];
   var col=['#5e6b86','#4aa8ff','#34e3d0','#ffb443','#ff9a3d','#8b7cff','#c97cff','#9be15d'];
@@ -2505,7 +2537,7 @@ function renderSelfDash(){
  var spar=(c3[0]||mine.filter(function(c){return +(c.stage||0)>=3&&c.name;})[0]||{}).name||'お客様';
  var H='<div class="zdash zdash-rep"><div class="z-bento">';
  H+='<div class="z-card z-hero z-cf"><div class="z-ring" style="--p:'+renso+'"><div class="z-ring-in"><b>'+renso+'<small>%</small></b><span>連想到達率</span></div></div><div class="z-hmeta"><div class="z-lv">'+lvl[0]+' ・ '+lvl[1]+'</div><h2>'+e(uName||'あなた')+'さんの GROWTH DASHBOARD</h2><div class="z-chips"><span class="z-chip">担当 <b>'+n+'</b>件</span><span class="z-chip">連想到達 <b>'+conn+'</b>件</span><span class="z-chip">入力充実 <b>'+inputAvg+'</b>%</span><span class="z-chip">平均 <b>'+avg+'</b></span></div></div></div>';
- H+='<div class="z-card z-c2"><h3>🧭 スキルレーダー</h3><div class="z-sub">凹んだ軸が伸びしろ。</div><div class="z-radar-wrap"><svg class="z-radar" viewBox="0 0 200 200">'+_zRadar(axes).replace(/^<svg[^>]*>|<\/svg>$/g,'')+'</svg><div class="z-radar-leg">'+leg+'</div></div></div>';
+ H+='<div class="z-card z-c2"><h3>🧭 スキルレーダー</h3><div class="z-sub">凹んだ軸が伸びしろ。</div><div class="z-radar-wrap"><svg class="z-radar" viewBox="0 0 200 200">'+_zRadar(axes).replace(/^<svg[^>]*>|<\/svg>$/g,'')+'</svg><div class="z-radar-leg">'+leg+'</div></div>'+_radarTypePanel(axes)+'</div>';
  H+='<div class="z-card z-c2"><h3>🔻 マイ・パイプライン <span style="font-size:10px;color:var(--z-dim)">転換率つき</span></h3><div class="z-sub">連想(3)の壁を越えているか。</div>'+_zFunnel(sc)+'</div>';
  H+='<div class="z-card z-cf"><h3>📈 活動の足あと（直近12ヶ月）</h3><div class="z-sub">発掘・訪問・アポの月別量。右肩上がりが努力の証。</div>'+_zLine([{data:mDisc,color:'#2f9e44'},{data:mVis,color:'#1971c2'},{data:mApo,color:'#e8920c'}])+'<div class="z-legend"><span><i style="background:#9be15d"></i>発掘</span><span><i style="background:#4aa8ff"></i>訪問</span><span><i style="background:#ffb443"></i>アポ</span></div><div class="z-sub" style="margin:8px 0 2px">累計発掘（積み上がり）</div>'+_zLine([{data:cum,color:'#0c8599'}])+'</div>';
  H+='<div class="z-card z-c2"><h3>⏱ 45日契約クロック</h3><div class="z-sub">A昇格(追撃判定)から45日が契約の目安。赤は超過。</div>'+(myA.length?myA.map(function(o){var p=Math.max(0,Math.min(100,(45-o.left)/45*100));var col=o.left<0?'#e03131':o.left<=10?'#e8920c':'#2f9e44';return '<div class="z-clock"><div class="z-cdays" style="color:'+col+'">'+(o.left<0?'超過':'残'+o.left)+'</div><div class="z-cbar"><i style="width:'+p+'%;background:'+col+'"></i></div><div class="z-who" style="width:84px"><b>'+e(o.c.name||'無名')+'様</b><span>'+['面識','注意','興味','連想','欲求','比較','信念','決心'][+(o.c.stage||0)]+'・'+e(o.c.pursuit_judge||'')+'</span></div></div>';}).join(''):'<div class="z-sub">A・S案件が出ると表示されます</div>')+'</div>';
@@ -2976,6 +3008,7 @@ function newCard(){
   document.getElementById('editView').style.display=hasFSA&&!isMob?'flex':'block';
   switchTab('ti'); fillForm(cur); window.scrollTo(0,0);
   setTimeout(function(){setDirty(false);},100);
+  _navGo('edit',curId);
 }
 function openCard(id){
   var c=cards.find(function(x){return x.id===id;}); if(!c) return;
@@ -2985,6 +3018,7 @@ function openCard(id){
   document.getElementById('editView').style.display=hasFSA&&!isMob?'flex':'block';
   switchTab('ti'); fillForm(cur); window.scrollTo(0,0);
   setTimeout(function(){setDirty(false);},100);
+  _navGo('edit',curId);
 }
 function fitTabsTop(){ if(isMob) return; var h=document.querySelector('#editView header'); if(h && h.offsetHeight) document.documentElement.style.setProperty('--tabsTop', h.offsetHeight+'px'); }
 window.fitTabsTop=fitTabsTop;
@@ -4951,8 +4985,10 @@ window.togglePcMenu=togglePcMenu; window.closePcMenu=closePcMenu;
 
 // ===== 課分析 =====
 function _zc(emoji,title,sub,body,sp){return '<div class="z-card '+(sp||'z-cf')+'"><h3>'+emoji+' '+title+'</h3>'+(sub?'<div class="z-sub">'+sub+'</div>':'')+body+'</div>';}
-function _zsec(k,title,body){return '<div class="z-sec" data-k="'+k+'"><div class="z-sec-h" onclick="zToggleSec(this)">'+title+'<span class="z-ar">▼</span></div><div class="z-sec-body"><div class="z-bento">'+body+'</div></div></div>';}
-window.zToggleSec=function(h){var s=h.parentNode;s.classList.toggle('z-collapsed');var a=h.querySelector('.z-ar');if(a)a.textContent=s.classList.contains('z-collapsed')?'▶':'▼';};
+var _zOpen={};
+function _zsec(k,title,body){var op=!!_zOpen[k];return '<div class="z-sec'+(op?'':' z-collapsed')+'" data-k="'+k+'"><div class="z-sec-h" onclick="zToggleSec(this)">'+title+'<span class="z-ar">'+(op?'▼':'▶')+'</span></div><div class="z-sec-body"><div class="z-bento">'+body+'</div></div></div>';}
+function _zsecPlain(k,title,body){var op=!!_zOpen[k];return '<div class="z-sec'+(op?'':' z-collapsed')+'" data-k="'+k+'"><div class="z-sec-h" onclick="zToggleSec(this)">'+title+'<span class="z-ar">'+(op?'▼':'▶')+'</span></div><div class="z-sec-body">'+body+'</div></div>';}
+window.zToggleSec=function(h){var s=h.parentNode;s.classList.toggle('z-collapsed');var k=s.getAttribute('data-k');var open=!s.classList.contains('z-collapsed');if(k)_zOpen[k]=open;var a=h.querySelector('.z-ar');if(a)a.textContent=open?'▼':'▶';};
 window.zSetArea=function(m){_zAreaMode=m;renderAnalysis();var el=document.querySelector('#cmdCenter .z-sec[data-k=area]');if(el)el.scrollIntoView({block:'center'});};
 function _zAreaCard(target){
  var byWard={},byTown={};
@@ -4987,7 +5023,7 @@ function workMeterInner(){
   var P=[['m0','今月'],['cmp','先月比較'],['m3','3ヶ月'],['m6','6ヶ月']];
   var toggle='<div class="no-print" style="display:inline-flex;border:1px solid var(--z-line);border-radius:9px;overflow:hidden;margin:4px 0 10px">'+P.map(function(p){var on=_wkP===p[0];return '<button onclick="setWkP(\''+p[0]+'\')" style="border:none;background:'+(on?'#2f9e44':'transparent')+';color:'+(on?'#fff':'var(--z-mut)')+';padding:6px 13px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">'+p[1]+'</button>';}).join('')+'</div>';
   var legend='<div class="z-sub">基準｜発掘 <b>2</b>件/日・提案依頼 <b>1</b>件/月（取得日基準）・再訪J <b>3</b>件/週・追客J <b>2</b>件/月。月初は発掘か訪問で動いた日からカウント。</div>';
-  var head='<h3>🟢 稼働率モニター <span style="font-size:10px;color:var(--z-dim);font-weight:600">基準達成度ランキング</span></h3>'+legend+toggle;
+  var head=legend+toggle;
   function metric(lab,a,t,rt){ return '<div style="text-align:center;min-width:44px"><div style="font-size:9px;color:var(--z-dim)">'+lab+'</div><div style="font-size:12px;font-weight:800;color:'+_wkCol(rt)+'">'+Math.round(rt*100)+'%</div><div style="font-size:8px;color:var(--z-dim)">'+a+'/'+t+'</div></div>'; }
   function rankc(i){ return '<div style="width:22px;height:22px;border-radius:50%;background:'+_zAVAS[i%8]+';color:#06121f;font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(i+1)+'</div>'; }
   function nm(r){ return '<div style="width:74px;flex-shrink:0;font-weight:700;font-size:13px;color:var(--z-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e(r)+'</div>'; }
@@ -5015,6 +5051,7 @@ function workMeterInner(){
   return head+rows+inactH;
 }
 function workMeterCard(){ return '<div class="z-card z-cf" id="zWorkCard">'+workMeterInner()+'</div>'; }
+function workMeterSection(){ return _zsecPlain('work','🟢 稼働率モニター <span style="font-size:10px;color:var(--z-dim);font-weight:600">基準達成度ランキング</span>','<div id="zWorkCard">'+workMeterInner()+'</div>'); }
 window.setWkP=function(p){ _wkP=p; var el=document.getElementById('zWorkCard'); if(el) el.innerHTML=workMeterInner(); };
 function renderAnalysis(){
  if(!isMgrUnlocked()) return;
@@ -5040,7 +5077,7 @@ function renderAnalysis(){
   +'<div class="z-card z-kpi z-c1"><span class="z-klab">課スコア平均</span><div class="z-kval z-num" style="color:#8b7cff">'+avg+'<small>/40</small></div><div class="z-ksub">対象 '+n+'件</div></div>'
   +'<div class="z-card z-kpi z-c1"><span class="z-klab">連想以上 率</span><div class="z-kval z-num" style="color:#9be15d">'+_zPct(conn,n)+'<small>%</small></div><div class="z-ksub">'+conn+'件</div></div>'
   +'<div class="z-card z-kpi z-c1"><span class="z-klab">ペース遅れ</span><div class="z-kval z-num" style="color:#ff5d7d">'+late+'<small>件</small></div><div class="z-ksub">'+_zPct(late,n)+'%</div></div></div>';
- H+=workMeterCard();
+ H+=workMeterSection();
  // process
  var mVis=_zMonthly(t,_zVisitDates), mApo=_zMonthly(t,_zAppoDates), cum=[],r0=0;mDisc.forEach(function(v){r0+=v;cum.push(r0);});
  H+=_zsec('process','📈 プロセス（活動量の伸び）',
@@ -5088,12 +5125,12 @@ function renderAnalysis(){
  var bub='<svg class="z-bub" viewBox="0 0 560 230">';t.forEach(function(c){var x=20+calcScore(c)/40*520;var av=(asMap[c.land_asset]||0)+(+(c.m2||0)>=200?2:+(c.m2||0)>=100?1:0);var y=210-av/7*190;var rr=4+calcScore(c)/40*11;bub+='<circle cx="'+x.toFixed(0)+'" cy="'+y.toFixed(0)+'" r="'+rr.toFixed(0)+'" fill="'+(RC[c.pursuit_judge]||'#888')+'" opacity=".6" stroke="#fff" stroke-width="1"/>';});bub+='<text x="280" y="228" font-size="9" fill="#6b7894" text-anchor="middle">熱量（スコア）→</text></svg>';
  var ageT=[['〜64',0,64],['65〜74',65,74],['75〜',75,200]];var agH=ageT.map(function(a){var arr=t.filter(function(c){var ag=_zOwnerAge(c);return ag!==null&&ag>=a[1]&&ag<=a[2];});var av2=arr.length?(arr.reduce(function(s,c){return s+ +(c.stage||0);},0)/arr.length).toFixed(1):'0';return '<div class="z-tile"><b>'+arr.length+'</b><span>'+a[0]+'歳／平均St '+av2+'</span></div>';}).join('');var noAge=t.filter(function(c){return _zOwnerAge(c)===null;}).length;
  var pot=Math.round(t.filter(function(c){return c.pursuit_judge==='A'||c.pursuit_judge==='S';}).reduce(function(s,c){return s+(parseFloat(c.rosenka)||0)*1000*(parseFloat(c.m2)||0);},0)/1e8);
- var miniR=board.slice(0,4).map(function(b){var a=g[b.r];var ax=[['発掘',Math.min(Math.round(a.length/30*100),100)],['グリ',(function(){var s=0,nn=0;a.forEach(function(c){var l=getKaiwaLevel(c);if(l>=0){s+=l;nn++;}});return nn?Math.round(s/nn/4*100):0;})()],['ヒア',_zPct(a.filter(function(c){return c.family_headcount;}).length,a.length)],['連想',_zPct(a.filter(function(c){return +(c.stage||0)>=3;}).length,a.length)],['テス',_zPct(a.filter(function(c){return +(c.stage||0)>=4;}).length,Math.max(1,a.filter(function(c){return +(c.stage||0)>=3;}).length))],['ペース',100-_zPct(a.filter(function(c){return calcPaceOverrate(c)>1;}).length,a.length)]];var col=_zAVAS[reps.indexOf(b.r)%8];return '<div class="z-minir">'+_zRadarC(ax,col)+'<div style="color:'+col+'">'+e(b.r)+'</div></div>';}).join('');
+ var miniR=board.slice(0,4).map(function(b){var a=g[b.r];var ax=[['発掘',Math.min(Math.round(a.length/30*100),100)],['グリ',(function(){var s=0,nn=0;a.forEach(function(c){var l=getKaiwaLevel(c);if(l>=0){s+=l;nn++;}});return nn?Math.round(s/nn/4*100):0;})()],['ヒア',_zPct(a.filter(function(c){return c.family_headcount;}).length,a.length)],['連想',_zPct(a.filter(function(c){return +(c.stage||0)>=3;}).length,a.length)],['テス',_zPct(a.filter(function(c){return +(c.stage||0)>=4;}).length,Math.max(1,a.filter(function(c){return +(c.stage||0)>=3;}).length))],['ペース',100-_zPct(a.filter(function(c){return calcPaceOverrate(c)>1;}).length,a.length)]];var col=_zAVAS[reps.indexOf(b.r)%8];var ty=_salesType(ax);return '<div class="z-minir">'+_zRadarC(ax,col)+'<div style="color:'+col+'">'+e(b.r)+'</div><div style="font-size:9px;color:var(--z-dim);font-weight:700;text-align:center">'+ty.arche.e+ty.label+'</div></div>';}).join('');
  H+=_zsec('multi','🔬 多角分析',
    _zc('💎','お宝度マトリクス','熱量×資産規模。右上＝お宝。色＝ランク。',bub,'z-cf')
   +_zc('🏯','相続緊急度 × 進捗','高齢×低ステージは要対応。','<div class="z-tiles">'+agH+'</div>'+(noAge?'<div class="z-sub" style="margin-top:6px">所有者年齢 未入力 '+noAge+'件</div>':''),'z-c2')
   +_zc('💰','課の総ポテンシャル金額','A・S案件の路線価×面積の概算。','<div style="text-align:center;padding:10px"><div class="z-num" style="font-size:38px;font-weight:800;color:#ffb443">約'+pot+'<span style="font-size:17px">億円</span></div><div class="z-sub">規模感の目安（概算）</div></div>','z-c2')
-  +_zc('🧬','担当スキルレーダー（上位4名）','型の違いで育成ポイント発見。','<div class="z-minirow">'+miniR+'</div>','z-cf'));
+  +_zc('🧬','担当スキルレーダー（上位4名）','最も高い軸×3段階で18タイプに自動分類。育成ポイント発見。','<div class="z-minirow">'+miniR+'</div>','z-cf'));
 
  // ===== 担当の特性・保有状況（チーム管理） =====
  var avgHold=reps.length?cards.length/reps.length:0;
@@ -5136,7 +5173,7 @@ function renderAnalysis(){
  if(saLate>0) ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(255,180,67,.16)">⏱</div><div><b>A・Sの放置が'+saLate+'件<span class="z-pill" style="background:rgba(255,180,67,.16);color:#ffb443">CLOSE</span></b><p>契約に近い客がご無沙汰。今週中にクロージング判断を。</p></div></div>';
  if(pingStat.length&&pingStat[0].v>=40) ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(74,168,255,.16)">🤝</div><div><b>'+e(pingStat[0].r)+'さん：ピンポン止まり'+pingStat[0].v+'%<span class="z-pill" style="background:rgba(74,168,255,.16);color:#4aa8ff">GRIP</span></b><p>同行1回で「立ち話→玄関内」の突破を実演すると効果大。</p></div></div>';
  ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(155,225,93,.16)">✅</div><div><b>フル稼働まであと'+(reps.length-active.length)+'人<span class="z-pill" style="background:rgba(155,225,93,.16);color:#9be15d">TEAM</span></b><p>未稼働の担当へ1声。全員が動くと発掘量が跳ね上がる。</p></div></div>';
- H+=_zc('🧠','傾向と対策（AIインサイト）','データから打ち手を自動抽出。',ins,'z-cf');
+ H+=_zsecPlain('insights','🧠 傾向と対策（AIインサイト）','<div class="z-sub" style="margin-bottom:8px">データから打ち手を自動抽出。</div>'+ins);
  H+='</div>';
  host.innerHTML=H;
 }
@@ -5564,7 +5601,7 @@ function printDashboardReport(){
     +'.rp{font-size:9.5pt;color:#2d3748;margin-bottom:.5mm}.rli{font-size:9.5pt;color:#2d3748;padding-left:10pt;margin-bottom:.5mm}'
     +'.rtips{font-size:9.5pt;color:#553c9a;font-weight:600;padding:2mm 4mm;background:#f3f0ff;border-radius:4pt;margin:2mm 0}'
     +'.rblank{height:2.5mm}.rfooter{text-align:right;font-size:8pt;color:#a0aec0;padding-top:6mm}'
-    +'.zdash{padding:0 !important}.zdash .z-cmdhead{display:none !important}';
+    +'.zdash{padding:0 !important}.zdash .z-cmdhead{display:none !important}.zdash .z-ar{display:none !important}.zdash .z-sec{break-inside:avoid}';
   var toc='<div class="rtoc"><div class="rtoc-h">目次 / Contents</div>'
     +'<div class="rtoc-item"><span class="rtoc-no">01</span>表紙</div>'
     +'<div class="rtoc-item"><span class="rtoc-no">02</span>ダッシュボード</div>'
@@ -5693,11 +5730,32 @@ function showPlanner(){
   document.getElementById('listView').style.display='none';
   var v=document.getElementById('plannerView'); if(v) v.style.display='block';
   plannerTab('input');
+  _navGo('planner');
 }
 function closePlanner(){
   var v=document.getElementById('plannerView'); if(v) v.style.display='none';
   document.getElementById('listView').style.display=(hasFSA&&!isMob)?'flex':'block';
 }
+
+/* ===== ブラウザ履歴ナビゲーション ===== */
+var _silent=false;
+function _navGo(zv,id){ if(_silent) return; try{ history.pushState({zv:zv,id:id||null},''); }catch(e){} }
+function _navToList(){
+  ['editView','plannerView','helpView','setupView'].forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display='none'; });
+  var lv=document.getElementById('listView'); if(lv) lv.style.display=(hasFSA&&!isMob)?'flex':'block';
+}
+window.addEventListener('popstate',function(ev){
+  var st=ev.state||{}; var zv=st.zv||'list';
+  _silent=true;
+  try{
+    if(zv==='planner'){ var v=document.getElementById('plannerView'); if(!v||v.style.display==='none') showPlanner(); }
+    else if(zv==='help'){ var h=document.getElementById('helpView'); if(!h||h.style.display==='none') showHelp(); }
+    else if(zv==='edit'){ if(st.id){ openCard(st.id); var ev2=document.getElementById('editView'); if(!ev2||ev2.style.display==='none') _navToList(); } else _navToList(); }
+    else { _navToList(); }
+  }catch(e){}
+  _silent=false;
+});
+
 function plannerTab(t){
   var pi=document.getElementById('plannerInput'), pp=document.getElementById('plannerPreview');
   if(pi) pi.style.display=(t==='input')?'block':'none';
@@ -5727,13 +5785,16 @@ function renderPlanner(){
   var pickOpts='<option value="">＋ お客様を選択して追加…</option>'+pickList.map(function(o){ return '<option value="'+o.c.id+'">'+e(o.c.name||'(無名)')+(o.w?'（'+e(o.w)+'）':'')+'</option>'; }).join('');
   var sortToggle='<span style="display:inline-flex;border:1px solid #cbd5e0;border-radius:7px;overflow:hidden;margin-right:8px"><button onclick="planSort(\'time\')" style="border:none;padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit;background:'+(sm==='time'?'#2c5282':'#fff')+';color:'+(sm==='time'?'#fff':'#718096')+'">🕒 時刻順</button><button onclick="planSort(\'area\')" style="border:none;padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit;background:'+(sm==='area'?'#2c5282':'#fff')+';color:'+(sm==='area'?'#fff':'#718096')+'">📍 エリア順</button></span>';
   var addForm='<div style="border:1px dashed #cbd5e0;border-radius:8px;padding:12px;margin-bottom:14px;background:#fafcff">'
-    +'<div style="margin-bottom:8px"><label style="font-size:11px;color:#718096">お客様を追加（プルダウンで選択）</label><br><select id="plPick" onchange="planPick(this.value)" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font-size:13px;box-sizing:border-box">'+pickOpts+'</select></div>'
-    +'<div style="margin-bottom:8px"><label style="font-size:11px;color:#718096">または名前で検索して追加</label><br><input id="plSearch" oninput="planSearch(this.value)" placeholder="氏名を入力…" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font-size:13px;box-sizing:border-box"></div>'
-    +'<div id="plSearchResults" style="margin-bottom:8px"></div>'
-    +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
+    +'<label style="font-size:11px;color:#718096">お客様を検索して追加</label>'
+    +'<div style="margin-top:5px"><input id="plSearch" oninput="planSearch(this.value)" placeholder="氏名を入力…" style="width:100%;max-width:300px;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font-size:13px;box-sizing:border-box"></div>'
+    +'<div id="plSearchResults" style="margin-top:8px"></div>'
+    +'<div style="border-top:1px dashed #e2e8f0;margin-top:10px;padding-top:10px">'
+    +'<label style="font-size:11px;color:#718096">訪問以外の予定（時刻を選んで種別を追加）</label>'
+    +'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px">'
+    +'<select id="plEvTime" style="width:96px;padding:7px;border:1px solid #cbd5e0;border-radius:6px;font-size:13px;font-weight:700;color:#2c5282"><option value="">時刻</option>'+slots+'</select>'
     +[['本社イベント','#e0e7ff','#4338ca','#c7d2fe'],['本社講習','#d6f5ee','#0f766e','#a7f3d0'],['支店イベント','#fef3c7','#92400e','#fde68a'],['支店講習','#fce7f3','#9d174d','#fbcfe8']].map(function(v){ return '<button onclick="planAddEvent(\''+v[0]+'\')" style="background:'+v[1]+';color:'+v[2]+';border:1px solid '+v[3]+';border-radius:6px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">＋'+v[0]+'</button>'; }).join('')
     +'<button onclick="planAddFree()" style="background:#edf2f7;color:#4a5568;border:1px solid #cbd5e0;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">＋自由入力</button>'
-    +'</div></div>';
+    +'</div></div></div>';
   var _pw=null;
   var list=_plan.entries.length?_plan.entries.map(function(en,i){ var h=''; if(sm==='area'){ var w=planAreaOf(en)||'その他'; if(w!==_pw){ _pw=w; h+='<div style="font-size:12px;font-weight:800;color:#2c5282;margin:8px 2px 4px;border-bottom:1px solid #e2e8f0;padding-bottom:3px">📍 '+e(w)+'</div>'; } } return h+planEntryHTML(en,i); }).join(''):'<div style="text-align:center;color:#a0aec0;font-size:12px;padding:10px">予定がありません。プルダウンや検索から追加してください。</div>';
   host.innerHTML='<div style="background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.07);padding:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px"><div style="font-size:13px;color:#718096">'+planDateLabel()+'　担当：'+e(uName||'')+'</div><div style="display:flex;align-items:center">'+sortToggle+'<button onclick="resetPlanner()" style="background:#fff;color:#e53e3e;border:1px solid #fed7d7;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap">🗑 全リセット</button></div></div>'+sug+addForm+'<div id="plList">'+list+'</div></div>';
@@ -5782,8 +5843,8 @@ function planSearch(q){
   if(!hits.length){ box.innerHTML='<span style="font-size:12px;color:#a0aec0">該当なし（既に追加済みの可能性）</span>'; return; }
   box.innerHTML=hits.map(function(c){ var w=planWard(c); return '<div onclick="planAddCard(\''+c.id+'\')" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px;cursor:pointer;background:#fff"><span style="font-weight:700;font-size:14px;color:#1a202c">'+e(c.name||'(無名)')+'</span>'+(w?'<span style="font-size:11px;color:#2c5282;background:#ebf8ff;border:1px solid #bee3f8;border-radius:10px;padding:1px 8px;white-space:nowrap">📍'+e(w)+'</span>':'')+(c.pursuit_judge?'<span style="font-size:11px;color:#718096">'+e(c.pursuit_judge)+'</span>':'')+'<span style="margin-left:auto;color:#2c5282;font-size:12px;font-weight:700">＋ 追加</span></div>'; }).join('');
 }
-function planAddEvent(label){ var t=document.getElementById('plTime'); _plan.entries.push({cardId:'',target:label,sub:'行事',kind:'ev',purpose:'—',time:t?t.value:'',note:'',result:''}); savePlan(); renderPlanner(); }
-function planAddFree(){ var name=prompt('対象名を入力'); if(!name)return; var t=document.getElementById('plTime'); _plan.entries.push({cardId:'',target:name,sub:'',kind:'k3',purpose:'情報収集',time:t?t.value:'',note:'',result:''}); savePlan(); renderPlanner(); }
+function planAddEvent(label){ var t=document.getElementById('plEvTime'); _plan.entries.push({cardId:'',target:label,sub:'行事',kind:'ev',purpose:'—',time:t?t.value:'',note:'',result:''}); savePlan(); renderPlanner(); }
+function planAddFree(){ var name=prompt('対象名を入力'); if(!name)return; var t=document.getElementById('plEvTime'); _plan.entries.push({cardId:'',target:name,sub:'',kind:'k3',purpose:'情報収集',time:t?t.value:'',note:'',result:''}); savePlan(); renderPlanner(); }
 function planRowsHTML(){
   var byTime={}; _plan.entries.forEach(function(en){ if(en.time)byTime[en.time]=en; });
   return planSlots().map(function(s){
@@ -6418,7 +6479,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
   <header>
     <div class="ha" style="width:100%;display:flex;justify-content:space-between;align-items:center">
       <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;max-width:30%">
-        <button class="bg" onclick="showList()" style="flex-shrink:0">← 一覧</button>
+        <button class="bg" onclick="history.back()" style="flex-shrink:0">← 一覧</button>
         <div style="font-size:12px;color:rgba(255,255,255,0.75);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="editTitle">-</div>
       </div>
       <svg width="130" height="40" viewBox="0 0 130 40" xmlns="http://www.w3.org/2000/svg" style="position:absolute;left:50%;transform:translateX(-50%);flex-shrink:0"><defs><linearGradient id="tg3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#ffffff"/><stop offset="60%" style="stop-color:#e0e7ff"/><stop offset="100%" style="stop-color:#c7d2fe"/></linearGradient></defs><text x="4" y="32" font-family="'Dancing Script','Brush Script MT','Comic Sans MS',cursive" font-size="30" font-weight="700" fill="url(#tg3)" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.4))">z.Aibis</text></svg>
