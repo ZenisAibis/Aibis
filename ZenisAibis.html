@@ -1356,7 +1356,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v4.51";
+var APP_VERSION = "v4.52";
 
 // ===== 状態 =====
 var cards = [];
@@ -3974,7 +3974,22 @@ function planStreetView(){
   collectForm();
   var p=(document.getElementById('f_plan')?.value||'').trim();
   if(!p){toast('計画地を入力してください');return;}
-  window.open('https://www.google.com/maps?q='+encodeURIComponent(p)+'&layer=c','_blank');
+  // スマホ: Mapsアプリが layer=c でSVに入る（実績あり）→従来どおり
+  if(isMob){ window.open('https://www.google.com/maps?q='+encodeURIComponent(p)+'&layer=c','_blank'); return; }
+  // PC: layer=c は住所文字列だと効かないため、座標へジオコーディングして公式のpano URLで開く
+  var w=window.open('about:blank','_blank'); // クリック直後に同期で開く（ポップアップブロック回避）
+  var fb='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p);
+  function go(u){ try{ if(w&&!w.closed){ w.location.href=u; return; } }catch(e){} window.open(u,'_blank'); }
+  toast('🌐 ストリートビューを準備中...');
+  fetch('https://msearch.gsi.go.jp/address-search/AddressSearch?q='+encodeURIComponent(p))
+    .then(function(r){return r.json();})
+    .then(function(arr){
+      if(arr&&arr[0]&&arr[0].geometry&&arr[0].geometry.coordinates&&arr[0].geometry.coordinates.length>=2){
+        var lon=arr[0].geometry.coordinates[0], lat=arr[0].geometry.coordinates[1];
+        go('https://www.google.com/maps/@?api=1&map_action=pano&viewpoint='+lat+','+lon+'&heading=0&pitch=0&fov=90');
+      } else { go(fb); }
+    })
+    .catch(function(){ go(fb); });
 }
 window.planStreetView=planStreetView;
 function updatePlanSvBtn(){ var b=document.getElementById('planSvBtn'); if(!b)return; var v=(document.getElementById('f_plan')?.value||'').trim(); b.disabled=!v; }
