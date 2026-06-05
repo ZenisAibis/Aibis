@@ -748,7 +748,7 @@ body.is-mob .mob-menu{display:inline-block}
     <div style="display:flex;gap:4px;flex-wrap:wrap">
       <button onclick="selectAll()" class="bc" style="font-size:11px;padding:5px 8px">全選択</button>
       <button onclick="selectNone()" class="bc" style="font-size:11px;padding:5px 8px">全解除</button>
-      <button onclick="openPlannerFromSelected()" class="bp pc-only-btn" style="font-size:11px;padding:5px 8px">📅 本日の予定表</button>
+      <button onclick="openPlannerFromSelected()" class="bp pc-only-btn" style="font-size:11px;padding:5px 8px;background:#319795">📅 本日の予定表</button>
       <button onclick="mailSelectedToSelf()" class="bp" style="font-size:11px;padding:5px 8px" id="btnSendSelf">📧 スマホへ</button>
       <button onclick="mailSelectedToManager()" class="bw" style="font-size:11px;padding:5px 8px">📧 課長へ</button>
     </div>
@@ -845,10 +845,9 @@ body.is-mob .mob-menu{display:inline-block}
   <div style="max-width:900px;margin:0 auto;padding:16px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
       <span style="font-size:16px;font-weight:700;color:#2c5282">📅 本日の予定表</span>
-      <button onclick="closePlanner()" style="background:#e2e8f0;color:#2d3748;border:none;border-radius:6px;padding:8px 16px;font-size:13px;cursor:pointer;font-family:inherit">← 一覧に戻る</button>
     </div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
-      <button class="pl-tab pl-on" data-t="input" onclick="plannerTab('input')">✏️ 入力</button>
+      <button onclick="closePlanner()" style="background:#e2e8f0;color:#2d3748;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">← 一覧に戻る</button><button class="pl-tab pl-on" data-t="input" onclick="plannerTab('input')">✏️ 入力</button>
       <button class="pl-tab" data-t="prev" onclick="plannerTab('prev')">🖨 プレビュー</button>
       <button onclick="plannerToPhone()" style="margin-left:auto;background:#3182ce;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">📧 スマホへ</button>
     </div>
@@ -1018,6 +1017,7 @@ body.is-mob .mob-menu{display:inline-block}
         ・🔻 購買心理ファネル（転換率つき）<br>
         ・🏆 担当リーダーボード（平均スコア順）<br>
         ・🌡 チーム・ヒートマップ … 担当×指標を色分け（赤が要フォロー）<br>
+        ・⚠ 要フォロー（最優先）… 至急動くべき高価値の客を自動抽出（ペース遅れ／未接触／連続留守）<br>
         ・🧠 傾向と対策 … データから打ち手を自動抽出（AIインサイト）<br>
         ・担当者セレクトで個人・全体を切替<br>
         ・「🤖 分析用に抽出」→「🤖 AI分析」でCopilotに課分析を依頼／AI結果の貼り付け欄あり<br>
@@ -1318,7 +1318,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v4.40";
+var APP_VERSION = "v4.42";
 
 // ===== 状態 =====
 var cards = [];
@@ -1717,7 +1717,7 @@ var AIBIS_FAQ=[
   {q:'駅徒歩フラグって何？',a:'計画地の最寄り駅からの徒歩区分だよ🚉 計画地の「🚉最寄り駅 徒歩」ボタンをタップで 未確認→〜10分→〜20分→21分以上 と切り替わるよ（同行ボタンと同じ要領）。〜10分は加点(+3)、21分以上は減点(-3)＆赤フラグ（一覧・課分析にも表示）。分数は地図で一度確認して印を付けるだけでOK😊'},
   {q:'現在地ボタンって何？',a:'初訪タブの住所欄の下にある📍現在地取得ボタン！GPSで現在地を取得して住所をクリップボードにコピーするよ。訪問先でそのまま貼り付けて使えるね😊'},
   {q:'家族構成ってどう入れるの？',a:'初訪タブの「家族構成」セクションから入力できるよ！<br><br>＋ボタンで追加→続柄・氏名・年齢・居住形態を入力<br>★所有者 / KP（キーパーソン）/ 面談済 も記録できるよ<br>スタンス（ポジティブ/ネガティブ）も記録して戦略に活かしてね！<br>👶 子世代・兄弟姉妹は婚姻状況と子の人数も記録できるよ（相続人の把握に役立つ）。'},
-  {q:'課分析ダッシュボードって何？',a:function(){ return isMgrUnlocked()?'管理職のPC版でのみ使える「コマンドセンター」だよ📊<br><br>・KPIスコアカード（新規発掘の月次トレンド／課スコア平均／連想以上率／ペース遅れ）<br>・💼 契約クローズ・トラッカー（契約に近い案件＝今フォローすべき的を近接度順に）<br>・🔻 購買心理ファネル（転換率つき）<br>・🏆 担当リーダーボード<br>・🌡 チーム・ヒートマップ（担当×指標、赤が要フォロー）<br>・🧠 傾向と対策（AIインサイト）<br><br>担当者セレクトで個人・全体を切替。「🤖 分析用に抽出」→「🤖 AI分析」でCopilotに課分析も依頼できるよ。':'それは課長・支店長向けの機能だよ😊 担当のみんなは「🔭 見込み分析」で自分の見込みをチェックしてね！'; }},
+  {q:'課分析ダッシュボードって何？',a:function(){ return isMgrUnlocked()?'管理職のPC版でのみ使える「コマンドセンター」だよ📊<br><br>・KPIスコアカード（新規発掘の月次トレンド／課スコア平均／連想以上率／ペース遅れ）<br>・💼 契約クローズ・トラッカー（契約に近い案件＝今フォローすべき的を近接度順に）<br>・🔻 購買心理ファネル（転換率つき）<br>・🏆 担当リーダーボード<br>・🌡 チーム・ヒートマップ（担当×指標、赤が要フォロー）<br>・⚠ 要フォロー（最優先）：至急動くべき高価値の客を自動抽出<br>・🧠 傾向と対策（AIインサイト）<br><br>担当者セレクトで個人・全体を切替。「🤖 分析用に抽出」→「🤖 AI分析」でCopilotに課分析も依頼できるよ。':'それは課長・支店長向けの機能だよ😊 担当のみんなは「🔭 見込み分析」で自分の見込みをチェックしてね！'; }},
   {q:'見込み分析って何？',a:'自分の見込みを自分で研究する「グロースコンソール」だよ🔭<br><br>・連想到達率リング＋レベル表示で成長を実感<br>・🧭 スキルレーダー6軸（発掘量・グリップ深度・ヒアリング・連想到達・テスクロ・追客ペース）で自分の型と伸びしろが分かる<br>・🔻 マイ・パイプライン（転換率つき）<br>・🎯 今日の3手（今すぐ動くべきこと）<br>・🥊 壁打ちワーク（AI相手に1問だけ自問自答してスキルUP）<br><br>スマホでも見れるよ。PCなら「🤖 AI分析」「🖨 印刷」も使えるよ！'},
   {q:'タブにすぐ戻りたい',a:'PCはスクロールしてもタブ（初訪・再訪・追撃・戦略協議）が画面の一番上に残るから、いつでもワンタップで切り替えられるよ。スマホは画面の下にタブが固定されているよ😊'},
 
@@ -4990,7 +4990,7 @@ function renderAnalysis(){
  H+=_zsec('process','📈 プロセス（活動量の伸び）',
    _zc('📊','課の活動量（直近12ヶ月）','発掘・訪問・アポの月別量。',_zLine([{data:mDisc,color:'#9be15d'},{data:mVis,color:'#4aa8ff'},{data:mApo,color:'#ffb443'}])+'<div class="z-legend"><span><i style="background:#9be15d"></i>発掘</span><span><i style="background:#4aa8ff"></i>訪問</span><span><i style="background:#ffb443"></i>アポ</span></div>','z-cf')
   +_zc('🧗','累計発掘（積み上がり）','努力が積み上がる様子。',_zLine([{data:cum,color:'#34e3d0'}]),'z-c2')
-  +_zc('👥','担当別 今月の発掘','誰がエンジンか。',_zVbars(reps.map(function(r){return g[r].filter(function(c){return (c.discovery_date||'').slice(0,7)===curMonth;}).length;}),reps.map(function(r){return r.slice(0,1);}),_zAVAS),'z-c2')+_zc('📇','担当別 保有数','各担当が今持つ見込みカード数（合計）。',_zVbars(reps.map(function(r){return g[r].length;}),reps.map(function(r){return r.slice(0,1);}),_zAVAS),'z-c2'));
+  +_zc('👥','担当別 今月の発掘','誰がエンジンか。',_zVbars(reps.map(function(r){return g[r].filter(function(c){return (c.discovery_date||'').slice(0,7)===curMonth;}).length;}),reps.map(function(r){return r.slice(0,1);}),_zAVAS),'z-c2'));
  // contract
  var rw={S:35,A:28,B:15,C:8,D:3};function prox(c){return Math.max(0,Math.min(100,Math.round(+(c.stage||0)/7*45)+(rw[c.pursuit_judge]||0)+(calcPaceOverrate(c)>1?0:15)));}
  var deals=t.filter(function(c){return['S','A','B'].indexOf(c.pursuit_judge)>=0||+(c.stage||0)>=3;}).map(function(c){return {c:c,p:prox(c)};}).sort(function(a,b){return b.p-a.p;}).slice(0,6);
@@ -4999,12 +4999,15 @@ function renderAnalysis(){
  var clockH=allA.length?allA.map(function(o){var col=o.left<0?'#ff5d7d':o.left<=10?'#ffb443':'#9be15d';return '<div class="z-clock"><div class="z-cdays" style="color:'+col+'">'+(o.left<0?'超過':'残'+o.left)+'</div><div class="z-cbar"><i style="width:'+Math.max(0,Math.min(100,(45-o.left)/45*100))+'%;background:'+col+'"></i></div><div class="z-who" style="width:90px"><b>'+e(o.c.name||'無名')+'様</b><span>'+e(o.c.manager||'')+'・'+e(o.c.pursuit_judge)+'</span></div></div>';}).join(''):'<div class="z-sub">A・S案件＋追撃判定日が必要</div>';
  var dwell=[0,0,0,0,0,0,0,0],dc=[0,0,0,0,0,0,0,0];t.forEach(function(c){var s=+(c.stage||0);dwell[s]+=lastContactDays(c);dc[s]++;});var dwAvg=dwell.map(function(v,i){return dc[i]?Math.round(v/dc[i]):0;});var slow=dwAvg.indexOf(Math.max.apply(null,dwAvg));
  var fc5=t.filter(function(c){return +(c.stage||0)>=5;}).length, proj=Math.round(fc5*0.4+conn*0.12);
+ var _prio=cards.map(function(c){ var rank=(c.pursuit_judge||''); var st=+(c.stage||0); var hi=rank==='S'||rank==='A'||st>=3; if(!hi) return null; var rs=[]; if(calcPaceOverrate(c)>1) rs.push('ペース遅れ'); var dd=lastContactDays(c); if(dd>=14) rs.push(dd+'日 未接触'); if(+(c.rusu||0)>=3) rs.push('連続留守'+c.rusu+'回'); if(!rs.length) return null; var sc=(rank==='S'?3:rank==='A'?2:1)*2+st/8+rs.length; return {c:c,rs:rs,sc:sc}; }).filter(Boolean).sort(function(a,b){return b.sc-a.sc;}).slice(0,6);
+ var prioH=_prio.length?_prio.map(function(o){ return '<div class="z-deal"><div class="z-rk" style="background:'+(RC[o.c.pursuit_judge]||'#4a5568')+'">'+e(o.c.pursuit_judge||'-')+'</div><div class="z-who"><b>'+e(o.c.name||'無名')+'様</b><span>'+STG[+(o.c.stage||0)]+'・'+e(o.c.manager||'')+'</span></div><div style="margin-left:auto;display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;max-width:55%">'+o.rs.map(function(x){return '<span style="font-size:10px;background:rgba(255,93,125,.16);color:#ff5d7d;border:1px solid rgba(255,93,125,.35);border-radius:10px;padding:1px 7px;white-space:nowrap">'+x+'</span>';}).join('')+'</div></div>'; }).join(''):'<div class="z-empty">要フォローの該当なし。良好です◎</div>';
+
  H+=_zsec('contract','💼 契約（着実に進める）',
    _zc('💼','契約クローズ・トラッカー','今フォローすべき的を近接度順に。<span class="z-pill" style="background:rgba(139,124,255,.18);color:#8b7cff">CLOSING</span>',dealsH,'z-c2')
   +_zc('⏱','45日契約クロック','A昇格(追撃判定)→45日。赤は超過。',clockH,'z-c2')
   +_zc('🏎','パイプライン・ベロシティ','各段の平均滞留日数。長い段が失速＝<b style="color:#ff5d7d">'+STG[slow]+'</b>。',_zVbars(dwAvg,STG.map(function(s){return s.slice(0,2);}),dwAvg.map(function(v){return v>=50?'#ff5d7d':v>=30?'#ffb443':'#38a169';})),'z-c2')
   +_zc('🔮','着地予測（今月見込み）','現パイプライン×転換率の概算。','<div class="z-tiles"><div class="z-tile"><b>'+proj+'</b><span>契約見込</span></div><div class="z-tile"><b>'+Math.round(conn*0.35)+'</b><span>提案依頼見込</span></div><div class="z-tile"><b>'+fc5+'</b><span>比較以上</span></div></div><div class="z-sub" style="margin-top:8px">※過去転換率の蓄積で精度UP</div>','z-c2')
-  +_zc('🕳','リーク分析（離脱の場所）','転換率が落ちる段を発見。',_zFunnel(sc),'z-cf'));
+  +_zc('🕳','リーク分析（離脱の場所）','転換率が落ちる段を発見。',_zFunnel(sc),'z-c2')+_zc('⚠','要フォロー（最優先）','至急アクションすべき高価値の客。課長から指示を。',prioH,'z-c2'));
  // rank & game (team)
  var board=reps.map(function(r){var a=g[r];return {r:r,av:a.length?Math.round(a.reduce(function(s,c){return s+calcScore(c);},0)/a.length*10)/10:0,n:a.length};}).sort(function(a,b){return b.av-a.av;});
  var mxAv=Math.max.apply(null,board.map(function(b){return b.av;}))||1;
@@ -5619,15 +5622,12 @@ function renderPlanner(){
   var pickOpts='<option value="">＋ お客様を選択して追加…</option>'+pickList.map(function(o){ return '<option value="'+o.c.id+'">'+e(o.c.name||'(無名)')+(o.w?'（'+e(o.w)+'）':'')+'</option>'; }).join('');
   var sortToggle='<span style="display:inline-flex;border:1px solid #cbd5e0;border-radius:7px;overflow:hidden;margin-right:8px"><button onclick="planSort(\'time\')" style="border:none;padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit;background:'+(sm==='time'?'#2c5282':'#fff')+';color:'+(sm==='time'?'#fff':'#718096')+'">🕒 時刻順</button><button onclick="planSort(\'area\')" style="border:none;padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit;background:'+(sm==='area'?'#2c5282':'#fff')+';color:'+(sm==='area'?'#fff':'#718096')+'">📍 エリア順</button></span>';
   var addForm='<div style="border:1px dashed #cbd5e0;border-radius:8px;padding:12px;margin-bottom:14px;background:#fafcff">'
-    +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:8px">'
-    +'<div><label style="font-size:11px;color:#718096">時刻</label><br><select id="plTime" style="padding:7px;border:1px solid #cbd5e0;border-radius:6px;font-size:13px">'+slots+'</select></div>'
-    +'<div style="flex:1;min-width:200px"><label style="font-size:11px;color:#718096">お客様（プルダウンで選択）</label><br><select id="plPick" onchange="planPick(this.value)" style="width:100%;padding:7px 8px;border:1px solid #cbd5e0;border-radius:6px;font-size:13px">'+pickOpts+'</select></div>'
-    +'</div>'
-    +'<div style="margin-bottom:8px"><label style="font-size:11px;color:#718096">名前で検索して追加</label><br><input id="plSearch" oninput="planSearch(this.value)" placeholder="氏名を入力…" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font-size:13px;box-sizing:border-box"></div>'
+    +'<div style="margin-bottom:8px"><label style="font-size:11px;color:#718096">お客様を追加（プルダウンで選択）</label><br><select id="plPick" onchange="planPick(this.value)" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font-size:13px;box-sizing:border-box">'+pickOpts+'</select></div>'
+    +'<div style="margin-bottom:8px"><label style="font-size:11px;color:#718096">または名前で検索して追加</label><br><input id="plSearch" oninput="planSearch(this.value)" placeholder="氏名を入力…" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font-size:13px;box-sizing:border-box"></div>'
     +'<div id="plSearchResults" style="margin-bottom:8px"></div>'
     +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
-    +['本社イベント','本社講習','支店イベント','支店講習'].map(function(ev){ return '<button onclick="planAddEvent(\''+ev+'\')" style="background:#553c9a;color:#fff;border:none;border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer;font-family:inherit">＋'+ev+'</button>'; }).join('')
-    +'<button onclick="planAddFree()" style="background:#718096;color:#fff;border:none;border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer;font-family:inherit">＋自由入力</button>'
+    +[['本社イベント','#e0e7ff','#4338ca','#c7d2fe'],['本社講習','#d6f5ee','#0f766e','#a7f3d0'],['支店イベント','#fef3c7','#92400e','#fde68a'],['支店講習','#fce7f3','#9d174d','#fbcfe8']].map(function(v){ return '<button onclick="planAddEvent(\''+v[0]+'\')" style="background:'+v[1]+';color:'+v[2]+';border:1px solid '+v[3]+';border-radius:6px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">＋'+v[0]+'</button>'; }).join('')
+    +'<button onclick="planAddFree()" style="background:#edf2f7;color:#4a5568;border:1px solid #cbd5e0;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">＋自由入力</button>'
     +'</div></div>';
   var _pw=null;
   var list=_plan.entries.length?_plan.entries.map(function(en,i){ var h=''; if(sm==='area'){ var w=planAreaOf(en)||'その他'; if(w!==_pw){ _pw=w; h+='<div style="font-size:12px;font-weight:800;color:#2c5282;margin:8px 2px 4px;border-bottom:1px solid #e2e8f0;padding-bottom:3px">📍 '+e(w)+'</div>'; } } return h+planEntryHTML(en,i); }).join(''):'<div style="text-align:center;color:#a0aec0;font-size:12px;padding:10px">予定がありません。プルダウンや検索から追加してください。</div>';
@@ -5643,17 +5643,17 @@ function planEntryTags(en){
   return en.sub?'<span style="font-size:11px;font-weight:500;color:#718096">'+e(en.sub)+'</span>':'';
 }
 function planEntryHTML(en,i){
-  var timeSel='<select onchange="planSet('+i+',\'time\',this.value)" style="border:1px solid #e2e8f0;border-radius:6px;padding:4px;font-size:13px;font-weight:700"><option value="">時刻</option>'+planSlots().map(function(s){return '<option'+(en.time===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select>';
-  var kindSeg=en.kind==='ev'?'<span style="font-size:11px;font-weight:700;color:#553c9a;padding:4px 8px">行事</span>':
-    '<span style="display:inline-flex;border:1px solid #e2e8f0;border-radius:7px;overflow:hidden">'+['k1','k2','k3'].map(function(k){ var on=en.kind===k; var bg=on?(k==='k1'?'#276749':k==='k2'?'#dd6b20':'#718096'):'#fff'; var fg=on?'#fff':'#718096'; return '<button onclick="planSet('+i+',\'kind\',\''+k+'\')" style="border:none;background:'+bg+';color:'+fg+';padding:5px 9px;font-size:12px;cursor:pointer;font-family:inherit">'+PLAN_KIND[k]+'</button>'; }).join('')+'</span>';
-  var purp=en.kind==='ev'?'<span style="font-size:12px;color:#718096;margin-left:8px">—</span>':
-    '<select onchange="planSet('+i+',\'purpose\',this.value)" style="margin-left:8px;border:1px solid #cbd5e0;border-radius:6px;padding:5px;font-size:12px">'+PLAN_PURPOSES.map(function(p){return '<option'+(en.purpose===p?' selected':'')+'>'+p+'</option>';}).join('')+'</select>';
-  return '<div style="border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;margin-bottom:10px">'
-    +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'+timeSel
-    +'<span style="flex:1;display:flex;align-items:center;gap:7px;flex-wrap:wrap"><span style="font-size:15px;font-weight:800;color:#1a202c">'+e(en.target)+'</span>'+planEntryTags(en)+'</span>'
-    +'<button onclick="planDel('+i+')" style="border:none;background:none;color:#cbd5e0;font-size:18px;cursor:pointer">✕</button></div>'
-    +'<div>'+kindSeg+purp+'</div>'
-    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px"><input value="'+planEsc(en.note)+'" oninput="planSet('+i+',\'note\',this.value)" placeholder="備考" style="padding:6px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px"><input value="'+planEsc(en.result)+'" oninput="planSet('+i+',\'result\',this.value)" placeholder="結果（夜に記入）" style="padding:6px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px"></div></div>';
+  var timeSel='<select onchange="planSet('+i+',\'time\',this.value)" style="width:84px;flex-shrink:0;border:1px solid #e2e8f0;border-radius:6px;padding:5px 4px;font-size:13px;font-weight:700;color:#2c5282"><option value="">時刻</option>'+planSlots().map(function(s){return '<option'+(en.time===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select>';
+  var kindSeg=en.kind==='ev'?'<span style="font-size:11px;font-weight:700;color:#553c9a;padding:4px 9px;background:#faf5ff;border:1px solid #e9d8fd;border-radius:7px">行事</span>':
+    '<span style="display:inline-flex;border:1px solid #e2e8f0;border-radius:7px;overflow:hidden;flex-shrink:0">'+['k1','k2','k3'].map(function(k){ var on=en.kind===k; var bg=on?(k==='k1'?'#2f855a':k==='k2'?'#dd6b20':'#a0aec0'):'#fff'; var fg=on?'#fff':'#a0aec0'; return '<button onclick="planSet('+i+',\'kind\',\''+k+'\')" style="border:none;background:'+bg+';color:'+fg+';padding:5px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">'+PLAN_KIND[k]+'</button>'; }).join('')+'</span>';
+  var purp=en.kind==='ev'?'<span style="font-size:12px;color:#a0aec0;margin-left:2px">—</span>':
+    '<select onchange="planSet('+i+',\'purpose\',this.value)" style="flex:1;min-width:120px;border:1px solid #cbd5e0;border-radius:6px;padding:5px 8px;font-size:12px;background:#fff">'+PLAN_PURPOSES.map(function(p){return '<option'+(en.purpose===p?' selected':'')+'>'+p+'</option>';}).join('')+'</select>';
+  return '<div style="border:1px solid #e2e8f0;border-radius:10px;padding:9px 11px;margin-bottom:8px;background:#fff">'
+    +'<div style="display:flex;align-items:center;gap:9px;margin-bottom:7px">'+timeSel
+    +'<span style="flex:1;min-width:0;display:flex;align-items:center;gap:6px;flex-wrap:wrap;text-align:left"><span style="font-size:15px;font-weight:800;color:#1a202c">'+e(en.target)+'</span>'+planEntryTags(en)+'</span>'
+    +'<button onclick="planDel('+i+')" style="border:none;background:none;color:#cbd5e0;font-size:18px;cursor:pointer;flex-shrink:0">✕</button></div>'
+    +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">'+kindSeg+purp+'</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><input value="'+planEsc(en.note)+'" oninput="planSet('+i+',\'note\',this.value)" placeholder="備考" style="padding:6px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;box-sizing:border-box"><input value="'+planEsc(en.result)+'" oninput="planSet('+i+',\'result\',this.value)" placeholder="結果（夜に記入）" style="padding:6px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;box-sizing:border-box"></div></div>';
 }
 function planSet(i,k,v){ if(!_plan.entries[i])return; _plan.entries[i][k]=v; savePlan(); if(k==='time'||k==='kind'){ renderPlanner(); } }
 function resetPlanner(){ if(!_plan.entries||!_plan.entries.length){ toast('リセットする予定がありません'); return; }
