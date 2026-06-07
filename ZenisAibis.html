@@ -1412,7 +1412,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v4.89";
+var APP_VERSION = "v4.90";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -1447,6 +1447,7 @@ function e(s) {
   return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; });
 }
 
+function eAttr(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
 // ===== IndexedDB =====
 function openDB(cb) {
   try {
@@ -1495,11 +1496,18 @@ function checkPerm(handle, cb) {
 function readFile(handle, cb) {
   handle.getFile().then(function(file){
     file.text().then(function(txt){
-      try { cards = JSON.parse(txt)||[]; } catch(ex){ cards=[]; }
-      lastSaveSnapshot=JSON.stringify(cards);
-      try { localStorage.setItem(SK, JSON.stringify(cards)); } catch(ex){}
-      cb();
-    }).catch(function(){ readLS(); cb(); });
+      var parsed; try { parsed = JSON.parse(txt); } catch(ex){ parsed = undefined; }
+      if (Array.isArray(parsed)) {
+        cards = parsed;
+        lastSaveSnapshot=JSON.stringify(cards);
+        try { localStorage.setItem(SK, JSON.stringify(cards)); } catch(ex){}
+        cb();
+      } else {
+        readLS();
+        toast('⚠ 保存先ファイルを読めないため、端末内データで表示しました');
+        cb();
+      }
+    }).catch(function(){ readLS(); toast('⚠ ファイル読込に失敗したため、端末内データで表示しました'); cb(); });
   }).catch(function(){ readLS(); cb(); });
 }
 function writeFile(handle, cb) {
@@ -1532,7 +1540,11 @@ function saveLS() {
     localStorage.setItem(SK, JSON.stringify(cards));
     localStorage.setItem(LSDK, new Date().toISOString());
     updateSaved();
-  } catch(ex){}
+    return true;
+  } catch(ex){
+    aibisAlert('⚠ 保存に失敗しました。<br><br>端末の空き容量、またはChromeの保存領域が不足している可能性があります。<br>先にJSON書き出し（バックアップ）を行ってください。');
+    return false;
+  }
 }
 function restoreBackup(){
   var bk=localStorage.getItem(BACKUP_KEY);
@@ -1565,11 +1577,12 @@ function doRestoreBackup(){
 }
 window.restoreBackup=restoreBackup; window.doRestoreBackup=doRestoreBackup;
 function doSaveCards(cb) {
-  saveLS();
+  var okLS = saveLS();
+  if (!okLS) { cb && cb(false); return; }
   if (hasFSA && fHandle) {
-    writeFile(fHandle, function(){ cb && cb(); });
+    writeFile(fHandle, function(okFile){ cb && cb(!!okFile); });
   } else {
-    cb && cb();
+    cb && cb(true);
   }
 }
 
@@ -1872,8 +1885,9 @@ function addAibisMsg(role,text){
   var isAibis=role==='🧚';
   var div=document.createElement('div');
   div.style.cssText='display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;'+(isAibis?'':'flex-direction:row-reverse');
+  var safeText=isAibis?text:e(text);
   div.innerHTML=(isAibis?'<div class="zfa-fairy zfa-fairy-xs" style="flex-shrink:0;margin-top:2px"><span class="zfa-spark zfa-s1">✨</span><span class="zfa-face">🧚</span><span class="zfa-spark zfa-s2">✨</span></div>':'')+
-    '<div style="max-width:80%;padding:10px 14px;border-radius:'+(isAibis?'4px 16px 16px 16px':'16px 4px 16px 16px')+';background:'+(isAibis?'#fffbeb':'#2c5282')+';color:'+(isAibis?'#92400e':'white')+';font-size:13px;line-height:1.6;box-shadow:0 1px 4px rgba(0,0,0,0.1)">'+text+'</div>';
+    '<div style="max-width:80%;padding:10px 14px;border-radius:'+(isAibis?'4px 16px 16px 16px':'16px 4px 16px 16px')+';background:'+(isAibis?'#fffbeb':'#2c5282')+';color:'+(isAibis?'#92400e':'white')+';font-size:13px;line-height:1.6;box-shadow:0 1px 4px rgba(0,0,0,0.1)">'+safeText+'</div>';
   log.appendChild(div);
   log.scrollTop=log.scrollHeight;
   aibisChatLog.push(1);
@@ -2022,10 +2036,10 @@ function updateStaffFilter(){
   bar.style.display='block';
   var html='<button class="sbtn'+(staffFilter==='all'?' active':'')+'" onclick="setStaffFilter(\'all\')">全員</button>';
   names.forEach(function(n){
-    html+='<button class="sbtn'+(staffFilter===n?' active':'')+'" onclick="setStaffFilter(\''+n.replace(/'/g,'\\\'')+'\')" style="white-space:nowrap">'+n+'</button>';
+    html+='<button class="sbtn'+(staffFilter===n?' active':'')+'" onclick="setStaffFilter(\''+eAttr(n)+'\')" style="white-space:nowrap">'+e(n)+'</button>';
   });
   if(staffFilter!=='all'){
-    var sf=staffFilter.replace(/'/g,"\\'");
+    var sf=eAttr(staffFilter);
     html+='<span style="margin-left:auto;display:inline-flex;gap:4px;align-items:center">'
       +'<button class="sbtn" onclick="renameStaff(\''+sf+'\')" style="white-space:nowrap;border-color:#3182ce;color:#2c5282">✏ 改名</button>'
       +'<button class="sbtn" onclick="deleteStaffCards(\''+sf+'\')" style="white-space:nowrap;border-color:#fc8181;color:#c53030">🗑 全削除</button>'
@@ -3451,11 +3465,11 @@ function renderFam(){
       var lvCls={'同居':'lv-同居','近居':'lv-近居','別居':'lv-別居','死亡':'lv-死亡','未確認':'lv-未確認'};
       var cls='fam-cell '+(lvCls[living]||'lv-未確認')+(m.kp?' fc-kp':'')+(m.met?' fc-met':'');
       var tip=m.role+(m.name?' '+m.name:'')+' / '+FAM_STANCE_LABEL[m.stance||'unk']+(m.children?' / 子'+m.children+'人':'');
-      return '<div class="'+cls+'" onclick="famOpenEdit('+idx+')" title="'+tip+'">'
+      return '<div class="'+cls+'" onclick="famOpenEdit('+idx+')" title="'+e(tip)+'">'
         +(m.owner?'<span class="fam-owner-star">★</span>':'')
         +'<div class="fam-stance-dot" style="background:'+sc+';'+dotBorder+'"></div>'
-        +'<div class="fam-role-sm">'+((m.role||'?').replace('（','<br>（'))+'</div>'
-        +'<div class="fam-age-sm">'+(m.age?m.age+'歳':'')+'</div>'
+        +'<div class="fam-role-sm">'+(e(m.role||'?').replace('（','<br>（'))+'</div>'
+        +'<div class="fam-age-sm">'+(m.age?e(m.age)+'歳':'')+'</div>'
         +'</div>';
     }).join('');
   });
@@ -3731,11 +3745,12 @@ function autoCommitEdit(){
     var ev=document.getElementById('editView');
     if(!ev||ev.style.display==='none'||!cur||!isDirty) return;
     collectForm();
+    if(!curId && !String(cur.name||'').trim()){ if(typeof scheduleDraftSave==='function') scheduleDraftSave(); return; }
     if(cur.address) cur.address=_han(cur.address);
     if(curId){ var idx=cards.findIndex(function(c){return c.id===curId;}); if(idx>=0) cards[idx]=cur; else { cards.push(cur); curId=cur.id; } }
     else { cards.push(cur); curId=cur.id; }
     setDirty(false);
-    doSaveCards(function(){ clearDraft(); });
+    doSaveCards(function(ok){ if(ok) clearDraft(); });
   }catch(ex){}
 }
 function maybeRestoreDraft(){
@@ -3769,7 +3784,8 @@ function saveCard(){
   if(!cur.name){toast('氏名を入力してください');return;}
   if(curId){ var idx=cards.findIndex(function(c){return c.id===curId;}); if(idx>=0) cards[idx]=cur; }
   else{ cards.push(cur); curId=cur.id; }
-  doSaveCards(function(){
+  doSaveCards(function(ok){
+    if(!ok){ toast('⚠ 保存に失敗しました'); return; }
     updateCount();
     setDirty(false);
     clearDraft();
@@ -3790,7 +3806,8 @@ function saveAll(){
     aibisAlert('変化がないみたい😊<br>カードを編集・追加してから保存してね！');
     return;
   }
-  doSaveCards(function(){
+  doSaveCards(function(ok){
+    if(!ok){ toast('⚠ 保存に失敗しました'); return; }
     lastSaveSnapshot=snapshot;
     toast(fHandle?'💾 '+fHandle.name+' に保存しました':'💾 端末内に保存しました');
     // コピー保存先にも書き込む
@@ -3821,6 +3838,18 @@ function doSyncNow(){
 function loadFile(){
   if(!isMob && hasFSA){ openFSAWithConfirm(); } else { var inp=document.getElementById('fileInput'); inp.value=''; inp.click(); }
 }
+function normalizeImportedCards(arr){
+  if(!Array.isArray(arr)) return [];
+  return arr.filter(function(c){ return c && typeof c==='object'; }).map(function(c){
+    if(!c.id) c.id='c_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
+    if(!c.created_at) c.created_at=new Date().toISOString();
+    if(!c.updated_at || isNaN(new Date(c.updated_at).getTime())) c.updated_at=c.created_at||new Date().toISOString();
+    if(!Array.isArray(c.revisits)) c.revisits=[];
+    if(!Array.isArray(c.pursuits)) c.pursuits=[];
+    if(!Array.isArray(c.family)) c.family=[];
+    return c;
+  });
+}
 function openFSAWithConfirm(){
   window.showOpenFilePicker({types:[{description:'JSON',accept:{'application/json':['.json']}}]}).then(function(files){
     var handle=files[0];
@@ -3828,7 +3857,7 @@ function openFSAWithConfirm(){
     handle.getFile().then(function(f){
       f.text().then(function(txt){
         try{
-          var imp=JSON.parse(txt);
+          var imp=normalizeImportedCards(JSON.parse(txt));
           if(!Array.isArray(imp)||imp.length===0){toast('データがありません');return;}
           confirmImport(imp);
         }catch(ex){toast('読み込み失敗');}
@@ -3841,7 +3870,7 @@ function onFileImport(ev){
   var reader=new FileReader();
   reader.onload=function(e2){
     try{
-      var imp=JSON.parse(e2.target.result);
+      var imp=normalizeImportedCards(JSON.parse(e2.target.result));
       if(!Array.isArray(imp)){toast('形式が不正です');return;}
       if(imp.length===0){toast('カードが0件です');return;}
       confirmImport(imp);
@@ -3858,14 +3887,14 @@ function confirmImport(imp){
     managerMap[key]=(managerMap[key]||0)+1;
   });
   var managerList=Object.keys(managerMap).map(function(k){
-    return '・'+nmSan(k)+'（'+managerMap[k]+'件）';
+    return '・'+e(nmSan(k))+'（'+managerMap[k]+'件）';
   }).join('<br>');
   var otherManagers=Object.keys(managerMap).filter(function(k){ return k.indexOf(uName||'__none__')<0; });
   var msg=imp.length+'件のカードを読み込むよ😊<br><br>'
     +'<b>担当者：</b><br>'+managerList+'<br><br>'
     +'現在のデータ：'+cards.length+'件';
   if(otherManagers.length>0){
-    msg+='<br><br>⚠ '+nmSan(uName)+'以外のカードも含まれてるよ';
+    msg+='<br><br>⚠ '+e(nmSan(uName))+'以外のカードも含まれてるよ';
   }
   msg+='<br><br>'
     +'<div style="display:flex;gap:8px;margin-top:4px">'
@@ -3883,7 +3912,7 @@ function askMergeMode(imp){
   });
   var isManager=isMgrUnlocked();
   if(!isManager||cards.length===0) return Promise.resolve('merge');
-  var nameStr=names.map(function(x){return nmSan(x);}).join('・');
+  var nameStr=names.map(function(x){return e(nmSan(x));}).join('・');
 
   return new Promise(function(resolve){
     var msg='読み込みモードを選んでね😊<br><br>'
@@ -3912,7 +3941,7 @@ async function doMerge(imp){
     if(existCount>imp.length){
       var proceed=await new Promise(function(resolve){
         aibisAlert('⚠ 上書き前の確認<br><br>'
-          +'対象担当：'+names.map(function(x){return nmSan(x);}).join('・')+'<br>'
+          +'対象担当：'+names.map(function(x){return e(nmSan(x));}).join('・')+'<br>'
           +'現在のカード：<b>'+existCount+'件</b><br>'
           +'読み込むファイル：<b>'+imp.length+'件</b><br><br>'
           +'上書きすると <b style="color:#c53030">'+existCount+'件 → '+imp.length+'件</b> に置き換わり、'
@@ -4179,7 +4208,7 @@ function execPrint(){
 
   var c=cur;
   var dateStr=new Date().toISOString().slice(0,10);
-  var hdrTxt=(c.branch||'')+' '+(c.section||'')+' '+(c.manager||'')+' ／ '+(c.name?c.name+'様':'')+(c.discovery_date?' ／ 発掘日:'+c.discovery_date:'')+' ／ 印刷:'+dateStr;
+  var hdrTxt=e((c.branch||'')+' '+(c.section||'')+' '+(c.manager||'')+' ／ '+(c.name?c.name+'様':'')+(c.discovery_date?' ／ 発掘日:'+c.discovery_date:'')+' ／ 印刷:'+dateStr);
 
   var firstPage=true;
   var html='<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><style>'+buildPrintCSS()+'</style></head><body>';
@@ -4214,7 +4243,7 @@ function execPrint(){
       +'</style></head><body>';
     allCards.forEach(function(card,idx){
       var ch=card;
-      var chdrTxt=(ch.branch||'')+' '+(ch.section||'')+' '+(ch.manager||'')+' ／ '+(ch.name||'')+' / 発掘日:'+(ch.discovery_date||'-')+' / 印刷:'+dateStr;
+      var chdrTxt=e((ch.branch||'')+' '+(ch.section||'')+' '+(ch.manager||'')+' ／ '+(ch.name||'')+' / 発掘日:'+(ch.discovery_date||'-')+' / 印刷:'+dateStr);
       if(idx>0) combinedHtml+='<div class="pgbrk"></div>';
       var _hdr='<div class="prhdr"><div class="prhdr-left">z.Aibis</div><div class="prhdr-right">'+chdrTxt+'</div></div>';
       combinedHtml+=_hdr+buildInitVisitHTML(ch);
