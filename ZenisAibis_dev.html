@@ -1412,7 +1412,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v4.80";
+var APP_VERSION = "v4.82";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -3017,15 +3017,7 @@ function renderCards() {
       +'<div class="lname">'+(c.name?(c.name.length>7?e(c.name.slice(0,7))+'…':e(c.name)+'様'):'(名前未入力)')+'</div>'
       +'<div class="lmeta">'+e(c.discovery_date||'日付未設定')+(own?' / '+e(own):'')+'</div>'
       +'</div>'
-      +'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
-      +sb
-      +pjTag
-      +'<span class="lstage" style="background:'+sc+'18;color:'+sc+';border:1px solid '+sc+'40">'+sl+'</span>'
-      +ekiTag
-      +'<span style="font-size:12px;color:#718096">'+e(c.address||'')+'</span>'
-      +(lv?'<span style="font-size:11px;color:#a0aec0;margin-left:auto">🚶 '+lv+'</span>':'')
-      +(kTag?'<span style="margin-left:auto">'+kTag+'</span>':'')
-      +'</div></div>'
+      +'<div style="display:flex;align-items:center;gap:6px">'+'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex:1;min-width:0">'+sb+pjTag+'<span class="lstage" style="background:'+sc+'18;color:'+sc+';border:1px solid '+sc+'40">'+sl+'</span>'+ekiTag+kTag+'</div>'+(lv?'<span style="font-size:11px;color:#a0aec0;flex-shrink:0;white-space:nowrap">🚶 '+lv+'</span>':'')+'</div>'+'<div style="font-size:12px;color:#718096;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">📍 '+(c.address?e(c.address):'<span style="color:#cbd5e0">住所未設定</span>')+'</div>'+'</div>'
       +'<button onclick="delCard(\''+c.id+'\',\''+e(c.name||'(名前未入力)')+'\')" style="margin-left:2px;background:none;border:none;color:#cbd5e0;font-size:20px;cursor:pointer;padding:4px 6px;border-radius:6px;align-self:center;flex-shrink:0" title="見込みから外す">🗑</button>'
       +'</div>';
   }).join('');
@@ -5407,7 +5399,9 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
  if(pingStat.length&&pingStat[0].v>=40) ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(74,168,255,.16)">🤝</div><div><b>'+e(pingStat[0].r)+'さん：ピンポン止まり'+pingStat[0].v+'%<span class="z-pill" style="background:rgba(74,168,255,.16);color:#4aa8ff">GRIP</span></b><p>同行1回で「立ち話→玄関内」の突破を実演すると効果大。</p></div></div>';
  ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(155,225,93,.16)">✅</div><div><b>フル稼働まであと'+(reps.length-active.length)+'人<span class="z-pill" style="background:rgba(155,225,93,.16);color:#9be15d">TEAM</span></b><p>未稼働の担当へ1声。全員が動くと発掘量が跳ね上がる。</p></div></div>';
  var secInsights=_zsecPlain('insights','🧠 傾向と対策（AIインサイト）','<div class="z-sub" style="margin-bottom:8px">データから打ち手を自動抽出。</div>'+ins);
- H+=_zsec('today','📌 今日の指示・優先行動 <span class="z-secsub">朝礼前に「今日、誰に何を」</span>',bodyContract)+_zsec('state','📊 課の状態と詰まりどころ <span class="z-secsub">重要3指標・活動量・滞留の原因</span>',bodyKpi3+bodyProcess)+secWork+_zsec('growth','👥 部下育成 <span class="z-secsub">誰を褒め、誰に指導し、誰に同行するか</span>',bodyRank+bodyTeam)+_zsec('deep','🔬 深掘り分析 <span class="z-secsub">必要なときに開く（エリア・お宝度・営業スタイル）</span>',bodyArea+bodyMulti)+secInsights;
+ var _mgrActs=[];if(saLate>0)_mgrActs.push(['rgba(255,180,67,.16)','⏱','A・S放置 '+saLate+'件を今週中にクロージング判断']);if(pingStat.length&&pingStat[0].v>=40)_mgrActs.push(['rgba(74,168,255,.16)','🤝',e(pingStat[0].r)+'さんに同行を1本（ピンポン止まり'+pingStat[0].v+'%）']);_mgrActs.push(['rgba(255,93,125,.16)','⚠','失速段「'+STG[slow]+'」を越える一手を朝礼で共有']);if(reps.length-active.length>0)_mgrActs.push(['rgba(155,225,93,.16)','✅','未稼働 '+(reps.length-active.length)+'人に1声、全員稼働へ']);_mgrActs=_mgrActs.slice(0,3);
+ var actCard=_zc('🎯','今日の課長アクション','朝礼前の要点。詳しくは下部の傾向と対策へ。',_mgrActs.map(function(a){return '<div class="z-ins"><div class="z-iic" style="background:'+a[0]+'">'+a[1]+'</div><div><b>'+a[2]+'</b></div></div>';}).join(''),'z-cf');
+ H+=_zsec('today','📌 今日の指示・優先行動 <span class="z-secsub">朝礼前に「今日、誰に何を」</span>',actCard+bodyContract)+_zsec('state','📊 課の状態と詰まりどころ <span class="z-secsub">重要3指標・活動量・滞留の原因</span>',bodyKpi3+bodyProcess)+secWork+_zsec('growth','👥 部下育成 <span class="z-secsub">誰を褒め、誰に指導し、誰に同行するか</span>',bodyRank+bodyTeam)+_zsec('deep','🔬 深掘り分析 <span class="z-secsub">必要なときに開く（エリア・お宝度・営業スタイル）</span>',bodyArea+bodyMulti)+secInsights;
  H+='</div>';
  host.innerHTML=H;
  if(window.IS_DEV){var _dw=document.getElementById('devSelfMirrorWrap');if(_dw){_dw.style.display='';if(window.renderSelfDash)renderSelfDash('devSelfMirror');}}
