@@ -505,6 +505,16 @@ body.is-mob .mob-menu{display:inline-block}
 .zdash .z-xpl{display:flex;justify-content:space-between;font-size:10.5px;color:var(--z-mut);margin-bottom:4px}
 .zdash .z-xpl b{font-family:'Sora',sans-serif;color:var(--z-cyan)}
 .zdash .z-xptrack{height:9px;border-radius:6px;background:rgba(255,255,255,.09);overflow:hidden}
+.zdash .z-mrow{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--z-line);font-size:13px;color:var(--z-ink);font-weight:600}
+.zdash .z-mrow:last-child{border-bottom:none}
+.zdash .z-mck{font-size:16px;color:var(--z-mut)}
+.zdash .z-prow{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--z-line)}
+.zdash .z-prow:last-child{border-bottom:none}
+.zdash .z-pno{width:20px;height:20px;border-radius:50%;background:#2C5282;color:#fff;font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.zdash .z-pnm{font-size:13px;color:var(--z-ink);font-weight:700;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:38%}
+.zdash .z-ptemp{font-family:'Sora',sans-serif;font-weight:800;color:#e8920c;font-size:15px;margin-left:auto}
+.zdash .z-ptemp small{font-size:10px;color:var(--z-dim);font-weight:600}
+.zdash .z-ptag{font-size:10px;font-weight:700;color:var(--z-mut);background:var(--z-panel2);border:1px solid var(--z-line);border-radius:8px;padding:3px 7px;flex-shrink:0}
 .zdash .z-xptrack i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--z-cyan),var(--z-lime));transition:width 1s}
 .zdash .z-hmeta h2{font-size:20px;font-weight:900;margin:3px 0 9px}
 .zdash .z-chips{display:flex;gap:8px;flex-wrap:wrap}
@@ -1402,7 +1412,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v4.72";
+var APP_VERSION = "v4.74";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -2630,7 +2640,10 @@ function _kpi3Hint(lab,now,prev,d){var st=(now===0&&prev===0)?'none':(now===0)?'
 function _reactivated(c){var ds=[];if(c.discovery_date)ds.push(c.discovery_date);(c.revisits||[]).forEach(function(r){if(r.date)ds.push(r.date);});(c.pursuits||[]).forEach(function(pp){if(pp.date)ds.push(pp.date);});ds=ds.map(function(d){return +new Date(d);}).filter(function(t){return !isNaN(t);}).sort(function(a,b){return a-b;});if(ds.length<2)return false;var recent=(Date.now()-ds[ds.length-1])/864e5<=30;var mg=0;for(var i=1;i<ds.length;i++){var gp=(ds[i]-ds[i-1])/864e5;if(gp>mg)mg=gp;}return recent&&mg>=45;}
 function _actPoints(c){var p=10,st=+(c.stage||0);if((c.initial_content&&String(c.initial_content).trim())||(c.analog_memo&&String(c.analog_memo).trim()))p+=20;if((c.revisits||[]).length)p+=20;if((c.pursuits||[]).length)p+=15;if(st>=3)p+=30;if(c.proposal_req)p+=50;if(c.doukou)p+=20;if(st>=6)p+=100;if(c.pursuit_judge==='A'||c.pursuit_judge==='S')p+=100;if(c.family_headcount)p+=10;if((c.family||[]).some(function(x){return x.met&&(x.owner||x.kp);}))p+=10;if(_reactivated(c))p+=50;return p;}
 function _repPoints(arr){return arr.reduce(function(s,c){return s+_actPoints(c);},0);}
+function _xpRank(pts){var T=[0,500,1000,2000,3500,5000];var NM=['見習い','開拓者','追客職人','見込み育成士','戦略営業','課のエース'];var lv=1;for(var i=0;i<T.length;i++){if(pts>=T[i])lv=i+1;}var lo=T[lv-1],hi=(lv<6)?T[lv]:null;return {lv:lv,name:NM[lv-1],lo:lo,hi:hi,next:(lv<6)?NM[lv]:null,remain:hi!==null?Math.max(0,hi-pts):0,prog:(hi!==null)?Math.max(0,Math.min(100,Math.round((pts-lo)/(hi-lo)*100))):100};}
+function _monthlyGain(arr,ym){var g=0;arr.forEach(function(c){if((c.discovery_date||'').slice(0,7)===ym)g+=10;if(c.proposal_req&&(c.proposal_req_at||'').slice(0,7)===ym)g+=50;if(c.doukou&&(c.doukou_at||'').slice(0,7)===ym)g+=20;if(c.family_headcount&&(c.family_headcount_at||'').slice(0,7)===ym)g+=10;(c.revisits||[]).forEach(function(r){if((r.date||'').slice(0,7)===ym)g+=20;});(c.pursuits||[]).forEach(function(pp){if((pp.date||'').slice(0,7)===ym)g+=15;});});return g;}
 function _ptColor(pct){return pct>=100?'#9BE15D':pct>=90?'#68D391':pct>=70?'#F6AD55':pct>=40?'#63B3ED':'#CBD5E0';}
+function _tempBand(s){return s>=33?['👑','契約接近']:s>=26?['🏆','A候補']:s>=18?['🔥','HOT見込み']:s>=10?['🔍','育成候補']:['🌱','接点づくり'];}
 function _genjoPie(arr){ var cnt={}; _GENJO.forEach(function(x){cnt[x[0]]=0;}); arr.forEach(function(c){var gj=(c.genjo||''); if(!(gj in cnt))gj=''; cnt[gj]++;}); var rows=_GENJO.filter(function(x){return cnt[x[0]]>0;}); var segs=rows.map(function(x){return {value:cnt[x[0]],color:x[2]};}); var tot=arr.length||1; var leg='<div style="display:flex;flex-direction:column;gap:3px;font-size:11px">'+rows.map(function(x){var v=cnt[x[0]];return '<div style="display:flex;align-items:center;gap:6px"><i style="width:9px;height:9px;border-radius:2px;background:'+x[2]+';flex-shrink:0;display:inline-block"></i><span style="color:var(--z-mut)">'+x[1]+'</span><b style="margin-left:auto;color:var(--z-ink)">'+v+'</b><span style="color:var(--z-dim);width:36px;text-align:right">'+Math.round(v/tot*100)+'%</span></div>';}).join('')+'</div>'; return '<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'+_zDonut(segs,arr.length,'件')+'<div style="flex:1;min-width:128px">'+leg+'</div></div>'; }
 function _ryokuchiRing(arr){ var own=arr.filter(function(c){return (parseFloat(c.ryokuchi)||0)>0;}).length; var tot=arr.length||1; var pct=Math.round(own/tot*100); var segs=[{value:own,color:'#2f9e44'},{value:tot-own,color:'rgba(130,150,180,.22)'}]; return '<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'+_zDonut(segs,pct+'%','生産緑地')+'<div style="flex:1;min-width:120px"><div style="font-size:13px;color:var(--z-ink);font-weight:700"><b style="font-size:24px;color:#2f9e44;font-family:Sora,sans-serif">'+own+'</b> / '+arr.length+' 人が保有</div><div class="z-sub" style="margin-top:4px">生産緑地（1枚以上）を持つ見込み客の割合。2022年問題・納税猶予の打ち手対象。</div></div></div>'; }
 
@@ -2678,9 +2691,15 @@ function renderSelfDash(tid){
  var c3=mine.filter(function(c){return +(c.stage||0)===3;}); var inc=mine.filter(function(c){return !c.family_headcount;}).length; var ping=mine.filter(function(c){return getKaiwaLevel(c)===0;}).length;
  var q=[];if(lateL.length)q.push(['rgba(255,93,125,.16)','🚶',lateL.length+'件が21日以上ご無沙汰',e(lateL.slice(0,2).map(function(o){return (o.c.name||'無名')+'様';}).join('・'))+' から再訪アポを1本。']);if(c3.length)q.push(['rgba(255,180,67,.16)','🎯',c3.length+'件が連想到達','テストクロージングの好機。']);if(inc)q.push(['rgba(74,168,255,.16)','📋',inc+'件で家族未把握','次回で空欄を1つ埋めよう。']);if(ping&&q.length<3)q.push(['rgba(52,227,208,.16)','💬',ping+'件がピンポン止まり','一段深める一言を用意。']);if(!q.length)q.push(['rgba(155,225,93,.16)','🎉','大きな課題なし','今の良いペースを維持！']);
  var spar=(c3[0]||mine.filter(function(c){return +(c.stage||0)>=3&&c.name;})[0]||{}).name||'お客様';
+ var _pts=_repPoints(mine),_rk=_xpRank(_pts),_curYM=_zMonths()[11],_mg=_monthlyGain(mine,_curYM);
+ var asN=mine.filter(function(c){return c.pursuit_judge==='A'||c.pursuit_judge==='S';}).length,fuN=mine.filter(function(c){return lastContactDays(c)>=14;}).length,famNo=mine.filter(function(c){return !c.family_headcount;}).length,aCand=mine.filter(function(c){return +(c.stage||0)>=3&&!(c.pursuit_judge==='A'||c.pursuit_judge==='S');}).length;
+ var _mis=[];if(fuN)_mis.push('14日以上ご無沙汰のカードを1件、再訪アポ');if(famNo)_mis.push('家族構成が空のカードを1件、ヒアリング入力');if(aCand)_mis.push('連想到達のカードを1件、追客判定（A化）');if(_mis.length<3&&c3.length)_mis.push('連想(3)のカードにテストクロージング');if(!_mis.length)_mis.push('良いペース！今日も新規発掘を1件');_mis=_mis.slice(0,3);
+ var _prio=mine.map(function(c){return {c:c,s:calcScore(c)};}).sort(function(a,b){return b.s-a.s;}).slice(0,3);
  var H='<div class="zdash zdash-rep"><div class="z-bento">';
- H+='<div class="z-card z-hero z-cf"><div class="z-ring" style="--p:'+renso+'"><div class="z-ring-in"><b>'+renso+'<small>%</small></b><span>連想到達率</span></div></div><div class="z-hmeta"><div class="z-lv">'+lvl[0]+' ・ '+lvl[1]+'</div><h2>'+e(uName||'あなた')+'さんの GROWTH DASHBOARD</h2><div class="z-chips"><span class="z-chip">担当 <b>'+n+'</b>件</span><span class="z-chip">連想到達 <b>'+conn+'</b>件</span><span class="z-chip">入力充実 <b>'+inputAvg+'</b>%</span><span class="z-chip">平均 <b>'+avg+'</b></span></div>'+_xpHtml+'</div></div>';
- H+='<div class="z-card z-c2"><h3>⚡ 活動ポイント</h3><div class="z-sub">契約だけでなく、前に進める行動を評価。</div><div style="font-family:Sora,sans-serif;font-size:30px;font-weight:800;color:var(--z-lime)">'+_repPoints(mine)+'<small style="font-size:14px;color:var(--z-dim);font-weight:600">pt</small></div></div>';
+ H+='<div class="z-card z-hero z-cf"><div class="z-ring" style="--p:'+renso+'"><div class="z-ring-in"><b>'+renso+'<small>%</small></b><span>育成率</span></div></div><div class="z-hmeta"><div class="z-lv">⚔ '+e(uName||'あなた')+' さんの成長ランク</div><h2>Lv.'+_rk.lv+' '+_rk.name+'</h2><div class="z-chips"><span class="z-chip">保有 <b>'+n+'</b>件</span><span class="z-chip">A・S <b>'+asN+'</b>件</span><span class="z-chip">要フォロー <b>'+fuN+'</b>件</span><span class="z-chip">育成率 <b>'+renso+'</b>%</span></div><div class="z-xp"><div class="z-xpl"><span>'+(_rk.next?'あと <b>'+_rk.remain+'pt</b> で Lv.'+(_rk.lv+1)+' '+_rk.next:'最高ランクに到達！')+'</span><span>今月 +'+_mg+'pt</span></div><div class="z-xptrack"><i style="width:'+_rk.prog+'%"></i></div></div><div class="z-sub" style="margin-top:6px">成長ポイント（営業経験値）累計 '+_pts+'pt</div></div></div>';
+ H+='<div class="z-card z-c2"><h3>✅ 今日のミッション</h3><div class="z-sub">迷ったらここから。最大3つ。</div>'+_mis.map(function(m){return '<div class="z-mrow"><span class="z-mck">□</span><span>'+e(m)+'</span></div>';}).join('')+'</div>';
+ H+='<div class="z-card z-c2"><h3>🔥 今日の優先見込み</h3><div class="z-sub">見込み温度の高い順（最大3件）。</div>'+(_prio.length?_prio.map(function(o,i){var c=o.c;var tag=(c.pursuit_judge==='A'||c.pursuit_judge==='S')?'A候補':(lastContactDays(c)>=14?lastContactDays(c)+'日未接触':(!c.family_headcount?'家族構成未確認':_tempBand(o.s)[1]));return '<div class="z-prow"><span class="z-pno">'+(i+1)+'</span><b class="z-pnm">'+e(c.name||'無名')+'様</b><span class="z-ptemp">'+_tempBand(o.s)[0]+' '+o.s+'<small>/40</small></span><span class="z-ptag">'+tag+'</span></div>';}).join(''):'<div class="z-sub">カードを追加すると表示されます</div>')+'</div>';
+ 
  H+='<div class="z-card z-c2"><h3>🧭 スキルレーダー</h3><div class="z-sub">凹んだ軸が伸びしろ。</div><div class="z-radar-wrap"><svg class="z-radar" viewBox="0 0 200 200">'+_zRadar(axes).replace(/^<svg[^>]*>|<\/svg>$/g,'')+'</svg><div class="z-radar-leg">'+leg+'</div></div>'+_radarTypePanel(axes)+'</div>';
  var _myNow=_kpi3Now(mine);
  H+=_kpi3Cards(mine);
@@ -5291,7 +5310,7 @@ function renderAnalysis(){
 var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';return '<div style="margin-bottom:7px"><span style="font-size:12px;font-weight:700">'+e(r)+'</span> '+bs.map(function(b){return '<span class="z-pill" style="background:rgba(155,225,93,.14);color:var(--z-lime);margin-left:4px">'+b.e+' '+b.t+'</span>';}).join('')+'</div>';}).join('')||'<div class="z-sub">集計中</div>';
  H+=_zsec('rank','🏆 ランキング & 評価',
    _zc('🏆','担当別スコア','平均スコア順。',lbH,'z-c2')
-  +_zc('⚡','担当別 活動ポイント','行動の積み上げ。契約だけでなく前進を評価。',ptH,'z-c2')
+  +_zc('⚡','担当別 行動量スコア','行動の積み上げ。契約だけでなく前進を評価。',ptH,'z-c2')
   +_zc('🎖','担当別 実績バッジ','行動の積み重ねで全員に出番。',achH,'z-c2')
   +_zc('🎖','今月の課目標（進捗）','今月の課目標。みんなで達成。',missH,'z-c2')
   +_zc('🏅','称号バッジ（多軸＝全員に出番）','色々な軸でトップを称える。',badgeH,'z-c2')
