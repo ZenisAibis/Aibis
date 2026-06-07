@@ -1426,7 +1426,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.02";
+var APP_VERSION = "v5.04";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -3217,6 +3217,7 @@ function newCard(){
   switchTab('ti'); fillForm(cur); window.scrollTo(0,0);
   setTimeout(function(){setDirty(false);},100);
   _navGo('edit',curId);
+  if(typeof updateCardNav==='function') updateCardNav();
 }
 function openCard(id){
   var c=cards.find(function(x){return x.id===id;}); if(!c) return;
@@ -3227,9 +3228,29 @@ function openCard(id){
   switchTab('ti'); fillForm(cur); window.scrollTo(0,0);
   setTimeout(function(){setDirty(false);},100);
   _navGo('edit',curId);
+  if(typeof updateCardNav==='function') updateCardNav();
 }
 function fitTabsTop(){ if(isMob) return; var h=document.querySelector('#editView header'); if(h && h.offsetHeight) document.documentElement.style.setProperty('--tabsTop', h.offsetHeight+'px'); }
 window.fitTabsTop=fitTabsTop;
+function navCard(dir){
+  if(!Array.isArray(lastVisible)||!lastVisible.length||!curId) return;
+  var idx=lastVisible.findIndex(function(c){return c.id===curId;});
+  if(idx<0) return;
+  var ni=idx+dir; if(ni<0||ni>=lastVisible.length) return;
+  if(typeof autoCommitEdit==='function') autoCommitEdit();
+  openCard(lastVisible[ni].id);
+}
+function updateCardNav(){
+  var bar=document.getElementById('cardNav'); if(!bar) return;
+  var idx=(Array.isArray(lastVisible)&&curId)?lastVisible.findIndex(function(c){return c.id===curId;}):-1;
+  if(idx<0){ bar.style.display='none'; return; }
+  bar.style.display='flex';
+  var pos=document.getElementById('cardNavPos'); if(pos) pos.textContent=(idx+1)+' / '+lastVisible.length;
+  var pv=document.getElementById('cardNavPrev'), nx=document.getElementById('cardNavNext');
+  if(pv){ pv.disabled=(idx<=0); pv.style.opacity=(idx<=0)?'.35':'1'; }
+  if(nx){ nx.disabled=(idx>=lastVisible.length-1); nx.style.opacity=(idx>=lastVisible.length-1)?'.35':'1'; }
+}
+window.navCard=navCard; window.updateCardNav=updateCardNav;
 window.addEventListener('resize',fitTabsTop);
 function switchTab(id){
   document.querySelectorAll('.tab').forEach(function(t){ t.classList.toggle('active', t.dataset.tab===id); });
@@ -3789,6 +3810,7 @@ function _restoreDraft(){
   switchTab('ti'); fillForm(cur); window.scrollTo(0,0);
   setDirty(true);
   _navGo('edit',curId);
+  if(typeof updateCardNav==='function') updateCardNav();
 }
 function _discardDraft(){ clearDraft(); }
 window._restoreDraft=_restoreDraft; window._discardDraft=_discardDraft;
@@ -3798,6 +3820,7 @@ function saveCard(){
   collectForm();
   if(cur&&cur.address) cur.address=_han(cur.address);
   if(!cur.name){toast('氏名を入力してください');return;}
+  var wasNew=!curId;
   if(curId){ var idx=cards.findIndex(function(c){return c.id===curId;}); if(idx>=0) cards[idx]=cur; }
   else{ cards.push(cur); curId=cur.id; }
   doSaveCards(function(ok){
@@ -3805,6 +3828,7 @@ function saveCard(){
     updateCount();
     setDirty(false);
     clearDraft();
+    if(wasNew){ if(typeof renderCards==='function') renderCards(); if(typeof updateCardNav==='function') updateCardNav(); }
     // 最終更新表示も更新
     var ud=document.getElementById('dispUpdated');
     if(ud&&cur.updated_at){
@@ -6637,6 +6661,11 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       </div>
     </div>
   </header>
+    <div id="cardNav" style="display:none;position:fixed;right:14px;bottom:18px;z-index:60;align-items:center;gap:4px;background:rgba(30,58,95,.93);border-radius:999px;padding:6px 8px;box-shadow:0 4px 14px rgba(0,0,0,.3)">
+      <button id="cardNavPrev" onclick="navCard(-1)" title="前のカード（上へ）" style="background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:999px;font-size:13px;font-weight:700;padding:6px 12px;cursor:pointer;font-family:inherit;line-height:1">‹ 前</button>
+      <span id="cardNavPos" style="color:#fff;font-size:12px;font-weight:700;min-width:48px;text-align:center">- / -</span>
+      <button id="cardNavNext" onclick="navCard(1)" title="次のカード（下へ）" style="background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:999px;font-size:13px;font-weight:700;padding:6px 12px;cursor:pointer;font-family:inherit;line-height:1">次 ›</button>
+    </div>
   <div class="tabs no-print">
     <div class="tab active" data-tab="ti" onclick="switchTab('ti')" style="color:#2c5282;font-size:15px;font-weight:700"><span class="ic">📋</span>初訪</div>
     <div class="tab" data-tab="tr" onclick="switchTab('tr')" style="color:#276749;font-size:15px;font-weight:700"><span class="ic">🔁</span>再訪</div>
