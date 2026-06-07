@@ -1434,7 +1434,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.15";
+var APP_VERSION = "v5.18";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -4500,43 +4500,269 @@ function buildPursuitHTML(c){
   }
   return html;
 }
+var famAvatarSVG=(function(){
+const SKIN='#ffe2c6',EYE='#4a3b34',CHEEK='#ff9fb0',MOUTH='#d36a72',LIP='#e58a93';
+function eyes(cx,hy,o){
+  const young=o.age==='young', old=o.age==='old';
+  const rx=young?3.4:old?2.6:3.0, ry=young?4.8:old?3.2:4.0, ey=hy+(young?4:old?2:3);
+  let s=`<ellipse cx="${cx-9.5}" cy="${ey}" rx="${rx}" ry="${ry}" fill="${EYE}"/><ellipse cx="${cx+9.5}" cy="${ey}" rx="${rx}" ry="${ry}" fill="${EYE}"/>`;
+  s+=`<circle cx="${cx-8.3}" cy="${ey-1.5}" r="1" fill="#fff"/><circle cx="${cx+10.7}" cy="${ey-1.5}" r="1" fill="#fff"/>`;
+  if(o.gender==='f'){s+=`<path d="M ${cx-13.5} ${ey-2} l -3 -1.5" stroke="${EYE}" stroke-width="1.2" stroke-linecap="round"/><path d="M ${cx+13.5} ${ey-2} l 3 -1.5" stroke="${EYE}" stroke-width="1.2" stroke-linecap="round"/>`;}
+  if(old){s+=`<path d="M ${cx-13} ${ey-4} q 3 -1 5 0" stroke="#caa98f" stroke-width="0.9" fill="none"/><path d="M ${cx+8} ${ey-4} q 2 -1 5 0" stroke="#caa98f" stroke-width="0.9" fill="none"/>`;}
+  return s;
+}
+function mouth(cx,hy,o){
+  var ex=o.expr||'smile';
+  if(o.gender==='f'){
+    if(ex==='sad') return `<path d="M ${cx-3.5} ${hy+13.5} q 3.5 -3 7 0 q -3.5 -1.2 -7 0 z" fill="${LIP}"/>`;
+    if(ex==='neutral') return `<path d="M ${cx-3} ${hy+12.5} q 3 1.2 6 0 q -3 0.8 -6 0 z" fill="${LIP}"/>`;
+    return `<path d="M ${cx-4} ${hy+11.5} q 4 4 8 0 q -4 1.8 -8 0 z" fill="${LIP}"/>`;
+  }
+  if(ex==='sad') return `<path d="M ${cx-5} ${hy+14} q 5 -4 10 0" stroke="${MOUTH}" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;
+  if(ex==='neutral') return `<path d="M ${cx-4} ${hy+13} q 4 1.2 8 0" stroke="${MOUTH}" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;
+  return `<path d="M ${cx-4.5} ${hy+11.5} q 4.5 4.5 9 0" stroke="${MOUTH}" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;
+}
+function brows(cx,hy,o){
+  if((o.expr||'')!=='sad') return '';
+  return `<path d="M ${cx-13} ${hy-3.5} q 3.5 -2.5 7 -0.5" stroke="#9c8166" stroke-width="1.4" fill="none" stroke-linecap="round"/><path d="M ${cx+6} ${hy-4} q 3.5 -2 7 0.5" stroke="#9c8166" stroke-width="1.4" fill="none" stroke-linecap="round"/>`;
+}
+function blush(cx,hy,o){const w=o.age==='young'?6:5;return `<ellipse cx="${cx-15}" cy="${hy+9}" rx="${w}" ry="3.2" fill="${CHEEK}" opacity="0.7"/><ellipse cx="${cx+15}" cy="${hy+9}" rx="${w}" ry="3.2" fill="${CHEEK}" opacity="0.7"/>`;}
+function glasses(cx,hy,col){return `<circle cx="${cx-9.5}" cy="${hy+2}" r="6.5" fill="none" stroke="${col}" stroke-width="1.5"/><circle cx="${cx+9.5}" cy="${hy+2}" r="6.5" fill="none" stroke="${col}" stroke-width="1.5"/><line x1="${cx-3}" y1="${hy+2}" x2="${cx+3}" y2="${hy+2}" stroke="${col}" stroke-width="1.5"/>`;}
+function body(cx,hy,r,o){
+  const sw=o.age==='young'?26:o.age==='old'?28:30;
+  let s=`<rect x="${cx-6}" y="${hy+r-6}" width="12" height="11" rx="4" fill="${SKIN}"/>`;
+  s+=`<path d="M ${cx-sw} ${hy+r+34} Q ${cx-sw} ${hy+r+6} ${cx} ${hy+r+4} Q ${cx+sw} ${hy+r+6} ${cx+sw} ${hy+r+34} Z" fill="${o.cloth}"/>`;
+  if(o.tie) s+=`<path d="M ${cx} ${hy+r-1} l -4 6 l 4 13 l 4 -13 z" fill="${o.tie}"/>`;
+  return s;
+}
+function head(cx,hy,r){return `<circle cx="${cx}" cy="${hy}" r="${r}" fill="${SKIN}"/>`;}
+function maleHair(cx,hy,r,col,style){
+  var sideY=hy+r*0.18;
+  var top=(style==='spiky')
+    ? `C ${cx-r-3} ${hy-r-12} ${cx-9} ${hy-r-8} ${cx-7} ${hy-r-13} L ${cx-3} ${hy-r-6} L ${cx} ${hy-r-16} L ${cx+3} ${hy-r-6} L ${cx+7} ${hy-r-13} C ${cx+9} ${hy-r-8} ${cx+r+3} ${hy-r-12} ${cx+r} ${sideY} `
+    : `C ${cx-r-3} ${hy-r-14} ${cx+r+3} ${hy-r-14} ${cx+r} ${sideY} `;
+  var d=`M ${cx-r} ${sideY} ${top}`;
+  d+=`L ${cx+r-4} ${hy-4} `;
+  if(style==='sidePart') d+=`C ${cx+6} ${hy-9} ${cx-3} ${hy-11} ${cx-7} ${hy-6} C ${cx-10} ${hy-9} ${cx-r+2} ${hy-7} ${cx-r+4} ${hy-4} `;
+  else if(style==='round') d+=`C ${cx+8} ${hy-13} ${cx-8} ${hy-13} ${cx-r+4} ${hy-4} `;
+  else d+=`C ${cx+7} ${hy-8} ${cx} ${hy-10} ${cx} ${hy-10} C ${cx} ${hy-10} ${cx-7} ${hy-8} ${cx-r+4} ${hy-4} `;
+  d+=`L ${cx-r} ${sideY} Z`;
+  return `<path d="${d}" fill="${col}"/>`;
+}
+function femaleBack(cx,hy,r,col,style){
+  if(style==='long') return `<path d="M ${cx-r-2} ${hy-4} C ${cx-r-9} ${hy+r+20} ${cx+r+9} ${hy+r+20} ${cx+r+2} ${hy-4} Z" fill="${col}"/>`;
+  if(style==='ponytail') return `<ellipse cx="${cx-r+2}" cy="${hy-2}" rx="6" ry="9" fill="${col}"/><path d="M ${cx+r-4} ${hy-8} q 20 4 14 28 q -3 7 -9 6 q 9 -16 -9 -30 Z" fill="${col}"/>`;
+  if(style==='twin') return `<ellipse cx="${cx-r-2}" cy="${hy+8}" rx="8" ry="12" fill="${col}"/><ellipse cx="${cx+r+2}" cy="${hy+8}" rx="8" ry="12" fill="${col}"/>`;
+  if(style==='bob') return `<path d="M ${cx-r-2} ${hy-4} q -6 20 4 26 l ${2*r+4-2} 0 q 10 -6 4 -26 Z" fill="${col}"/>`;
+  return '';
+}
+function femaleBangs(cx,hy,r,col){
+  return `<path d="M ${cx-(r-3)} ${hy-r+9} Q ${cx} ${hy-r-1} ${cx+(r-3)} ${hy-r+9} L ${cx+(r-4)} ${hy-1} Q ${cx+9} ${hy-4} ${cx+4} ${hy} Q ${cx} ${hy-6} ${cx-4} ${hy} Q ${cx-9} ${hy-4} ${cx-(r-4)} ${hy-1} Z" fill="${col}"/>`;
+}
+function bow(cx,hy,r,col){col=col||'#ff7fa3';return `<path d="M ${cx-1} ${hy-r-1} l -8 -5 l 0 9 z" fill="${col}"/><path d="M ${cx+1} ${hy-r-1} l 8 -5 l 0 9 z" fill="${col}"/><circle cx="${cx}" cy="${hy-r-1}" r="2.6" fill="#ff5f8a"/>`;}
+function mkPerson(cx,hy,r,o){
+  let s='';
+  if(o.gender==='f'){
+    s+=femaleBack(cx,hy,r,o.hair,o.style);
+    s+=body(cx,hy,r,o);
+    s+=`<circle cx="${cx}" cy="${hy-1}" r="${r+1.5}" fill="${o.hair}"/>`;
+    if(o.bun) s+=`<circle cx="${cx}" cy="${hy-r-2}" r="9" fill="${o.hair}"/>`;
+    s+=`<ellipse cx="${cx}" cy="${hy+5}" rx="${r-2.5}" ry="${r-2}" fill="${SKIN}"/>`;
+    s+=femaleBangs(cx,hy,r,o.hair);
+    s+=blush(cx,hy,o)+eyes(cx,hy,o)+brows(cx,hy,o)+mouth(cx,hy,o);
+    if(o.glasses) s+=glasses(cx,hy,o.glasses);
+    if(o.bowOn) s+=bow(cx,hy,r,o.bowColor);
+  } else {
+    s+=body(cx,hy,r,o)+head(cx,hy,r)+maleHair(cx,hy,r,o.hair,o.style);
+    s+=blush(cx,hy,o)+eyes(cx,hy,o)+brows(cx,hy,o)+mouth(cx,hy,o);
+    if(o.glasses) s+=glasses(cx,hy,o.glasses);
+    if(o.mustache) s+=`<path d="M ${cx-7} ${hy+10} q 7 4 14 0" stroke="${o.hair}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  }
+  return s;
+}
+const GRAY='#c2c7cf';
+function cfg(role){
+  const M={
+    '祖父':{gender:'m',age:'old',hair:GRAY,style:'short',cloth:'#9fb0c4',glasses:'#7b8794',mustache:true},
+    '祖母':{gender:'f',age:'old',hair:GRAY,style:'bob',cloth:'#cdb4e0',glasses:'#9aa3ad',bun:true},
+    '世帯主（男）':{gender:'m',age:'mid',hair:'#4a3f3a',style:'sidePart',cloth:'#6aa9e0',tie:'#d65a5a'},
+    '夫':{gender:'m',age:'mid',hair:'#4a3f3a',style:'sidePart',cloth:'#6aa9e0',tie:'#d65a5a'},
+    '妻':{gender:'f',age:'mid',hair:'#7a5236',style:'long',cloth:'#f59ab0'},
+    '世帯主（女）':{gender:'f',age:'mid',hair:'#6b4a30',style:'long',cloth:'#f0a6c0'},
+    '配偶者':{gender:'f',age:'mid',hair:'#7a5236',style:'long',cloth:'#f4a3bb'},
+    '嫁':{gender:'f',age:'young',hair:'#5a4636',style:'ponytail',cloth:'#7ec8a0',glasses:'#8a6f55'},
+    '婿':{gender:'m',age:'young',hair:'#3a3f4a',style:'short',cloth:'#8a93a8',tie:'#5b8def',glasses:'#5b6b80'},
+    '兄':{gender:'m',age:'mid',hair:'#3a3f4a',style:'spiky',cloth:'#5bb7a0'},
+    '弟':{gender:'m',age:'mid',hair:'#6b4a30',style:'round',cloth:'#7fbf7f'},
+    '姉':{gender:'f',age:'mid',hair:'#5a4636',style:'bob',cloth:'#f6a05a'},
+    '妹':{gender:'f',age:'mid',hair:'#7a5236',style:'twin',cloth:'#f6d35a',bowOn:true},
+    '長男':{gender:'m',age:'young',hair:'#4a3f3a',style:'short',cloth:'#5b6bb5'},
+    '次男':{gender:'m',age:'young',hair:'#6b4a30',style:'spiky',cloth:'#5aa9d6'},
+    '三男':{gender:'m',age:'young',hair:'#7a5236',style:'round',cloth:'#5bb1a6'},
+    '長女':{gender:'f',age:'young',hair:'#7a5236',style:'long',cloth:'#f48fb1',bowOn:true,bowColor:'#ff7fa3'},
+    '次女':{gender:'f',age:'young',hair:'#5a4636',style:'twin',cloth:'#b39ddb',bowOn:true,bowColor:'#9f7fd6'},
+    '三女':{gender:'f',age:'young',hair:'#8a5a3b',style:'bob',cloth:'#f5a463',bowOn:true,bowColor:'#ff9a5a'}
+  };
+  return M[role]||{gender:'m',age:'mid',hair:'#6b6157',style:'short',cloth:'#a7b0bd'};
+}
+
+  return function(role,expr){var c=cfg(role);c.expr=expr||"smile";return mkPerson(50,46,26,c);};
+})();
+
+function buildFamTreeSVG(fam){
+  function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  var g0=fam.filter(m=>m.role&&famGetGen(m.role)===0);
+  var g1=fam.filter(m=>m.role&&famGetGen(m.role)===1);
+  var g2=fam.filter(m=>m.role&&famGetGen(m.role)===2);
+  var NW=92,NH=116,HG=12,CG=22,RG=50,PAD=8,KIDW=52,KIDH=28,RG3=40;
+  var MALE=['長男','次男','三男','兄','弟'];
+  var SIB=['兄','弟','姉','妹'], SPOUSE=['妻','配偶者','世帯主（女）','名義人（妻）'];
+  var sibs=g1.filter(m=>SIB.indexOf(m.role)>=0), nonSib=g1.filter(m=>SIB.indexOf(m.role)<0);
+  var head=nonSib.filter(m=>m.owner)[0]||nonSib.filter(m=>SPOUSE.indexOf(m.role)<0)[0]||nonSib[0]||null;
+  var rest=nonSib.filter(m=>m!==head);
+  var spouse=rest.filter(m=>SPOUSE.indexOf(m.role)>=0)[0]||(rest.length===1?rest[0]:null);
+  var sibsAll=sibs.concat(rest.filter(m=>m!==spouse));
+  if(!head&&spouse){head=spouse;spouse=null;}
+  var g1nodes=[],cx=0,headNode=null,spouseNode=null;
+  sibsAll.forEach(m=>{g1nodes.push({m,x:cx,kind:'sib'});cx+=NW+HG;});
+  if(head){headNode={m:head,x:cx,kind:'head'};g1nodes.push(headNode);cx+=NW;}
+  if(spouse){spouseNode={m:spouse,x:head?headNode.x+NW+CG:cx,kind:'spouse'};g1nodes.push(spouseNode);}
+  var coupleMid = (headNode&&spouseNode)?((headNode.x+NW/2)+(spouseNode.x+NW/2))/2 : headNode?headNode.x+NW/2 : (g1nodes.length?(Math.min(...g1nodes.map(n=>n.x+NW/2))+Math.max(...g1nodes.map(n=>n.x+NW/2)))/2:0);
+  // gen2 ユニット
+  var units=[],cur2=0;
+  g2.forEach(m=>{var married=(m.marriage==="既婚");var CG2=30;var u={m,childX:cur2,married,kids:(+m.children)||0};u.spouseX=married?cur2+NW+CG2:null;units.push(u);cur2+=(married?NW*2+CG2:NW)+HG;});
+  var totalW2=cur2-HG, startX2=coupleMid-totalW2/2;
+  units.forEach(u=>{u.childX+=startX2;if(u.married)u.spouseX+=startX2;u.bloodC=u.childX+NW/2;u.coupleMid=u.married?((u.childX+NW/2)+(u.spouseX+NW/2))/2:u.bloodC;});
+  var c2nodes=[];
+  units.forEach(u=>{c2nodes.push({m:u.m,x:u.childX,kind:'child'});if(u.married)c2nodes.push({m:{role:MALE.indexOf(u.m.role)>=0?'嫁':'婿'},x:u.spouseX,kind:'inlaw'});});
+  var hasKids=units.some(u=>u.kids>0);
+  // gen0
+  var gpC=g1nodes.filter(n=>n.kind!=='spouse');
+  var g0mid=gpC.length?(Math.min(...gpC.map(n=>n.x+NW/2))+Math.max(...gpC.map(n=>n.x+NW/2)))/2:coupleMid;
+  var g0s=g0.slice().sort((a,b)=>(a.role==='祖父'?0:1)-(b.role==='祖父'?0:1));
+  var g0nodes=[];
+  if(g0s.length>=2){var cw=2*NW+CG,sx0=g0mid-cw/2;g0nodes.push({m:g0s[0],x:sx0,kind:'gp'});g0nodes.push({m:g0s[1],x:sx0+NW+CG,kind:'gp'});}
+  else if(g0s.length===1)g0nodes.push({m:g0s[0],x:g0mid-NW/2,kind:'gp'});
+  // y
+  var rows=[];if(g0nodes.length)rows.push(0);if(g1nodes.length)rows.push(1);if(c2nodes.length)rows.push(2);
+  var yByGen={};rows.forEach((g,i)=>yByGen[g]=PAD+i*(NH+RG));
+  g0nodes.forEach(n=>n.y=yByGen[0]);g1nodes.forEach(n=>n.y=yByGen[1]);c2nodes.forEach(n=>n.y=yByGen[2]);
+  var gen3Y=(yByGen[2]!=null?yByGen[2]:yByGen[1])+NH+RG3;
+  // kid boxes
+  var kidBoxes=[];units.forEach(u=>{if(u.kids>0)kidBoxes.push({cx:u.coupleMid,n:u.kids});});
+  // shift
+  var allAv=g0nodes.concat(g1nodes,c2nodes);
+  var xsAll=allAv.map(n=>n.x).concat(allAv.map(n=>n.x+NW)).concat(kidBoxes.map(b=>b.cx-KIDW/2)).concat(kidBoxes.map(b=>b.cx+KIDW/2));
+  var minX=Math.min(...xsAll),maxX=Math.max(...xsAll),dx=PAD-minX;
+  allAv.forEach(n=>n.x+=dx);kidBoxes.forEach(b=>b.cx+=dx);
+  var W=(maxX-minX)+2*PAD;
+  var maxY=hasKids?gen3Y+KIDH:Math.max(...allAv.map(n=>n.y+NH));
+  var H=maxY+PAD;
+  function ctr(n){return n.x+NW/2;}
+  var CS='#7c8aa0';
+  function L(x1,y1,x2,y2){return `<line x1="${Math.round(x1*10)/10}" y1="${Math.round(y1*10)/10}" x2="${Math.round(x2*10)/10}" y2="${Math.round(y2*10)/10}" stroke="${CS}" stroke-width="1.3"/>`;}
+  var lines='';
+  // gen0
+  var g0mid2=g0nodes.length>=2?(ctr(g0nodes[0])+ctr(g0nodes[1]))/2:g0nodes.length?ctr(g0nodes[0]):0;
+  if(g0nodes.length>=2){var my=g0nodes[0].y+NH/2;lines+=L(g0nodes[0].x+NW,my,g0nodes[1].x,my);}
+  if(g0nodes.length&&gpC.length){var busY=(g0nodes[0].y+NH+g1nodes[0].y)/2;var cs=gpC.map(ctr);var lo=Math.min(...cs,g0mid2),hi=Math.max(...cs,g0mid2);lines+=L(g0mid2,(g0nodes.length>=2?g0nodes[0].y+NH/2:g0nodes[0].y+NH),g0mid2,busY);lines+=L(lo,busY,hi,busY);gpC.forEach(n=>lines+=L(ctr(n),busY,ctr(n),n.y));}
+  // gen1 couple
+  var cm=(headNode&&spouseNode)?(ctr(headNode)+ctr(spouseNode))/2:headNode?ctr(headNode):coupleMid+dx;
+  if(headNode&&spouseNode){var m2=headNode.y+NH/2;lines+=L(headNode.x+NW,m2,spouseNode.x,m2);}
+  // gen1 -> 血の繋がった子のみ
+  var blood=c2nodes.filter(n=>n.kind==='child');
+  if(g1nodes.length&&blood.length){var busY2=(g1nodes[0].y+NH+blood[0].y)/2;var cb=blood.map(ctr);var lo2=Math.min(...cb,cm),hi2=Math.max(...cb,cm);lines+=L(cm,((headNode&&spouseNode)?headNode.y+NH/2:(headNode?headNode.y:g1nodes[0].y)+NH),cm,busY2);lines+=L(lo2,busY2,hi2,busY2);blood.forEach(n=>lines+=L(ctr(n),busY2,ctr(n),n.y));}
+  // 嫁/婿 婚姻線 + 子N人
+  units.forEach(u=>{
+    var bx=u.bloodC+dx, sx=(u.spouseX!=null?u.spouseX+dx:null), cmid=u.coupleMid+dx, cy=yByGen[2]+NH/2;
+    if(u.married){lines+=L(bx+NW/2,cy,sx,cy);} // child右端〜spouse左端
+    if(u.kids>0){lines+=L(cmid,(u.married?yByGen[2]+NH/2:yByGen[2]+NH),cmid,gen3Y);}
+  });
+  // ノード描画
+  function node(n){
+    var m=n.m,inlaw=(n.kind==='inlaw');
+    var living=m.living||'未確認';
+    var tint=inlaw?'#fbfcfe':(living==='同居'||living==='近居')?'#eef4ff':(living==='別居')?'#fffbe6':(living==='死亡')?'#f1f3f5':'#ffffff';
+    var stroke='#cbd5e0',sw=1;
+    if(!inlaw){if(m.kp){stroke='#3182ce';sw=2;}else if(m.owner){stroke='#c53030';sw=1.8;}else if(m.met){stroke='#38a169';sw=1.6;}}
+    if(inlaw){stroke='#d7dee8';}
+    var s=`<rect x="${n.x}" y="${n.y}" width="${NW}" height="${NH}" rx="11" fill="${tint}" stroke="${stroke}" stroke-width="${sw}"${inlaw?' stroke-dasharray="3 2"':''}/>`;
+    var aw=100,ah=112,area=NH-36,asc=Math.min((NW-8)/aw,area/ah),tx=n.x+(NW-aw*asc)/2,ty=n.y+3;
+    var dead=(living==='死亡'&&!inlaw);
+    s+=`<g transform="translate(${Math.round(tx*100)/100},${ty}) scale(${Math.round(asc*1000)/1000})"${dead?' filter="url(#zfg)" opacity="0.85"':''}>${famAvatarSVG(m.role, inlaw?"smile":(m.stance==="pos"?"smile":m.stance==="neg"?"sad":"neutral"))}</g>`;
+    if(dead)s+=`<line x1="${n.x+8}" y1="${n.y+8}" x2="${n.x+NW-8}" y2="${n.y+ah*asc}" stroke="#9aa3ad" stroke-width="1.2"/>`;
+    if(!inlaw){
+      if(m.owner)s+=`<text x="${n.x+7}" y="${n.y+16}" font-size="12" fill="#c53030" font-weight="700">★</text>`;
+      if(m.kp)s+=`<text x="${n.x+NW-6}" y="${n.y+15}" font-size="8.5" fill="#3182ce" font-weight="700" text-anchor="end">KP</text>`;
+      var sdc=(m.stance==='pos')?'#38a169':(m.stance==='neg')?'#e53e3e':'#ffffff';
+      s+=`<circle cx="${n.x+NW/2}" cy="${n.y+8}" r="3.2" fill="${sdc}" stroke="#94a3b8" stroke-width="0.7"/>`;
+    }
+    var alY=n.y+NH-7, role=String(m.role||''), pi=role.indexOf('（');
+    var rl=pi>=0?[role.slice(0,pi),role.slice(pi)]:[role];
+    var rf=role.replace('（','').replace('）','').length>4?9.5:11;
+    var rLast=alY-(inlaw?2:12);
+    rl.forEach((t,i)=>{var yy=rLast-(rl.length-1-i)*11;s+=`<text x="${n.x+NW/2}" y="${yy}" font-size="${rf}" fill="#2d3748" font-weight="700" text-anchor="middle">${esc(t)}</text>`;});
+    if(!inlaw){var lc=(living==='同居'||living==='近居')?'#2563eb':(living==='別居')?'#b7791f':(living==='死亡')?'#64748b':'#94a3b8';var al=(m.age?esc(m.age)+'歳':'')+((m.age&&living)?' ':'')+esc(living);s+=`<text x="${n.x+NW/2}" y="${alY}" font-size="8" fill="${lc}" text-anchor="middle">${al}</text>`;}
+    return s;
+  }
+  var svg=`<svg viewBox="0 0 ${Math.round(W)} ${Math.round(H)}" width="${Math.round(W)}" height="${Math.round(H)}" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;display:block;margin:1mm auto 0"><defs><filter id="zfg"><feColorMatrix type="saturate" values="0"/></filter></defs>`;
+  svg+=lines;
+  allAv.forEach(n=>svg+=node(n));
+  kidBoxes.forEach(b=>{svg+=`<rect x="${b.cx-KIDW/2}" y="${gen3Y}" width="${KIDW}" height="${KIDH}" rx="7" fill="#fff7ed" stroke="#f0b27a"/><text x="${b.cx}" y="${gen3Y+18}" font-size="11" fill="#b9651b" font-weight="700" text-anchor="middle">子${b.n}人</text>`;});
+  svg+='</svg>';
+  return svg;
+}
+
 function buildFamilyHTML(c){
   var e=function(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
-  var fam=c.family||[];
+  var fam=(c.family||[]).filter(function(m){return m.role;});
   var html='<div class="h2 fam">👨‍👩‍👧‍👦 家族構成</div>';
-  if(!fam.length){
-    html+='<p style="color:#aaa;font-size:9pt">家族構成データなし</p>';
-    return html;
+  if(!fam.length){html+='<p style="color:#aaa;font-size:9pt">家族構成データなし</p>';return html;}
+  var svg=buildFamTreeSVG(fam);
+  if(svg){
+    html+='<div class="sec purple" style="page-break-inside:avoid;break-inside:avoid">'
+      +'<div class="stitle">🌳 三世代家系図</div>'+svg
+      +'<div style="display:flex;flex-wrap:wrap;gap:2mm 4mm;margin-top:1.5mm;font-size:7pt;color:#718096">'
+      +'<span>枠：<b style="color:#3182ce">青=KP</b>／<b style="color:#c53030">赤=所有者</b>／<b style="color:#38a169">緑=面談済</b></span>'
+      +'<span>塗り：青=同居/近居・黄=別居・灰=死亡・白=未確認</span>'
+      +'<span>中央●：<b style="color:#38a169">緑=前向</b>/<b style="color:#e53e3e">赤=否定</b>/白=不明</span>'
+      +'</div></div>';
   }
   var genLabel=['祖父母世代','世帯主世代','子世代'];
-  // stance: positive/negative/unknown
+  var DEEP=['兄','弟','姉','妹','長男','次男','三男','長女','次女','三女'];
   [0,1,2].forEach(function(gen){
-    var members=fam.filter(function(m){return m.role&&famGetGen(m.role||"")===gen;});
+    var members=fam.filter(function(m){return famGetGen(m.role)===gen;});
     if(!members.length) return;
-    html+='<div class="sec"><div class="stitle">'+genLabel[gen]+'</div>'
-      +'<div style="display:flex;flex-wrap:wrap;gap:4mm">';
+    html+='<div class="sec"><div class="stitle">'+genLabel[gen]+'（'+members.length+'名）</div>';
     members.forEach(function(m){
-      var bg=m.stance==='positive'?'#c6f6d5':m.stance==='negative'?'#fed7d7':'#f7fafc';
-      var border=m.kp?'2pt solid #3182ce':m.owner?'1.5pt solid #c53030':m.met?'1.5pt solid #38a169':'0.5pt solid #888';
-      var living=m.living||'';
-      var livColor=living==='同居'||living==='近居'?'#3b82f6':living==='別居'?'#b7791f':'#888';
-      html+='<div style="border:'+border+';background:'+bg+';border-radius:4pt;padding:2mm 3mm;min-width:20mm;text-align:center;font-size:8pt">'
-        +(m.owner?'<span style="color:#c53030;font-weight:700">★</span>':'')
-        +(m.kp?'<span style="color:#3182ce;font-weight:700;font-size:7pt">KP</span>':'')
-        +'<div style="font-weight:700">'+e(m.role||'')+'</div>'
-        +(m.name?'<div style="font-size:7pt;color:#333">'+e(m.name)+'</div>':'')
-        +(m.age?'<div style="font-size:7pt;color:#555">'+e(m.age)+'歳</div>':'')
-        +(living?'<div style="font-size:7pt;color:'+livColor+'">'+e(living)+'</div>':'')
-        +(m.met?'<div style="font-size:6pt;color:#38a169">面談済</div>':'')
+      var living=m.living||'未確認';
+      var lc=(living==='同居'||living==='近居')?'#2563eb':(living==='別居')?'#b7791f':(living==='死亡')?'#64748b':'#94a3b8';
+      var st=(m.stance==='pos')?'<span style="color:#276749;font-weight:700">ポジティブ</span>':(m.stance==='neg')?'<span style="color:#c53030;font-weight:700">ネガティブ</span>':'<span style="color:#a0aec0">不明</span>';
+      var tags=[];
+      if(m.owner)tags.push('<span style="color:#c53030;font-weight:700">★所有者</span>');
+      if(m.kp)tags.push('<span style="color:#3182ce;font-weight:700">KP</span>');
+      if(m.met)tags.push('<span style="color:#276749;font-weight:700">面談済</span>');
+      var mc='';
+      if(DEEP.indexOf(m.role)>=0){if(m.marriage&&m.marriage!=='不明')mc+=m.marriage;if(m.children)mc+=(mc?'・':'')+'子'+m.children+'人';}
+      var sep='<span style="color:#cbd5e0;padding:0 1mm">|</span>';
+      html+='<div style="display:flex;align-items:baseline;gap:1.5mm;padding:1.2mm 0;border-bottom:0.3pt solid #edf2f7;font-size:8.5pt;flex-wrap:wrap">'
+        +'<span style="font-weight:700;min-width:17mm;color:#2d3748">'+(m.owner?'★':'')+e(m.role)+'</span>'
+        +(m.name?'<span style="font-weight:600">'+e(m.name)+'</span>':'')
+        +(m.age?'<span style="color:#718096">'+e(m.age)+'歳</span>':'')
+        +'<span style="color:'+lc+';font-weight:600">'+e(living)+'</span>'
+        +sep+st
+        +(tags.length?sep+tags.join(' '):'')
+        +(mc?sep+'<span style="color:#718096">'+e(mc)+'</span>':'')
+        +(m.job?sep+'<span style="color:#718096">'+e(m.job)+'</span>':'')
+        +(m.note?'<span style="flex-basis:100%;color:#4a5568;font-size:8pt;padding-left:17mm;margin-top:0.3mm">📝 '+e(m.note).replace(/\n/g,' ')+'</span>':'')
         +'</div>';
     });
-    html+='</div></div>';
+    html+='</div>';
   });
-  // 全体サマリー
-  if(c.family_summary){
-    html+='<div class="sec"><div class="stitle">全体判断・メモ</div>'
-      +'<div style="font-size:9pt;min-height:8mm">'+e(c.family_summary).replace(/\n/g,'<br>')+'</div></div>';
-  }
+  html+='<div class="sec"><div class="stitle">全体</div>'
+    +'<div style="font-size:8.5pt">家族人数把握：<b style="color:'+(c.family_headcount?'#276749':'#c53030')+'">'+(c.family_headcount?'確定済':'未確定')+'</b></div>';
+  if(c.family_summary)html+='<div style="font-size:8.5pt;margin-top:1mm">'+e(c.family_summary).replace(/\n/g,'<br>')+'</div>';
+  html+='</div>';
   return html;
 }
 
