@@ -1434,7 +1434,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.14";
+var APP_VERSION = "v5.15";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -6262,7 +6262,7 @@ function doListPrint(mode){
   function rankBadge(r){ if(!r) return '<span style="color:#a0aec0;font-size:9px">未</span>'; var col=RANK_COLOR_MAP[r]||'#718096'; return '<span style="display:inline-block;min-width:15px;padding:1px 4px;border-radius:8px;font-size:9px;font-weight:700;background:'+col+';color:white;text-align:center">'+e(r)+'</span>'; }
   function proposalBadge(c){ return c.proposal_req?'<span style="display:inline-block;margin-top:2px;font-size:8px;font-weight:700;background:#2f9e44;color:#fff;border-radius:3px;padding:1px 5px;white-space:nowrap">⭕提案依頼</span>':''; }
 
-  var css='@page{size:297mm 210mm;margin:5mm 8mm}'
+  var css=(isMob?'@page{size:210mm 297mm;margin:0}':'@page{size:297mm 210mm;margin:5mm 8mm}')
     +'*{box-sizing:border-box}'
     +'body{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;font-size:9pt;color:#1a202c;margin:0;background:white}'
     +'.hdr{background:linear-gradient(135deg,#1e3a5f,#2c5282 60%,#553c9a);color:white;padding:5px 12px;display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}'
@@ -6307,6 +6307,7 @@ function doListPrint(mode){
     +'.note{border-bottom:1px solid #aaa;min-width:80px;height:16px}'
     +'.sec-hdr{background:#edf2f7;padding:3px 8px;font-size:10px;font-weight:700;color:#2d3748;border-left:3px solid #3182ce;margin:4px 0 0}'
     +'.pgbrk{page-break-before:always}';
+  if(isMob){ css+='body{box-sizing:border-box;width:297mm;height:210mm;padding:5mm 8mm;transform-origin:top left;transform:translateX(210mm) rotate(90deg)}'; }
 
   var now=new Date();
   var dateStr=now.getFullYear()+'年'+(now.getMonth()+1)+'月'+now.getDate()+'日';
@@ -6702,7 +6703,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <button class="bg" onclick="history.back()" style="flex-shrink:0">← 一覧</button>
         <div onclick="history.back()" title="タップで一覧に戻る" style="font-size:12px;color:rgba(255,255,255,0.75);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer" id="editTitle">-</div>
       </div>
-      <svg width="130" height="40" viewBox="0 0 130 40" xmlns="http://www.w3.org/2000/svg" style="position:absolute;left:50%;transform:translateX(-50%);flex-shrink:0"><defs><linearGradient id="tg3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#ffffff"/><stop offset="60%" style="stop-color:#e0e7ff"/><stop offset="100%" style="stop-color:#c7d2fe"/></linearGradient></defs><text x="4" y="32" font-family="'Dancing Script','Brush Script MT','Comic Sans MS',cursive" font-size="30" font-weight="700" fill="url(#tg3)" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.4))">z.Aibis</text></svg>
+      <svg onclick="history.back()" title="タップで一覧に戻る" width="130" height="40" viewBox="0 0 130 40" xmlns="http://www.w3.org/2000/svg" style="position:absolute;left:50%;transform:translateX(-50%);flex-shrink:0;cursor:pointer"><defs><linearGradient id="tg3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#ffffff"/><stop offset="60%" style="stop-color:#e0e7ff"/><stop offset="100%" style="stop-color:#c7d2fe"/></linearGradient></defs><text x="4" y="32" font-family="'Dancing Script','Brush Script MT','Comic Sans MS',cursive" font-size="30" font-weight="700" fill="url(#tg3)" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.4))">z.Aibis</text></svg>
       <div style="display:flex;gap:4px;flex-shrink:0;align-items:center">
         <span id="dirtyDot" style="display:none;width:8px;height:8px;background:#ed8936;border-radius:50%;margin-right:2px" title="未保存"></span>
         <button class="bs" onclick="saveCard()" style="font-size:11px;padding:6px 10px">💾 保存</button>
