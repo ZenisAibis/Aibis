@@ -403,7 +403,10 @@ body.is-mob .mob-menu{display:inline-block}
   h2{font-size:12pt!important;margin-bottom:2mm!important;color:#000!important}
   .stitle{font-size:9pt!important;color:#000!important}
   /* 背景色を全て白に */
-  *{background-color:white!important;color:#000!important;border-color:#888!important}
+  body:not(.bp-active) *{background-color:white!important;color:#000!important;border-color:#888!important}
+  /* ブラウザ印刷：カードを開いている時は専用レポートのみを印刷 */
+  body.bp-active>*:not(#browserPrintRoot){display:none!important}
+  body.bp-active #browserPrintRoot{display:block!important}
   /* ただし選択済みボタンだけ黒塗り維持 */
   .stbtn.active,.pbtn.active,.jbtn.active{background:#000!important;color:white!important}
   /* 家族構成印刷 */
@@ -805,6 +808,11 @@ body.is-mob .mob-menu{display:inline-block}
             <button onclick="closeMobMenu();showSetup()">⚙ 初期設定</button>
             <button onclick="closeMobMenu();setTimeout(function(){showHelp();},50)">📖 マニュアル</button>
             <button onclick="closeMobMenu();openBook()">📕 みんなへ</button>
+            <div id="mobMgrPrint" style="display:none">
+            <div style="height:1px;background:#e2e8f0;margin:4px 0"></div>
+            <button onclick="closeMobMenu();openListPrintMenu()">📋 リスト印刷</button>
+            <button onclick="closeMobMenu();printSelected()">🗂 個別カード印刷</button>
+            </div>
             <div style="height:1px;background:#e2e8f0;margin:4px 0"></div>
             <button onclick="closeMobMenu();resetSmartphone()" style="color:#c53030;font-size:11px">🗑 スマホをリセット</button>
             <div style="padding:8px 14px;font-size:11px;color:#a0aec0;text-align:right;border-top:1px solid #f0f2f5" id="mobVersion"></div>
@@ -1426,7 +1434,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.02";
+var APP_VERSION = "v5.15";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -2483,7 +2491,9 @@ function applyRoleUI(){
   if(isManager) renderAnalysis();
   // カードの印刷ボタンはPC版のみ
   var cp=document.getElementById('cardPrintBtn');
-  if(cp) cp.style.display=isMob?'none':'block';
+  if(cp) cp.style.display=(isMob && !isMgrUnlocked())?'none':'block';
+  var mmp=document.getElementById('mobMgrPrint');
+  if(mmp) mmp.style.display=(isMob && isMgrUnlocked())?'block':'none';
 }
 async function sha256hex(s){ var buf=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return Array.prototype.map.call(new Uint8Array(buf),function(b){return ('0'+b.toString(16)).slice(-2);}).join(''); }
 function isMgrUnlocked(){ return (userRole==='支店長'||userRole==='課長') && localStorage.getItem(MGR_UNLOCK_KEY)===MGR_HASH; }
@@ -3217,6 +3227,7 @@ function newCard(){
   switchTab('ti'); fillForm(cur); window.scrollTo(0,0);
   setTimeout(function(){setDirty(false);},100);
   _navGo('edit',curId);
+  if(typeof updateCardNav==='function') updateCardNav();
 }
 function openCard(id){
   var c=cards.find(function(x){return x.id===id;}); if(!c) return;
@@ -3227,9 +3238,30 @@ function openCard(id){
   switchTab('ti'); fillForm(cur); window.scrollTo(0,0);
   setTimeout(function(){setDirty(false);},100);
   _navGo('edit',curId);
+  if(typeof updateCardNav==='function') updateCardNav();
 }
 function fitTabsTop(){ if(isMob) return; var h=document.querySelector('#editView header'); if(h && h.offsetHeight) document.documentElement.style.setProperty('--tabsTop', h.offsetHeight+'px'); }
 window.fitTabsTop=fitTabsTop;
+function navCard(dir){
+  if(!Array.isArray(lastVisible)||!lastVisible.length||!curId) return;
+  var idx=lastVisible.findIndex(function(c){return c.id===curId;});
+  if(idx<0) return;
+  var ni=idx+dir; if(ni<0||ni>=lastVisible.length) return;
+  if(typeof autoCommitEdit==='function') autoCommitEdit();
+  _navReplaceNext=true;
+  openCard(lastVisible[ni].id);
+}
+function updateCardNav(){
+  var bar=document.getElementById('cardNav'); if(!bar) return;
+  var idx=(Array.isArray(lastVisible)&&curId)?lastVisible.findIndex(function(c){return c.id===curId;}):-1;
+  if(idx<0){ bar.style.display='none'; return; }
+  bar.style.display='flex';
+  var pos=document.getElementById('cardNavPos'); if(pos) pos.textContent=(idx+1)+' / '+lastVisible.length;
+  var pv=document.getElementById('cardNavPrev'), nx=document.getElementById('cardNavNext');
+  if(pv){ pv.disabled=(idx<=0); pv.style.opacity=(idx<=0)?'.35':'1'; }
+  if(nx){ nx.disabled=(idx>=lastVisible.length-1); nx.style.opacity=(idx>=lastVisible.length-1)?'.35':'1'; }
+}
+window.navCard=navCard; window.updateCardNav=updateCardNav;
 window.addEventListener('resize',fitTabsTop);
 function switchTab(id){
   document.querySelectorAll('.tab').forEach(function(t){ t.classList.toggle('active', t.dataset.tab===id); });
@@ -3660,9 +3692,9 @@ function renderRevisits(){
     var rid='rv_'+vi;
     return '<div class="vcard ri" data-vi="'+vi+'"><div class="vh"><span class="vn">再訪 '+v.num+' 回目</span></div>'
       +'<div style="display:flex;gap:6px 12px;align-items:center;flex-wrap:wrap;margin-bottom:3px">'
-        +'<label style="margin:0">訪問内容・会話メモ</label>'
+        +'<label style="margin:0">訪問・会話メモ</label>'
         +'<span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">訪問日</label><input type="date" data-f="date" value="'+e(v.date||'')+'" style="width:auto;min-height:32px;padding:4px 6px"></span>'
-        +'<span style="display:inline-flex;align-items:center;gap:4px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">アポ</label><select data-f="appo" style="width:auto;min-height:32px;padding:4px 6px"><option value="">-</option><option value="アポ有り"'+(v.appo==='アポ有り'?' selected':'')+'>アポ有り</option><option value="仮アポ"'+(v.appo==='仮アポ'?' selected':'')+'>仮アポ</option><option value="アポ無し"'+(v.appo==='アポ無し'?' selected':'')+'>アポ無し</option></select></span>'
+        +'<span style="display:inline-flex;align-items:center;gap:4px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">アポ</label><select data-f="appo" style="width:auto;min-height:32px;padding:4px 4px;font-size:13px"><option value="">-</option><option value="アポ有り"'+(v.appo==='アポ有り'?' selected':'')+'>アポ有り</option><option value="仮アポ"'+(v.appo==='仮アポ'?' selected':'')+'>仮アポ</option><option value="アポ無し"'+(v.appo==='アポ無し'?' selected':'')+'>アポ無し</option></select></span>'
         +'<button type="button" class="mic-btn" onclick="micStart(\''+rid+'_c\',this)" style="margin-top:0">🎤</button>'
       +'</div>'
       +'<textarea id="'+rid+'_c" data-f="content" rows="3" placeholder="訪問内容・会話メモ">'+e(v.content||'')+'</textarea>'
@@ -3688,7 +3720,7 @@ function renderPursuits(){
     return '<div class="vcard pi"><div class="vh"><span class="vn">追撃 '+v.num+' 回目</span>'
       +'<div style="display:flex;gap:6px 10px;align-items:center;flex-wrap:wrap">'
         +'<span style="display:inline-flex;align-items:center;gap:4px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">訪問日</label><input type="date" data-f="date" value="'+e(v.date||'')+'" style="width:auto;min-height:32px;padding:4px 6px"></span>'
-        +'<span style="display:inline-flex;align-items:center;gap:4px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">アポ</label><select data-f="appo" style="width:auto;min-height:32px;padding:4px 6px"><option value="">-</option><option value="有り"'+(v.appo==='有り'?' selected':'')+'>有り</option><option value="無し"'+(v.appo==='無し'?' selected':'')+'>無し</option></select></span>'
+        +'<span style="display:inline-flex;align-items:center;gap:4px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">アポ</label><select data-f="appo" style="width:auto;min-height:32px;padding:4px 4px;font-size:13px"><option value="">-</option><option value="有り"'+(v.appo==='有り'?' selected':'')+'>有り</option><option value="無し"'+(v.appo==='無し'?' selected':'')+'>無し</option></select></span>'
         +'<span style="display:inline-flex;align-items:center;gap:4px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">面談者</label><select data-f="iv" style="width:auto;min-height:32px;padding:4px 6px"><option value="">-</option>'+famRoles.map(function(r){return '<option value="'+e(r)+'"'+(v.interviewer===r?' selected':'')+'>'+e(r)+'</option>';}).join('')+((v.interviewer&&famRoles.indexOf(v.interviewer)<0)?'<option value="'+e(v.interviewer)+'" selected>'+e(v.interviewer)+'</option>':'')+'</select></span>'
         +'<button type="button" class="ibt" onclick="remPursuit('+i+')">×</button>'
       +'</div></div>'
@@ -3789,6 +3821,7 @@ function _restoreDraft(){
   switchTab('ti'); fillForm(cur); window.scrollTo(0,0);
   setDirty(true);
   _navGo('edit',curId);
+  if(typeof updateCardNav==='function') updateCardNav();
 }
 function _discardDraft(){ clearDraft(); }
 window._restoreDraft=_restoreDraft; window._discardDraft=_discardDraft;
@@ -3798,6 +3831,7 @@ function saveCard(){
   collectForm();
   if(cur&&cur.address) cur.address=_han(cur.address);
   if(!cur.name){toast('氏名を入力してください');return;}
+  var wasNew=!curId;
   if(curId){ var idx=cards.findIndex(function(c){return c.id===curId;}); if(idx>=0) cards[idx]=cur; }
   else{ cards.push(cur); curId=cur.id; }
   doSaveCards(function(ok){
@@ -3805,6 +3839,7 @@ function saveCard(){
     updateCount();
     setDirty(false);
     clearDraft();
+    if(wasNew){ if(typeof renderCards==='function') renderCards(); if(typeof updateCardNav==='function') updateCardNav(); }
     // 最終更新表示も更新
     var ud=document.getElementById('dispUpdated');
     if(ud&&cur.updated_at){
@@ -4117,6 +4152,7 @@ function closeMap(){ document.getElementById('mapModal').classList.remove('show'
 
 // ===== 印刷 =====
 function printHTMLDocument(html){
+  window._appPrinting=true; setTimeout(function(){window._appPrinting=false;},8000);
   // 印刷の起動を一本化した堅牢版。
   //  - 0/1pxの極小iframeをやめ、実寸の大きめiframeをオフスクリーン配置（先頭ページしか出ない不具合を回避）
   //  - 固定タイマーでなく onload を待ってから印刷（レイアウト確定後に実行）
@@ -4366,7 +4402,7 @@ function buildInitVisitHTML(c){
     var genLabel=['祖父母','世帯主世代','子世代'];
     html+='<div class="sec purple"><div class="stitle">👨‍👩‍👧‍👦 家族構成</div>';
     [0,1,2].forEach(function(gen){
-      var members=family.filter(function(m){return +m.gen===gen;});
+      var members=family.filter(function(m){return m.role&&famGetGen(m.role||"")===gen;});
       if(!members.length) return;
       html+='<div style="display:flex;align-items:center;gap:2mm;margin-bottom:1.5mm"><span style="font-size:7.5pt;color:#718096;min-width:14mm">'+genLabel[gen]+'</span>';
       members.forEach(function(m){
@@ -4475,7 +4511,7 @@ function buildFamilyHTML(c){
   var genLabel=['祖父母世代','世帯主世代','子世代'];
   // stance: positive/negative/unknown
   [0,1,2].forEach(function(gen){
-    var members=fam.filter(function(m){return +m.gen===gen;});
+    var members=fam.filter(function(m){return m.role&&famGetGen(m.role||"")===gen;});
     if(!members.length) return;
     html+='<div class="sec"><div class="stitle">'+genLabel[gen]+'</div>'
       +'<div style="display:flex;flex-wrap:wrap;gap:4mm">';
@@ -4513,7 +4549,7 @@ function buildStrategyHTML(c){
     var val=c['ai_'+key]||'';
     if(!val) return;
     hasContent=true;
-    html+='<div class="sec" style="margin-bottom:3mm">'
+    html+='<div class="sec" style="margin-bottom:3mm;page-break-inside:auto;break-inside:auto">'
       +'<div class="stitle">'+THEMES[key]+'</div>'
       +'<div style="font-size:8.5pt;white-space:pre-wrap;line-height:1.7">'+e(val)+'</div>'
       +'</div>';
@@ -4752,7 +4788,7 @@ function genPrompt(anon){
     lines.push('■ 家族構成詳細');
     var genLabel=['祖父母世代','世帯主世代','子世代'];
     [0,1,2].forEach(function(gen){
-      var members=fam.filter(function(m){return +m.gen===gen;});
+      var members=fam.filter(function(m){return m.role&&famGetGen(m.role||"")===gen;});
       if(!members.length) return;
       members.forEach(function(m){
         var tags=[];
@@ -5873,7 +5909,8 @@ function closePlanner(){
 
 /* ===== ブラウザ履歴ナビゲーション ===== */
 var _silent=false;
-function _navGo(zv,id){ if(_silent) return; try{ history.pushState({zv:zv,id:id||null},''); }catch(e){} }
+var _navReplaceNext=false;
+function _navGo(zv,id){ if(_silent) return; try{ if(_navReplaceNext){ _navReplaceNext=false; history.replaceState({zv:zv,id:id||null},''); } else { history.pushState({zv:zv,id:id||null},''); } }catch(e){} }
 function _navToList(){
   ['editView','plannerView','helpView','setupView'].forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display='none'; });
   var lv=document.getElementById('listView'); if(lv) lv.style.display=(hasFSA&&!isMob)?'flex':'block';
@@ -6225,7 +6262,7 @@ function doListPrint(mode){
   function rankBadge(r){ if(!r) return '<span style="color:#a0aec0;font-size:9px">未</span>'; var col=RANK_COLOR_MAP[r]||'#718096'; return '<span style="display:inline-block;min-width:15px;padding:1px 4px;border-radius:8px;font-size:9px;font-weight:700;background:'+col+';color:white;text-align:center">'+e(r)+'</span>'; }
   function proposalBadge(c){ return c.proposal_req?'<span style="display:inline-block;margin-top:2px;font-size:8px;font-weight:700;background:#2f9e44;color:#fff;border-radius:3px;padding:1px 5px;white-space:nowrap">⭕提案依頼</span>':''; }
 
-  var css='@page{size:A4 landscape;margin:5mm 8mm}'
+  var css=(isMob?'@page{size:210mm 297mm;margin:0}':'@page{size:297mm 210mm;margin:5mm 8mm}')
     +'*{box-sizing:border-box}'
     +'body{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;font-size:9pt;color:#1a202c;margin:0;background:white}'
     +'.hdr{background:linear-gradient(135deg,#1e3a5f,#2c5282 60%,#553c9a);color:white;padding:5px 12px;display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}'
@@ -6270,6 +6307,7 @@ function doListPrint(mode){
     +'.note{border-bottom:1px solid #aaa;min-width:80px;height:16px}'
     +'.sec-hdr{background:#edf2f7;padding:3px 8px;font-size:10px;font-weight:700;color:#2d3748;border-left:3px solid #3182ce;margin:4px 0 0}'
     +'.pgbrk{page-break-before:always}';
+  if(isMob){ css+='body{box-sizing:border-box;width:297mm;height:210mm;padding:5mm 8mm;transform-origin:top left;transform:translateX(210mm) rotate(90deg)}'; }
 
   var now=new Date();
   var dateStr=now.getFullYear()+'年'+(now.getMonth()+1)+'月'+now.getDate()+'日';
@@ -6493,7 +6531,7 @@ function getCurrentAddress(){
 window.getCurrentAddress=getCurrentAddress;
 window.openPrintModal=openPrintModal; window.closePrintModal=closePrintModal; window.execPrint=execPrint;
 function printSelected(){
-  if(!hasFSA){ aibisAlert('印刷はPC版（Chrome）でのみ使えるよ！'); return; }
+  if(!hasFSA && !(isMob && isMgrUnlocked())){ aibisAlert('印刷はPC版（Chrome）でのみ使えるよ！'); return; }
   if(cards.length===0){ aibisAlert('まだカードがないよ！<br>「＋ 新規」からカードを作ってね😊'); return; }
   var ids=Object.keys(selectedIds);
   if(ids.length===0){ aibisAlert('印刷したいカードにチェックを入れてね☑'); return; }
@@ -6518,6 +6556,51 @@ function startBatchPrint(){
 }
 window.startBatchPrint=startBatchPrint;
 window.printSelected=printSelected;
+// ===== ブラウザ印刷：個別カードをアプリと同じレポート体裁で出力 =====
+function scopedReportCSS(){
+  var css=buildPrintCSS();
+  var out=css.replace(/([^{}]+)\{([^{}]*)\}/g,function(m,sel,decls){
+    sel=sel.trim();
+    if(sel.charAt(0)==='@') return sel+'{'+decls+'}';
+    var d=decls.split(';').map(function(x){x=x.trim();if(!x)return '';return x.indexOf('!important')>=0?x:x+' !important';}).filter(Boolean).join(';');
+    var s2=sel.split(',').map(function(pp){pp=pp.trim();return pp==='body'?'#browserPrintRoot':('#browserPrintRoot '+pp);}).join(',');
+    return s2+'{'+d+'}';
+  });
+  return out+'#browserPrintRoot .prhdr-left,#browserPrintRoot .prhdr-right{color:#fff !important}';
+}
+function buildBrowserPrintReport(c){
+  var e2=function(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
+  var dateStr=new Date().toISOString().slice(0,10);
+  var hdrTxt=e2((c.branch||'')+' '+(c.section||'')+' '+(c.manager||'')+' ／ '+(c.name?c.name+'様':'')+(c.discovery_date?' ／ 発掘日:'+c.discovery_date:'')+' ／ 印刷:'+dateStr);
+  var pj=c.pursuit_judge||'';
+  var pjColor=(typeof RANK_COLOR!=='undefined'&&RANK_COLOR[pj])||'#ffffff';
+  var firstPage=true,html='';
+  function prh(){return '<div class="prhdr"><div class="prhdr-left">z.Aibis</div><div class="prhdr-right">'+hdrTxt+'</div>'+(pj?'<div class="prhdr-rank" style="color:'+pjColor+'">'+pj+'</div>':'')+'</div>';}
+  function addPage(content){ if(firstPage){html+=prh();firstPage=false;} else {html+='<div class="pgbrk"></div>'+prh();} html+=content; }
+  addPage(buildInitVisitHTML(c));
+  addPage(buildRevisitHTML(c));
+  var pp=c.pursuits||[];
+  if(pp.some(function(x){return x.content||x.date||x.rec||x.interviewer||x.appo||x.next_appo_date||x.visit_type||x.instruction;})){ html+=buildPursuitHTML(c); }
+  addPage(buildFamilyHTML(c));
+  addPage(buildStrategyHTML(c));
+  return html;
+}
+window.addEventListener('beforeprint',function(){
+  try{
+    if(window._appPrinting) return;
+    var ev=document.getElementById('editView');
+    if(!ev || getComputedStyle(ev).display==='none') return;
+    if(typeof cur==='undefined' || !cur) return;
+    if(typeof collectForm==='function'){ try{ collectForm(); }catch(e){} }
+    var root=document.getElementById('browserPrintRoot');
+    if(!root) return;
+    root.innerHTML='<style>'+scopedReportCSS()+'</style>'+buildBrowserPrintReport(cur);
+    document.body.classList.add('bp-active');
+  }catch(err){ try{document.body.classList.remove('bp-active');}catch(e){} }
+});
+window.addEventListener('afterprint',function(){
+  try{ document.body.classList.remove('bp-active'); var root=document.getElementById('browserPrintRoot'); if(root) root.innerHTML=''; }catch(err){}
+});
 window.copyPrompt=copyPrompt; window.copyPromptAnon=copyPromptAnon; window.doCopy=doCopy; window.genPrompt=genPrompt; window.openCopilot=openCopilot; window.openOneDrive=openOneDrive; window.switchTabAndCopy=switchTabAndCopy;
 window.addFam=addFam; window.remFam=remFam;
 window.famOpenAdd=famOpenAdd; window.famOpenEdit=famOpenEdit; window.famClose=famClose; window.famSave=famSave; window.famDelete=famDelete;
@@ -6618,9 +6701,9 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
     <div class="ha" style="width:100%;display:flex;justify-content:space-between;align-items:center">
       <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;max-width:30%">
         <button class="bg" onclick="history.back()" style="flex-shrink:0">← 一覧</button>
-        <div style="font-size:12px;color:rgba(255,255,255,0.75);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="editTitle">-</div>
+        <div onclick="history.back()" title="タップで一覧に戻る" style="font-size:12px;color:rgba(255,255,255,0.75);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer" id="editTitle">-</div>
       </div>
-      <svg width="130" height="40" viewBox="0 0 130 40" xmlns="http://www.w3.org/2000/svg" style="position:absolute;left:50%;transform:translateX(-50%);flex-shrink:0"><defs><linearGradient id="tg3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#ffffff"/><stop offset="60%" style="stop-color:#e0e7ff"/><stop offset="100%" style="stop-color:#c7d2fe"/></linearGradient></defs><text x="4" y="32" font-family="'Dancing Script','Brush Script MT','Comic Sans MS',cursive" font-size="30" font-weight="700" fill="url(#tg3)" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.4))">z.Aibis</text></svg>
+      <svg onclick="history.back()" title="タップで一覧に戻る" width="130" height="40" viewBox="0 0 130 40" xmlns="http://www.w3.org/2000/svg" style="position:absolute;left:50%;transform:translateX(-50%);flex-shrink:0;cursor:pointer"><defs><linearGradient id="tg3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#ffffff"/><stop offset="60%" style="stop-color:#e0e7ff"/><stop offset="100%" style="stop-color:#c7d2fe"/></linearGradient></defs><text x="4" y="32" font-family="'Dancing Script','Brush Script MT','Comic Sans MS',cursive" font-size="30" font-weight="700" fill="url(#tg3)" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.4))">z.Aibis</text></svg>
       <div style="display:flex;gap:4px;flex-shrink:0;align-items:center">
         <span id="dirtyDot" style="display:none;width:8px;height:8px;background:#ed8936;border-radius:50%;margin-right:2px" title="未保存"></span>
         <button class="bs" onclick="saveCard()" style="font-size:11px;padding:6px 10px">💾 保存</button>
@@ -6637,6 +6720,11 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       </div>
     </div>
   </header>
+    <div id="cardNav" class="no-print" style="display:none;position:relative;z-index:1;align-items:center;justify-content:space-between;gap:8px;padding:7px 12px;background:#eef3fb;border-bottom:1px solid #d8e2f0">
+      <button id="cardNavPrev" onclick="navCard(-1)" style="background:#fff;border:1px solid #b9cce8;color:#2c5282;border-radius:8px;font-size:13px;font-weight:700;padding:8px 18px;min-height:38px;cursor:pointer;font-family:inherit">‹ 前</button>
+      <span id="cardNavPos" style="font-size:12px;font-weight:700;color:#5a6b85;white-space:nowrap">- / -</span>
+      <button id="cardNavNext" onclick="navCard(1)" style="background:#fff;border:1px solid #b9cce8;color:#2c5282;border-radius:8px;font-size:13px;font-weight:700;padding:8px 18px;min-height:38px;cursor:pointer;font-family:inherit">次 ›</button>
+    </div>
   <div class="tabs no-print">
     <div class="tab active" data-tab="ti" onclick="switchTab('ti')" style="color:#2c5282;font-size:15px;font-weight:700"><span class="ic">📋</span>初訪</div>
     <div class="tab" data-tab="tr" onclick="switchTab('tr')" style="color:#276749;font-size:15px;font-weight:700"><span class="ic">🔁</span>再訪</div>
@@ -8181,5 +8269,6 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   @media print{.zfa-overlay,.zfa-toast,.aibis-tip-ov{display:none!important}}
 </style>
 
+<div id="browserPrintRoot" class="no-print" style="display:none"></div>
 </body>
 </html>
