@@ -873,15 +873,15 @@ body.is-mob .mob-menu{display:inline-block}
     <span style="font-size:12px;color:#4a5568;font-weight:700">開く ›</span>
   </div>
   <div id="selfDashBar" onclick="openSelfDash()" style="display:none;margin:8px;padding:13px 16px;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;background:#f0f5ff;border:1px solid #c3dafe;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.06)">
-    <span style="font-size:14px;font-weight:700;color:#2c5282">🔭 見込み分析（自分の見込み）</span>
+    <span style="font-size:14px;font-weight:700;color:#2c5282">🔭 自己分析ダッシュボード</span>
     <span style="font-size:12px;color:#4a5568;font-weight:700">開く ›</span>
   </div>
   <div class="panel" style="padding:8px"><div id="cardList"></div><div id="pager"></div></div>
 
-  <!-- 見込み分析（担当本人向け） -->
+  <!-- 自己分析ダッシュボード（担当本人向け） -->
   <div id="selfDashPanel" style="display:none;position:fixed;inset:0;background:#fff;z-index:120;overflow-y:auto">
     <div style="position:sticky;top:0;z-index:2;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;background:#f0f5ff;border-bottom:1px solid #c3dafe">
-      <span style="font-size:15px;font-weight:700;color:#2c5282">🔭 見込み分析（自分の見込み）</span>
+      <span style="font-size:15px;font-weight:700;color:#2c5282">🔭 自己分析ダッシュボード</span>
       <button onclick="closeSelfDash()" style="border:1px solid #c3dafe;background:#fff;border-radius:8px;padding:6px 13px;font-size:13px;font-weight:700;color:#2c5282;cursor:pointer;font-family:inherit">✕ 閉じる</button>
     </div>
     <div id="selfDashContent" style="padding:16px"></div>
@@ -1088,7 +1088,7 @@ body.is-mob .mob-menu{display:inline-block}
     </div>
 
     <div class="msec">
-      <div class="mttl" onclick="mtoggle(this)">🔭 見込み分析（担当・自分用） <span class="marr">▶</span></div>
+      <div class="mttl" onclick="mtoggle(this)">🔭 自己分析ダッシュボード（担当・自分用） <span class="marr">▶</span></div>
       <div class="mbdy" style="display:none">
         自分の見込みを自分で研究・分析する「グロースコンソール」です（スマホ・PC両対応）。<br><br>
         <b style="color:#2c5282">主な内容</b><br>
@@ -1419,7 +1419,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.00";
+var APP_VERSION = "v5.01";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -1828,8 +1828,8 @@ var AIBIS_FAQ=[
   {q:'駅徒歩フラグって何？',a:'計画地の最寄り駅からの徒歩区分だよ🚉 計画地の「🚉最寄り駅 徒歩」ボタンをタップで 未確認→〜10分→〜20分→21分以上 と切り替わるよ（同行ボタンと同じ要領）。〜10分は加点(+3)、21分以上は減点(-3)＆赤フラグ（一覧・課分析にも表示）。分数は地図で一度確認して印を付けるだけでOK😊'},
   {q:'現在地ボタンって何？',a:'初訪タブの住所欄の下にある📍現在地取得ボタン！GPSで現在地を取得して住所をクリップボードにコピーするよ。訪問先でそのまま貼り付けて使えるね😊'},
   {q:'家族構成ってどう入れるの？',a:'初訪タブの「家族構成」セクションから入力できるよ！<br><br>＋ボタンで追加→続柄・氏名・年齢・居住形態を入力<br>★所有者 / KP（キーパーソン）/ 面談済 も記録できるよ<br>スタンス（ポジティブ/ネガティブ）も記録して戦略に活かしてね！<br>👶 子世代・兄弟姉妹は婚姻状況と子の人数も記録できるよ（相続人の把握に役立つ）。'},
-  {q:'課分析ダッシュボードって何？',a:function(){ return isMgrUnlocked()?'管理職のPC版でのみ使える育成型「コマンドセンター」だよ📊 「今日動く」「担当を育てる」を上段にまとめてる。<br><br>・📌 今日の一手（誰に何を・次に聞く質問つき）<br>・🎯 次の一手 準備度（次回アポ・家族・KP・提案依頼から自動算出）<br>・🪜 見込み進捗3ゾーン<br>・💼 契約クローズ・トラッカー<br>・🎓 課長コーチング（良い点＋今週の声掛け）<br>・🌱 育成クエスト（弱点を次の課題に）<br>・🏆 担当別スコア／重要3指標／🟢 稼働率モニター<br>・🧠 傾向と対策（AIインサイト）<br><br>担当者セレクトで個人・全体を切替。「🤖 分析用に抽出」→「🤖 AI分析」でCopilotに分析依頼（次回アクション中心の指示が出るよ）。「🖨 レポート印刷」で表紙＋目次＋ガジェット＋AI分析を1冊のA4に。':'それは課長・支店長向けの機能だよ😊 担当のみんなは「🔭 見込み分析」で自分の見込みをチェックしてね！'; }},
-  {q:'見込み分析って何？',a:'自分の見込みを自分で研究する「グロースコンソール」だよ🔭<br><br>・連想到達率リング＋レベル表示で成長を実感<br>・🧭 スキルレーダー6軸（発掘量・グリップ深度・ヒアリング・連想到達・テスクロ・追客ペース）で自分の型と伸びしろが分かる<br>・🔻 マイ・パイプライン（転換率つき）<br>・🎯 今日の3手（今すぐ動くべきこと）<br>・🥊 壁打ちワーク（AI相手に1問だけ自問自答してスキルUP）<br><br>スマホでも見れるよ。PCなら「🤖 AI分析」「🖨 印刷」も使えるよ！'},
+  {q:'課分析ダッシュボードって何？',a:function(){ return isMgrUnlocked()?'管理職のPC版でのみ使える育成型「コマンドセンター」だよ📊 「今日動く」「担当を育てる」を上段にまとめてる。<br><br>・📌 今日の一手（誰に何を・次に聞く質問つき）<br>・🎯 次の一手 準備度（次回アポ・家族・KP・提案依頼から自動算出）<br>・🪜 見込み進捗3ゾーン<br>・💼 契約クローズ・トラッカー<br>・🎓 課長コーチング（良い点＋今週の声掛け）<br>・🌱 育成クエスト（弱点を次の課題に）<br>・🏆 担当別スコア／重要3指標／🟢 稼働率モニター<br>・🧠 傾向と対策（AIインサイト）<br><br>担当者セレクトで個人・全体を切替。「🤖 分析用に抽出」→「🤖 AI分析」でCopilotに分析依頼（次回アクション中心の指示が出るよ）。「🖨 レポート印刷」で表紙＋目次＋ガジェット＋AI分析を1冊のA4に。':'それは課長・支店長向けの機能だよ😊 担当のみんなは「🔭 自己分析ダッシュボード」で自分の見込みをチェックしてね！'; }},
+  {q:'自己分析ダッシュボードって何？',a:'自分の見込みを自分で研究する「グロースコンソール」だよ🔭<br><br>・連想到達率リング＋レベル表示で成長を実感<br>・🧭 スキルレーダー6軸（発掘量・グリップ深度・ヒアリング・連想到達・テスクロ・追客ペース）で自分の型と伸びしろが分かる<br>・🔻 マイ・パイプライン（転換率つき）<br>・🎯 今日の3手（今すぐ動くべきこと）<br>・🥊 壁打ちワーク（AI相手に1問だけ自問自答してスキルUP）<br><br>スマホでも見れるよ。PCなら「🤖 AI分析」「🖨 印刷」も使えるよ！'},
   {q:'タブにすぐ戻りたい',a:'PCはスクロールしてもタブ（初訪・再訪・追撃・戦略協議）が画面の一番上に残るから、いつでもワンタップで切り替えられるよ。スマホは画面の下にタブが固定されているよ😊'},
 
   {q:'路線価',a:'路線価は国税庁が毎年公表する道路に面した土地1㎡あたりの評価額のこと。相続税・贈与税の計算のベースになるよ。実勢価格の80%程度が目安。毎年7月に公表されるよ📋'},
@@ -1856,8 +1856,8 @@ var AIBIS_FAQ=[
 ];
 function getAibisQuick(){
   return isMob
-    ?['どんなのが候補?','聞くべき事は?','見込み分析って何？','生産緑地について','購買心理とは?','会話状況とは?','戦略協議ってどう使うの？','保存ってどうやるの？','印刷ってどう使うの？','PCにデータを送るには？','音声入力のコツは?']
-    :['どんなのが候補?','聞くべき事は?','見込み分析って何？','生産緑地について','購買心理とは?','会話状況とは?','戦略協議ってどう使うの？','保存ってどうやるの？','印刷ってどう使うの？','利回り','音声入力のコツは?'];
+    ?['どんなのが候補?','聞くべき事は?','自己分析ダッシュボードって何？','生産緑地について','購買心理とは?','会話状況とは?','戦略協議ってどう使うの？','保存ってどうやるの？','印刷ってどう使うの？','PCにデータを送るには？','音声入力のコツは?']
+    :['どんなのが候補?','聞くべき事は?','自己分析ダッシュボードって何？','生産緑地について','購買心理とは?','会話状況とは?','戦略協議ってどう使うの？','保存ってどうやるの？','印刷ってどう使うの？','利回り','音声入力のコツは?'];
 }
 var aibisChatLog=[];
 
@@ -5773,11 +5773,11 @@ function copySelfPrompt(){
   p+='④ ヒアリングで次に埋めるべき情報（家族構成・土地の量・持ち方の観点で）\n';
   p+='⑤ テストクロージング（連想到達客への提案依頼の許可取り）の具体的なトーク例\n';
   p+='\n※ 数値評価や順位ではなく、明日からの行動が変わる具体的アドバイスを中心に、前向きな表現でお願いします。';
-  navigator.clipboard.writeText(p).then(function(){ aibisToast('📋 見込み分析を抽出！AI分析に貼ってね'); }).catch(function(){ toast('コピーできませんでした'); });
+  navigator.clipboard.writeText(p).then(function(){ aibisToast('📋 自己分析を抽出！AI分析に貼ってね'); }).catch(function(){ toast('コピーできませんでした'); });
 }
 function saveSelfMemo(){ var ta=document.getElementById('selfAnalysisMemo'); if(!ta)return; try{localStorage.setItem('analysis_memo_self_v1',ta.value); var at=localStorage.getItem('analysis_memo_self_at_v1')||''; if(!ta.value.trim()) at=''; else if(!at) at=new Date().toISOString(); localStorage.setItem('analysis_memo_self_at_v1',at); var l=document.getElementById('selfMemoAt'); if(l)l.textContent=at?('📌 '+_fmtDateJP(at)):''; }catch(ex){} }
 function loadSelfMemo(){ var ta=document.getElementById('selfAnalysisMemo'); if(!ta)return; try{ta.value=localStorage.getItem('analysis_memo_self_v1')||''; var at=localStorage.getItem('analysis_memo_self_at_v1')||''; var l=document.getElementById('selfMemoAt'); if(l)l.textContent=at?('📌 '+_fmtDateJP(at)):''; }catch(ex){} }
-function printSelfReport(){ var ta=document.getElementById('selfAnalysisMemo'); var memo=ta?ta.value:''; if(!memo.trim()){ toast('貼り付け欄が空です'); return; } printAnalysisReport(memo,(uName||'自分')+' 見込み分析レポート'); }
+function printSelfReport(){ var ta=document.getElementById('selfAnalysisMemo'); var memo=ta?ta.value:''; if(!memo.trim()){ toast('貼り付け欄が空です'); return; } printAnalysisReport(memo,(uName||'自分')+' 自己分析レポート'); }
 function clearSelfMemo(){ var ta=document.getElementById('selfAnalysisMemo'); if(!ta)return; if(!ta.value){toast('すでに空です');return;} aibisAlert('この分析結果を削除するよ。よろしい？<br><br><div style="display:flex;gap:8px;margin-top:8px"><button onclick="closeAibisAlert();doClearSelfMemo()" style="flex:1;padding:8px;background:#c53030;color:white;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit">削除する</button><button onclick="closeAibisAlert()" style="flex:1;padding:8px;background:#e2e8f0;color:#2d3748;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit">やめる</button></div>'); }
 function doClearSelfMemo(){ var ta=document.getElementById('selfAnalysisMemo'); if(ta)ta.value=''; try{localStorage.removeItem('analysis_memo_self_v1');localStorage.removeItem('analysis_memo_self_at_v1');}catch(ex){} var l=document.getElementById('selfMemoAt'); if(l)l.textContent=''; toast('削除しました'); }
 window.copySelfPrompt=copySelfPrompt; window.saveSelfMemo=saveSelfMemo; window.loadSelfMemo=loadSelfMemo; window.printSelfReport=printSelfReport; window.clearSelfMemo=clearSelfMemo; window.doClearSelfMemo=doClearSelfMemo;

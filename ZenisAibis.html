@@ -868,26 +868,32 @@ body.is-mob .mob-menu{display:inline-block}
     <button type="button" class="mic-btn" onclick="micStart('searchInput',this)" style="flex-shrink:0;margin-top:0" title="音声で検索">🎤</button>
     <button id="searchClear" onclick="clearSearch()" style="display:none;background:none;border:1px solid #cbd5e0;color:#718096;border-radius:6px;padding:7px 10px;font-size:12px;cursor:pointer;white-space:nowrap">✕ クリア</button>
   </div>
+  <div id="mgrDashBar" onclick="openAnalysis()" style="display:none;margin:8px;padding:13px 16px;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;background:#ebf4ff;border:1px solid #bee3f8;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.06)">
+    <span style="font-size:14px;font-weight:700;color:#2c5282">📊 課分析ダッシュボード</span>
+    <span style="font-size:12px;color:#4a5568;font-weight:700">開く ›</span>
+  </div>
+  <div id="selfDashBar" onclick="openSelfDash()" style="display:none;margin:8px;padding:13px 16px;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;background:#f0f5ff;border:1px solid #c3dafe;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.06)">
+    <span style="font-size:14px;font-weight:700;color:#2c5282">🔭 自己分析ダッシュボード</span>
+    <span style="font-size:12px;color:#4a5568;font-weight:700">開く ›</span>
+  </div>
   <div class="panel" style="padding:8px"><div id="cardList"></div><div id="pager"></div></div>
 
-  <!-- 見込み分析（担当本人向け） -->
-  <div id="selfDashPanel" style="display:none;margin-top:16px;margin-bottom:8px">
-    <div style="background:white;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.06);overflow:hidden">
-      <div onclick="toggleSelfDash()" style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;background:#f0f5ff;border-bottom:1px solid #c3dafe">
-        <span style="font-size:14px;font-weight:700;color:#2c5282">🔭 見込み分析（自分の見込み）</span>
-        <span id="selfDashIcon" style="font-size:12px;color:#4a5568">▼ 開く</span>
-      </div>
-      <div id="selfDashContent" style="display:none;padding:16px"></div>
+  <!-- 自己分析ダッシュボード（担当本人向け） -->
+  <div id="selfDashPanel" style="display:none;position:fixed;inset:0;background:#fff;z-index:120;overflow-y:auto">
+    <div style="position:sticky;top:0;z-index:2;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;background:#f0f5ff;border-bottom:1px solid #c3dafe">
+      <span style="font-size:15px;font-weight:700;color:#2c5282">🔭 自己分析ダッシュボード</span>
+      <button onclick="closeSelfDash()" style="border:1px solid #c3dafe;background:#fff;border-radius:8px;padding:6px 13px;font-size:13px;font-weight:700;color:#2c5282;cursor:pointer;font-family:inherit">✕ 閉じる</button>
     </div>
+    <div id="selfDashContent" style="padding:16px"></div>
   </div>
   <!-- 課分析パネル（管理職PC版のみ） -->
-  <div id="analysisPanel" style="display:none;margin-top:16px;margin-bottom:32px;padding-top:8px;border-top:2px solid #bee3f8">
-    <div style="background:white;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.06);overflow:hidden">
-      <div onclick="toggleAnalysis()" style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;background:#ebf4ff;border-bottom:1px solid #bee3f8">
-        <span style="font-size:14px;font-weight:700;color:#2c5282">📊 課分析ダッシュボード</span>
-        <span id="analysisToggleIcon" style="font-size:12px;color:#4a5568">▼ 開く</span>
+  <div id="analysisPanel" style="display:none;position:fixed;inset:0;background:#fff;z-index:120;overflow-y:auto">
+    <div>
+      <div style="position:sticky;top:0;z-index:2;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;background:#ebf4ff;border-bottom:1px solid #bee3f8">
+        <span style="font-size:15px;font-weight:700;color:#2c5282">📊 課分析ダッシュボード</span>
+        <button onclick="closeAnalysis()" style="border:1px solid #bee3f8;background:#fff;border-radius:8px;padding:6px 13px;font-size:13px;font-weight:700;color:#2c5282;cursor:pointer;font-family:inherit">✕ 閉じる</button>
       </div>
-      <div id="analysisContent" style="display:none;padding:16px">
+      <div id="analysisContent" style="padding:16px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
           <div style="display:flex;gap:6px;flex-wrap:wrap">
             <select id="analysisMember" onchange="renderAnalysis();loadAnalysisMemo()" style="font-size:12px;padding:4px 8px;border:1px solid #e2e8f0;border-radius:6px">
@@ -1082,7 +1088,7 @@ body.is-mob .mob-menu{display:inline-block}
     </div>
 
     <div class="msec">
-      <div class="mttl" onclick="mtoggle(this)">🔭 見込み分析（担当・自分用） <span class="marr">▶</span></div>
+      <div class="mttl" onclick="mtoggle(this)">🔭 自己分析ダッシュボード（担当・自分用） <span class="marr">▶</span></div>
       <div class="mbdy" style="display:none">
         自分の見込みを自分で研究・分析する「グロースコンソール」です（スマホ・PC両対応）。<br><br>
         <b style="color:#2c5282">主な内容</b><br>
@@ -1413,7 +1419,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v4.95";
+var APP_VERSION = "v5.01";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -1822,8 +1828,8 @@ var AIBIS_FAQ=[
   {q:'駅徒歩フラグって何？',a:'計画地の最寄り駅からの徒歩区分だよ🚉 計画地の「🚉最寄り駅 徒歩」ボタンをタップで 未確認→〜10分→〜20分→21分以上 と切り替わるよ（同行ボタンと同じ要領）。〜10分は加点(+3)、21分以上は減点(-3)＆赤フラグ（一覧・課分析にも表示）。分数は地図で一度確認して印を付けるだけでOK😊'},
   {q:'現在地ボタンって何？',a:'初訪タブの住所欄の下にある📍現在地取得ボタン！GPSで現在地を取得して住所をクリップボードにコピーするよ。訪問先でそのまま貼り付けて使えるね😊'},
   {q:'家族構成ってどう入れるの？',a:'初訪タブの「家族構成」セクションから入力できるよ！<br><br>＋ボタンで追加→続柄・氏名・年齢・居住形態を入力<br>★所有者 / KP（キーパーソン）/ 面談済 も記録できるよ<br>スタンス（ポジティブ/ネガティブ）も記録して戦略に活かしてね！<br>👶 子世代・兄弟姉妹は婚姻状況と子の人数も記録できるよ（相続人の把握に役立つ）。'},
-  {q:'課分析ダッシュボードって何？',a:function(){ return isMgrUnlocked()?'管理職のPC版でのみ使える育成型「コマンドセンター」だよ📊 「今日動く」「担当を育てる」を上段にまとめてる。<br><br>・📌 今日の一手（誰に何を・次に聞く質問つき）<br>・🎯 次の一手 準備度（次回アポ・家族・KP・提案依頼から自動算出）<br>・🪜 見込み進捗3ゾーン<br>・💼 契約クローズ・トラッカー<br>・🎓 課長コーチング（良い点＋今週の声掛け）<br>・🌱 育成クエスト（弱点を次の課題に）<br>・🏆 担当別スコア／重要3指標／🟢 稼働率モニター<br>・🧠 傾向と対策（AIインサイト）<br><br>担当者セレクトで個人・全体を切替。「🤖 分析用に抽出」→「🤖 AI分析」でCopilotに分析依頼（次回アクション中心の指示が出るよ）。「🖨 レポート印刷」で表紙＋目次＋ガジェット＋AI分析を1冊のA4に。':'それは課長・支店長向けの機能だよ😊 担当のみんなは「🔭 見込み分析」で自分の見込みをチェックしてね！'; }},
-  {q:'見込み分析って何？',a:'自分の見込みを自分で研究する「グロースコンソール」だよ🔭<br><br>・連想到達率リング＋レベル表示で成長を実感<br>・🧭 スキルレーダー6軸（発掘量・グリップ深度・ヒアリング・連想到達・テスクロ・追客ペース）で自分の型と伸びしろが分かる<br>・🔻 マイ・パイプライン（転換率つき）<br>・🎯 今日の3手（今すぐ動くべきこと）<br>・🥊 壁打ちワーク（AI相手に1問だけ自問自答してスキルUP）<br><br>スマホでも見れるよ。PCなら「🤖 AI分析」「🖨 印刷」も使えるよ！'},
+  {q:'課分析ダッシュボードって何？',a:function(){ return isMgrUnlocked()?'管理職のPC版でのみ使える育成型「コマンドセンター」だよ📊 「今日動く」「担当を育てる」を上段にまとめてる。<br><br>・📌 今日の一手（誰に何を・次に聞く質問つき）<br>・🎯 次の一手 準備度（次回アポ・家族・KP・提案依頼から自動算出）<br>・🪜 見込み進捗3ゾーン<br>・💼 契約クローズ・トラッカー<br>・🎓 課長コーチング（良い点＋今週の声掛け）<br>・🌱 育成クエスト（弱点を次の課題に）<br>・🏆 担当別スコア／重要3指標／🟢 稼働率モニター<br>・🧠 傾向と対策（AIインサイト）<br><br>担当者セレクトで個人・全体を切替。「🤖 分析用に抽出」→「🤖 AI分析」でCopilotに分析依頼（次回アクション中心の指示が出るよ）。「🖨 レポート印刷」で表紙＋目次＋ガジェット＋AI分析を1冊のA4に。':'それは課長・支店長向けの機能だよ😊 担当のみんなは「🔭 自己分析ダッシュボード」で自分の見込みをチェックしてね！'; }},
+  {q:'自己分析ダッシュボードって何？',a:'自分の見込みを自分で研究する「グロースコンソール」だよ🔭<br><br>・連想到達率リング＋レベル表示で成長を実感<br>・🧭 スキルレーダー6軸（発掘量・グリップ深度・ヒアリング・連想到達・テスクロ・追客ペース）で自分の型と伸びしろが分かる<br>・🔻 マイ・パイプライン（転換率つき）<br>・🎯 今日の3手（今すぐ動くべきこと）<br>・🥊 壁打ちワーク（AI相手に1問だけ自問自答してスキルUP）<br><br>スマホでも見れるよ。PCなら「🤖 AI分析」「🖨 印刷」も使えるよ！'},
   {q:'タブにすぐ戻りたい',a:'PCはスクロールしてもタブ（初訪・再訪・追撃・戦略協議）が画面の一番上に残るから、いつでもワンタップで切り替えられるよ。スマホは画面の下にタブが固定されているよ😊'},
 
   {q:'路線価',a:'路線価は国税庁が毎年公表する道路に面した土地1㎡あたりの評価額のこと。相続税・贈与税の計算のベースになるよ。実勢価格の80%程度が目安。毎年7月に公表されるよ📋'},
@@ -1850,8 +1856,8 @@ var AIBIS_FAQ=[
 ];
 function getAibisQuick(){
   return isMob
-    ?['どんなのが候補?','聞くべき事は?','見込み分析って何？','生産緑地について','購買心理とは?','会話状況とは?','戦略協議ってどう使うの？','保存ってどうやるの？','印刷ってどう使うの？','PCにデータを送るには？','音声入力のコツは?']
-    :['どんなのが候補?','聞くべき事は?','見込み分析って何？','生産緑地について','購買心理とは?','会話状況とは?','戦略協議ってどう使うの？','保存ってどうやるの？','印刷ってどう使うの？','利回り','音声入力のコツは?'];
+    ?['どんなのが候補?','聞くべき事は?','自己分析ダッシュボードって何？','生産緑地について','購買心理とは?','会話状況とは?','戦略協議ってどう使うの？','保存ってどうやるの？','印刷ってどう使うの？','PCにデータを送るには？','音声入力のコツは?']
+    :['どんなのが候補?','聞くべき事は?','自己分析ダッシュボードって何？','生産緑地について','購買心理とは?','会話状況とは?','戦略協議ってどう使うの？','保存ってどうやるの？','印刷ってどう使うの？','利回り','音声入力のコツは?'];
 }
 var aibisChatLog=[];
 
@@ -2463,10 +2469,10 @@ function applyRoleUI(){
   var isManager=isMgrUnlocked();
   var pcClear=document.getElementById('pcMenuClearSection');
   if(pcClear) pcClear.style.display=hasFSA?'block':'none';
-  var ap=document.getElementById('analysisPanel');
-  if(ap) ap.style.display=isManager?'block':'none';
-  var sd=document.getElementById('selfDashPanel');
-  if(sd) sd.style.display=(!isManager)?'block':'none';
+  var apBar=document.getElementById('mgrDashBar');
+  if(apBar) apBar.style.display=isManager?'flex':'none';
+  var sdBar=document.getElementById('selfDashBar');
+  if(sdBar) sdBar.style.display=(!isManager)?'flex':'none';
   if(isManager) renderAnalysis();
   // カードの印刷ボタンはPC版のみ
   var cp=document.getElementById('cardPrintBtn');
@@ -2503,7 +2509,9 @@ function devGenHash(){
   sha256hex(v).then(function(h){ oe.innerHTML='MGR_HASH = <b style="color:#553c9a">'+h+'</b>'; }).catch(function(){ oe.textContent='生成失敗（https環境で開いてください）'; });
 }
 window.onRoleChange=onRoleChange; window.devGenHash=devGenHash; window.isMgrUnlocked=isMgrUnlocked;
-function toggleSelfDash(){ var ct=document.getElementById('selfDashContent'); var ic=document.getElementById('selfDashIcon'); if(!ct) return; var open=ct.style.display==='none'; ct.style.display=open?'block':'none'; if(ic) ic.textContent=open?'▲ 閉じる':'▼ 開く'; if(open) renderSelfDash(); }
+function openSelfDash(){ var p=document.getElementById('selfDashPanel'); if(!p) return; p.style.display='block'; if(window.renderSelfDash) renderSelfDash(); p.scrollTop=0; }
+function closeSelfDash(){ var p=document.getElementById('selfDashPanel'); if(p) p.style.display='none'; }
+function toggleSelfDash(){ openSelfDash(); }
 function _zSpark(arr,color){
   arr=arr||[]; if(arr.length<2) return '';
   var w=180,h=30,mx=Math.max.apply(null,arr),mn=Math.min.apply(null,arr),rng=(mx-mn)||1;
@@ -2719,7 +2727,7 @@ function renderSelfDash(tid){
  var gS=0,gC=0;mine.forEach(function(c){var l=getKaiwaLevel(c);if(l>=0){gS+=l;gC++;}});var grip=gC?Math.round(gS/gC/4*100):0;
  var inputAvg=Math.round(mine.reduce(function(s,c){return s+(basicInputStat(c).pct||0);},0)/n);
  var avg=Math.round(mine.reduce(function(s,c){return s+calcScore(c);},0)/n*10)/10;
- var axes=[['発掘量',Math.min(Math.round(n/30*100),100),'#9be15d'],['グリップ',grip],['ヒアリング',inputAvg],['連想到達',renso],['テスクロ',_zPct(adv,conn)],['追客ペース',Math.max(0,100-_zPct(late,n))]];
+ var axes=[['発掘量',Math.min(Math.round(n/30*100),100),'#ff6b6b'],['グリップ',grip,'#ff922b'],['ヒアリング',inputAvg,'#ffd43b'],['連想到達',renso,'#51cf66'],['テスクロ',_zPct(adv,conn),'#4dabf7'],['追客ペース',Math.max(0,100-_zPct(late,n)),'#cc5de8']];
  var leg=axes.map(function(a){return '<div><i style="background:'+(a[2]||'#34e3d0')+'"></i><b>'+a[1]+'</b> '+a[0]+'</div>';}).join('');
  var sc=[0,0,0,0,0,0,0,0];mine.forEach(function(c){var s=+(c.stage||0);if(s>=0&&s<=7)sc[s]++;});
  var mDisc=_zMonthly(mine,function(c){return c.discovery_date;}), mVis=_zMonthly(mine,_zVisitDates), mApo=_zMonthly(mine,_zAppoDates);
@@ -2762,7 +2770,7 @@ function renderSelfDash(tid){
  host.innerHTML=H;
  if(!isMob && !tid) loadSelfMemo();
 }
-window.toggleSelfDash=toggleSelfDash; window.renderSelfDash=renderSelfDash;
+window.toggleSelfDash=toggleSelfDash; window.openSelfDash=openSelfDash; window.closeSelfDash=closeSelfDash; window.renderSelfDash=renderSelfDash;
 // ===== 一覧 =====
 function renderList() {
   updateCount(); updateSaved(); updateFileDisp();
@@ -5204,19 +5212,24 @@ window.togglePcMenu=togglePcMenu; window.closePcMenu=closePcMenu;
 
 // ===== 課分析 =====
 function _zc(emoji,title,sub,body,sp){return '<div class="z-card '+(sp||'z-cf')+'"><h3>'+emoji+' '+title+'</h3>'+(sub?'<div class="z-sub">'+sub+'</div>':'')+body+'</div>';}
-var _zOpen={today:true,state:true,work:true,growth:true,selfState:true};
+var _zOpen={today:true,selfState:true};
 function _zsec(k,title,body){var op=!!_zOpen[k];return '<div class="z-sec'+(op?'':' z-collapsed')+'" data-k="'+k+'"><div class="z-sec-h" onclick="zToggleSec(this)">'+title+'<span class="z-ar">'+(op?'▼':'▶')+'</span></div><div class="z-sec-body"><div class="z-bento">'+body+'</div></div></div>';}
 function _zsecPlain(k,title,body){var op=!!_zOpen[k];return '<div class="z-sec'+(op?'':' z-collapsed')+'" data-k="'+k+'"><div class="z-sec-h" onclick="zToggleSec(this)">'+title+'<span class="z-ar">'+(op?'▼':'▶')+'</span></div><div class="z-sec-body">'+body+'</div></div>';}
 window.zToggleSec=function(h){var s=h.parentNode;s.classList.toggle('z-collapsed');var k=s.getAttribute('data-k');var open=!s.classList.contains('z-collapsed');if(k)_zOpen[k]=open;var a=h.querySelector('.z-ar');if(a)a.textContent=open?'▼':'▶';};
-window.zSetArea=function(m){_zAreaMode=m;renderAnalysis();var el=document.querySelector('#cmdCenter .z-sec[data-k=area]');if(el)el.scrollIntoView({block:'center'});};
-window.zSetAreaSelf=function(m){_zAreaMode=m;if(window.renderSelfDash)renderSelfDash();};
-function _zAreaCard(target,toggleFn){ toggleFn=toggleFn||'zSetArea';
+window.zSetArea=function(m){_zAreaMode=m;_zAreaRefresh();};
+window.zSetAreaSelf=function(m){_zAreaMode=m;_zAreaRefresh();};
+var _zAreaCtx=null;
+function _zAreaInner(target,toggleFn){ toggleFn=toggleFn||'zSetArea';
  var byWard={},byTown={},byWardC={},byTownC={};
  target.forEach(function(c){var p=_zParseAddr(c.address);byWard[p.ward]=(byWard[p.ward]||0)+1;(byWardC[p.ward]=byWardC[p.ward]||[]).push(c);var key=p.ward+' '+p.town;byTown[key]=(byTown[key]||0)+1;(byTownC[key]=byTownC[key]||[]).push(c);});
  function grid(obj,cmap){var mx=Math.max.apply(null,Object.keys(obj).map(function(k){return obj[k];}))||1;return '<div class="z-areagrid">'+Object.keys(obj).sort(function(a,b){return obj[b]-obj[a];}).map(function(k){var v=obj[k],unk=/未分類|区不明|町名なし/.test(k),disp=k.replace('（町名なし）','(町なし)');var items=(cmap[k]||[]).map(function(c){return {name:c.name,score:calcScore(c),sub:e(c.manager||'')};});var rk=_zRevReg(disp,items);return '<div class="z-area'+(unk?' z-unk':'')+'" style="'+(unk?'':'background:'+_zHeat(v/mx*100))+'" onpointerdown="zRevShow(this,\''+rk+'\')" onpointerup="zRevHide()" onpointerleave="zRevHide()" onpointercancel="zRevHide()" oncontextmenu="return false"><b>'+v+'</b><span>'+e(disp)+'</span></div>';}).join('')+'</div>';}
  var body='<div class="z-toggle"><button class="'+(_zAreaMode==='ward'?'on':'')+'" onclick="'+toggleFn+'(\'ward\')">区</button><button class="'+(_zAreaMode==='town'?'on':'')+'" onclick="'+toggleFn+'(\'town\')">町</button></div><div class="z-sub" style="clear:both;padding-top:6px">件数の濃淡。マスを長押しで該当客名。区・町・不明も全部拾います。</div>'+(_zAreaMode==='ward'?grid(byWard,byWardC):grid(byTown,byTownC));
- return _zc('🗺','エリア別ヒートマップ（区⇔町 切替）','',body,'z-cf');
+ return body;
 }
+function _zAreaCard(target,toggleFn){ toggleFn=toggleFn||'zSetArea'; _zAreaCtx={target:target,fn:toggleFn};
+ return _zc('🗺','エリア別ヒートマップ（区⇔町 切替）','','<div class="z-area-inner">'+_zAreaInner(target,toggleFn)+'</div>','z-cf');
+}
+function _zAreaRefresh(){ if(!_zAreaCtx) return; var ns=document.querySelectorAll('.z-area-inner'); for(var i=0;i<ns.length;i++){ ns[i].innerHTML=_zAreaInner(_zAreaCtx.target,_zAreaCtx.fn); } }
 var _wkP='m0';
 function _bizDays(a,b){ var n=0,d=new Date(a.getFullYear(),a.getMonth(),a.getDate()),end=new Date(b.getFullYear(),b.getMonth(),b.getDate()); while(d<=end){ var w=d.getDay(); if(w>=1&&w<=5)n++; d.setDate(d.getDate()+1);} return n; }
 function _wkIn(ds,s,e){ if(!ds)return false; var d=new Date(ds); if(isNaN(+d))return false; return d>=new Date(s.getFullYear(),s.getMonth(),s.getDate()) && d<=e; }
@@ -5277,7 +5290,7 @@ function renderAnalysis(){
  var host=document.getElementById('cmdCenter'); if(!host) return;
  var sel=document.getElementById('analysisMember');
  var members=[]; cards.forEach(function(c){var m=c.manager||'';if(m&&members.indexOf(m)<0)members.push(m);}); members.sort();
- if(sel){var cv=sel.value;sel.innerHTML='<option value="all">全担当（'+cards.length+'件）</option>';members.forEach(function(m){sel.innerHTML+='<option value="'+e(m)+'"'+(cv===m?' selected':'')+'>'+e(m)+'</option>';});}
+ if(sel){var cv=sel.value;sel.innerHTML='<option value="all">全担当（'+cards.length+'件）</option>';members.forEach(function(m){var mc=cards.filter(function(c){return (c.manager||'')===m;}).length;sel.innerHTML+='<option value="'+e(m)+'"'+(cv===m?' selected':'')+'>'+e(m)+'（'+mc+'件）</option>';});}
  var scope=(sel&&sel.value)||'all';
  var t=scope==='all'?cards:cards.filter(function(c){return (c.manager||'')===scope;});
  if(!t.length){host.innerHTML='<div class="zdash zdash-mgr"><div class="z-card"><div class="z-empty">対象データがありません</div></div></div>';return;}
@@ -5344,7 +5357,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
   +_zc('🎖','今月の課目標（進捗）','今月の課目標。みんなで達成。',missH,'z-c2')
   +_zc('🏅','称号バッジ（多軸＝全員に出番）','色々な軸でトップを称える。',badgeH,'z-c2'));
  // area
- var bodyArea=('🗺 エリア分析',_zAreaCard(t));
+ var bodyArea=_zAreaCard(t);
  // multi
  var asMap={'1億以下':1,'3億以下':2,'5億以下':3,'10億未満':4,'10億以上':5};
  var bub='<svg class="z-bub" viewBox="0 0 560 230">';t.forEach(function(c){var x=20+calcScore(c)/40*520;var av=(asMap[c.land_asset]||0)+(+(c.m2||0)>=200?2:+(c.m2||0)>=100?1:0);var y=210-av/7*190;var rr=5+calcScore(c)/40*11;var rk=_zRevReg('\ud83d\udc8e \u304a\u5b9d\u5ba2',[{name:c.name,score:calcScore(c),sub:STG[+(c.stage||0)]+'\u30fb'+e(c.manager||'')}]);bub+='<circle cx="'+x.toFixed(0)+'" cy="'+y.toFixed(0)+'" r="'+rr.toFixed(0)+'" fill="'+(RC[c.pursuit_judge]||'#888')+'" opacity=".62" stroke="#fff" stroke-width="1" style="cursor:pointer" onpointerdown="zRevShow(this,\''+rk+'\')" onpointerup="zRevHide()" onpointerleave="zRevHide()" onpointercancel="zRevHide()" oncontextmenu="return false"/>';});bub+='<text x="280" y="228" font-size="9" fill="#6b7894" text-anchor="middle">熱量（スコア）→</text></svg>';
@@ -5760,23 +5773,18 @@ function copySelfPrompt(){
   p+='④ ヒアリングで次に埋めるべき情報（家族構成・土地の量・持ち方の観点で）\n';
   p+='⑤ テストクロージング（連想到達客への提案依頼の許可取り）の具体的なトーク例\n';
   p+='\n※ 数値評価や順位ではなく、明日からの行動が変わる具体的アドバイスを中心に、前向きな表現でお願いします。';
-  navigator.clipboard.writeText(p).then(function(){ aibisToast('📋 見込み分析を抽出！AI分析に貼ってね'); }).catch(function(){ toast('コピーできませんでした'); });
+  navigator.clipboard.writeText(p).then(function(){ aibisToast('📋 自己分析を抽出！AI分析に貼ってね'); }).catch(function(){ toast('コピーできませんでした'); });
 }
 function saveSelfMemo(){ var ta=document.getElementById('selfAnalysisMemo'); if(!ta)return; try{localStorage.setItem('analysis_memo_self_v1',ta.value); var at=localStorage.getItem('analysis_memo_self_at_v1')||''; if(!ta.value.trim()) at=''; else if(!at) at=new Date().toISOString(); localStorage.setItem('analysis_memo_self_at_v1',at); var l=document.getElementById('selfMemoAt'); if(l)l.textContent=at?('📌 '+_fmtDateJP(at)):''; }catch(ex){} }
 function loadSelfMemo(){ var ta=document.getElementById('selfAnalysisMemo'); if(!ta)return; try{ta.value=localStorage.getItem('analysis_memo_self_v1')||''; var at=localStorage.getItem('analysis_memo_self_at_v1')||''; var l=document.getElementById('selfMemoAt'); if(l)l.textContent=at?('📌 '+_fmtDateJP(at)):''; }catch(ex){} }
-function printSelfReport(){ var ta=document.getElementById('selfAnalysisMemo'); var memo=ta?ta.value:''; if(!memo.trim()){ toast('貼り付け欄が空です'); return; } printAnalysisReport(memo,(uName||'自分')+' 見込み分析レポート'); }
+function printSelfReport(){ var ta=document.getElementById('selfAnalysisMemo'); var memo=ta?ta.value:''; if(!memo.trim()){ toast('貼り付け欄が空です'); return; } printAnalysisReport(memo,(uName||'自分')+' 自己分析レポート'); }
 function clearSelfMemo(){ var ta=document.getElementById('selfAnalysisMemo'); if(!ta)return; if(!ta.value){toast('すでに空です');return;} aibisAlert('この分析結果を削除するよ。よろしい？<br><br><div style="display:flex;gap:8px;margin-top:8px"><button onclick="closeAibisAlert();doClearSelfMemo()" style="flex:1;padding:8px;background:#c53030;color:white;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit">削除する</button><button onclick="closeAibisAlert()" style="flex:1;padding:8px;background:#e2e8f0;color:#2d3748;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit">やめる</button></div>'); }
 function doClearSelfMemo(){ var ta=document.getElementById('selfAnalysisMemo'); if(ta)ta.value=''; try{localStorage.removeItem('analysis_memo_self_v1');localStorage.removeItem('analysis_memo_self_at_v1');}catch(ex){} var l=document.getElementById('selfMemoAt'); if(l)l.textContent=''; toast('削除しました'); }
 window.copySelfPrompt=copySelfPrompt; window.saveSelfMemo=saveSelfMemo; window.loadSelfMemo=loadSelfMemo; window.printSelfReport=printSelfReport; window.clearSelfMemo=clearSelfMemo; window.doClearSelfMemo=doClearSelfMemo;
-function toggleAnalysis(){
-  var content=document.getElementById('analysisContent');
-  var icon=document.getElementById('analysisToggleIcon');
-  if(!content) return;
-  var open=content.style.display==='none';
-  content.style.display=open?'block':'none';
-  if(icon) icon.textContent=open?'▲ 閉じる':'▼ 開く';
-  if(open){ renderAnalysis(); loadAnalysisMemo(); }}
-window.toggleAnalysis=toggleAnalysis;
+function openAnalysis(){ var p=document.getElementById('analysisPanel'); if(!p) return; p.style.display='block'; renderAnalysis(); loadAnalysisMemo(); p.scrollTop=0; }
+function closeAnalysis(){ var p=document.getElementById('analysisPanel'); if(p) p.style.display='none'; }
+function toggleAnalysis(){ openAnalysis(); }
+window.toggleAnalysis=toggleAnalysis; window.openAnalysis=openAnalysis; window.closeAnalysis=closeAnalysis;
 function showAnalysisPaste(){
   document.getElementById('listView').style.display='none';
   var v=document.getElementById('analysisPasteView'); if(v) v.style.display='block';
