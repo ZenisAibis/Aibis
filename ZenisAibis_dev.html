@@ -1412,7 +1412,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v4.82";
+var APP_VERSION = "v4.83";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -2796,6 +2796,7 @@ function getLastVD(c) {
   if(c.discovery_date) dates.push(c.discovery_date);
   return dates.length ? dates.sort(function(a,b){return b.localeCompare(a);})[0] : '';
 }
+function _shortAddr(a){ if(!a) return ''; var i=a.indexOf('丁目'); if(i>=0) return a.slice(0,i+2); return a.replace(/[0-9０-９]+[‐ー\-－][0-9０-９]+.*$/,'').trim()||a; }
 function getArea(addr) {
   if(!addr) return '';
   var m=addr.match(/^(.+?[都道府県])(.+?[市区町村郡])/);
@@ -3017,7 +3018,7 @@ function renderCards() {
       +'<div class="lname">'+(c.name?(c.name.length>7?e(c.name.slice(0,7))+'…':e(c.name)+'様'):'(名前未入力)')+'</div>'
       +'<div class="lmeta">'+e(c.discovery_date||'日付未設定')+(own?' / '+e(own):'')+'</div>'
       +'</div>'
-      +'<div style="display:flex;align-items:center;gap:6px">'+'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex:1;min-width:0">'+sb+pjTag+'<span class="lstage" style="background:'+sc+'18;color:'+sc+';border:1px solid '+sc+'40">'+sl+'</span>'+ekiTag+kTag+'</div>'+(lv?'<span style="font-size:11px;color:#a0aec0;flex-shrink:0;white-space:nowrap">🚶 '+lv+'</span>':'')+'</div>'+'<div style="font-size:12px;color:#718096;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">📍 '+(c.address?e(c.address):'<span style="color:#cbd5e0">住所未設定</span>')+'</div>'+'</div>'
+      +'<div style="display:flex;align-items:center;gap:6px">'+'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex:1;min-width:0">'+sb+pjTag+'<span class="lstage" style="background:'+sc+'18;color:'+sc+';border:1px solid '+sc+'40">'+sl+'</span>'+ekiTag+kTag+'</div>'+(lv?'<span style="font-size:11px;color:#a0aec0;flex-shrink:0;white-space:nowrap">🚶 '+lv+'</span>':'')+'</div>'+'<div style="font-size:12px;color:#718096;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">📍 '+(c.address?e(_shortAddr(c.address)):'<span style="color:#cbd5e0">住所未設定</span>')+'</div>'+'</div>'
       +'<button onclick="delCard(\''+c.id+'\',\''+e(c.name||'(名前未入力)')+'\')" style="margin-left:2px;background:none;border:none;color:#cbd5e0;font-size:20px;cursor:pointer;padding:4px 6px;border-radius:6px;align-self:center;flex-shrink:0" title="見込みから外す">🗑</button>'
       +'</div>';
   }).join('');
