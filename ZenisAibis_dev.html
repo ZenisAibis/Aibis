@@ -1413,7 +1413,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v4.95";
+var APP_VERSION = "v4.96";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -2719,7 +2719,7 @@ function renderSelfDash(tid){
  var gS=0,gC=0;mine.forEach(function(c){var l=getKaiwaLevel(c);if(l>=0){gS+=l;gC++;}});var grip=gC?Math.round(gS/gC/4*100):0;
  var inputAvg=Math.round(mine.reduce(function(s,c){return s+(basicInputStat(c).pct||0);},0)/n);
  var avg=Math.round(mine.reduce(function(s,c){return s+calcScore(c);},0)/n*10)/10;
- var axes=[['発掘量',Math.min(Math.round(n/30*100),100),'#9be15d'],['グリップ',grip],['ヒアリング',inputAvg],['連想到達',renso],['テスクロ',_zPct(adv,conn)],['追客ペース',Math.max(0,100-_zPct(late,n))]];
+ var axes=[['発掘量',Math.min(Math.round(n/30*100),100),'#ff6b8a'],['グリップ',grip,'#ff9f43'],['ヒアリング',inputAvg,'#ffd43b'],['連想到達',renso,'#69db7c'],['テスクロ',_zPct(adv,conn),'#38d9d9'],['追客ペース',Math.max(0,100-_zPct(late,n)),'#9775fa']];
  var leg=axes.map(function(a){return '<div><i style="background:'+(a[2]||'#34e3d0')+'"></i><b>'+a[1]+'</b> '+a[0]+'</div>';}).join('');
  var sc=[0,0,0,0,0,0,0,0];mine.forEach(function(c){var s=+(c.stage||0);if(s>=0&&s<=7)sc[s]++;});
  var mDisc=_zMonthly(mine,function(c){return c.discovery_date;}), mVis=_zMonthly(mine,_zVisitDates), mApo=_zMonthly(mine,_zAppoDates);
