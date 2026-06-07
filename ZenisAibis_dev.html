@@ -403,7 +403,10 @@ body.is-mob .mob-menu{display:inline-block}
   h2{font-size:12pt!important;margin-bottom:2mm!important;color:#000!important}
   .stitle{font-size:9pt!important;color:#000!important}
   /* 背景色を全て白に */
-  *{background-color:white!important;color:#000!important;border-color:#888!important}
+  body:not(.bp-active) *{background-color:white!important;color:#000!important;border-color:#888!important}
+  /* ブラウザ印刷：カードを開いている時は専用レポートのみを印刷 */
+  body.bp-active>*:not(#browserPrintRoot){display:none!important}
+  body.bp-active #browserPrintRoot{display:block!important}
   /* ただし選択済みボタンだけ黒塗り維持 */
   .stbtn.active,.pbtn.active,.jbtn.active{background:#000!important;color:white!important}
   /* 家族構成印刷 */
@@ -1426,7 +1429,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.06";
+var APP_VERSION = "v5.09";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -4141,6 +4144,7 @@ function closeMap(){ document.getElementById('mapModal').classList.remove('show'
 
 // ===== 印刷 =====
 function printHTMLDocument(html){
+  window._appPrinting=true; setTimeout(function(){window._appPrinting=false;},8000);
   // 印刷の起動を一本化した堅牢版。
   //  - 0/1pxの極小iframeをやめ、実寸の大きめiframeをオフスクリーン配置（先頭ページしか出ない不具合を回避）
   //  - 固定タイマーでなく onload を待ってから印刷（レイアウト確定後に実行）
@@ -6542,6 +6546,51 @@ function startBatchPrint(){
 }
 window.startBatchPrint=startBatchPrint;
 window.printSelected=printSelected;
+// ===== ブラウザ印刷：個別カードをアプリと同じレポート体裁で出力 =====
+function scopedReportCSS(){
+  var css=buildPrintCSS();
+  var out=css.replace(/([^{}]+)\{([^{}]*)\}/g,function(m,sel,decls){
+    sel=sel.trim();
+    if(sel.charAt(0)==='@') return sel+'{'+decls+'}';
+    var d=decls.split(';').map(function(x){x=x.trim();if(!x)return '';return x.indexOf('!important')>=0?x:x+' !important';}).filter(Boolean).join(';');
+    var s2=sel.split(',').map(function(pp){return '#browserPrintRoot '+pp.trim();}).join(',');
+    return s2+'{'+d+'}';
+  });
+  return out+'#browserPrintRoot .prhdr-left,#browserPrintRoot .prhdr-right{color:#fff !important}';
+}
+function buildBrowserPrintReport(c){
+  var e2=function(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
+  var dateStr=new Date().toISOString().slice(0,10);
+  var hdrTxt=e2((c.branch||'')+' '+(c.section||'')+' '+(c.manager||'')+' ／ '+(c.name?c.name+'様':'')+(c.discovery_date?' ／ 発掘日:'+c.discovery_date:'')+' ／ 印刷:'+dateStr);
+  var pj=c.pursuit_judge||'';
+  var pjColor=(typeof RANK_COLOR!=='undefined'&&RANK_COLOR[pj])||'#ffffff';
+  var firstPage=true,html='';
+  function prh(){return '<div class="prhdr"><div class="prhdr-left">z.Aibis</div><div class="prhdr-right">'+hdrTxt+'</div>'+(pj?'<div class="prhdr-rank" style="color:'+pjColor+'">'+pj+'</div>':'')+'</div>';}
+  function addPage(content){ if(firstPage){html+=prh();firstPage=false;} else {html+='<div class="pgbrk"></div>'+prh();} html+=content; }
+  addPage(buildInitVisitHTML(c));
+  addPage(buildRevisitHTML(c));
+  var pp=c.pursuits||[];
+  if(pp.some(function(x){return x.content||x.date||x.rec||x.interviewer||x.appo||x.next_appo_date||x.visit_type||x.instruction;})){ html+=buildPursuitHTML(c); }
+  addPage(buildFamilyHTML(c));
+  addPage(buildStrategyHTML(c));
+  return html;
+}
+window.addEventListener('beforeprint',function(){
+  try{
+    if(window._appPrinting) return;
+    var ev=document.getElementById('editView');
+    if(!ev || getComputedStyle(ev).display==='none') return;
+    if(typeof cur==='undefined' || !cur) return;
+    if(typeof collectForm==='function'){ try{ collectForm(); }catch(e){} }
+    var root=document.getElementById('browserPrintRoot');
+    if(!root) return;
+    root.innerHTML='<style>'+scopedReportCSS()+'</style>'+buildBrowserPrintReport(cur);
+    document.body.classList.add('bp-active');
+  }catch(err){ try{document.body.classList.remove('bp-active');}catch(e){} }
+});
+window.addEventListener('afterprint',function(){
+  try{ document.body.classList.remove('bp-active'); var root=document.getElementById('browserPrintRoot'); if(root) root.innerHTML=''; }catch(err){}
+});
 window.copyPrompt=copyPrompt; window.copyPromptAnon=copyPromptAnon; window.doCopy=doCopy; window.genPrompt=genPrompt; window.openCopilot=openCopilot; window.openOneDrive=openOneDrive; window.switchTabAndCopy=switchTabAndCopy;
 window.addFam=addFam; window.remFam=remFam;
 window.famOpenAdd=famOpenAdd; window.famOpenEdit=famOpenEdit; window.famClose=famClose; window.famSave=famSave; window.famDelete=famDelete;
@@ -6661,7 +6710,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       </div>
     </div>
   </header>
-    <div id="cardNav" style="display:none;align-items:center;justify-content:space-between;gap:8px;padding:7px 12px;background:#eef3fb;border-bottom:1px solid #d8e2f0">
+    <div id="cardNav" class="no-print" style="display:none;position:relative;z-index:1;align-items:center;justify-content:space-between;gap:8px;padding:7px 12px;background:#eef3fb;border-bottom:1px solid #d8e2f0">
       <button id="cardNavPrev" onclick="navCard(-1)" style="background:#fff;border:1px solid #b9cce8;color:#2c5282;border-radius:8px;font-size:13px;font-weight:700;padding:8px 18px;min-height:38px;cursor:pointer;font-family:inherit">‹ 前</button>
       <span id="cardNavPos" style="font-size:12px;font-weight:700;color:#5a6b85;white-space:nowrap">- / -</span>
       <button id="cardNavNext" onclick="navCard(1)" style="background:#fff;border:1px solid #b9cce8;color:#2c5282;border-radius:8px;font-size:13px;font-weight:700;padding:8px 18px;min-height:38px;cursor:pointer;font-family:inherit">次 ›</button>
@@ -8210,5 +8259,6 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   @media print{.zfa-overlay,.zfa-toast,.aibis-tip-ov{display:none!important}}
 </style>
 
+<div id="browserPrintRoot" class="no-print" style="display:none"></div>
 </body>
 </html>
