@@ -1419,7 +1419,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v4.99";
+var APP_VERSION = "v5.00";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -5290,7 +5290,7 @@ function renderAnalysis(){
  var host=document.getElementById('cmdCenter'); if(!host) return;
  var sel=document.getElementById('analysisMember');
  var members=[]; cards.forEach(function(c){var m=c.manager||'';if(m&&members.indexOf(m)<0)members.push(m);}); members.sort();
- if(sel){var cv=sel.value;sel.innerHTML='<option value="all">全担当（'+cards.length+'件）</option>';members.forEach(function(m){sel.innerHTML+='<option value="'+e(m)+'"'+(cv===m?' selected':'')+'>'+e(m)+'</option>';});}
+ if(sel){var cv=sel.value;sel.innerHTML='<option value="all">全担当（'+cards.length+'件）</option>';members.forEach(function(m){var mc=cards.filter(function(c){return (c.manager||'')===m;}).length;sel.innerHTML+='<option value="'+e(m)+'"'+(cv===m?' selected':'')+'>'+e(m)+'（'+mc+'件）</option>';});}
  var scope=(sel&&sel.value)||'all';
  var t=scope==='all'?cards:cards.filter(function(c){return (c.manager||'')===scope;});
  if(!t.length){host.innerHTML='<div class="zdash zdash-mgr"><div class="z-card"><div class="z-empty">対象データがありません</div></div></div>';return;}
