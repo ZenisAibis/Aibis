@@ -1386,7 +1386,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v4.59";
+var APP_VERSION = "v4.60";
 
 // ===== 状態 =====
 var cards = [];
@@ -1798,8 +1798,9 @@ function openAibisChat(){
   var modal=document.getElementById('aibisModal');
   if(!modal) return;
   modal.style.display='flex';
-  modal.style.alignItems='flex-end';
+  modal.style.alignItems='center';
   modal.style.justifyContent='center';
+  var _ap=document.getElementById('aibisPanel'); if(_ap) _ap.style.transform='';
   if(aibisChatLog.length===0){
     var g=AIBIS_GREETINGS[Math.floor(Math.random()*AIBIS_GREETINGS.length)];
     addAibisMsg('🧚',g);
@@ -6126,8 +6127,8 @@ function doClearAllCards(){
 function resetSmartphone(){
   if(cards.length===0){aibisAlert('もうリセット済みだよ。<br>PCから最新データを読み込んでね📥');return;}
   aibisAlert('スマホのデータをリセットするよ⚠<br><br>'
-    +'PCで削除したカードをスマホにも反映したいときなどに使うよ。<br><br>'
-    +'⚠ リセットすると現在のスマホのデータがすべて消えるよ！<br>'
+    +'PCで削除したカードをスマホにも<br>反映したいときなどに使うよ。<br><br>'
+    +'⚠ リセットすると現在のスマホの<br>データがすべて消えるよ！<br>'
     +'必ず先に「📧 PCへ」でバックアップを取ってね！<br><br>'
     +'バックアップは取った？<br><br>'
     +'<div style="display:flex;gap:8px;margin-top:8px">'
@@ -7414,8 +7415,9 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
 </div><!-- /editView -->
 </div><!-- /container -->
 <!-- アイビスチャット -->
-<div id="aibisModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:2147483647;align-items:flex-end;justify-content:center">
-  <div style="background:white;border-radius:16px 16px 0 0;width:100%;max-width:500px;max-height:85vh;display:flex;flex-direction:column">
+<div id="aibisModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:2147483647;align-items:center;justify-content:center" onclick="aibisOverlayClick(event)">
+  <div id="aibisPanel" style="background:white;border-radius:16px;width:100%;max-width:500px;max-height:85vh;display:flex;flex-direction:column;will-change:transform;box-shadow:0 24px 60px -12px rgba(15,23,42,0.5)">
+    <div id="aibisGrip" style="padding:9px 0 5px;display:flex;justify-content:center;cursor:grab;touch-action:none;flex:none" title="長押しで移動"><div style="width:42px;height:5px;border-radius:3px;background:#cbd5e0"></div></div>
     <div style="padding:14px 16px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between">
       <div style="display:flex;align-items:center;gap:8px">
         <span style="font-size:24px">🧚</span>
@@ -7435,6 +7437,22 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
     </div>
   </div>
 </div>
+<script>
+/* アイビスQ&Aパネル：グリップ長押しドラッグ移動／外側タップで閉じる */
+(function(){
+  var grip=document.getElementById('aibisGrip');
+  var panel=document.getElementById('aibisPanel');
+  if(!grip||!panel) return;
+  var dragging=false, suppress=false, sx=0, sy=0, ox=0, oy=0, cx=0, cy=0;
+  function pt(e){ return e.touches&&e.touches[0]?e.touches[0]:e; }
+  function down(e){ dragging=true; grip.style.cursor='grabbing'; var p=pt(e); sx=p.clientX; sy=p.clientY; ox=cx; oy=cy; if(e.cancelable)e.preventDefault(); }
+  function move(e){ if(!dragging) return; var p=pt(e); cx=ox+(p.clientX-sx); cy=oy+(p.clientY-sy); panel.style.transform='translate('+cx+'px,'+cy+'px)'; if(e.cancelable)e.preventDefault(); }
+  function up(){ if(!dragging) return; dragging=false; grip.style.cursor='grab'; suppress=true; setTimeout(function(){ suppress=false; },150); }
+  grip.addEventListener('mousedown',down); document.addEventListener('mousemove',move); document.addEventListener('mouseup',up);
+  grip.addEventListener('touchstart',down,{passive:false}); document.addEventListener('touchmove',move,{passive:false}); document.addEventListener('touchend',up);
+  window.aibisOverlayClick=function(ev){ if(suppress||dragging) return; if(ev.target&&ev.target.id==='aibisModal'&&window.closeAibisModal) window.closeAibisModal(); };
+})();
+</script>
 <div class="mo" id="printModal">
   <div class="md" style="max-width:380px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
@@ -8142,9 +8160,9 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   .zfa-s1{top:-1px;left:-1px;font-size:13px;animation:abSpark 1.4s ease-in-out infinite}
   .zfa-s2{bottom:0;right:-1px;font-size:11px;animation:abSpark 1.4s ease-in-out infinite .5s}
   .zfa-name{font-size:11px;font-weight:800;letter-spacing:.1em;color:#2c5282;margin-bottom:8px}
-  .zfa-msg{font-size:14px;color:#2d3748;font-weight:500;line-height:1.7;margin-bottom:18px}
+  .zfa-msg{font-size:14px;color:#2d3748;font-weight:500;line-height:1.7;margin-bottom:18px;text-wrap:balance;line-break:strict;word-break:normal}
   .zfa-ok{width:100%;padding:11px;border:none;border-radius:10px;background:#1a365d;color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer}
-  .zfa-toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(16px);z-index:2147483646;
+  .zfa-toast{position:fixed;left:50%;bottom:22%;transform:translateX(-50%) translateY(16px);z-index:2147483646;
     display:flex;align-items:center;gap:6px;opacity:0;transition:opacity .3s,transform .3s;max-width:90vw;pointer-events:none}
   .zfa-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   .zfa-fairy-sm{width:42px;height:42px}
