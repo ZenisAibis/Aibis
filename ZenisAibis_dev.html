@@ -482,7 +482,8 @@ body.is-mob .mob-menu{display:inline-block}
 .zdash *{box-sizing:border-box}
 .zdash h2,.zdash h3,.zdash p{margin:0}
 .zdash .z-num{font-family:'Sora','Zen Kaku Gothic New',sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.4px}
-.zdash .z-card{background:var(--z-panel);border:1px solid var(--z-line);border-radius:16px;padding:16px;position:relative;overflow:hidden;margin-bottom:14px;animation:zpop .5s ease both}
+.zdash .z-card{background:var(--z-panel);border:1px solid var(--z-line);border-radius:18px;padding:17px;position:relative;overflow:hidden;margin-bottom:14px;box-shadow:0 2px 16px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.06);animation:zpop .5s ease both}
+.zdash .z-kpi .z-kval{text-shadow:0 0 18px rgba(255,255,255,.10)}
 @keyframes zpop{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 .zdash h3{font-size:13px;font-weight:700;color:var(--z-ink);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .zdash .z-sub{font-size:10.5px;color:var(--z-dim);margin:3px 0 12px}
@@ -1098,17 +1099,23 @@ body.is-mob .mob-menu{display:inline-block}
     <div class="msec mgr-only">
       <div class="mttl" onclick="mtoggle(this)">📊 課分析ダッシュボード（管理職） <span class="marr">▶</span></div>
       <div class="mbdy" style="display:none">
-        管理職かつPC版でのみ表示される「コマンドセンター」です。<br><br>
-        <b style="color:#2c5282">主な機能</b><br>
-        ・KPIスコアカード … 新規発掘の月次トレンド／課スコア平均／連想以上率／ペース遅れ<br>
-        ・🟢 稼働率モニター … 基準（発掘2件/日・提案依頼1件/月・再訪J3件/週・追客J2件/月）に対する達成率で担当を順位付け。今月／先月比較／3ヶ月／6ヶ月で切替<br>
-        ・💼 契約クローズ・トラッカー … 契約に近い案件を近接度（ステージ×ランク×ペース）順に表示。今フォローすべき的が一目<br>
-        ・🔻 購買心理ファネル（転換率つき）<br>
-        ・🏆 担当別スコア（平均順）<br>
-        ・⚠ 要フォロー（最優先）… 至急動くべき高価値の客を自動抽出（ペース遅れ／未接触／連続留守）<br>
-        ・🧠 傾向と対策 … データから打ち手を自動抽出（AIインサイト）<br>
+        管理職かつPC版でのみ表示される育成型「コマンドセンター」です。「今日、誰に何をするか」と「担当をどう伸ばすか」を上段に集約しています。<br><br>
+        <b style="color:#2c5282">① 今日動く（上段）</b><br>
+        ・📌 今日の一手 … 今日フォローすべき上位案件を、誰に・何を・次に聞く質問つきで自動抽出<br>
+        ・🎯 次の一手 準備度 … 次回アポ・家族・KP・提案依頼・連想到達から各案件の準備度を算出。準備OK／要準備／未設定で色分けし、放置しかけの有望案件を表示<br>
+        ・🪜 見込み進捗（3ゾーン）… 未成熟／提案前／クロージングのどこで詰まっているかを可視化<br>
+        ・💼 契約クローズ・トラッカー … 契約に近い案件を近接度順に<br><br>
+        <b style="color:#276749">② 担当を育てる</b><br>
+        ・🎓 課長コーチング … 担当ごとに「良い点＋今週の声掛け」を要フォロー順に提示<br>
+        ・🌱 育成クエスト … 担当の弱点を「次の課題」に変換。今月の成長と次のクエストを表示<br>
+        ・🏆 担当別スコア／担当の特性<br><br>
+        <b style="color:#553c9a">③ 状況を読む</b><br>
+        ・重要3指標（提案依頼・同行・家族構成）・購買心理プロセス<br>
+        ・🟢 稼働率モニター … 基準達成率で担当を順位付け（今月／先月／3・6ヶ月）<br>
+        ・エリア分析・多角分析・🧠 傾向と対策（AIインサイト）<br><br>
+        <b style="color:#2c5282">使い方</b><br>
         ・担当者セレクトで個人・全体を切替<br>
-        ・「🤖 分析用に抽出」→「🤖 AI分析」でCopilotに課分析を依頼／AI結果の貼り付け欄あり<br>
+        ・「🤖 分析用に抽出」→「🤖 AI分析」でCopilot等に依頼（出力は次回アクション中心の指示形式）／AI結果の貼り付け欄あり<br>
         ・🖨 レポート印刷 → 表紙＋目次＋ガジェット＋AI分析を1冊のA4レポートに（AI分析を貼り付けると出力可）
       </div>
     </div>
@@ -1406,7 +1413,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v4.93";
+var APP_VERSION = "v4.95";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -1815,7 +1822,7 @@ var AIBIS_FAQ=[
   {q:'駅徒歩フラグって何？',a:'計画地の最寄り駅からの徒歩区分だよ🚉 計画地の「🚉最寄り駅 徒歩」ボタンをタップで 未確認→〜10分→〜20分→21分以上 と切り替わるよ（同行ボタンと同じ要領）。〜10分は加点(+3)、21分以上は減点(-3)＆赤フラグ（一覧・課分析にも表示）。分数は地図で一度確認して印を付けるだけでOK😊'},
   {q:'現在地ボタンって何？',a:'初訪タブの住所欄の下にある📍現在地取得ボタン！GPSで現在地を取得して住所をクリップボードにコピーするよ。訪問先でそのまま貼り付けて使えるね😊'},
   {q:'家族構成ってどう入れるの？',a:'初訪タブの「家族構成」セクションから入力できるよ！<br><br>＋ボタンで追加→続柄・氏名・年齢・居住形態を入力<br>★所有者 / KP（キーパーソン）/ 面談済 も記録できるよ<br>スタンス（ポジティブ/ネガティブ）も記録して戦略に活かしてね！<br>👶 子世代・兄弟姉妹は婚姻状況と子の人数も記録できるよ（相続人の把握に役立つ）。'},
-  {q:'課分析ダッシュボードって何？',a:function(){ return isMgrUnlocked()?'管理職のPC版でのみ使える「コマンドセンター」だよ📊<br><br>・KPIスコアカード（新規発掘の月次トレンド／課スコア平均／連想以上率／ペース遅れ）<br>・🟢 稼働率モニター（基準達成度で担当を順位付け／今月・先月比較・3/6ヶ月）<br>・💼 契約クローズ・トラッカー（契約に近い案件＝今フォローすべき的を近接度順に）<br>・🔻 購買心理ファネル（転換率つき）<br>・🏆 担当別スコア<br>・⚠ 要フォロー（最優先）：至急動くべき高価値の客を自動抽出<br>・🧠 傾向と対策（AIインサイト）<br><br>担当者セレクトで個人・全体を切替。「🤖 分析用に抽出」→「🤖 AI分析」でCopilotに課分析も依頼できるよ。<br>「🖨 レポート印刷」を押すと、表紙＋目次＋ガジェット＋貼り付けたAI分析を1冊のA4レポートに出力（AI分析を貼り付けると有効）。':'それは課長・支店長向けの機能だよ😊 担当のみんなは「🔭 見込み分析」で自分の見込みをチェックしてね！'; }},
+  {q:'課分析ダッシュボードって何？',a:function(){ return isMgrUnlocked()?'管理職のPC版でのみ使える育成型「コマンドセンター」だよ📊 「今日動く」「担当を育てる」を上段にまとめてる。<br><br>・📌 今日の一手（誰に何を・次に聞く質問つき）<br>・🎯 次の一手 準備度（次回アポ・家族・KP・提案依頼から自動算出）<br>・🪜 見込み進捗3ゾーン<br>・💼 契約クローズ・トラッカー<br>・🎓 課長コーチング（良い点＋今週の声掛け）<br>・🌱 育成クエスト（弱点を次の課題に）<br>・🏆 担当別スコア／重要3指標／🟢 稼働率モニター<br>・🧠 傾向と対策（AIインサイト）<br><br>担当者セレクトで個人・全体を切替。「🤖 分析用に抽出」→「🤖 AI分析」でCopilotに分析依頼（次回アクション中心の指示が出るよ）。「🖨 レポート印刷」で表紙＋目次＋ガジェット＋AI分析を1冊のA4に。':'それは課長・支店長向けの機能だよ😊 担当のみんなは「🔭 見込み分析」で自分の見込みをチェックしてね！'; }},
   {q:'見込み分析って何？',a:'自分の見込みを自分で研究する「グロースコンソール」だよ🔭<br><br>・連想到達率リング＋レベル表示で成長を実感<br>・🧭 スキルレーダー6軸（発掘量・グリップ深度・ヒアリング・連想到達・テスクロ・追客ペース）で自分の型と伸びしろが分かる<br>・🔻 マイ・パイプライン（転換率つき）<br>・🎯 今日の3手（今すぐ動くべきこと）<br>・🥊 壁打ちワーク（AI相手に1問だけ自問自答してスキルUP）<br><br>スマホでも見れるよ。PCなら「🤖 AI分析」「🖨 印刷」も使えるよ！'},
   {q:'タブにすぐ戻りたい',a:'PCはスクロールしてもタブ（初訪・再訪・追撃・戦略協議）が画面の一番上に残るから、いつでもワンタップで切り替えられるよ。スマホは画面の下にタブが固定されているよ😊'},
 
@@ -5550,6 +5557,8 @@ function copyAnalysisPrompt(){
   var avgRosen=rosen.length?Math.round(rosen.reduce(function(a,b){return a+b;},0)/rosen.length/1000)*1000:0;
 
   var prompt='';
+  var _pToday=new Date().toISOString().slice(0,10);
+    var outInstr='上記データを踏まえ、不動産・相続営業の課長が朝礼・個別面談でそのまま使える具体的な指示を作ってください。抽象論や「頑張りましょう」は禁止。各案件で「次に聞く質問」と「取るべき約束」まで明記。家族構成・相続不安・土地活用・提案依頼・決裁者・同行を重視。\n\n【出力形式】\n1. 総評：現在の見込み状況／ボトルネック／今週の重点テーマ\n2. 最優先で動くべき見込み客トップ5：顧客名／担当／ステージ／追客ランク／動くべき理由／次回アクション／次回訪問で聞く質問／目標とする一言（取る約束）\n3. 次回アクションが曖昧な案件：顧客名／何が曖昧か／どう書き換えるべきか（具体的な文例）\n4. 放置リスクのある案件：顧客名／最終接触からの日数／リスク理由／再接触の口実\n5. 担当者へのコーチング：担当者名／良い点／改善点／今週の一言指示\n6. 明日からの行動指示トップ3：誰が・誰に・何を聞き・何の約束を取るか\n';
 
   if(isMember){
     // 担当者個別フィードバック
@@ -5570,20 +5579,11 @@ function copyAnalysisPrompt(){
     if(avgRosen) prompt+='  路線価平均：約'+(avgRosen/10000).toFixed(1)+'万円/㎡\n';
     prompt+='\n■ スコア上位5件\n';
     scored.slice(0,5).forEach(function(c,i){
-      prompt+='  '+(i+1)+'位 '+e(c.name||'氏名不明')+' ／ステージ:'+(c.stage||0)+'／追客:'+(c.pursuit_judge||'未')+'／スコア:'+c._score+'点\n';
+      prompt+='  '+(i+1)+'位 '+e(c.name||'氏名不明')+'｜'+stageNames[+(c.stage||0)]+'｜追客'+(c.pursuit_judge||'未')+'｜最終接触'+lastContactDays(c)+'日｜アポ'+(_zAppoDates(c).some(function(d){return d>=_pToday;})?'有':'無')+'｜提案依頼'+(c.proposal_req?'○':'✕')+'｜家族'+(c.family_headcount?'○':'✕')+'｜KP'+((c.family||[]).some(function(x){return x.met&&(x.owner||x.kp);})?'○':'✕')+'｜スコア'+c._score+'\n';
     });
     prompt+='\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
     prompt+='上記のデータを踏まえて、'+memberName+'さんへのフィードバックを作成してください。\n\n';
-    prompt+='① 現在の活動状況の総評（強みと課題を率直に）\n';
-    prompt+='② 見込み客の「量」と「質」の評価\n';
-    prompt+='   ・案件数は十分か、スコアの高い有望案件を持てているか\n';
-    prompt+='   ・ステージ分布から、面識・注意どまりで連想に進められていない傾向はないか\n';
-    prompt+='③ 訪問ペースの評価\n';
-    prompt+='   ・ペース遅れ'+paceLate+'件をどう見るか。ランク上位なのに放置している案件はないか\n';
-    prompt+='④ ヒアリングの深さ（家族把握'+famComp+'/'+n+'件から、土地・家族の聞き取りが足りているか）\n';
-    prompt+='⑤ この担当者が「今やるべき行動」トップ3（具体的に）\n';
-    prompt+='⑥ 仕事への向き合い方へのアドバイス（成長のために）\n';
-    prompt+='⑦ 担当者を勇気づけるメッセージ\n';
+    prompt+=outInstr;
   } else {
     // 課全体分析
     var members=[]; cards.forEach(function(c){ var m=c.manager||''; if(m&&members.indexOf(m)<0) members.push(m); }); members.sort();
@@ -5608,18 +5608,11 @@ function copyAnalysisPrompt(){
     });
     prompt+='\n■ スコア上位10件\n';
     scored.slice(0,10).forEach(function(c,i){
-      prompt+='  '+(i+1)+'位 '+e(c.name||'氏名不明')+' ['+e(c.manager||'')+'] ステージ:'+(c.stage||0)+'／追客:'+(c.pursuit_judge||'未')+'／スコア:'+c._score+'点\n';
+      prompt+='  '+(i+1)+'位 '+e(c.name||'氏名不明')+' ['+e(c.manager||'')+']｜'+stageNames[+(c.stage||0)]+'｜追客'+(c.pursuit_judge||'未')+'｜最終接触'+lastContactDays(c)+'日｜アポ'+(_zAppoDates(c).some(function(d){return d>=_pToday;})?'有':'無')+'｜提案依頼'+(c.proposal_req?'○':'✕')+'｜家族'+(c.family_headcount?'○':'✕')+'｜スコア'+c._score+'\n';
     });
     prompt+='\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
     prompt+='上記のデータを踏まえて、課長視点で以下を分析してください：\n\n';
-    prompt+='① 課全体の見込み状況の総評（健全か、偏りはないか）\n';
-    prompt+='② 課の強み・弱み（ステージ分布・追客ランク・案件の質から）\n';
-    prompt+='   ・どの段階で詰まっているか（面識・注意どまりが多くないか）\n';
-    prompt+='   ・上位ランク（S/A）が育っているか\n';
-    prompt+='③ 今、課として強化すべきポイント（最重要3つ）\n';
-    prompt+='④ 担当者間のばらつきと、底上げのための施策\n';
-    prompt+='⑤ ペース遅れ'+paceLate+'件の課全体への影響と対策\n';
-    prompt+='⑥ 課の今後の方向性（短期で何に集中すべきか）\n';
+    prompt+=outInstr;
   }
 
   navigator.clipboard.writeText(prompt).then(function(){
