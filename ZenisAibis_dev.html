@@ -808,6 +808,11 @@ body.is-mob .mob-menu{display:inline-block}
             <button onclick="closeMobMenu();showSetup()">⚙ 初期設定</button>
             <button onclick="closeMobMenu();setTimeout(function(){showHelp();},50)">📖 マニュアル</button>
             <button onclick="closeMobMenu();openBook()">📕 みんなへ</button>
+            <div id="mobMgrPrint" style="display:none">
+            <div style="height:1px;background:#e2e8f0;margin:4px 0"></div>
+            <button onclick="closeMobMenu();openListPrintMenu()">📋 リスト印刷</button>
+            <button onclick="closeMobMenu();printSelected()">🗂 個別カード印刷</button>
+            </div>
             <div style="height:1px;background:#e2e8f0;margin:4px 0"></div>
             <button onclick="closeMobMenu();resetSmartphone()" style="color:#c53030;font-size:11px">🗑 スマホをリセット</button>
             <div style="padding:8px 14px;font-size:11px;color:#a0aec0;text-align:right;border-top:1px solid #f0f2f5" id="mobVersion"></div>
@@ -1429,7 +1434,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.09";
+var APP_VERSION = "v5.10";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -2486,7 +2491,9 @@ function applyRoleUI(){
   if(isManager) renderAnalysis();
   // カードの印刷ボタンはPC版のみ
   var cp=document.getElementById('cardPrintBtn');
-  if(cp) cp.style.display=isMob?'none':'block';
+  if(cp) cp.style.display=(isMob && !isMgrUnlocked())?'none':'block';
+  var mmp=document.getElementById('mobMgrPrint');
+  if(mmp) mmp.style.display=(isMob && isMgrUnlocked())?'block':'none';
 }
 async function sha256hex(s){ var buf=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return Array.prototype.map.call(new Uint8Array(buf),function(b){return ('0'+b.toString(16)).slice(-2);}).join(''); }
 function isMgrUnlocked(){ return (userRole==='支店長'||userRole==='課長') && localStorage.getItem(MGR_UNLOCK_KEY)===MGR_HASH; }
@@ -6521,7 +6528,7 @@ function getCurrentAddress(){
 window.getCurrentAddress=getCurrentAddress;
 window.openPrintModal=openPrintModal; window.closePrintModal=closePrintModal; window.execPrint=execPrint;
 function printSelected(){
-  if(!hasFSA){ aibisAlert('印刷はPC版（Chrome）でのみ使えるよ！'); return; }
+  if(!hasFSA && !(isMob && isMgrUnlocked())){ aibisAlert('印刷はPC版（Chrome）でのみ使えるよ！'); return; }
   if(cards.length===0){ aibisAlert('まだカードがないよ！<br>「＋ 新規」からカードを作ってね😊'); return; }
   var ids=Object.keys(selectedIds);
   if(ids.length===0){ aibisAlert('印刷したいカードにチェックを入れてね☑'); return; }
