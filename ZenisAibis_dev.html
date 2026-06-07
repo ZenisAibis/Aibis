@@ -1434,7 +1434,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.10";
+var APP_VERSION = "v5.13";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -3248,6 +3248,7 @@ function navCard(dir){
   if(idx<0) return;
   var ni=idx+dir; if(ni<0||ni>=lastVisible.length) return;
   if(typeof autoCommitEdit==='function') autoCommitEdit();
+  _navReplaceNext=true;
   openCard(lastVisible[ni].id);
 }
 function updateCardNav(){
@@ -4401,7 +4402,7 @@ function buildInitVisitHTML(c){
     var genLabel=['祖父母','世帯主世代','子世代'];
     html+='<div class="sec purple"><div class="stitle">👨‍👩‍👧‍👦 家族構成</div>';
     [0,1,2].forEach(function(gen){
-      var members=family.filter(function(m){return +m.gen===gen;});
+      var members=family.filter(function(m){return m.role&&famGetGen(m.role||"")===gen;});
       if(!members.length) return;
       html+='<div style="display:flex;align-items:center;gap:2mm;margin-bottom:1.5mm"><span style="font-size:7.5pt;color:#718096;min-width:14mm">'+genLabel[gen]+'</span>';
       members.forEach(function(m){
@@ -4510,7 +4511,7 @@ function buildFamilyHTML(c){
   var genLabel=['祖父母世代','世帯主世代','子世代'];
   // stance: positive/negative/unknown
   [0,1,2].forEach(function(gen){
-    var members=fam.filter(function(m){return +m.gen===gen;});
+    var members=fam.filter(function(m){return m.role&&famGetGen(m.role||"")===gen;});
     if(!members.length) return;
     html+='<div class="sec"><div class="stitle">'+genLabel[gen]+'</div>'
       +'<div style="display:flex;flex-wrap:wrap;gap:4mm">';
@@ -4548,7 +4549,7 @@ function buildStrategyHTML(c){
     var val=c['ai_'+key]||'';
     if(!val) return;
     hasContent=true;
-    html+='<div class="sec" style="margin-bottom:3mm">'
+    html+='<div class="sec" style="margin-bottom:3mm;page-break-inside:auto;break-inside:auto">'
       +'<div class="stitle">'+THEMES[key]+'</div>'
       +'<div style="font-size:8.5pt;white-space:pre-wrap;line-height:1.7">'+e(val)+'</div>'
       +'</div>';
@@ -4787,7 +4788,7 @@ function genPrompt(anon){
     lines.push('■ 家族構成詳細');
     var genLabel=['祖父母世代','世帯主世代','子世代'];
     [0,1,2].forEach(function(gen){
-      var members=fam.filter(function(m){return +m.gen===gen;});
+      var members=fam.filter(function(m){return m.role&&famGetGen(m.role||"")===gen;});
       if(!members.length) return;
       members.forEach(function(m){
         var tags=[];
@@ -5908,7 +5909,8 @@ function closePlanner(){
 
 /* ===== ブラウザ履歴ナビゲーション ===== */
 var _silent=false;
-function _navGo(zv,id){ if(_silent) return; try{ history.pushState({zv:zv,id:id||null},''); }catch(e){} }
+var _navReplaceNext=false;
+function _navGo(zv,id){ if(_silent) return; try{ if(_navReplaceNext){ _navReplaceNext=false; history.replaceState({zv:zv,id:id||null},''); } else { history.pushState({zv:zv,id:id||null},''); } }catch(e){} }
 function _navToList(){
   ['editView','plannerView','helpView','setupView'].forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display='none'; });
   var lv=document.getElementById('listView'); if(lv) lv.style.display=(hasFSA&&!isMob)?'flex':'block';
@@ -6560,7 +6562,7 @@ function scopedReportCSS(){
     sel=sel.trim();
     if(sel.charAt(0)==='@') return sel+'{'+decls+'}';
     var d=decls.split(';').map(function(x){x=x.trim();if(!x)return '';return x.indexOf('!important')>=0?x:x+' !important';}).filter(Boolean).join(';');
-    var s2=sel.split(',').map(function(pp){return '#browserPrintRoot '+pp.trim();}).join(',');
+    var s2=sel.split(',').map(function(pp){pp=pp.trim();return pp==='body'?'#browserPrintRoot':('#browserPrintRoot '+pp);}).join(',');
     return s2+'{'+d+'}';
   });
   return out+'#browserPrintRoot .prhdr-left,#browserPrintRoot .prhdr-right{color:#fff !important}';
