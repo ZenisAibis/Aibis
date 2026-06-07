@@ -501,6 +501,11 @@ body.is-mob .mob-menu{display:inline-block}
 .zdash .z-ring-in small{font-size:14px}
 .zdash .z-ring-in span{font-size:9px;color:var(--z-mut);letter-spacing:1px}
 .zdash .z-lv{font-family:'Sora',sans-serif;font-size:11px;font-weight:700;color:var(--z-cyan);letter-spacing:2px}
+.zdash .z-xp{margin-top:12px}
+.zdash .z-xpl{display:flex;justify-content:space-between;font-size:10.5px;color:var(--z-mut);margin-bottom:4px}
+.zdash .z-xpl b{font-family:'Sora',sans-serif;color:var(--z-cyan)}
+.zdash .z-xptrack{height:9px;border-radius:6px;background:rgba(255,255,255,.09);overflow:hidden}
+.zdash .z-xptrack i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--z-cyan),var(--z-lime));transition:width 1s}
 .zdash .z-hmeta h2{font-size:20px;font-weight:900;margin:3px 0 9px}
 .zdash .z-chips{display:flex;gap:8px;flex-wrap:wrap}
 .zdash .z-chip{font-size:11px;font-weight:700;padding:6px 11px;border-radius:10px;background:var(--z-panel2);border:1px solid var(--z-line)}
@@ -686,6 +691,11 @@ body.is-mob .mob-menu{display:inline-block}
 .zdash .z-k3card{position:relative}
 .zdash .z-k3card::after{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--mc);border-radius:16px 0 0 16px;opacity:.9}
 .zdash .z-k3card .z-kval{font-size:34px}
+.zdash .z-khint{font-size:10px;line-height:1.5;margin-top:8px;padding-top:8px;border-top:1px dashed var(--z-line);display:flex;gap:5px;align-items:flex-start}
+.zdash .z-khint .ic{flex-shrink:0}
+.zdash .z-khint.up{color:var(--z-lime)}
+.zdash .z-khint.warn{color:var(--z-amber)}
+.zdash .z-khint.mut{color:var(--z-mut)}
 .zdash .z-ksub{font-size:10px;color:var(--z-dim)}
 
 </style>
@@ -880,6 +890,7 @@ body.is-mob .mob-menu{display:inline-block}
           </div>
         </div>
         <div id="cmdCenter"></div>
+        <div id="devSelfMirrorWrap" style="display:none;margin-top:18px"><div style="background:#fde68a;color:#7c2d12;font-size:12px;font-weight:700;padding:8px 12px;border-radius:8px;margin-bottom:10px">🛠 開発確認用：担当ダッシュボード（本番では非表示）</div><div id="devSelfMirror"></div></div>
       </div>
     </div>
   </div>
@@ -1083,7 +1094,7 @@ body.is-mob .mob-menu{display:inline-block}
         ・🟢 稼働率モニター … 基準（発掘2件/日・提案依頼1件/月・再訪J3件/週・追客J2件/月）に対する達成率で担当を順位付け。今月／先月比較／3ヶ月／6ヶ月で切替<br>
         ・💼 契約クローズ・トラッカー … 契約に近い案件を近接度（ステージ×ランク×ペース）順に表示。今フォローすべき的が一目<br>
         ・🔻 購買心理ファネル（転換率つき）<br>
-        ・🏆 担当リーダーボード（平均スコア順）<br>
+        ・🏆 担当別スコア（平均順）<br>
         ・🌡 チーム・ヒートマップ … 担当×指標を色分け（赤が要フォロー）<br>
         ・⚠ 要フォロー（最優先）… 至急動くべき高価値の客を自動抽出（ペース遅れ／未接触／連続留守）<br>
         ・🧠 傾向と対策 … データから打ち手を自動抽出（AIインサイト）<br>
@@ -1386,7 +1397,8 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v4.60";
+var APP_VERSION = "v4.68";
+window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
 var cards = [];
@@ -1752,7 +1764,7 @@ var AIBIS_FAQ=[
   {q:'駅徒歩フラグって何？',a:'計画地の最寄り駅からの徒歩区分だよ🚉 計画地の「🚉最寄り駅 徒歩」ボタンをタップで 未確認→〜10分→〜20分→21分以上 と切り替わるよ（同行ボタンと同じ要領）。〜10分は加点(+3)、21分以上は減点(-3)＆赤フラグ（一覧・課分析にも表示）。分数は地図で一度確認して印を付けるだけでOK😊'},
   {q:'現在地ボタンって何？',a:'初訪タブの住所欄の下にある📍現在地取得ボタン！GPSで現在地を取得して住所をクリップボードにコピーするよ。訪問先でそのまま貼り付けて使えるね😊'},
   {q:'家族構成ってどう入れるの？',a:'初訪タブの「家族構成」セクションから入力できるよ！<br><br>＋ボタンで追加→続柄・氏名・年齢・居住形態を入力<br>★所有者 / KP（キーパーソン）/ 面談済 も記録できるよ<br>スタンス（ポジティブ/ネガティブ）も記録して戦略に活かしてね！<br>👶 子世代・兄弟姉妹は婚姻状況と子の人数も記録できるよ（相続人の把握に役立つ）。'},
-  {q:'課分析ダッシュボードって何？',a:function(){ return isMgrUnlocked()?'管理職のPC版でのみ使える「コマンドセンター」だよ📊<br><br>・KPIスコアカード（新規発掘の月次トレンド／課スコア平均／連想以上率／ペース遅れ）<br>・🟢 稼働率モニター（基準達成度で担当を順位付け／今月・先月比較・3/6ヶ月）<br>・💼 契約クローズ・トラッカー（契約に近い案件＝今フォローすべき的を近接度順に）<br>・🔻 購買心理ファネル（転換率つき）<br>・🏆 担当リーダーボード<br>・🌡 チーム・ヒートマップ（担当×指標、赤が要フォロー）<br>・⚠ 要フォロー（最優先）：至急動くべき高価値の客を自動抽出<br>・🧠 傾向と対策（AIインサイト）<br><br>担当者セレクトで個人・全体を切替。「🤖 分析用に抽出」→「🤖 AI分析」でCopilotに課分析も依頼できるよ。<br>「🖨 レポート印刷」を押すと、表紙＋目次＋ガジェット＋貼り付けたAI分析を1冊のA4レポートに出力（AI分析を貼り付けると有効）。':'それは課長・支店長向けの機能だよ😊 担当のみんなは「🔭 見込み分析」で自分の見込みをチェックしてね！'; }},
+  {q:'課分析ダッシュボードって何？',a:function(){ return isMgrUnlocked()?'管理職のPC版でのみ使える「コマンドセンター」だよ📊<br><br>・KPIスコアカード（新規発掘の月次トレンド／課スコア平均／連想以上率／ペース遅れ）<br>・🟢 稼働率モニター（基準達成度で担当を順位付け／今月・先月比較・3/6ヶ月）<br>・💼 契約クローズ・トラッカー（契約に近い案件＝今フォローすべき的を近接度順に）<br>・🔻 購買心理ファネル（転換率つき）<br>・🏆 担当別スコア<br>・🌡 チーム・ヒートマップ（担当×指標、赤が要フォロー）<br>・⚠ 要フォロー（最優先）：至急動くべき高価値の客を自動抽出<br>・🧠 傾向と対策（AIインサイト）<br><br>担当者セレクトで個人・全体を切替。「🤖 分析用に抽出」→「🤖 AI分析」でCopilotに課分析も依頼できるよ。<br>「🖨 レポート印刷」を押すと、表紙＋目次＋ガジェット＋貼り付けたAI分析を1冊のA4レポートに出力（AI分析を貼り付けると有効）。':'それは課長・支店長向けの機能だよ😊 担当のみんなは「🔭 見込み分析」で自分の見込みをチェックしてね！'; }},
   {q:'見込み分析って何？',a:'自分の見込みを自分で研究する「グロースコンソール」だよ🔭<br><br>・連想到達率リング＋レベル表示で成長を実感<br>・🧭 スキルレーダー6軸（発掘量・グリップ深度・ヒアリング・連想到達・テスクロ・追客ペース）で自分の型と伸びしろが分かる<br>・🔻 マイ・パイプライン（転換率つき）<br>・🎯 今日の3手（今すぐ動くべきこと）<br>・🥊 壁打ちワーク（AI相手に1問だけ自問自答してスキルUP）<br><br>スマホでも見れるよ。PCなら「🤖 AI分析」「🖨 印刷」も使えるよ！'},
   {q:'タブにすぐ戻りたい',a:'PCはスクロールしてもタブ（初訪・再訪・追撃・戦略協議）が画面の一番上に残るから、いつでもワンタップで切り替えられるよ。スマホは画面の下にタブが固定されているよ😊'},
 
@@ -1786,13 +1798,13 @@ function getAibisQuick(){
 var aibisChatLog=[];
 
 var AIBIS_GREETINGS=[
-  '何でも聞いてね！一緒に解決しよう🧚<br>よく聞かれる質問は下のボタンからどうぞ。',
-  'やっほー！アイビスだよ🧚<br>困ったことがあったら何でも聞いてね。下のボタンも便利だよ！',
-  'お疲れさま！今日もいい追客にしよう🧚<br>分からないことは下のボタンか、直接聞いてね。',
-  'アイビス、参上！🧚<br>操作のこと・営業のこと、何でも相談にのるよ。',
-  'こんにちは！困りごとはあるかな？🧚<br>下のボタンからよく聞かれる質問が見れるよ。',
-  '呼んでくれてありがとう🧚<br>一緒に今日のお客様、攻略していこう！',
-  'いつでも頼ってね🧚<br>使い方も営業のコツも、聞いてくれたら答えるよ！'
+  'なんでも聞いてね🧚 下のボタンも便利だよ！',
+  'やっほー、アイビスだよ🧚 困ったら聞いてね！',
+  'お疲れさま🧚 今日もいい追客しよ！',
+  'アイビス参上🧚 営業も操作も相談のるよ！',
+  'こんにちは🧚 困りごとある？下のボタンもどうぞ！',
+  '呼んでくれてありがと🧚 今日も一緒に攻略しよ！',
+  'いつでも頼ってね🧚 なんでも答えるよ！'
 ];
 function openAibisChat(){
   var modal=document.getElementById('aibisModal');
@@ -1816,7 +1828,7 @@ function addAibisMsg(role,text){
   var isAibis=role==='🧚';
   var div=document.createElement('div');
   div.style.cssText='display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;'+(isAibis?'':'flex-direction:row-reverse');
-  div.innerHTML=(isAibis?'<span style="font-size:20px;flex-shrink:0">🧚</span>':'')+
+  div.innerHTML=(isAibis?'<div class="zfa-fairy zfa-fairy-xs" style="flex-shrink:0;margin-top:2px"><span class="zfa-spark zfa-s1">✨</span><span class="zfa-face">🧚</span><span class="zfa-spark zfa-s2">✨</span></div>':'')+
     '<div style="max-width:80%;padding:10px 14px;border-radius:'+(isAibis?'4px 16px 16px 16px':'16px 4px 16px 16px')+';background:'+(isAibis?'#fffbeb':'#2c5282')+';color:'+(isAibis?'#92400e':'white')+';font-size:13px;line-height:1.6;box-shadow:0 1px 4px rgba(0,0,0,0.1)">'+text+'</div>';
   log.appendChild(div);
   log.scrollTop=log.scrollHeight;
@@ -2504,7 +2516,7 @@ function _radarHero(name,axes,color,rank){
  var lv=ty.avg, lo=ty.stage===1?0:ty.stage===2?40:70, hi=ty.stage===1?40:ty.stage===2?70:100;
  var prog=Math.max(4,Math.min(100,(lv-lo)/(hi-lo)*100));
  return '<div class="z-hero2" data-stg="'+ty.stage+'" style="--ac:'+color+';--stg:'+ty.color+'">'
-  +'<div class="z-h2-top"><span class="z-h2-rank">'+medal+'</span><span class="z-h2-lv">POWER<b>'+lv+'</b></span></div>'
+  +'<div class="z-h2-top"><span class="z-h2-rank">'+medal+'</span><span class="z-h2-lv">スコア<b>'+lv+'</b></span></div>'
   +'<div class="z-h2-radar">'+_zRadarHero(axes,color)+'<div class="z-h2-emoji">'+ty.arche.e+'</div></div>'
   +'<div class="z-h2-name">'+e(name)+'</div>'
   +'<div class="z-h2-type">'+ty.label+'</div>'
@@ -2606,9 +2618,10 @@ function _ymOff(o){var d=new Date();d.setMonth(d.getMonth()-o);return d.getFullY
 function _halfRange(){var d=new Date(),y=d.getFullYear(),m=d.getMonth()+1; if(m>=4&&m<=9)return {s:y+'-04',e:y+'-09',label:'4-9月'}; if(m>=10)return {s:y+'-10',e:(y+1)+'-03',label:'10-3月'}; return {s:(y-1)+'-10',e:y+'-03',label:'10-3月'};}
 function _kpiCnt(arr,fn,ym){return arr.filter(function(c){var dd=fn(c);return dd&&String(dd).slice(0,7)===ym;}).length;}
 function _kpiHalf(arr,fn){var h=_halfRange();return arr.filter(function(c){var dd=fn(c);if(!dd)return false;var mk=String(dd).slice(0,7);return mk>=h.s&&mk<=h.e;}).length;}
-function _kpi3Cards(arr){var n0=_ymOff(0),p1=_ymOff(1),h=_halfRange();return _KPI3.map(function(k){var fn=k[2],col=k[1],lab=k[0];var now=_kpiCnt(arr,fn,n0),prev=_kpiCnt(arr,fn,p1),half=_kpiHalf(arr,fn),d=now-prev;var spark=_zMonthly(arr,fn).slice(6);return '<div class="z-card z-kpi z-c1 z-k3card" style="--mc:'+col+'"><span class="z-klab" style="color:'+col+'">'+lab+'</span>'+((now||prev)?'<span class="z-delta '+(d>=0?'up':'dn')+'">'+(d>=0?'\u25b2':'\u25bc')+' '+Math.abs(d)+'</span>':'')+'<div class="z-kval z-num" style="color:'+col+'">'+now+'<small>\u4ef6</small></div><div class="z-ksub">\u524d\u6708 '+prev+' \u30fb \u534a\u671f('+h.label+') <b style="color:'+col+'">'+half+'</b></div>'+_zSpark(spark,col)+'</div>';}).join('');}
+function _kpi3Cards(arr){var n0=_ymOff(0),p1=_ymOff(1),h=_halfRange();return _KPI3.map(function(k){var fn=k[2],col=k[1],lab=k[0];var now=_kpiCnt(arr,fn,n0),prev=_kpiCnt(arr,fn,p1),half=_kpiHalf(arr,fn),d=now-prev;var spark=_zMonthly(arr,fn).slice(6);return '<div class="z-card z-kpi z-c1 z-k3card" style="--mc:'+col+'"><span class="z-klab" style="color:'+col+'">'+lab+'</span>'+((now||prev)?'<span class="z-delta '+(d>=0?'up':'dn')+'">'+(d>=0?'\u25b2':'\u25bc')+' '+Math.abs(d)+'</span>':'')+'<div class="z-kval z-num" style="color:'+col+'">'+now+'<small>\u4ef6</small></div><div class="z-ksub">\u524d\u6708 '+prev+' \u30fb \u534a\u671f('+h.label+') <b style="color:'+col+'">'+half+'</b></div>'+_zSpark(spark,col)+_kpi3Hint(lab,now,prev,d)+'</div>';}).join('');}
 
 var _GENJO=[['P','P(駐車場)','#4aa8ff'],['老朽','老朽','#ff5d7d'],['店舗','店舗','#8b7cff'],['自宅','自宅','#34e3d0'],['雑種地','雑種地','#ffb443'],['都外','都外','#9be15d'],['','未設定','#6b7894']];
+function _kpi3Hint(lab,now,prev,d){var st=(now===0&&prev===0)?'none':(now===0)?'zero':(d>0)?'up':(d<0)?'down':'flat';var ic={up:'🔥',flat:'➡️',down:'⚠️',zero:'⏳',none:'🎯'}[st];var cls=(st==='up')?'up':(st==='down'||st==='zero')?'warn':'mut';var M={'提案依頼':{up:'連想到達のカードに続けてテスクロを',flat:'連想のカードにもう一押し',down:'連想カードのテスクロ機会を逃さず',zero:'連想到達のカードに提案依頼の一言を',none:'連想(3)まで来たカードにテスクロを'},'同行':{up:'山場のカードに同行で後押しを',flat:'決め所のカードに同行を1本',down:'ここぞのカードに同行依頼を',zero:'山場のカードに同行を1件',none:'同行は強い後押し。1件設定を'},'家族構成':{up:'相続人の数が提案の起点',flat:'次回訪問で1件深掘りを',down:'初回で家族構成を聞く習慣に',zero:'次の訪問で家族構成を1つ',none:'家族構成は提案の土台。まず1件'}};var t=(M[lab]||{})[st]||'';return t?'<div class="z-khint '+cls+'"><span class="ic">'+ic+'</span><span>'+t+'</span></div>':'';}
 function _genjoPie(arr){ var cnt={}; _GENJO.forEach(function(x){cnt[x[0]]=0;}); arr.forEach(function(c){var gj=(c.genjo||''); if(!(gj in cnt))gj=''; cnt[gj]++;}); var rows=_GENJO.filter(function(x){return cnt[x[0]]>0;}); var segs=rows.map(function(x){return {value:cnt[x[0]],color:x[2]};}); var tot=arr.length||1; var leg='<div style="display:flex;flex-direction:column;gap:3px;font-size:11px">'+rows.map(function(x){var v=cnt[x[0]];return '<div style="display:flex;align-items:center;gap:6px"><i style="width:9px;height:9px;border-radius:2px;background:'+x[2]+';flex-shrink:0;display:inline-block"></i><span style="color:var(--z-mut)">'+x[1]+'</span><b style="margin-left:auto;color:var(--z-ink)">'+v+'</b><span style="color:var(--z-dim);width:36px;text-align:right">'+Math.round(v/tot*100)+'%</span></div>';}).join('')+'</div>'; return '<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'+_zDonut(segs,arr.length,'件')+'<div style="flex:1;min-width:128px">'+leg+'</div></div>'; }
 function _ryokuchiRing(arr){ var own=arr.filter(function(c){return (parseFloat(c.ryokuchi)||0)>0;}).length; var tot=arr.length||1; var pct=Math.round(own/tot*100); var segs=[{value:own,color:'#2f9e44'},{value:tot-own,color:'rgba(130,150,180,.22)'}]; return '<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'+_zDonut(segs,pct+'%','生産緑地')+'<div style="flex:1;min-width:120px"><div style="font-size:13px;color:var(--z-ink);font-weight:700"><b style="font-size:24px;color:#2f9e44;font-family:Sora,sans-serif">'+own+'</b> / '+arr.length+' 人が保有</div><div class="z-sub" style="margin-top:4px">生産緑地（1枚以上）を持つ見込み客の割合。2022年問題・納税猶予の打ち手対象。</div></div></div>'; }
 
@@ -2634,8 +2647,8 @@ function _zBadges(){
  return res;
 }
 var _zAVAS=['#9be15d','#34e3d0','#4aa8ff','#8b7cff','#ffb443','#ff5d7d','#ff8ad1','#5ad1a0'];
-function renderSelfDash(){
- var host=document.getElementById('selfDashContent'); if(!host) return;
+function renderSelfDash(tid){
+ var host=document.getElementById(tid||'selfDashContent'); if(!host) return;
  var mine=cards.slice(), n=mine.length;
  if(!n){ host.innerHTML='<div class="zdash zdash-rep"><div class="z-empty">まだ見込みカードがありません</div></div>'; return; }
  var conn=mine.filter(function(c){return +(c.stage||0)>=3;}).length, adv=mine.filter(function(c){return +(c.stage||0)>=4;}).length;
@@ -2644,7 +2657,7 @@ function renderSelfDash(){
  var inputAvg=Math.round(mine.reduce(function(s,c){return s+(basicInputStat(c).pct||0);},0)/n);
  var avg=Math.round(mine.reduce(function(s,c){return s+calcScore(c);},0)/n*10)/10;
  var axes=[['発掘量',Math.min(Math.round(n/30*100),100),'#9be15d'],['グリップ',grip],['ヒアリング',inputAvg],['連想到達',renso],['テスクロ',_zPct(adv,conn)],['追客ペース',Math.max(0,100-_zPct(late,n))]];
- var lvl=avg>=22?['LV.9','MASTER']:avg>=18?['LV.7','HUNTER']:avg>=14?['LV.5','CHALLENGER']:avg>=10?['LV.3','ROOKIE']:['LV.1','STARTER'];
+ var lvl=avg>=22?['LV.5','EXPERT']:avg>=18?['LV.4','SENIOR']:avg>=14?['LV.3','STANDARD']:avg>=10?['LV.2','JUNIOR']:['LV.1','ROOKIE'];var _lvi=avg>=22?5:avg>=18?4:avg>=14?3:avg>=10?2:1;var _lvN=['ROOKIE','JUNIOR','STANDARD','SENIOR','EXPERT'];var _lvHi=[10,14,18,22,22][_lvi-1];var _lvLo=[0,10,14,18,22][_lvi-1];var _lvNext=_lvi<5?_lvN[_lvi]:null;var _lvProg=_lvi>=5?100:Math.max(0,Math.min(100,Math.round((avg-_lvLo)/(_lvHi-_lvLo)*100)));var _xpHtml='<div class="z-xp"><div class="z-xpl"><span>'+(_lvNext?'次の <b>'+_lvNext+'</b> まで':'最高段階に到達')+'</span>'+(_lvNext?'<span>平均 '+avg+' / '+_lvHi.toFixed(1)+'</span>':'')+'</div><div class="z-xptrack"><i style="width:'+_lvProg+'%"></i></div></div>';
  var leg=axes.map(function(a){return '<div><i style="background:'+(a[2]||'#34e3d0')+'"></i><b>'+a[1]+'</b> '+a[0]+'</div>';}).join('');
  var sc=[0,0,0,0,0,0,0,0];mine.forEach(function(c){var s=+(c.stage||0);if(s>=0&&s<=7)sc[s]++;});
  var mDisc=_zMonthly(mine,function(c){return c.discovery_date;}), mVis=_zMonthly(mine,_zVisitDates), mApo=_zMonthly(mine,_zAppoDates);
@@ -2656,7 +2669,7 @@ function renderSelfDash(){
  var q=[];if(lateL.length)q.push(['rgba(255,93,125,.16)','🚶',lateL.length+'件が21日以上ご無沙汰',e(lateL.slice(0,2).map(function(o){return (o.c.name||'無名')+'様';}).join('・'))+' から再訪アポを1本。']);if(c3.length)q.push(['rgba(255,180,67,.16)','🎯',c3.length+'件が連想到達','テストクロージングの好機。']);if(inc)q.push(['rgba(74,168,255,.16)','📋',inc+'件で家族未把握','次回で空欄を1つ埋めよう。']);if(ping&&q.length<3)q.push(['rgba(52,227,208,.16)','💬',ping+'件がピンポン止まり','一段深める一言を用意。']);if(!q.length)q.push(['rgba(155,225,93,.16)','🎉','大きな課題なし','今の良いペースを維持！']);
  var spar=(c3[0]||mine.filter(function(c){return +(c.stage||0)>=3&&c.name;})[0]||{}).name||'お客様';
  var H='<div class="zdash zdash-rep"><div class="z-bento">';
- H+='<div class="z-card z-hero z-cf"><div class="z-ring" style="--p:'+renso+'"><div class="z-ring-in"><b>'+renso+'<small>%</small></b><span>連想到達率</span></div></div><div class="z-hmeta"><div class="z-lv">'+lvl[0]+' ・ '+lvl[1]+'</div><h2>'+e(uName||'あなた')+'さんの GROWTH DASHBOARD</h2><div class="z-chips"><span class="z-chip">担当 <b>'+n+'</b>件</span><span class="z-chip">連想到達 <b>'+conn+'</b>件</span><span class="z-chip">入力充実 <b>'+inputAvg+'</b>%</span><span class="z-chip">平均 <b>'+avg+'</b></span></div></div></div>';
+ H+='<div class="z-card z-hero z-cf"><div class="z-ring" style="--p:'+renso+'"><div class="z-ring-in"><b>'+renso+'<small>%</small></b><span>連想到達率</span></div></div><div class="z-hmeta"><div class="z-lv">'+lvl[0]+' ・ '+lvl[1]+'</div><h2>'+e(uName||'あなた')+'さんの GROWTH DASHBOARD</h2><div class="z-chips"><span class="z-chip">担当 <b>'+n+'</b>件</span><span class="z-chip">連想到達 <b>'+conn+'</b>件</span><span class="z-chip">入力充実 <b>'+inputAvg+'</b>%</span><span class="z-chip">平均 <b>'+avg+'</b></span></div>'+_xpHtml+'</div></div>';
  H+='<div class="z-card z-c2"><h3>🧭 スキルレーダー</h3><div class="z-sub">凹んだ軸が伸びしろ。</div><div class="z-radar-wrap"><svg class="z-radar" viewBox="0 0 200 200">'+_zRadar(axes).replace(/^<svg[^>]*>|<\/svg>$/g,'')+'</svg><div class="z-radar-leg">'+leg+'</div></div>'+_radarTypePanel(axes)+'</div>';
  var _myNow=_kpi3Now(mine);
  H+=_kpi3Cards(mine);
@@ -2667,12 +2680,13 @@ function renderSelfDash(){
  H+='<div class="z-card z-c2"><h3>🏅 獲得した称号</h3><div class="z-sub">いろんな軸で輝ける。今の自分の勲章。</div><div class="z-badges">'+(myBadges.length?myBadges.map(function(b){return '<div class="z-badge lit"><div class="z-be">'+b.e+'</div><div class="z-bt">'+b.t+'</div><div class="z-bw">'+b.w+'</div></div>';}).join(''):'<div class="z-sub">あと一歩！どれかの軸でトップを狙おう</div>')+'</div></div>';
  H+='<div class="z-card z-c2"><h3>🎯 今日の3手</h3><div class="z-sub">迷ったらここから。</div>'+q.slice(0,3).map(function(x){return '<div class="z-quest"><div class="z-qic" style="background:'+x[0]+'">'+x[1]+'</div><div class="z-qbd"><b>'+x[2]+'</b><p>'+x[3]+'</p></div></div>';}).join('')+'</div>';
  H+='<div class="z-card z-spar z-c2"><h3>🥊 今日の壁打ちワーク</h3><div class="z-sub">AI相手に1問だけ自問自答。</div><div class="z-q">「連想まで来た<em>'+e(spar)+'様</em>に、<em>提案依頼の許可</em>を取る最初の一言は？」</div>'+(isMob?'<div style="font-size:11px;color:var(--z-mut)">PC（Chrome）でAI壁打ち＆印刷が使えます。</div>':'<button class="z-btn-spar" onclick="copySelfPrompt();openCopilot()">🥊 AIと壁打ちする</button>')+'</div>';
- if(!isMob){ H+='<div class="z-card z-cf"><h3>💭 AI分析結果（貼り付け）</h3><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"><button class="z-mini" onclick="copySelfPrompt()">🤖 分析用に抽出</button><button class="z-mini" onclick="openCopilot()">🤖 AI分析</button><button class="z-mini" onclick="printSelfReport()">🖨 印刷</button><span id="selfMemoAt" style="margin-left:auto;align-self:center;font-size:11px;font-weight:700;color:#2f9e44;white-space:nowrap"></span><button class="z-mini" onclick="clearSelfMemo()" style="background:none;border:1px solid #fc8181;color:#c53030">🗑 削除</button></div><textarea id="selfAnalysisMemo" placeholder="AIの分析結果をここに貼り付け（印刷に使われます）" oninput="saveSelfMemo()"></textarea></div>'; }
+ if(!isMob && !tid){ H+='<div class="z-card z-cf"><h3>💭 AI分析結果（貼り付け）</h3><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"><button class="z-mini" onclick="copySelfPrompt()">🤖 分析用に抽出</button><button class="z-mini" onclick="openCopilot()">🤖 AI分析</button><button class="z-mini" onclick="printSelfReport()">🖨 印刷</button><span id="selfMemoAt" style="margin-left:auto;align-self:center;font-size:11px;font-weight:700;color:#2f9e44;white-space:nowrap"></span><button class="z-mini" onclick="clearSelfMemo()" style="background:none;border:1px solid #fc8181;color:#c53030">🗑 削除</button></div><textarea id="selfAnalysisMemo" placeholder="AIの分析結果をここに貼り付け（印刷に使われます）" oninput="saveSelfMemo()"></textarea></div>'; }
  H+='<div class="z-card z-c2"><h3>🌳 生産緑地 保有率</h3>'+_ryokuchiRing(mine)+'</div>';
  H+='<div class="z-card z-c2"><h3>🥧 現況の内訳</h3><div class="z-sub">担当先の現状区分の分布。</div>'+_genjoPie(mine)+'</div>';
+ H+=_zAreaCard(mine,'zSetAreaSelf');
  H+='</div></div>';
  host.innerHTML=H;
- if(!isMob) loadSelfMemo();
+ if(!isMob && !tid) loadSelfMemo();
 }
 window.toggleSelfDash=toggleSelfDash; window.renderSelfDash=renderSelfDash;
 // ===== 一覧 =====
@@ -4236,7 +4250,7 @@ function buildInitVisitHTML(c){
     +'<div class="row3" style="margin-top:2mm">'
     +'<div class="field"><span class="label">老朽賃貸</span><span class="val">'+e(c.old_rent)+(c.old_rent?'棟':'')+'</span></div>'
     +'<div class="field"><span class="label">駐車場</span><span class="val">'+e(c.parking_lot)+(c.parking_lot?'ヵ所':'')+'</span></div>'
-    +'<div class="field"><span class="label">自宅</span><span class="val">'+e(c.jitaku)+(c.jitaku?'件':'')+'</span></div>'
+    +'<div class="field"><span class="label">自宅</span><span class="val">'+e(c.jitaku)+(c.jitaku?'軒':'')+'</span></div>'
     +'</div>'
     +'<div class="row3" style="margin-top:1mm">'
     +'<div class="field"><span class="label">生産緑地</span><span class="val">'+e(c.ryokuchi)+(c.ryokuchi?'枚':'')+'</span></div>'
@@ -4615,7 +4629,7 @@ function genPrompt(anon){
   lines.push('  基本入力率：'+_bis.pct+'%（基本'+_bis.total+'項目中'+_bis.filled+'項目入力済み）');
   lines.push('');
   lines.push('■ 資産背景');
-  lines.push('  老朽賃貸：'+(c.old_rent||'未')+'棟　駐車場：'+(c.parking_lot||'未')+'ヵ所　自宅：'+(c.jitaku||'未')+'件　生産緑地：'+(c.ryokuchi||'未')+'枚');
+  lines.push('  老朽賃貸：'+(c.old_rent||'未')+'棟　駐車場：'+(c.parking_lot||'未')+'ヵ所　自宅：'+(c.jitaku||'未')+'軒　生産緑地：'+(c.ryokuchi||'未')+'枚');
   lines.push('  土地資産規模：'+(c.land_asset||'未確認')+'　想定：'+(c.souteim||'未'));
   lines.push('');
   lines.push('■ 土地情報（優先計画地）');
@@ -4830,7 +4844,7 @@ function genPrompt(anon){
 function doCopy(p, label){
   if(navigator.clipboard&&navigator.clipboard.writeText){
     navigator.clipboard.writeText(p).then(function(){
-      aibisToast('📋 抽出したよ。「🤖 AI分析」を押して貼り付けてね');
+      aibisToast('📋 抽出したよ！AI分析に貼ってね');
     }).catch(function(){ fallbackCopy(p); });
   } else { fallbackCopy(p); }
 }
@@ -4883,7 +4897,7 @@ window.checkInputQuality=checkInputQuality;
 function fallbackCopy(txt){
   var ta=document.createElement('textarea'); ta.value=txt; ta.style.cssText='position:fixed;opacity:0';
   document.body.appendChild(ta); ta.select();
-  try{ document.execCommand('copy'); aibisToast('📋 抽出したよ。「🤖 AI分析」を押して貼り付けてね'); } catch(ex){ toast('コピー失敗。プレビューから手動でコピーしてください'); }
+  try{ document.execCommand('copy'); aibisToast('📋 抽出したよ！AI分析に貼ってね'); } catch(ex){ toast('コピー失敗。プレビューから手動でコピーしてください'); }
   document.body.removeChild(ta);
 }
 function openCopilot(){
@@ -5130,11 +5144,12 @@ function _zsec(k,title,body){var op=!!_zOpen[k];return '<div class="z-sec'+(op?'
 function _zsecPlain(k,title,body){var op=!!_zOpen[k];return '<div class="z-sec'+(op?'':' z-collapsed')+'" data-k="'+k+'"><div class="z-sec-h" onclick="zToggleSec(this)">'+title+'<span class="z-ar">'+(op?'▼':'▶')+'</span></div><div class="z-sec-body">'+body+'</div></div>';}
 window.zToggleSec=function(h){var s=h.parentNode;s.classList.toggle('z-collapsed');var k=s.getAttribute('data-k');var open=!s.classList.contains('z-collapsed');if(k)_zOpen[k]=open;var a=h.querySelector('.z-ar');if(a)a.textContent=open?'▼':'▶';};
 window.zSetArea=function(m){_zAreaMode=m;renderAnalysis();var el=document.querySelector('#cmdCenter .z-sec[data-k=area]');if(el)el.scrollIntoView({block:'center'});};
-function _zAreaCard(target){
+window.zSetAreaSelf=function(m){_zAreaMode=m;if(window.renderSelfDash)renderSelfDash();};
+function _zAreaCard(target,toggleFn){ toggleFn=toggleFn||'zSetArea';
  var byWard={},byTown={},byWardC={},byTownC={};
  target.forEach(function(c){var p=_zParseAddr(c.address);byWard[p.ward]=(byWard[p.ward]||0)+1;(byWardC[p.ward]=byWardC[p.ward]||[]).push(c);var key=p.ward+' '+p.town;byTown[key]=(byTown[key]||0)+1;(byTownC[key]=byTownC[key]||[]).push(c);});
  function grid(obj,cmap){var mx=Math.max.apply(null,Object.keys(obj).map(function(k){return obj[k];}))||1;return '<div class="z-areagrid">'+Object.keys(obj).sort(function(a,b){return obj[b]-obj[a];}).map(function(k){var v=obj[k],unk=/未分類|区不明|町名なし/.test(k),disp=k.replace('（町名なし）','(町なし)');var items=(cmap[k]||[]).map(function(c){return {name:c.name,score:calcScore(c),sub:e(c.manager||'')};});var rk=_zRevReg(disp,items);return '<div class="z-area'+(unk?' z-unk':'')+'" style="'+(unk?'':'background:'+_zHeat(v/mx*100))+'" onpointerdown="zRevShow(this,\''+rk+'\')" onpointerup="zRevHide()" onpointerleave="zRevHide()" onpointercancel="zRevHide()" oncontextmenu="return false"><b>'+v+'</b><span>'+e(disp)+'</span></div>';}).join('')+'</div>';}
- var body='<div class="z-toggle"><button class="'+(_zAreaMode==='ward'?'on':'')+'" onclick="zSetArea(\'ward\')">区</button><button class="'+(_zAreaMode==='town'?'on':'')+'" onclick="zSetArea(\'town\')">町</button></div><div class="z-sub" style="clear:both;padding-top:6px">件数の濃淡。マスを長押しで該当客名。区・町・不明も全部拾います。</div>'+(_zAreaMode==='ward'?grid(byWard,byWardC):grid(byTown,byTownC));
+ var body='<div class="z-toggle"><button class="'+(_zAreaMode==='ward'?'on':'')+'" onclick="'+toggleFn+'(\'ward\')">区</button><button class="'+(_zAreaMode==='town'?'on':'')+'" onclick="'+toggleFn+'(\'town\')">町</button></div><div class="z-sub" style="clear:both;padding-top:6px">件数の濃淡。マスを長押しで該当客名。区・町・不明も全部拾います。</div>'+(_zAreaMode==='ward'?grid(byWard,byWardC):grid(byTown,byTownC));
  return _zc('🗺','エリア別ヒートマップ（区⇔町 切替）','',body,'z-cf');
 }
 var _wkP='m0';
@@ -5259,8 +5274,8 @@ function renderAnalysis(){
  function mm(a){var T=a.length||1;return [100-_zPct(a.filter(function(c){return calcPaceOverrate(c)>1;}).length,T),_zPct(a.filter(function(c){return +(c.stage||0)>=3;}).length,T),_zPct(a.filter(function(c){return c.family_headcount;}).length,T),_zPct(a.filter(function(c){return (c.family||[]).some(function(x){return x.met&&(x.owner||x.kp);});}).length,T),(function(){var s=0,nn=0;a.forEach(function(c){var l=getKaiwaLevel(c);if(l>=0){s+=l;nn++;}});return nn?Math.round(s/nn/4*100):0;})()];}
  var heat='<tr><th></th>'+cols.map(function(c){return '<th>'+c+'</th>';}).join('')+'</tr>'+board.map(function(b){return '<tr><td class="z-hnm">'+e(b.r)+'</td>'+mm(g[b.r]).map(function(v){return '<td class="z-cell" style="background:'+_zHeat(v)+'">'+v+'</td>';}).join('')+'</tr>';}).join('');
  H+=_zsec('rank','🏆 ランキング & ゲーム',
-   _zc('🏆','担当リーダーボード','平均スコア順。',lbH,'z-c2')
-  +_zc('🎖','課ミッション・プログレス','今月の課目標。みんなで達成。',missH,'z-c2')
+   _zc('🏆','担当別スコア','平均スコア順。',lbH,'z-c2')
+  +_zc('🎖','今月の課目標（進捗）','今月の課目標。みんなで達成。',missH,'z-c2')
   +_zc('🏅','称号バッジ（多軸＝全員に出番）','色々な軸でトップを称える。',badgeH,'z-c2')
   +_zc('🌡','チーム・ヒートマップ','担当×指標。赤が要フォロー。','<div style="overflow-x:auto"><table class="z-heat">'+heat+'</table></div>','z-c2'));
  // area
@@ -5277,7 +5292,7 @@ function renderAnalysis(){
   +_zc('🥧','現況（現状）の内訳（データ）','現状区分の分布。',_genjoPie(t),'z-c2')
   +_zc('🏯','相続緊急度 × 進捗','高齢×低ステージは要対応。','<div class="z-tiles">'+agH+'</div>'+(noAge?'<div class="z-sub" style="margin-top:6px">所有者年齢 未入力 '+noAge+'件</div>':''),'z-c2')
   +_zc('💰','課の総ポテンシャル金額','A・S案件の路線価×面積の概算。','<div style="text-align:center;padding:10px"><div class="z-num" style="font-size:38px;font-weight:800;color:#ffb443">約'+pot+'<span style="font-size:17px">億円</span></div><div class="z-sub">規模感の目安（概算）</div></div>','z-c2')
-  +_zc('🧬','営業タイプ図鑑（全員）','レーダーの形で営業の「型」を判定。武器を伸ばし、達人を目指せ！（6種×3段階＝18タイプ）','<div class="z-heroes">'+miniR+'</div>'+_radarAxisHelp(),'z-cf'));
+  +_zc('🧬','営業スタイル分析（全員）','レーダーの形で営業の「型」を見える化。強みを伸ばして、さらに上を目指そう（6種×3段階＝18タイプ）','<div class="z-heroes">'+miniR+'</div>'+_radarAxisHelp(),'z-cf'));
 
 
  // ===== 担当の特性・保有状況（チーム管理） =====
@@ -5324,6 +5339,7 @@ function renderAnalysis(){
  H+=_zsecPlain('insights','🧠 傾向と対策（AIインサイト）','<div class="z-sub" style="margin-bottom:8px">データから打ち手を自動抽出。</div>'+ins);
  H+='</div>';
  host.innerHTML=H;
+ if(window.IS_DEV){var _dw=document.getElementById('devSelfMirrorWrap');if(_dw){_dw.style.display='';if(window.renderSelfDash)renderSelfDash('devSelfMirror');}}
 }
 
 function renderExtraAnalysis(){
@@ -5634,7 +5650,7 @@ function copyAnalysisPrompt(){
   }
 
   navigator.clipboard.writeText(prompt).then(function(){
-    aibisToast('📋 '+(isMember?memberName+'担当の':'課全体の')+'分析を抽出したよ。「🤖 AI分析」を押して貼り付けてね');
+    aibisToast('📋 '+(isMember?memberName+'担当':'課全体')+'を抽出！AI分析に貼ってね');
   }).catch(function(){
     toast('コピーできませんでした');
   });
@@ -5789,7 +5805,7 @@ function copySelfPrompt(){
   p+='④ ヒアリングで次に埋めるべき情報（家族構成・土地の量・持ち方の観点で）\n';
   p+='⑤ テストクロージング（連想到達客への提案依頼の許可取り）の具体的なトーク例\n';
   p+='\n※ 数値評価や順位ではなく、明日からの行動が変わる具体的アドバイスを中心に、前向きな表現でお願いします。';
-  navigator.clipboard.writeText(p).then(function(){ aibisToast('📋 自分の見込み分析を抽出したよ。「🤖 AI分析」を押して貼り付けてね'); }).catch(function(){ toast('コピーできませんでした'); });
+  navigator.clipboard.writeText(p).then(function(){ aibisToast('📋 見込み分析を抽出！AI分析に貼ってね'); }).catch(function(){ toast('コピーできませんでした'); });
 }
 function saveSelfMemo(){ var ta=document.getElementById('selfAnalysisMemo'); if(!ta)return; try{localStorage.setItem('analysis_memo_self_v1',ta.value); var at=ta.value.trim()?new Date().toISOString():''; localStorage.setItem('analysis_memo_self_at_v1',at); var l=document.getElementById('selfMemoAt'); if(l)l.textContent=at?('📌 '+_fmtDateJP(at)):''; }catch(ex){} }
 function loadSelfMemo(){ var ta=document.getElementById('selfAnalysisMemo'); if(!ta)return; try{ta.value=localStorage.getItem('analysis_memo_self_v1')||''; var at=localStorage.getItem('analysis_memo_self_at_v1')||''; var l=document.getElementById('selfMemoAt'); if(l)l.textContent=at?('📌 '+_fmtDateJP(at)):''; }catch(ex){} }
@@ -6764,7 +6780,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         </div>
         <div>
           <label>自宅</label>
-          <div style="display:flex;gap:3px;align-items:center"><select id="f_jitaku" style="flex:1"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="5以上">5以上</option></select><span style="font-size:11px;color:#718096;flex-shrink:0">件</span></div>
+          <div style="display:flex;gap:3px;align-items:center"><select id="f_jitaku" style="flex:1"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="5以上">5以上</option></select><span style="font-size:11px;color:#718096;flex-shrink:0">軒</span></div>
         </div>
         <div>
           <label>生産緑地</label>
@@ -7420,7 +7436,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
     <div id="aibisGrip" style="padding:9px 0 5px;display:flex;justify-content:center;cursor:grab;touch-action:none;flex:none" title="長押しで移動"><div style="width:42px;height:5px;border-radius:3px;background:#cbd5e0"></div></div>
     <div style="padding:14px 16px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between">
       <div style="display:flex;align-items:center;gap:8px">
-        <span style="font-size:24px">🧚</span>
+        <div class="zfa-fairy zfa-fairy-sm"><span class="zfa-spark zfa-s1">✨</span><span class="zfa-face">🧚</span><span class="zfa-spark zfa-s2">✨</span></div>
         <div>
           <div style="font-size:14px;font-weight:700;color:#92400e">アイビス</div>
           <div style="font-size:11px;color:#a0aec0">z.Aibis カードの妖精</div>
@@ -8163,14 +8179,17 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   .zfa-msg{font-size:14px;color:#2d3748;font-weight:500;line-height:1.7;margin-bottom:18px;text-wrap:balance;line-break:strict;word-break:normal}
   .zfa-ok{width:100%;padding:11px;border:none;border-radius:10px;background:#1a365d;color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer}
   .zfa-toast{position:fixed;left:50%;bottom:22%;transform:translateX(-50%) translateY(16px);z-index:2147483646;
-    display:flex;align-items:center;gap:6px;opacity:0;transition:opacity .3s,transform .3s;max-width:90vw;pointer-events:none}
+    display:flex;align-items:center;gap:6px;opacity:0;transition:opacity .3s,transform .3s;max-width:94vw;pointer-events:none}
   .zfa-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   .zfa-fairy-sm{width:42px;height:42px}
   .zfa-fairy-sm .zfa-face{font-size:26px}
   .zfa-fairy-sm::after{inset:-16px}
+  .zfa-fairy-xs{width:30px;height:30px}
+  .zfa-fairy-xs .zfa-face{font-size:20px}
+  .zfa-fairy-xs::after{inset:-10px}
   .zfa-bubble{position:relative;background:rgba(255,255,255,0.80);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
     color:#1a202c;font-weight:700;font-size:13.5px;line-height:1.55;padding:10px 16px;border-radius:15px;
-    box-shadow:0 6px 18px rgba(0,0,0,.16);text-shadow:0 1px 0 rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.6)}
+    box-shadow:0 6px 18px rgba(0,0,0,.16);text-shadow:0 1px 0 rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.6);text-wrap:balance;line-break:strict;word-break:normal}
   .zfa-bubble::before{content:'';position:absolute;left:-7px;top:50%;transform:translateY(-50%);border:7px solid transparent;border-right-color:rgba(255,255,255,.80);border-left:0}
   @media print{.zfa-overlay,.zfa-toast{display:none!important}}
 </style>
