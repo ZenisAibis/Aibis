@@ -1302,6 +1302,13 @@ body.is-mob .mob-menu{display:inline-block}
 <div class="toast" id="toast"></div>
 
 <script>
+/* === アクセス制限（ドメインロック）: 許可ホスト以外では起動しない === */
+var Z_ALLOW=['zenisaibis.github.io'];  /* 配信ドメインを変えたらここを変更 */
+if(Z_ALLOW.indexOf(location.hostname)<0){
+  try{ document.body.innerHTML='<div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#0b1120;color:#e8edf7;font-family:sans-serif;text-align:center;padding:24px"><div><div style="font-size:46px">🔒</div><div style="font-size:18px;font-weight:700;margin:12px 0 6px">このアプリは許可された環境でのみ動作します</div><div style="font-size:13px;color:#8a97b2">正規のURLからアクセスしてください。</div></div></div>'; }
+  catch(e){ document.documentElement.innerHTML='<body style="background:#0b1120;color:#e8edf7;font-family:sans-serif;text-align:center;padding:60px 24px">🔒 このアプリは許可された環境でのみ動作します</body>'; }
+  throw new Error('z.Aibis: unauthorized host');
+}
 (function() {
 'use strict';
 
@@ -1419,7 +1426,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.01";
+var APP_VERSION = "v5.02";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
