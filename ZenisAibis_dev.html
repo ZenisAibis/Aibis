@@ -1426,7 +1426,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.04";
+var APP_VERSION = "v5.06";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -3681,9 +3681,9 @@ function renderRevisits(){
     var rid='rv_'+vi;
     return '<div class="vcard ri" data-vi="'+vi+'"><div class="vh"><span class="vn">再訪 '+v.num+' 回目</span></div>'
       +'<div style="display:flex;gap:6px 12px;align-items:center;flex-wrap:wrap;margin-bottom:3px">'
-        +'<label style="margin:0">訪問内容・会話メモ</label>'
+        +'<label style="margin:0">訪問・会話メモ</label>'
         +'<span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">訪問日</label><input type="date" data-f="date" value="'+e(v.date||'')+'" style="width:auto;min-height:32px;padding:4px 6px"></span>'
-        +'<span style="display:inline-flex;align-items:center;gap:4px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">アポ</label><select data-f="appo" style="width:auto;min-height:32px;padding:4px 6px"><option value="">-</option><option value="アポ有り"'+(v.appo==='アポ有り'?' selected':'')+'>アポ有り</option><option value="仮アポ"'+(v.appo==='仮アポ'?' selected':'')+'>仮アポ</option><option value="アポ無し"'+(v.appo==='アポ無し'?' selected':'')+'>アポ無し</option></select></span>'
+        +'<span style="display:inline-flex;align-items:center;gap:4px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">アポ</label><select data-f="appo" style="width:auto;min-height:32px;padding:4px 4px;font-size:13px"><option value="">-</option><option value="アポ有り"'+(v.appo==='アポ有り'?' selected':'')+'>アポ有り</option><option value="仮アポ"'+(v.appo==='仮アポ'?' selected':'')+'>仮アポ</option><option value="アポ無し"'+(v.appo==='アポ無し'?' selected':'')+'>アポ無し</option></select></span>'
         +'<button type="button" class="mic-btn" onclick="micStart(\''+rid+'_c\',this)" style="margin-top:0">🎤</button>'
       +'</div>'
       +'<textarea id="'+rid+'_c" data-f="content" rows="3" placeholder="訪問内容・会話メモ">'+e(v.content||'')+'</textarea>'
@@ -3709,7 +3709,7 @@ function renderPursuits(){
     return '<div class="vcard pi"><div class="vh"><span class="vn">追撃 '+v.num+' 回目</span>'
       +'<div style="display:flex;gap:6px 10px;align-items:center;flex-wrap:wrap">'
         +'<span style="display:inline-flex;align-items:center;gap:4px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">訪問日</label><input type="date" data-f="date" value="'+e(v.date||'')+'" style="width:auto;min-height:32px;padding:4px 6px"></span>'
-        +'<span style="display:inline-flex;align-items:center;gap:4px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">アポ</label><select data-f="appo" style="width:auto;min-height:32px;padding:4px 6px"><option value="">-</option><option value="有り"'+(v.appo==='有り'?' selected':'')+'>有り</option><option value="無し"'+(v.appo==='無し'?' selected':'')+'>無し</option></select></span>'
+        +'<span style="display:inline-flex;align-items:center;gap:4px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">アポ</label><select data-f="appo" style="width:auto;min-height:32px;padding:4px 4px;font-size:13px"><option value="">-</option><option value="有り"'+(v.appo==='有り'?' selected':'')+'>有り</option><option value="無し"'+(v.appo==='無し'?' selected':'')+'>無し</option></select></span>'
         +'<span style="display:inline-flex;align-items:center;gap:4px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">面談者</label><select data-f="iv" style="width:auto;min-height:32px;padding:4px 6px"><option value="">-</option>'+famRoles.map(function(r){return '<option value="'+e(r)+'"'+(v.interviewer===r?' selected':'')+'>'+e(r)+'</option>';}).join('')+((v.interviewer&&famRoles.indexOf(v.interviewer)<0)?'<option value="'+e(v.interviewer)+'" selected>'+e(v.interviewer)+'</option>':'')+'</select></span>'
         +'<button type="button" class="ibt" onclick="remPursuit('+i+')">×</button>'
       +'</div></div>'
@@ -6661,10 +6661,10 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       </div>
     </div>
   </header>
-    <div id="cardNav" style="display:none;position:fixed;right:14px;bottom:18px;z-index:60;align-items:center;gap:4px;background:rgba(30,58,95,.93);border-radius:999px;padding:6px 8px;box-shadow:0 4px 14px rgba(0,0,0,.3)">
-      <button id="cardNavPrev" onclick="navCard(-1)" title="前のカード（上へ）" style="background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:999px;font-size:13px;font-weight:700;padding:6px 12px;cursor:pointer;font-family:inherit;line-height:1">‹ 前</button>
-      <span id="cardNavPos" style="color:#fff;font-size:12px;font-weight:700;min-width:48px;text-align:center">- / -</span>
-      <button id="cardNavNext" onclick="navCard(1)" title="次のカード（下へ）" style="background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:999px;font-size:13px;font-weight:700;padding:6px 12px;cursor:pointer;font-family:inherit;line-height:1">次 ›</button>
+    <div id="cardNav" style="display:none;align-items:center;justify-content:space-between;gap:8px;padding:7px 12px;background:#eef3fb;border-bottom:1px solid #d8e2f0">
+      <button id="cardNavPrev" onclick="navCard(-1)" style="background:#fff;border:1px solid #b9cce8;color:#2c5282;border-radius:8px;font-size:13px;font-weight:700;padding:8px 18px;min-height:38px;cursor:pointer;font-family:inherit">‹ 前</button>
+      <span id="cardNavPos" style="font-size:12px;font-weight:700;color:#5a6b85;white-space:nowrap">- / -</span>
+      <button id="cardNavNext" onclick="navCard(1)" style="background:#fff;border:1px solid #b9cce8;color:#2c5282;border-radius:8px;font-size:13px;font-weight:700;padding:8px 18px;min-height:38px;cursor:pointer;font-family:inherit">次 ›</button>
     </div>
   <div class="tabs no-print">
     <div class="tab active" data-tab="ti" onclick="switchTab('ti')" style="color:#2c5282;font-size:15px;font-weight:700"><span class="ic">📋</span>初訪</div>
