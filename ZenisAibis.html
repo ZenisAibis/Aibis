@@ -794,7 +794,7 @@ body.is-mob .mob-menu{display:inline-block}
         <defs><linearGradient id="tgm" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#ffffff"/><stop offset="60%" style="stop-color:#e0e7ff"/><stop offset="100%" style="stop-color:#c7d2fe"/></linearGradient></defs>
         <text x="4" y="36" font-family="'Dancing Script','Brush Script MT','Comic Sans MS',cursive" font-size="34" font-weight="700" fill="url(#tgm)" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.4))">z.Aibis</text>
       </svg>
-      <button onclick="openAibisChat2()" style="position:absolute;top:0;right:0;background:#d97706;color:white;border:none;border-radius:6px;font-size:11px;padding:4px 8px;cursor:pointer;font-family:inherit;line-height:1.2">🧚<br><span class="aibisVer" style="font-size:8px;opacity:0.8;font-weight:700">v3.3</span></button>
+      <button onclick="openAibisChat()" style="position:absolute;top:0;right:0;background:#d97706;color:white;border:none;border-radius:6px;font-size:11px;padding:4px 8px;cursor:pointer;font-family:inherit;line-height:1.2">🧚<br><span class="aibisVer" style="font-size:8px;opacity:0.8;font-weight:700">v3.3</span></button>
     </h1>
     <div class="ha" style="width:100%">
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:4px;width:100%">
@@ -1412,7 +1412,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v4.85";
+var APP_VERSION = "v4.89";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -1644,6 +1644,7 @@ function init() {
 
 // ===== 画面 =====
 function showList() {
+  autoCommitEdit();
   bootDone = true;
   // 初期設定画面からの遷移時は全項目チェック
   var setupVisible = document.getElementById('setupView') && document.getElementById('setupView').style.display !== 'none';
@@ -1690,6 +1691,7 @@ function showList() {
   renderList();
   initPwa();
   try{showDailyTip();}catch(_e){}
+  if(!_draftChecked){ _draftChecked=true; setTimeout(function(){ try{maybeRestoreDraft();}catch(_e){} },300); }
 }
 function _dailyRecs(){
   var arr=cards||[],recs=[];
@@ -1726,9 +1728,6 @@ function fmtMoney(id){
   var raw=el.value.replace(/,/g,'').replace(/[^\d]/g,'');
   if(raw===''){el.value='';return;}
   el.value=Number(raw).toLocaleString('ja-JP');
-}
-function parseMoney(val){
-  return val?String(val).replace(/,/g,''):'';
 }
 window.fmtMoney=fmtMoney;
 
@@ -1961,7 +1960,7 @@ function sendAibisMsg(){
   var fb=['うーん、それはまだ私の知識にないかも😊 マニュアルか課長に聞いてみてね！','その用語はまだ勉強中だよ😓 課長に聞いてみて！','Aibis Masterに聞いてみてね😊'];
   setTimeout(function(){ addAibisMsg('🧚',matched?getAibisAnswer(matched.a):fb[Math.floor(Math.random()*fb.length)]); },400);
 }
-window.openAibisChat=openAibisChat; window.openAibisChat2=openAibisChat2; window.openAibisChat3=openAibisChat3;
+window.openAibisChat=openAibisChat;
 window.closeAibisModal=closeAibisModal; window.sendAibisMsg=sendAibisMsg;
 
 window.aibisAlert=aibisAlert; window.aibisToast=aibisToast;
@@ -2003,9 +2002,6 @@ function autoSaveSetup(){
 }
 window.autoSaveSetup=autoSaveSetup;
 window.closeAibisAlert=function(){ var o=document.getElementById('aibisAlertOverlay'); if(o&&o.parentNode) o.parentNode.removeChild(o); };
-function openAibisChat2(){ openAibisChat(); }
-function openAibisChat3(){ openAibisChat(); }
-window.openAibisChat2=openAibisChat2; window.openAibisChat3=openAibisChat3;
 
 
 // ===== 担当フィルター =====
@@ -2343,7 +2339,8 @@ function setDirty(v){
   if(d) d.style.display=v?'inline-block':'none';
 }
 document.addEventListener('input',function(ev){
-  if(ev.target&&ev.target.closest('#editView')) setDirty(true);
+  if(ev.target&&ev.target.closest('#editView')){ setDirty(true); if(typeof scheduleDraftSave==='function') scheduleDraftSave(); }
+  if(ev.target&&/^f_ai_/.test(ev.target.id||'')&&cur){ var _k=ev.target.id.slice(5),_v=ev.target.value; if(!_v.trim()) cur['ai_'+_k+'_at']=''; else if(!cur['ai_'+_k+'_at']) cur['ai_'+_k+'_at']=new Date().toISOString(); var _at=document.getElementById('at_ai_'+_k); if(_at) _at.textContent=cur['ai_'+_k+'_at']?('📌 '+_fmtStamp(cur['ai_'+_k+'_at'])):''; }
   if(ev.target&&ev.target.closest('#revisitList')){ if(typeof collectForm==='function') collectForm(); if(window.applyRevisitLock) applyRevisitLock(); }
 });
 document.addEventListener('change',function(ev){
@@ -2372,7 +2369,6 @@ function showHelp(){
   window.scrollTo(0,0);
   _navGo('help');
 }
-window.showHelp=showHelp;
 function showSetup() {
   bootDone = true;
   document.getElementById('listView').style.display  = 'none';
@@ -2678,7 +2674,6 @@ function _genjoPie(arr){ var cnt={}; _GENJO.forEach(function(x){cnt[x[0]]=0;}); 
 function _ryokuchiRing(arr){ var own=arr.filter(function(c){return (parseFloat(c.ryokuchi)||0)>0;}).length; var tot=arr.length||1; var pct=Math.round(own/tot*100); var segs=[{value:own,color:'#2f9e44'},{value:tot-own,color:'rgba(130,150,180,.22)'}]; return '<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'+_zDonut(segs,pct+'%','生産緑地')+'<div style="flex:1;min-width:120px"><div style="font-size:13px;color:var(--z-ink);font-weight:700"><b style="font-size:24px;color:#2f9e44;font-family:Sora,sans-serif">'+own+'</b> / '+arr.length+' 人が保有</div><div class="z-sub" style="margin-top:4px">生産緑地（1枚以上）を持つ見込み客の割合。2022年問題・納税猶予の打ち手対象。</div></div></div>'; }
 
 function _zVbars(data,labels,colors){var mx=Math.max.apply(null,data)||1;return '<div class="z-vbars">'+data.map(function(v,i){return '<div class="z-vbar"><b>'+v+'</b><i style="height:'+(v/mx*88)+'px;background:'+(v>0?(colors[i]||colors[0]):'transparent')+'"></i><span>'+labels[i]+'</span></div>';}).join('')+'</div>';}
-function _zRadarC(axes,color){var cx=100,cy=100,R=70,N=axes.length;function pt(i,r){var a=-Math.PI/2+i*2*Math.PI/N;return [cx+Math.cos(a)*r,cy+Math.sin(a)*r];}var g='';[.5,1].forEach(function(s){g+='<polygon points="'+axes.map(function(_x,i){return pt(i,R*s).map(function(z){return z.toFixed(1);}).join(',');}).join(' ')+'" fill="none" stroke="rgba(255,255,255,.1)"/>';});g+='<polygon points="'+axes.map(function(a,i){return pt(i,R*(a[1]||0)/100).map(function(z){return z.toFixed(1);}).join(',');}).join(' ')+'" fill="'+color+'33" stroke="'+color+'" stroke-width="2"/>';return '<svg viewBox="0 0 200 200">'+g+'</svg>';}
 function _zByMgr(arr){var o={};arr.forEach(function(c){var m=c.manager||'';if(!m)return;(o[m]=o[m]||[]).push(c);});return o;}
 function _zPct(a,b){return b?Math.round(a/b*100):0;}
 function _zBadges(){
@@ -2710,7 +2705,6 @@ function renderSelfDash(tid){
  var inputAvg=Math.round(mine.reduce(function(s,c){return s+(basicInputStat(c).pct||0);},0)/n);
  var avg=Math.round(mine.reduce(function(s,c){return s+calcScore(c);},0)/n*10)/10;
  var axes=[['発掘量',Math.min(Math.round(n/30*100),100),'#9be15d'],['グリップ',grip],['ヒアリング',inputAvg],['連想到達',renso],['テスクロ',_zPct(adv,conn)],['追客ペース',Math.max(0,100-_zPct(late,n))]];
- var lvl=avg>=22?['LV.5','EXPERT']:avg>=18?['LV.4','SENIOR']:avg>=14?['LV.3','STANDARD']:avg>=10?['LV.2','JUNIOR']:['LV.1','ROOKIE'];var _lvi=avg>=22?5:avg>=18?4:avg>=14?3:avg>=10?2:1;var _lvN=['ROOKIE','JUNIOR','STANDARD','SENIOR','EXPERT'];var _lvHi=[10,14,18,22,22][_lvi-1];var _lvLo=[0,10,14,18,22][_lvi-1];var _lvNext=_lvi<5?_lvN[_lvi]:null;var _lvProg=_lvi>=5?100:Math.max(0,Math.min(100,Math.round((avg-_lvLo)/(_lvHi-_lvLo)*100)));var _xpHtml='<div class="z-xp"><div class="z-xpl"><span>'+(_lvNext?'次の <b>'+_lvNext+'</b> まで':'最高段階に到達')+'</span>'+(_lvNext?'<span>平均 '+avg+' / '+_lvHi.toFixed(1)+'</span>':'')+'</div><div class="z-xptrack"><i style="width:'+_lvProg+'%"></i></div></div>';
  var leg=axes.map(function(a){return '<div><i style="background:'+(a[2]||'#34e3d0')+'"></i><b>'+a[1]+'</b> '+a[0]+'</div>';}).join('');
  var sc=[0,0,0,0,0,0,0,0];mine.forEach(function(c){var s=+(c.stage||0);if(s>=0&&s<=7)sc[s]++;});
  var mDisc=_zMonthly(mine,function(c){return c.discovery_date;}), mVis=_zMonthly(mine,_zVisitDates), mApo=_zMonthly(mine,_zAppoDates);
@@ -2890,15 +2884,6 @@ function getSorted() {
       var sb = (b.stage!==''&&b.stage!=null) ? +b.stage : (dir>0?-1:99);
       return dir * (sb - sa);
     });
-  } else if (sortKey==='kw') {
-    arr.sort(function(a,b){
-      var ka=getKaiwaLevel(a), kb=getKaiwaLevel(b);
-      // 未選択(-1)は後ろに
-      if(ka===-1&&kb===-1) return 0;
-      if(ka===-1) return 1;
-      if(kb===-1) return -1;
-      return dir * (kb - ka);
-    });
   } else if (sortKey==='sc') {
     arr.sort(function(a,b){
       var sa=calcScore(a), sb=calcScore(b);
@@ -3077,8 +3062,6 @@ window.goPage=goPage;
 var selectMode=true;
 var selectedIds={};
 var lastVisible=[];
-function startSelectMode(){ /* 常時ON */ }
-function endSelectMode(){ selectedIds={}; updateSelectCount(); renderCards(); }
 function toggleSelect(id){
   if(selectedIds[id]) delete selectedIds[id];
   else selectedIds[id]=true;
@@ -3197,9 +3180,6 @@ function mkBlank() {
 }
 function newCard(){
   cur=mkBlank();
-  cur.family=[
-    {role:'世帯主（男）',name:'',age:'',living:'未確認',marriage:'不明',stance:'unk',met:false,owner:true,kp:false,addr2:'',job:'',note:'',kyojuu:'',jutaku:'',shokugyou:'',bikou:'',gen:1}
-  ];
   curId=null;
   document.getElementById('listView').style.display='none';
   document.getElementById('setupView').style.display='none';
@@ -3379,7 +3359,7 @@ function collectForm() {
   });
   // テーマ別分析結果を保存（変更時に貼り付け日時を記録）
   ['general','next_visit','motivation','personality','objection','hearing','training'].forEach(function(k){
-    var el=document.getElementById('f_ai_'+k); if(el){ var nv=el.value; if(nv!==(c['ai_'+k]||'')){ c['ai_'+k+'_at']=nv.trim()?new Date().toISOString():''; } c['ai_'+k]=nv; }
+    var el=document.getElementById('f_ai_'+k); if(el){ var nv=el.value; if(!nv.trim()){ c['ai_'+k+'_at']=''; } else if(!c['ai_'+k+'_at']){ c['ai_'+k+'_at']=new Date().toISOString(); } c['ai_'+k]=nv; }
   });
   var ag=document.getElementById('f_analog'); if(ag){ var av=ag.value; if(av!==(c.analog_memo||'')){ c.analog_memo_at=av.trim()?new Date().toISOString():''; } c.analog_memo=av; }
   c.updated_at=new Date().toISOString();
@@ -3731,6 +3711,58 @@ function setRJ(v,user){ if(user){ if(typeof collectForm==='function') collectFor
 function setPJ(v,user){ if(user&&cur.pursuit_judge_sel===v) v=''; cur.pursuit_judge_sel=v; document.querySelectorAll('[data-pj]').forEach(function(b){b.classList.toggle('active',b.dataset.pj===v);}); if(user) recomputeRank(); if(window.updateTabProgress) updateTabProgress(); }
 
 // ===== 保存 =====
+// ===== 下書き自動保存＆画面離脱時の自動確定（保存忘れ対策） =====
+var DRAFTK='prospect_draft_v1';
+var _draftTimer=null;
+var _draftChecked=false;
+function scheduleDraftSave(){ clearTimeout(_draftTimer); _draftTimer=setTimeout(saveDraftNow,1500); }
+function saveDraftNow(){
+  try{
+    var ev=document.getElementById('editView');
+    if(!cur||!ev||ev.style.display==='none') return;
+    collectForm();
+    localStorage.setItem(DRAFTK, JSON.stringify({id:curId||'new', ts:new Date().toISOString(), data:cur}));
+  }catch(ex){}
+}
+function clearDraft(){ clearTimeout(_draftTimer); try{ localStorage.removeItem(DRAFTK); }catch(ex){} }
+function getDraft(){ try{ return JSON.parse(localStorage.getItem(DRAFTK)||'null'); }catch(ex){ return null; } }
+function autoCommitEdit(){
+  try{
+    var ev=document.getElementById('editView');
+    if(!ev||ev.style.display==='none'||!cur||!isDirty) return;
+    collectForm();
+    if(cur.address) cur.address=_han(cur.address);
+    if(curId){ var idx=cards.findIndex(function(c){return c.id===curId;}); if(idx>=0) cards[idx]=cur; else { cards.push(cur); curId=cur.id; } }
+    else { cards.push(cur); curId=cur.id; }
+    setDirty(false);
+    doSaveCards(function(){ clearDraft(); });
+  }catch(ex){}
+}
+function maybeRestoreDraft(){
+  var dr=getDraft(); if(!dr||!dr.data) return;
+  if(dr.id&&dr.id!=='new'){ var exc=cards.find(function(c){return c.id===dr.id;}); if(exc&&JSON.stringify(exc)===JSON.stringify(dr.data)){ clearDraft(); return; } }
+  var when=''; try{ when=_fmtStamp(dr.ts); }catch(e){}
+  var nm=(dr.data&&dr.data.name)?e(dr.data.name)+'\u69d8':'(\u540d\u524d\u672a\u5165\u529b)';
+  aibisAlert('\u524d\u56de\u306e<b>\u672a\u4fdd\u5b58\u306e\u5165\u529b</b>\u304c\u898b\u3064\u304b\u3063\u305f\u3088\ud83d\udcdd<br>'+nm+'\u3000'+when+'<br><br>\u958b\u3044\u3066\u7d9a\u3051\u308b\uff1f<br><br>'
+    +'<div style="display:flex;gap:8px;margin-top:8px">'
+    +'<button onclick="closeAibisAlert();_restoreDraft()" style="flex:1;padding:8px;background:#2c5282;color:white;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit">\u958b\u3044\u3066\u7d9a\u3051\u308b</button>'
+    +'<button onclick="closeAibisAlert();_discardDraft()" style="flex:1;padding:8px;background:#e2e8f0;color:#2d3748;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit">\u7834\u68c4\u3059\u308b</button>'
+    +'</div>');
+}
+function _restoreDraft(){
+  var dr=getDraft(); if(!dr||!dr.data) return;
+  cur=dr.data; curId=(dr.id&&dr.id!=='new')?dr.id:null;
+  document.getElementById('listView').style.display='none';
+  document.getElementById('setupView').style.display='none';
+  document.getElementById('editView').style.display=hasFSA&&!isMob?'flex':'block';
+  switchTab('ti'); fillForm(cur); window.scrollTo(0,0);
+  setDirty(true);
+  _navGo('edit',curId);
+}
+function _discardDraft(){ clearDraft(); }
+window._restoreDraft=_restoreDraft; window._discardDraft=_discardDraft;
+document.addEventListener('visibilitychange',function(){ if(document.hidden) autoCommitEdit(); });
+window.addEventListener('pagehide',function(){ autoCommitEdit(); });
 function saveCard(){
   collectForm();
   if(cur&&cur.address) cur.address=_han(cur.address);
@@ -3740,6 +3772,7 @@ function saveCard(){
   doSaveCards(function(){
     updateCount();
     setDirty(false);
+    clearDraft();
     // 最終更新表示も更新
     var ud=document.getElementById('dispUpdated');
     if(ud&&cur.updated_at){
@@ -3787,17 +3820,6 @@ function doSyncNow(){
 // ===== ファイル操作 =====
 function loadFile(){
   if(!isMob && hasFSA){ openFSAWithConfirm(); } else { var inp=document.getElementById('fileInput'); inp.value=''; inp.click(); }
-}
-function openFSA(){
-  window.showOpenFilePicker({types:[{description:'JSON',accept:{'application/json':['.json']}}]}).then(function(files){
-    var handle=files[0]; fHandle=handle; saveHandle(handle);
-    readFile(handle, function(){
-      // readFileは直接cards配列に読み込むので、ここでは事後確認
-      updateFileDisp();
-      toast('✅ '+cards.length+'件を読み込みました');
-      renderList();
-    });
-  }).catch(function(ex){ if(ex.name!=='AbortError') toast('ファイルを開けませんでした'); });
 }
 function openFSAWithConfirm(){
   window.showOpenFilePicker({types:[{description:'JSON',accept:{'application/json':['.json']}}]}).then(function(files){
@@ -3965,19 +3987,6 @@ function mkJson(){
   var ts=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+'_'+String(now.getHours()).padStart(2,'0')+String(now.getMinutes()).padStart(2,'0');
   return {url:url, ts:ts};
 }
-function mailToPhone(){
-  if(cards.length===0){toast('送信するカードがありません');return;}
-  var j=mkJson();
-  var fn='AIBIS_'+(uName||'staff')+'_'+APP_VERSION+'_'+j.ts+'.json';
-  var a=document.createElement('a'); a.href=j.url; a.download=fn; a.click();
-  URL.revokeObjectURL(j.url);
-  var subj='AIBIS PC to Phone '+j.ts+' ('+cards.length+' cards)';
-  var body='AIBIS sync PC->Phone\nFrom: '+(uName||'')+(branch?' / '+branch:'')+'\nDate: '+j.ts+'\nCards: '+cards.length+'\nFile: '+fn+'\n\nPlease open the attached file on your phone.';
-  setTimeout(function(){
-    window.location.href='mailto:'+(selfEmail||'')+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
-    toast('JSONをDL済 → 添付して送信してください');
-  },400);
-}
 function syncMailToSelf(){
   if(cards.length===0){toast('送信するカードがありません');return;}
   var j=mkJson();
@@ -3990,40 +3999,6 @@ function syncMailToSelf(){
     window.location.href='mailto:'+(selfEmail||'')+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
     toast('JSONをDL済 → 添付して送信してください');
   },400);
-}
-function mailSelf(){ mailToPhone(); }
-function mailManager(){
-  if(!mgrEmail){toast('設定で課長のメールアドレスを登録してください');showSetup();return;}
-  if(cards.length===0){toast('送信するカードがありません');return;}
-  var j=mkJson();
-  var fn='AIBIS_'+(uName||'staff')+'_'+APP_VERSION+'_'+j.ts+'.json';
-  var a=document.createElement('a'); a.href=j.url; a.download=fn; a.click();
-  var subj='AIBIS report '+j.ts+' ('+cards.length+' cards)';
-  var body='AIBIS report\nDate: '+j.ts+'\nCards: '+cards.length+'\nFile: '+fn;
-  setTimeout(function(){
-    URL.revokeObjectURL(j.url);
-    window.location.href='mailto:'+encodeURIComponent(mgrEmail)+(selfEmail?'?cc='+encodeURIComponent(selfEmail)+'&subject=':'?subject=')+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
-    toast('JSONをDL済 → 添付して送信してください');
-  },500);
-}
-function mailCardToManager(){
-  if(!mgrEmail){toast('設定で課長のメールアドレスを登録してください');showSetup();return;}
-  collectForm();
-  var c=cur; if(!c){toast('カードを開いてから送信してください');return;}
-  var data=JSON.stringify([c],null,2);
-  var blob=new Blob([data],{type:'application/json'});
-  var url=URL.createObjectURL(blob);
-  var now=new Date();
-  var ts=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+'_'+String(now.getHours()).padStart(2,'0')+String(now.getMinutes()).padStart(2,'0');
-  var fn='AIBIS_card_'+(uName||'staff')+'_'+APP_VERSION+'_'+ts+'.json';
-  var a=document.createElement('a'); a.href=url; a.download=fn; a.click();
-  URL.revokeObjectURL(url);
-  var subj='AIBIS card '+ts;
-  var body='AIBIS card\nDate: '+ts+'\nFile: '+fn;
-  setTimeout(function(){
-    window.location.href='mailto:'+encodeURIComponent(mgrEmail)+(selfEmail?'?cc='+encodeURIComponent(selfEmail)+'&subject=':'?subject=')+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
-    toast('JSONをDL済 → 添付して課長へ送信してください');
-  },300);
 }
 
 // ===== 地図 =====
@@ -5265,7 +5240,6 @@ function workMeterInner(){
   var inactH=inact.length?'<div class="z-sub" style="margin-top:8px">😴 未稼働：'+inact.map(function(x){return e(x);}).join('・')+'</div>':'';
   return head+'<div class="z-wkscroll"><div class="z-wkmin">'+rows+'</div></div>'+inactH;
 }
-function workMeterCard(){ return '<div class="z-card z-cf" id="zWorkCard">'+workMeterInner()+'</div>'; }
 function workMeterSection(){ return _zsecPlain('work','🟢 稼働率モニター <span style="font-size:10px;color:var(--z-dim);font-weight:600">基準達成度ランキング</span>','<div id="zWorkCard">'+workMeterInner()+'</div>'); }
 window.setWkP=function(p){ _wkP=p; var el=document.getElementById('zWorkCard'); if(el) el.innerHTML=workMeterInner(); };
 function renderAnalysis(){
@@ -5410,196 +5384,6 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
  if(window.IS_DEV){var _dw=document.getElementById('devSelfMirrorWrap');if(_dw){_dw.style.display='';if(window.renderSelfDash)renderSelfDash('devSelfMirror');}}
 }
 
-function renderExtraAnalysis(){
-  var host=document.getElementById('extraAnalysis'); if(!host) return;
-  var selX=document.getElementById('analysisMember');
-  var isMem=selX&&selX.value!=='all';
-  var mnameX=isMem?selX.value:'';
-  var target=isMem?cards.filter(function(c){return (c.manager||'')===mnameX;}):cards.slice();
-  if(!target.length){ host.innerHTML=''; return; }
-  var n=target.length;
-  var rankColor={S:'#c53030',A:'#dd6b20',B:'#3182ce',C:'#38a169',D:'#a0aec0',E:'#cbd5e0',X:'#4a5568'};
-  var stageColor=['#a0aec0','#68d391','#4299e1','#ed8936','#e53e3e','#9f7aea','#d69e2e','#c53030'];
-  var stageNm=['面識','注意','興味','連想','欲求','比較','信念','決心'];
-  function tsubo(c){ var m=parseFloat(String(c.m2||'').replace(/,/g,''))||0; return m/3.30578; }
-  function sec(emoji,title,body){ return '<div class="xa-sec"><div class="xa-h">'+emoji+' '+title+'</div>'+body+'</div>'; }
-  function hbar(label,val,max,color,disp){ var w=max?Math.round(val/max*100):0; return '<div class="xa-bar-row"><div class="xa-bar-l">'+e(label)+'</div><div class="xa-bar-t"><div class="xa-bar-f" style="width:'+w+'%;background:'+color+'"></div></div><div class="xa-bar-v">'+disp+'</div></div>'; }
-  function byMgr(arr){ var o={}; arr.forEach(function(c){ var m=c.manager||'(未設定)'; (o[m]=o[m]||[]).push(c); }); return o; }
-  var H='';
-  var P={};
-
-  // 1) お宝度バブル
-  (function(){
-    var W=560,Hh=260,pl=44,pr=14,pt=14,pb=30;
-    var pts=target.filter(function(c){return tsubo(c)>0;});
-    if(!pts.length){ P.takara=sec('💎','お宝度マップ','<div style="font-size:10px;color:#a0aec0">土地面積の入力が必要です</div>'); return; }
-    var maxT=Math.max.apply(null,pts.map(tsubo).concat([100]));
-    var s='<svg viewBox="0 0 '+W+' '+Hh+'" style="width:100%;height:auto;background:linear-gradient(135deg,#fffaf0,#fff);border-radius:8px">';
-    s+='<rect x="'+(pl+(W-pl-pr)*0.6)+'" y="'+pt+'" width="'+((W-pl-pr)*0.4)+'" height="'+((Hh-pb-pt)*0.4)+'" fill="#fefcbf" opacity="0.45"/>';
-    s+='<line x1="'+pl+'" y1="'+(Hh-pb)+'" x2="'+(W-pr)+'" y2="'+(Hh-pb)+'" stroke="#cbd5e0"/>';
-    s+='<line x1="'+pl+'" y1="'+pt+'" x2="'+pl+'" y2="'+(Hh-pb)+'" stroke="#cbd5e0"/>';
-    pts.forEach(function(c){ var st=+(c.stage||0); var x=pl+(W-pl-pr)*(st/7); var y=(Hh-pb)-(Hh-pb-pt)*(Math.min(tsubo(c),maxT)/maxT); var sc=calcScore(c); var r=4+sc/40*12; var col=rankColor[c.pursuit_judge||'']||'#cbd5e0'; s+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="'+r.toFixed(1)+'" fill="'+col+'" opacity="0.6" stroke="#fff" stroke-width="1"><title>'+e(c.name||'(無名)')+' / '+stageNm[st]+' / '+Math.round(tsubo(c))+'坪 / '+(c.pursuit_judge||'-')+'</title></circle>'; });
-    s+='<text x="'+pl+'" y="'+(Hh-pb+18)+'" font-size="9" fill="#718096">面識</text>';
-    s+='<text x="'+(W-pr)+'" y="'+(Hh-pb+18)+'" text-anchor="end" font-size="9" fill="#718096">決心 → 熱量</text>';
-    s+='<text x="6" y="'+(pt+8)+'" font-size="9" fill="#718096">坪↑</text></svg>';
-    P.takara=sec('💎','お宝度マップ（熱量 × 土地規模 × 資産）',s+'<div style="font-size:9px;color:#a0aec0;margin-top:4px">泡の大きさ=スコア／色=追客ランク。右上の大きな泡ほど最優先のお宝客。</div>');
-  })();
-
-  // 2) 相続構造
-  (function(){
-    var allF=[]; target.forEach(function(c){(c.family||[]).forEach(function(m){if(m.role)allF.push(m);});});
-    var kids=allF.filter(function(m){return FAM_CHILD_ROLES.indexOf(m.role)>=0;});
-    var unmar=kids.filter(function(m){return m.marriage==='未婚';}).length;
-    var unmarPct=kids.length?Math.round(unmar/kids.length*100):0;
-    var noChild=allF.filter(function(m){return m.marriage==='既婚'&&(!m.children||+m.children===0);}).length;
-    var owners=allF.filter(function(m){return m.owner&&m.age;});
-    var ownAvg=owners.length?Math.round(owners.reduce(function(s,m){return s+(+m.age||0);},0)/owners.length):0;
-    var ageB=[0,0,0,0]; owners.forEach(function(m){var a=+m.age||0; ageB[a>=80?3:a>=70?2:a>=60?1:0]++;});
-    var tiles='<div class="xa-grid3"><div class="xa-tile"><b>'+unmarPct+'%</b><span>子世代の未婚率</span></div><div class="xa-tile"><b>'+noChild+'</b><span>既婚・子なし</span></div><div class="xa-tile"><b>'+(ownAvg||'-')+'</b><span>所有者の平均年齢</span></div></div>';
-    var mx=Math.max.apply(null,ageB)||1;
-    var bars=['〜59','60代','70代','80代+'].map(function(l,i){return hbar(l,ageB[i],mx,'#9f7aea',ageB[i]+'人');}).join('');
-    P.souzoku=sec('🏯','相続構造分析',tiles+'<div style="font-size:10px;color:#718096;margin:8px 0 4px">所有者の年齢層（相続緊急度）</div>'+bars);
-  })();
-
-  // 3) 好感シグナル出現率
-  (function(){
-    var ckL={building_amount:'建物・金額の話',souzoku:'相続・活用に関心',material_ok:'資料作成OK',company:'他社に詳しい',questions:'質問が多い',land:'土地を守る/売る',future:'将来的にはの一言',seminar:'セミナー/見学興味',family:'家族の意見',reason:'断り理由を聞けた',kanri:'賃貸管理の苦悩',invest:'投資に興味'};
-    var cnt={}; Object.keys(ckL).forEach(function(k){cnt[k]=0;});
-    target.forEach(function(c){var j=c.jchecks||{};Object.keys(ckL).forEach(function(k){if(j[k])cnt[k]++;});});
-    var arr=Object.keys(ckL).map(function(k){return {k:k,v:cnt[k]};}).sort(function(a,b){return b.v-a.v;});
-    var mx=arr.length?(arr[0].v||1):1;
-    P.kokan=sec('💚','好感シグナル出現率',arr.map(function(o){return hbar(ckL[o.k],o.v,mx,'#38a169',o.v+'件 '+Math.round(o.v/n*100)+'%');}).join(''));
-  })();
-
-  // 4) KPソーシャル
-  (function(){
-    var soc={ドラ:0,エク:0,アナ:0,エミ:0,未判定:0};
-    target.forEach(function(c){(c.family||[]).forEach(function(m){ if(m.role&&(m.kp||m.owner)){ var s=m.social||'未判定'; if(soc[s]==null)soc['未判定']++; else soc[s]++; } });});
-    var lbl={ドラ:'ドライバー',エク:'エクスプレ',アナ:'アナリ',エミ:'エミアブル',未判定:'未判定'};
-    var col={ドラ:'#e53e3e',エク:'#dd6b20',アナ:'#3182ce',エミ:'#38a169',未判定:'#cbd5e0'};
-    var mx=Math.max.apply(null,['ドラ','エク','アナ','エミ','未判定'].map(function(k){return soc[k];}))||1;
-    P.social=sec('🧠','KP・所有者のソーシャルスタイル分布',['ドラ','エク','アナ','エミ','未判定'].map(function(k){return hbar(lbl[k],soc[k],mx,col[k],soc[k]+'人');}).join(''));
-  })();
-
-  // 5) 担当別ステージ構成（積み上げ）
-  (function(){
-    var g=byMgr(cards);
-    var rows=Object.keys(g).map(function(m){ var dist=[0,0,0,0,0,0,0,0]; g[m].forEach(function(c){var s=+(c.stage||0); if(s>=0&&s<=7)dist[s]++;}); var tot=g[m].length||1; var seg=dist.map(function(v,i){ return v?'<div style="width:'+(v/tot*100)+'%;background:'+stageColor[i]+'" title="'+stageNm[i]+':'+v+'"></div>':''; }).join(''); return '<div style="margin-bottom:6px"><div style="font-size:10px;color:#2d3748;font-weight:600;margin-bottom:2px">'+e(m)+'（'+g[m].length+'件）</div><div style="display:flex;height:16px;border-radius:4px;overflow:hidden;background:#edf2f7">'+seg+'</div></div>'; }).join('');
-    var legend='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;font-size:9px;color:#718096">'+stageNm.map(function(l,i){return '<span><span style="display:inline-block;width:8px;height:8px;background:'+stageColor[i]+';border-radius:2px"></span> '+l+'</span>';}).join('')+'</div>';
-    P.mgrStage=sec('📊','担当者別 ステージ構成',rows+legend);
-  })();
-
-  // 6) 担当別 平均滞留日数
-  (function(){
-    var g=byMgr(cards);
-    var arr=Object.keys(g).map(function(m){ var ds=g[m].map(lastContactDays).filter(function(d){return d>=0;}); var avg=ds.length?Math.round(ds.reduce(function(s,d){return s+d;},0)/ds.length):0; return {m:m,avg:avg}; }).sort(function(a,b){return b.avg-a.avg;});
-    var mx=Math.max.apply(null,arr.map(function(o){return o.avg;}))||1;
-    P.mgrDwell=sec('⏳','担当者別 平均滞留日数（短いほど良い）',arr.map(function(o){var col=o.avg>=60?'#c53030':o.avg>=30?'#dd6b20':'#38a169'; return hbar(o.m,o.avg,mx,col,o.avg+'日');}).join(''));
-  })();
-
-  // 7) コンプリート率・面談到達率
-  (function(){
-    var g=byMgr(cards);
-    P.mgrComp=sec('✅','担当者別 コンプリート率・KP面談到達率',Object.keys(g).map(function(m){ var arr=g[m]; var tot=arr.length||1; var comp=arr.filter(function(c){return c.family_headcount;}).length; var met=arr.filter(function(c){return (c.family||[]).some(function(x){return x.met&&(x.owner||x.kp);});}).length; return '<div style="margin-bottom:6px"><div style="font-size:10px;font-weight:600;color:#2d3748">'+e(m)+'</div>'+hbar('人数把握',comp,tot,'#3182ce',Math.round(comp/tot*100)+'%')+hbar('KP面談',met,tot,'#38a169',Math.round(met/tot*100)+'%')+'</div>'; }).join(''));
-  })();
-
-  // 8) 担当別 入力率
-  (function(){
-    var g=byMgr(cards);
-    var arr=Object.keys(g).map(function(m){var ps=g[m].map(function(c){return basicInputStat(c).pct;}); var avg=ps.length?Math.round(ps.reduce(function(s,p){return s+p;},0)/ps.length):0; return {m:m,avg:avg};}).sort(function(a,b){return b.avg-a.avg;});
-    P.mgrInput=sec('📝','担当者別 カード入力率',arr.map(function(o){var col=o.avg>=70?'#38a169':o.avg>=40?'#dd6b20':'#c53030'; return hbar(o.m,o.avg,100,col,o.avg+'%');}).join(''));
-  })();
-
-  // 9) ファネル
-  (function(){
-    var dist=[0,0,0,0,0,0,0,0]; target.forEach(function(c){var s=+(c.stage||0);if(s>=0&&s<=7)dist[s]++;});
-    var mx=Math.max.apply(null,dist)||1;
-    P.funnel=sec('🔻','購買心理パイプライン・ファネル',dist.map(function(v,i){ var w=18+(v/mx*82); return '<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><div style="width:40px;font-size:10px;text-align:right;color:#4a5568">'+stageNm[i]+'</div><div style="flex:1;display:flex;justify-content:center"><div style="width:'+w+'%;background:'+stageColor[i]+';height:18px;border-radius:3px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700">'+v+'</div></div></div>'; }).join(''));
-  })();
-
-  // 10) 月別 判定アクティビティ
-  (function(){
-    var now=new Date(); var months=[]; for(var i=11;i>=0;i--){var d=new Date(now.getFullYear(),now.getMonth()-i,1); months.push(d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2));}
-    var cnt={}; months.forEach(function(k){cnt[k]=0;});
-    target.forEach(function(c){ [c.revisit_judge_date,c.pursuit_judge_date].forEach(function(dt){ if(dt){var k=String(dt).slice(0,7); if(cnt[k]!=null)cnt[k]++;} }); });
-    var vals=months.map(function(k){return cnt[k];}); var mx=Math.max.apply(null,vals)||1;
-    P.month=sec('🗓','月別 Judgmentアクティビティ（直近12ヶ月）',months.map(function(k,i){return hbar(k.slice(2),vals[i],mx,'#553c9a',vals[i]+'件');}).join(''));
-  })();
-
-  // 11) ポテンシャル金額感
-  (function(){
-    var as=target.filter(function(c){return ['S','A'].indexOf(c.pursuit_judge||'')>=0;});
-    var asTsubo=Math.round(as.reduce(function(s,c){return s+tsubo(c);},0));
-    var val=as.reduce(function(s,c){var r=parseFloat(String(c.rosenka||'').replace(/,/g,''))||0; var m=parseFloat(String(c.m2||'').replace(/,/g,''))||0; return s+r*1000*m;},0);
-    var oku=val?(val/1e8).toFixed(1):'-';
-    P.money=sec('💰','課のポテンシャル金額感','<div class="xa-grid3"><div class="xa-tile"><b>'+as.length+'</b><span>A・S案件数</span></div><div class="xa-tile"><b>'+asTsubo+'</b><span>A・S 坪合計</span></div><div class="xa-tile"><b>'+oku+'億</b><span>路線価ベース概算</span></div></div><div style="font-size:9px;color:#a0aec0;margin-top:4px">概算＝Σ(路線価×面積)。規模感の目安。</div>');
-  })();
-
-  // 12) 攻め/守り 4象限
-  (function(){
-    var g=byMgr(cards);
-    var pts=Object.keys(g).map(function(m){ var arr=g[m]; var st=arr.map(function(c){return +(c.stage||0);}); var avgSt=st.length?st.reduce(function(s,v){return s+v;},0)/st.length:0; var ds=arr.map(lastContactDays).filter(function(d){return d>=0;}); var avgD=ds.length?ds.reduce(function(s,v){return s+v;},0)/ds.length:0; return {m:m,x:avgSt,y:avgD}; });
-    if(!pts.length){ return; }
-    var W=560,Hh=240,pl=40,pr=14,pt=14,pb=26;
-    var maxD=Math.max.apply(null,pts.map(function(p){return p.y;}).concat([30]));
-    var s='<svg viewBox="0 0 '+W+' '+Hh+'" style="width:100%;height:auto;border-radius:8px;background:#fafbff">';
-    s+='<line x1="'+((pl+W-pr)/2)+'" y1="'+pt+'" x2="'+((pl+W-pr)/2)+'" y2="'+(Hh-pb)+'" stroke="#e2e8f0"/>';
-    s+='<line x1="'+pl+'" y1="'+((pt+Hh-pb)/2)+'" x2="'+(W-pr)+'" y2="'+((pt+Hh-pb)/2)+'" stroke="#e2e8f0"/>';
-    s+='<text x="'+(W-pr-2)+'" y="'+(pt+10)+'" text-anchor="end" font-size="8" fill="#c53030">要フォロー（高滞留）</text>';
-    s+='<text x="'+(W-pr-2)+'" y="'+(Hh-pb-3)+'" text-anchor="end" font-size="8" fill="#276749">攻撃型（前進・低滞留）</text>';
-    pts.forEach(function(p){ var x=pl+(W-pl-pr)*(p.x/7); var y=pt+(Hh-pb-pt)*(Math.min(p.y,maxD)/maxD); s+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="6" fill="#553c9a" opacity="0.7"><title>'+e(p.m)+' 平均ステージ'+p.x.toFixed(1)+' / 平均滞留'+Math.round(p.y)+'日</title></circle><text x="'+(x+8).toFixed(1)+'" y="'+(y+3).toFixed(1)+'" font-size="8" fill="#4a5568">'+e(p.m)+'</text>'; });
-    s+='<text x="'+pl+'" y="'+(Hh-pb+15)+'" font-size="8" fill="#718096">← 前進力（平均ステージ） →</text></svg>';
-    P.type4q=sec('🎯','担当タイプ診断（前進力 × 滞留）',s);
-  })();
-
-  // 13) 相続ホットランキング
-  (function(){
-    var scored=target.map(function(c){ var owners=(c.family||[]).filter(function(m){return m.owner&&m.age;}); var maxAge=owners.reduce(function(mx,m){return Math.max(mx,+m.age||0);},0); var t=tsubo(c); var j=c.jchecks||{}; var hot=(maxAge>=80?3:maxAge>=70?2:maxAge>=60?1:0)+(t>=150?3:t>=80?2:t>=40?1:0)+(j.souzoku?2:0)+(['S','A','B'].indexOf(c.pursuit_judge||'')>=0?1:0); return {c:c,hot:hot,age:maxAge,t:Math.round(t)}; }).filter(function(o){return o.hot>0;}).sort(function(a,b){return b.hot-a.hot;}).slice(0,8);
-    var body=scored.length?scored.map(function(o,i){ return '<div class="xa-rank-row"><div class="xa-rank-n">'+(i+1)+'</div><div style="flex:1"><b style="font-size:11px;color:#2d3748">'+e(o.c.name||'(無名)')+'</b> <span style="font-size:9px;color:#a0aec0">'+e(o.c.manager||'')+'</span><div style="font-size:9px;color:#718096">所有者'+(o.age||'?')+'歳 ／ '+o.t+'坪'+((o.c.jchecks&&o.c.jchecks.souzoku)?' ／ 相続関心':'')+' ／ '+(o.c.pursuit_judge||'-')+'</div></div><div style="font-size:13px;font-weight:700;color:#c53030">🔥'+o.hot+'</div></div>'; }).join(''):'<div style="font-size:10px;color:#a0aec0">該当なし（所有者年齢・土地面積・相続関心の入力で精度UP）</div>';
-    P.hot=sec('🔥','相続ホットランキング',body);
-  })();
-
-  // 14) 今月のMVP
-  (function(){
-    var ym=new Date().getFullYear()+'-'+('0'+(new Date().getMonth()+1)).slice(-2);
-    var g=byMgr(cards);
-    var arr=Object.keys(g).map(function(m){ var jd=0,comp=0; g[m].forEach(function(c){ [c.revisit_judge_date,c.pursuit_judge_date].forEach(function(dt){if(dt&&String(dt).slice(0,7)===ym)jd++;}); if(c.family_headcount)comp++; }); return {m:m,jd:jd,comp:comp}; });
-    var topJ=arr.slice().sort(function(a,b){return b.jd-a.jd;})[0];
-    var topC=arr.slice().sort(function(a,b){return b.comp-a.comp;})[0];
-    P.mvp=sec('🏆','今月のMVP','<div class="xa-grid2"><div class="xa-tile" style="background:#fffbeb"><b>🏅 '+((topJ&&topJ.jd)?e(topJ.m):'-')+'</b><span>今月の判定数 '+(topJ?topJ.jd:0)+'件</span></div><div class="xa-tile" style="background:#f0fff4"><b>🏅 '+((topC&&topC.comp)?e(topC.m):'-')+'</b><span>人数把握コンプリート '+(topC?topC.comp:0)+'件</span></div></div>');
-  })();
-
-  // 15) 担当別 課長関与（単独/相談/同行）
-  (function(){
-    var g=byMgr(cards);
-    var cols={'単独':'#38a169','相談':'#d69e2e','同行':'#553c9a'};
-    var rows=Object.keys(g).map(function(m){ var arr=g[m]; var tot=arr.length||1; var cnt={'単独':0,'相談':0,'同行':0}; arr.forEach(function(c){ var lv=c.mgr_involve||(c.doukou?'同行':'単独'); if(lv==='助言')lv='相談'; if(cnt[lv]!=null)cnt[lv]++; }); var seg=['単独','相談','同行'].map(function(k){ return cnt[k]?'<div style="width:'+(cnt[k]/tot*100)+'%;background:'+cols[k]+'" title="'+k+':'+cnt[k]+'"></div>':''; }).join(''); var dk=Math.round(cnt['同行']/tot*100); return '<div style="margin-bottom:6px"><div style="font-size:10px;color:#2d3748;font-weight:600;margin-bottom:2px;display:flex;justify-content:space-between"><span>'+e(m)+'（'+arr.length+'件）</span><span style="color:#553c9a">同行率 '+dk+'%</span></div><div style="display:flex;height:16px;border-radius:4px;overflow:hidden;background:#edf2f7">'+seg+'</div></div>'; }).join('');
-    var legend='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;font-size:9px;color:#718096">'+['単独','相談','同行'].map(function(k){return '<span><span style="display:inline-block;width:8px;height:8px;background:'+cols[k]+';border-radius:2px"></span> '+k+'</span>';}).join('')+'</div>';
-    P.mgrInvolve=sec('🤝','担当者別 課長関与（同行率＝手のかかり具合）',rows+legend+'<div style="font-size:9px;color:#a0aec0;margin-top:4px">同行率が高い担当ほど課長フォローを要している目安。🟡相談→🟢単独へ移行できるよう育成を。</div>');
-  })();
-
-  function W(x){return x?x.replace('class="xa-sec"','class="xa-sec xa-wide"'):'';}
-  H=[ W(P.funnel), P.souzoku, P.social, W(P.kokan), W(P.hot), W(P.mgrStage), P.mgrDwell, P.mgrInput, P.mgrComp, P.mgrInvolve, W(P.month), W(P.takara), W(P.type4q), P.money, P.mvp ].filter(Boolean).join('');
-  host.innerHTML=H;
-}
-
-
-function renderBarChart(id,labels,values,colors,total,unit){
-  var el=document.getElementById(id); if(!el) return;
-  var max=Math.max.apply(null,values)||1;
-  unit=unit||'件';
-  el.innerHTML=labels.map(function(l,i){
-    var v=values[i];
-    var barW=Math.round(v/max*100);
-    var lab=(total!=null)?(v+'件 '+Math.round(v/(total||1)*100)+'%'):(v+unit);
-    return '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">'
-      +'<div style="width:52px;font-size:10px;color:#4a5568;text-align:right;flex-shrink:0">'+l+'</div>'
-      +'<div style="flex:1;background:#e2e8f0;border-radius:3px;height:14px;overflow:hidden">'
-      +'<div style="background:'+colors[i]+';height:100%;width:'+barW+'%;border-radius:3px;transition:width 0.3s"></div></div>'
-      +'<div style="width:54px;font-size:10px;color:#718096;flex-shrink:0">'+lab+'</div></div>';
-  }).join('');
-}
-
 function copyAnalysisPrompt(){
   var sel=document.getElementById('analysisMember');
   var isMember=sel&&sel.value!=='all';
@@ -5733,7 +5517,7 @@ function getAmKey(){
 }
 function saveAnalysisMemo(){
   var ta=document.getElementById('analysisMemo'); if(!ta) return;
-  try{ localStorage.setItem(getAmKey(),ta.value); var at=ta.value.trim()?new Date().toISOString():''; localStorage.setItem(getAmKey()+'_at',at); var l=document.getElementById('analysisMemoAt'); if(l)l.textContent=at?('📌 '+_fmtDateJP(at)):''; }catch(ex){}
+  try{ localStorage.setItem(getAmKey(),ta.value); var _ak=getAmKey()+'_at'; var at=localStorage.getItem(_ak)||''; if(!ta.value.trim()) at=''; else if(!at) at=new Date().toISOString(); localStorage.setItem(_ak,at); var l=document.getElementById('analysisMemoAt'); if(l)l.textContent=at?('📌 '+_fmtDateJP(at)):''; }catch(ex){}
 }
 function loadAnalysisMemo(){
   var ta=document.getElementById('analysisMemo'); if(!ta) return;
@@ -5753,8 +5537,10 @@ function clearAnalysisMemo(){
 }
 function doClearAnalysisMemo(){
   var ta=document.getElementById('analysisMemo'); if(ta) ta.value='';
-  try{ localStorage.removeItem(getAmKey()); }catch(ex){}
+  try{ localStorage.removeItem(getAmKey()); localStorage.removeItem(getAmKey()+'_at'); }catch(ex){}
+  var l=document.getElementById('analysisMemoAt'); if(l) l.textContent='';
 }
+function _reportTxt(txt,pfx){ return txt.split('\n').map(function(line){ var l=line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); if(/^[①②③④⑤⑥⑦⑧⑨⑩]/.test(line)) return '<div class="'+pfx+'h3">'+l+'</div>'; if(/^【/.test(line)) return '<div class="'+pfx+'h2">'+l+'</div>'; if(/^■/.test(line)) return '<div class="'+pfx+'h3">'+l+'</div>'; if(/^👉/.test(line)) return '<div class="'+pfx+'tips">'+l+'</div>'; if(/^[・\-•]/.test(line)) return '<div class="'+pfx+'li">'+l+'</div>'; if(line.trim()==='') return '<div class="'+pfx+'blank"></div>'; return '<div class="'+pfx+'p">'+l+'</div>'; }).join(''); }
 function printAnalysisReport(optMemo,optTitle){
   var content, title;
   if(typeof optMemo==='string'){ content=optMemo; title=optTitle||'AI分析レポート'; }
@@ -5763,18 +5549,6 @@ function printAnalysisReport(optMemo,optTitle){
   var dateStr=new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'});
   var sec=localStorage.getItem('prospect_sec_v1')||'';
   var br=localStorage.getItem('prospect_branch_v1')||'';
-  function textToHtml(txt){
-    return txt.split('\n').map(function(line){
-      var l=line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      if(/^[①②③④⑤⑥⑦⑧⑨⑩]/.test(line)) return '<div class="h3">'+l+'</div>';
-      if(/^【/.test(line)) return '<div class="h2">'+l+'</div>';
-      if(/^■/.test(line)) return '<div class="h3">'+l+'</div>';
-      if(/^👉/.test(line)) return '<div class="tips">'+l+'</div>';
-      if(/^[・\-•]/.test(line)) return '<div class="li">'+l+'</div>';
-      if(line.trim()==='') return '<div class="blank"></div>';
-      return '<div class="p">'+l+'</div>';
-    }).join('');
-  }
   var html='<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><style>'
     +'@page{size:A4;margin:12mm 16mm}'
     +'*{box-sizing:border-box;margin:0;padding:0}'
@@ -5797,7 +5571,7 @@ function printAnalysisReport(optMemo,optTitle){
     +'<div class="cover-title">'+title+'</div>'
     +'<div class="cover-sub">'+br+' '+sec+'</div>'
     +'<div class="cover-date">'+dateStr+' 作成</div></div>'
-    +'<div class="body">'+textToHtml(content)+'</div>'
+    +'<div class="body">'+_reportTxt(content,'')+'</div>'
     +'<div class="footer">'+br+' '+sec+' ／ '+dateStr+'</div>'
     +'</body></html>';
   printHTMLDocument(html);
@@ -5813,7 +5587,6 @@ function printDashboardReport(){
   var title=who+' ダッシュボード・レポート';
   var dateStr=new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'});
   var sec=localStorage.getItem('prospect_sec_v1')||''; var br=localStorage.getItem('prospect_branch_v1')||'';
-  function textToHtml(txt){ return txt.split('\n').map(function(line){ var l=line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); if(/^[①②③④⑤⑥⑦⑧⑨⑩]/.test(line)) return '<div class="rh3">'+l+'</div>'; if(/^【/.test(line)) return '<div class="rh2">'+l+'</div>'; if(/^■/.test(line)) return '<div class="rh3">'+l+'</div>'; if(/^👉/.test(line)) return '<div class="rtips">'+l+'</div>'; if(/^[・\-•]/.test(line)) return '<div class="rli">'+l+'</div>'; if(line.trim()==='') return '<div class="rblank"></div>'; return '<div class="rp">'+l+'</div>'; }).join(''); }
   var styles=Array.prototype.map.call(document.querySelectorAll('style'),function(st){return st.textContent;}).join('\n');
   var REPORT_CSS='@page{size:A4;margin:13mm 14mm}'
     +'.rcover{min-height:255mm;display:flex;flex-direction:column;justify-content:center;align-items:center;background:linear-gradient(135deg,#1e3a5f 0%,#2c5282 45%,#553c9a 100%);color:#fff;text-align:center;page-break-after:always;border-radius:10px}'
@@ -5846,7 +5619,7 @@ function printDashboardReport(){
     +'<div class="rcover"><div class="rcover-logo">z.Aibis</div><div class="rcover-title">'+e(title)+'</div><div class="rcover-sub">'+e((br+' '+sec).trim())+'</div><div class="rcover-date">'+dateStr+' 作成</div></div>'
     +toc
     +'<section><h1 class="rsec-h">📊 ダッシュボード</h1>'+gadgets+'</section>'
-    +'<section class="rsec-break"><h1 class="rsec-h">🧠 AI分析レポート</h1><div class="rbody">'+textToHtml(content)+'</div></section>'
+    +'<section class="rsec-break"><h1 class="rsec-h">🧠 AI分析レポート</h1><div class="rbody">'+_reportTxt(content,'r')+'</div></section>'
     +'<div class="rfooter">'+e((br+' '+sec).trim())+' ／ '+dateStr+'</div>'
     +'</body></html>';
   printHTMLDocument(html);
@@ -5875,7 +5648,7 @@ function copySelfPrompt(){
   p+='\n※ 数値評価や順位ではなく、明日からの行動が変わる具体的アドバイスを中心に、前向きな表現でお願いします。';
   navigator.clipboard.writeText(p).then(function(){ aibisToast('📋 見込み分析を抽出！AI分析に貼ってね'); }).catch(function(){ toast('コピーできませんでした'); });
 }
-function saveSelfMemo(){ var ta=document.getElementById('selfAnalysisMemo'); if(!ta)return; try{localStorage.setItem('analysis_memo_self_v1',ta.value); var at=ta.value.trim()?new Date().toISOString():''; localStorage.setItem('analysis_memo_self_at_v1',at); var l=document.getElementById('selfMemoAt'); if(l)l.textContent=at?('📌 '+_fmtDateJP(at)):''; }catch(ex){} }
+function saveSelfMemo(){ var ta=document.getElementById('selfAnalysisMemo'); if(!ta)return; try{localStorage.setItem('analysis_memo_self_v1',ta.value); var at=localStorage.getItem('analysis_memo_self_at_v1')||''; if(!ta.value.trim()) at=''; else if(!at) at=new Date().toISOString(); localStorage.setItem('analysis_memo_self_at_v1',at); var l=document.getElementById('selfMemoAt'); if(l)l.textContent=at?('📌 '+_fmtDateJP(at)):''; }catch(ex){} }
 function loadSelfMemo(){ var ta=document.getElementById('selfAnalysisMemo'); if(!ta)return; try{ta.value=localStorage.getItem('analysis_memo_self_v1')||''; var at=localStorage.getItem('analysis_memo_self_at_v1')||''; var l=document.getElementById('selfMemoAt'); if(l)l.textContent=at?('📌 '+_fmtDateJP(at)):''; }catch(ex){} }
 function printSelfReport(){ var ta=document.getElementById('selfAnalysisMemo'); var memo=ta?ta.value:''; if(!memo.trim()){ toast('貼り付け欄が空です'); return; } printAnalysisReport(memo,(uName||'自分')+' 見込み分析レポート'); }
 function clearSelfMemo(){ var ta=document.getElementById('selfAnalysisMemo'); if(!ta)return; if(!ta.value){toast('すでに空です');return;} aibisAlert('この分析結果を削除するよ。よろしい？<br><br><div style="display:flex;gap:8px;margin-top:8px"><button onclick="closeAibisAlert();doClearSelfMemo()" style="flex:1;padding:8px;background:#c53030;color:white;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit">削除する</button><button onclick="closeAibisAlert()" style="flex:1;padding:8px;background:#e2e8f0;color:#2d3748;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit">やめる</button></div>'); }
@@ -5977,6 +5750,7 @@ function _navToList(){
   var lv=document.getElementById('listView'); if(lv) lv.style.display=(hasFSA&&!isMob)?'flex':'block';
 }
 window.addEventListener('popstate',function(ev){
+  try{ autoCommitEdit(); }catch(_e){}
   var st=ev.state||{}; var zv=st.zv||'list';
   _silent=true;
   try{
@@ -6175,6 +5949,7 @@ function clearStrategyField(id){
 function doClearStrategyField(id){
   var el=document.getElementById(id); if(!el) return;
   el.value=''; toast('クリアしました');
+  if(/^f_ai_/.test(id)&&cur){ var _k=id.slice(5); cur['ai_'+_k+'_at']=''; var _at=document.getElementById('at_ai_'+_k); if(_at) _at.textContent=''; }
 }
 window.clearStrategyField=clearStrategyField; window.doClearStrategyField=doClearStrategyField;
 window.toggleMobMenu=toggleMobMenu; window.closeMobMenu=closeMobMenu; window.showSyncGuide=showSyncGuide; window.closeSyncModal=closeSyncModal; window.syncMailToSelf=syncMailToSelf; window.showRestoreGuide=showRestoreGuide; window.showOneDriveSaveGuide=showOneDriveSaveGuide; window.doMobExport=doMobExport;
@@ -6729,7 +6504,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
             <button onclick="closeCardMenu();setTimeout(function(){showHelp();},50)">📖 マニュアル</button>
           </div>
         </div>
-        <button onclick="openAibisChat3()" style="background:#d97706;color:white;border:none;border-radius:6px;font-size:11px;padding:4px 8px;cursor:pointer;font-family:inherit;line-height:1.2">🧚<br><span class="aibisVer" style="font-size:8px;opacity:0.8;font-weight:700">v3.3</span></button>
+        <button onclick="openAibisChat()" style="background:#d97706;color:white;border:none;border-radius:6px;font-size:11px;padding:4px 8px;cursor:pointer;font-family:inherit;line-height:1.2">🧚<br><span class="aibisVer" style="font-size:8px;opacity:0.8;font-weight:700">v3.3</span></button>
       </div>
     </div>
   </header>
