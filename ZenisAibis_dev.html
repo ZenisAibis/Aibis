@@ -1434,7 +1434,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.20";
+var APP_VERSION = "v5.21";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -6182,20 +6182,27 @@ function renderPlanner(){
   var pickList=cards.filter(function(c){ return !_plan.entries.some(function(e){return e.cardId===c.id;}); }).map(function(c){ return {c:c,w:planWard(c)}; }).sort(function(a,b){ var wa=a.w||'\uffff',wb=b.w||'\uffff'; if(wa!==wb)return wa.localeCompare(wb,'ja'); return (a.c.name||'').localeCompare(b.c.name||'','ja'); });
   var pickOpts='<option value="">＋ お客様を選択して追加…</option>'+pickList.map(function(o){ return '<option value="'+o.c.id+'">'+e(o.c.name||'(無名)')+(o.w?'（'+e(o.w)+'）':'')+'</option>'; }).join('');
   var sortToggle='<span style="display:inline-flex;border:1px solid #cbd5e0;border-radius:7px;overflow:hidden;margin-right:8px"><button onclick="planSort(\'time\')" style="border:none;padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit;background:'+(sm==='time'?'#2c5282':'#fff')+';color:'+(sm==='time'?'#fff':'#718096')+'">🕒 時刻順</button><button onclick="planSort(\'area\')" style="border:none;padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit;background:'+(sm==='area'?'#2c5282':'#fff')+';color:'+(sm==='area'?'#fff':'#718096')+'">📍 エリア順</button></span>';
-  var addForm='<div style="border:1px dashed #cbd5e0;border-radius:8px;padding:12px;margin-bottom:14px;background:#fafcff">'
-    +'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'
-    +'<select id="plEvTime" style="width:96px;padding:7px;border:1px solid #cbd5e0;border-radius:6px;font-size:13px;font-weight:700;color:#2c5282"><option value="">時刻</option>'+slots+'</select>'
-    +[['本社イベント','#e0e7ff','#4338ca','#c7d2fe'],['本社講習','#d6f5ee','#0f766e','#a7f3d0'],['支店イベント','#fef3c7','#92400e','#fde68a'],['支店講習','#fce7f3','#9d174d','#fbcfe8']].map(function(v){ return '<button onclick="planAddEvent(\''+v[0]+'\')" style="background:'+v[1]+';color:'+v[2]+';border:1px solid '+v[3]+';border-radius:6px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">＋'+v[0]+'</button>'; }).join('')
-    +'<button onclick="planAddFree()" style="background:#edf2f7;color:#4a5568;border:1px solid #cbd5e0;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">＋自由入力</button>'
+  var addForm='<div style="border:1px dashed #cbd5e0;border-radius:8px;padding:10px;margin-bottom:14px;background:#fafcff">'
+    +'<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">'
+    +'<select id="plEvTime" onchange="planUpdateAddState()" style="width:78px;padding:6px 4px;border:1px solid #cbd5e0;border-radius:6px;font-size:13px;font-weight:700;color:#2c5282"><option value="">時刻</option>'+slots+'</select>'
+    +[['本社イベント','#e0e7ff','#4338ca','#c7d2fe'],['本社講習','#d6f5ee','#0f766e','#a7f3d0'],['支店イベント','#fef3c7','#92400e','#fde68a'],['支店講習','#fce7f3','#9d174d','#fbcfe8']].map(function(v){ return '<button class="pl-evbtn" onclick="planAddEvent(\''+v[0]+'\')" style="background:'+v[1]+';color:'+v[2]+';border:1px solid '+v[3]+';border-radius:6px;padding:5px 7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap">'+v[0]+'</button>'; }).join('')
+    +'<button class="pl-evbtn" onclick="planAddFree()" style="background:#edf2f7;color:#4a5568;border:1px solid #cbd5e0;border-radius:6px;padding:5px 7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap">自由入力</button>'
+    +'<input id="plSearch" oninput="planSearch(this.value)" placeholder="見込み客を検索…" style="flex:1;min-width:120px;padding:6px 8px;border:1px solid #cbd5e0;border-radius:6px;font-size:13px;box-sizing:border-box">'
+    +'<button type="button" id="plMicBtn" class="mic-btn" onclick="micStart(\'plSearch\',this)" style="flex-shrink:0;margin-top:0" title="音声で検索">🎤</button>'
     +'</div>'
-    +'<div style="border-top:1px dashed #e2e8f0;margin-top:10px;padding-top:10px">'
-    +'<label style="font-size:11px;color:#718096">見込み客を検索して追加</label>'
-    +'<div style="margin-top:5px"><input id="plSearch" oninput="planSearch(this.value)" placeholder="氏名を入力…" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font-size:13px;box-sizing:border-box"></div>'
     +'<div id="plSearchResults" style="margin-top:8px"></div>'
-    +'</div></div>';
+    +'</div>';
   var _pw=null;
   var list=_plan.entries.length?_plan.entries.map(function(en,i){ var h=''; if(sm==='area'){ var w=planAreaOf(en)||'その他'; if(w!==_pw){ _pw=w; h+='<div style="font-size:12px;font-weight:800;color:#2c5282;margin:8px 2px 4px;border-bottom:1px solid #e2e8f0;padding-bottom:3px;grid-column:1/-1">📍 '+e(w)+'</div>'; } } return h+planEntryHTML(en,i); }).join(''):'<div style="text-align:center;color:#a0aec0;font-size:12px;padding:10px;grid-column:1/-1">予定がありません。プルダウンや検索から追加してください。</div>';
   host.innerHTML='<div style="background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.07);padding:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px"><div style="font-size:13px;color:#718096">'+planDateLabel()+'　担当：'+e(uName||'')+'</div><div style="display:flex;align-items:center">'+sortToggle+'<button onclick="resetPlanner()" style="background:#fff;color:#e53e3e;border:1px solid #fed7d7;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap">🗑 全リセット</button></div></div>'+sug+addForm+'<div id="plList" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:start">'+list+'</div></div>';
+  planUpdateAddState();
+}
+function planUpdateAddState(){
+  var t=document.getElementById('plEvTime'); var on=!!(t&&t.value);
+  var ps=document.getElementById('plSearch'); if(ps){ ps.disabled=!on; ps.style.opacity=on?'1':'0.45'; ps.placeholder=on?'見込み客を検索…':'先に時刻を選択'; }
+  var mb=document.getElementById('plMicBtn'); if(mb){ mb.disabled=!on; mb.style.opacity=on?'1':'0.45'; mb.style.pointerEvents=on?'':'none'; }
+  var bs=document.querySelectorAll('.pl-evbtn'); for(var k=0;k<bs.length;k++){ bs[k].disabled=!on; bs[k].style.opacity=on?'1':'0.45'; bs[k].style.cursor=on?'pointer':'not-allowed'; }
+  if(!on){ var box=document.getElementById('plSearchResults'); if(box) box.innerHTML=''; if(ps) ps.value=''; }
 }
 function planEntryTags(en){
   if(en.cardId){ var s=''; var w=planAreaOf(en);
@@ -6231,7 +6238,7 @@ function planDel(i){ _plan.entries.splice(i,1); savePlan(); renderPlanner(); }
 function planAddCard(id){
   if(_plan.entries.some(function(e){return e.cardId===id;})){ toast('既に追加済みです'); return; }
   var c=cards.filter(function(x){return x.id===id;})[0]; if(!c)return;
-  var en=makePlanEntry(c); var t=document.getElementById('plTime'); if(t)en.time=t.value;
+  var en=makePlanEntry(c); var t=document.getElementById('plEvTime'); if(t&&t.value)en.time=t.value;
   _plan.entries.push(en); savePlan(); renderPlanner();
 }
 function planSearch(q){
@@ -6241,8 +6248,8 @@ function planSearch(q){
   if(!hits.length){ box.innerHTML='<span style="font-size:12px;color:#a0aec0">該当なし（既に追加済みの可能性）</span>'; return; }
   box.innerHTML=hits.map(function(c){ var w=planWard(c); return '<div onclick="planAddCard(\''+c.id+'\')" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px;cursor:pointer;background:#fff"><span style="font-weight:700;font-size:14px;color:#1a202c">'+e(c.name||'(無名)')+'</span>'+(w?'<span style="font-size:11px;color:#2c5282;background:#ebf8ff;border:1px solid #bee3f8;border-radius:10px;padding:1px 8px;white-space:nowrap">📍'+e(w)+'</span>':'')+(c.pursuit_judge?'<span style="font-size:11px;color:#718096">'+e(c.pursuit_judge)+'</span>':'')+'<span style="margin-left:auto;color:#2c5282;font-size:12px;font-weight:700">＋ 追加</span></div>'; }).join('');
 }
-function planAddEvent(label){ var t=document.getElementById('plEvTime'); _plan.entries.push({cardId:'',target:label,sub:'行事',kind:'ev',purpose:'—',time:t?t.value:'',note:'',result:''}); savePlan(); renderPlanner(); }
-function planAddFree(){ var name=prompt('対象名を入力'); if(!name)return; var t=document.getElementById('plEvTime'); _plan.entries.push({cardId:'',target:name,sub:'',kind:'k3',purpose:'情報収集',time:t?t.value:'',note:'',result:''}); savePlan(); renderPlanner(); }
+function planAddEvent(label){ var t=document.getElementById('plEvTime'); if(!t||!t.value){ toast('先に時刻を選んでね'); return; } _plan.entries.push({cardId:'',target:label,sub:'行事',kind:'ev',purpose:'—',time:t?t.value:'',note:'',result:''}); savePlan(); renderPlanner(); }
+function planAddFree(){ var t=document.getElementById('plEvTime'); if(!t||!t.value){ toast('先に時刻を選んでね'); return; } var name=prompt('対象名を入力'); if(!name)return; _plan.entries.push({cardId:'',target:name,sub:'',kind:'k3',purpose:'情報収集',time:t?t.value:'',note:'',result:''}); savePlan(); renderPlanner(); }
 function planRowsHTML(){
   var byTime={}; _plan.entries.forEach(function(en){ if(en.time)byTime[en.time]=en; });
   return planSlots().map(function(s){
