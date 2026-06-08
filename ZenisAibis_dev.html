@@ -285,9 +285,9 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 .fam-leg-item{display:flex;align-items:center;gap:3px;font-size:11px;color:#718096}
 .fam-ld{width:10px;height:10px;border-radius:50%;flex-shrink:0;border:1.5px solid rgba(0,0,0,0.1)}
 /* 家族モーダル */
-.fam-mo{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;z-index:200;padding:12px}
+.fam-mo{position:fixed;inset:0;background:rgba(8,15,30,0.42);-webkit-backdrop-filter:blur(6px) saturate(115%);backdrop-filter:blur(6px) saturate(115%);display:none;align-items:center;justify-content:center;z-index:2147483000;padding:16px}
 .fam-mo.show{display:flex}
-.fam-md{background:white;border-radius:10px;padding:16px;width:100%;max-width:340px;max-height:92vh;overflow-y:auto}
+.fam-md{background:rgba(255,255,255,0.9);-webkit-backdrop-filter:blur(18px) saturate(140%);backdrop-filter:blur(18px) saturate(140%);border:1px solid rgba(255,255,255,0.6);border-radius:16px;box-shadow:0 24px 60px -12px rgba(15,23,42,0.5);padding:18px;width:100%;max-width:380px;max-height:90vh;overflow-y:auto}
 .fam-md h4{font-size:15px;color:#2c5282;margin-bottom:12px;border-bottom:2px solid #ebf4ff;padding-bottom:8px}
 .fam-md label{display:block;font-size:12px;color:#4a5568;margin-bottom:3px;font-weight:600}
 .fam-md input,.fam-md select,.fam-md textarea{width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:5px;font-size:14px;font-family:inherit;margin-bottom:8px}
@@ -944,8 +944,8 @@ body.is-mob .mob-menu{display:inline-block}
 </div>
 
 <!-- 本日の予定表（PC専用） -->
-<div id="plannerView" style="display:none;position:fixed;inset:0;background:#eef2f7;z-index:100;overflow-y:auto">
-  <div style="max-width:900px;margin:0 auto;padding:16px">
+<div id="plannerView" style="display:none;position:fixed;inset:0;background:rgba(8,15,30,0.42);-webkit-backdrop-filter:blur(6px) saturate(115%);backdrop-filter:blur(6px) saturate(115%);z-index:2000;overflow-y:auto">
+  <div style="max-width:900px;margin:18px auto;padding:18px;background:rgba(255,255,255,0.94);-webkit-backdrop-filter:blur(14px) saturate(135%);backdrop-filter:blur(14px) saturate(135%);border:1px solid rgba(255,255,255,0.6);border-radius:16px;box-shadow:0 24px 60px -12px rgba(15,23,42,0.5)">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
       <span style="font-size:16px;font-weight:700;color:#2c5282">📅 本日の予定表</span>
     </div>
@@ -1434,7 +1434,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.21";
+var APP_VERSION = "v5.22";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -3652,6 +3652,8 @@ function famOpenEdit(idx){
   document.getElementById('famModal').classList.add('show');
 }
 function famClose(){ document.getElementById('famModal').classList.remove('show'); }
+function famOverlayClick(ev){ if(ev.target&&ev.target.id==='famModal') famClose(); }
+window.famOverlayClick=famOverlayClick;
 function famSave(){
   if(!cur.family) cur.family=[];
   var m={
@@ -7602,7 +7604,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
 </div>
 
 <!-- 家族構成モーダル -->
-<div class="fam-mo" id="famModal">
+<div class="fam-mo" id="famModal" onclick="famOverlayClick(event)">
   <div class="fam-md">
     <h4 id="famModalTitle">メンバー追加</h4>
     <!-- 上部ボタン -->
