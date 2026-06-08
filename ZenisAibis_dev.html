@@ -71,7 +71,7 @@ body{font-family:-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-seri
     align-items:center;
     background:#e8ecf0;
   }
-  #listView > *:not(.fam-mo):not(.mo),#helpView > *:not(.fam-mo):not(.mo),#setupView > *:not(.fam-mo):not(.mo),#editView > *:not(.fam-mo):not(.mo){
+  #listView > *:not(.fam-mo):not(.mo):not(.z-fullov),#helpView > *:not(.fam-mo):not(.mo):not(.z-fullov),#setupView > *:not(.fam-mo):not(.mo):not(.z-fullov),#editView > *:not(.fam-mo):not(.mo):not(.z-fullov){
     width:100%;
     max-width:794px;
     box-sizing:border-box;
@@ -482,6 +482,9 @@ body.is-mob .mob-menu{display:inline-block}
 .zdash{--z-panel:rgba(255,255,255,.05);--z-panel2:rgba(255,255,255,.08);--z-line:rgba(255,255,255,.12);--z-ink:#e8edf7;--z-mut:#8a97b2;--z-dim:#6b7894;--z-cyan:#34e3d0;--z-violet:#8b7cff;--z-amber:#ffb443;--z-coral:#ff5d7d;--z-lime:#9be15d;--z-blue:#4aa8ff;
   background:#070b16;background-image:radial-gradient(680px 360px at 8% -12%,rgba(139,124,255,.20),transparent 60%),radial-gradient(620px 340px at 100% -6%,rgba(52,227,208,.13),transparent 55%);
   border-radius:16px;padding:16px;color:var(--z-ink);font-family:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;line-height:1.5}
+.z-fullov{position:fixed;inset:0;z-index:2147482000;background:rgba(8,15,30,0.55);-webkit-backdrop-filter:blur(7px) saturate(120%);backdrop-filter:blur(7px) saturate(120%)}
+.z-dashcard{width:calc(100% - 32px);max-width:980px;margin:24px auto;max-height:calc(100vh - 48px);display:flex;flex-direction:column;background:#fff;border-radius:18px;box-shadow:0 28px 80px -16px rgba(0,0,0,.65);overflow:hidden}
+.z-dashcard > :last-child{flex:1;min-height:0;overflow-y:auto}
 .zdash *{box-sizing:border-box}
 .zdash h2,.zdash h3,.zdash p{margin:0}
 .zdash .z-num{font-family:'Sora','Zen Kaku Gothic New',sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.4px}
@@ -859,14 +862,14 @@ body.is-mob .mob-menu{display:inline-block}
   </div>
   <div class="sortbar">
     <span style="font-size:12px;color:#4a5568;font-weight:600;white-space:nowrap">並替：</span>
-    <button class="sbtn active" id="sb_lv" onclick="toggleSort('lv')">🚶 古い→</button>
-    <button class="sbtn"        id="sb_ad" onclick="toggleSort('ad')">🏠 住所</button>
-    <button class="sbtn"        id="sb_st" onclick="toggleSort('st')">📊 心理</button>
-    <button class="sbtn"        id="sb_sc" onclick="toggleSort('sc')">⭐ スコア</button>
-    <button class="sbtn"        id="sb_pj" onclick="toggleSort('pj')">🎯 追判</button>
-    <button class="sbtn"        id="sb_rv" onclick="toggleSort('rv')">🔁 再訪</button>
-    <button class="sbtn"        id="sb_dt" onclick="toggleSort('dt')">📅 初訪</button>
-    <button class="sbtn"        id="sb_pace" onclick="toggleSort('pace')">⏰ 遅れ</button>
+    <button class="sbtn active" id="sb_lv" onclick="toggleSort('lv')">🚶 最新</button>
+    <button class="sbtn" id="sb_rv" onclick="toggleSort('rv')">🔁 再訪</button>
+    <button class="sbtn" id="sb_ad" onclick="toggleSort('ad')">🏠 住所</button>
+    <button class="sbtn" id="sb_sc" onclick="toggleSort('sc')">⭐ スコア</button>
+    <button class="sbtn" id="sb_st" onclick="toggleSort('st')">📊 心理</button>
+    <button class="sbtn" id="sb_pj" onclick="toggleSort('pj')">🎯 ランク</button>
+    <button class="sbtn" id="sb_pace" onclick="toggleSort('pace')">⏰ 遅れ</button>
+    <button class="sbtn" id="sb_dt" onclick="toggleSort('dt')">📅 初訪</button>
   </div>
   <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
     <div style="position:relative;flex:1">
@@ -887,16 +890,18 @@ body.is-mob .mob-menu{display:inline-block}
   <div class="panel" style="padding:8px"><div id="cardList"></div><div id="pager"></div></div>
 
   <!-- 自己分析ダッシュボード（担当本人向け） -->
-  <div id="selfDashPanel" style="display:none;position:fixed;inset:0;background:#fff;z-index:120;overflow-y:auto">
+  <div id="selfDashPanel" class="z-fullov" onclick="dashOverlayClick(event)" style="display:none;position:fixed;inset:0;overflow:hidden">
+    <div class="z-dashcard">
     <div style="position:sticky;top:0;z-index:2;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;background:#f0f5ff;border-bottom:1px solid #c3dafe">
       <span style="font-size:15px;font-weight:700;color:#2c5282">🔭 自己分析ダッシュボード</span>
       <button onclick="closeSelfDash()" style="border:1px solid #c3dafe;background:#fff;border-radius:8px;padding:6px 13px;font-size:13px;font-weight:700;color:#2c5282;cursor:pointer;font-family:inherit">✕ 閉じる</button>
     </div>
     <div id="selfDashContent" style="padding:16px"></div>
+    </div>
   </div>
   <!-- 課分析パネル（管理職PC版のみ） -->
-  <div id="analysisPanel" style="display:none;position:fixed;inset:0;background:#fff;z-index:120;overflow-y:auto">
-    <div>
+  <div id="analysisPanel" class="z-fullov" onclick="dashOverlayClick(event)" style="display:none;position:fixed;inset:0;overflow:hidden">
+    <div class="z-dashcard">
       <div style="position:sticky;top:0;z-index:2;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;background:#ebf4ff;border-bottom:1px solid #bee3f8">
         <span style="font-size:15px;font-weight:700;color:#2c5282">📊 課分析ダッシュボード</span>
         <button onclick="closeAnalysis()" style="border:1px solid #bee3f8;background:#fff;border-radius:8px;padding:6px 13px;font-size:13px;font-weight:700;color:#2c5282;cursor:pointer;font-family:inherit">✕ 閉じる</button>
@@ -1021,7 +1026,7 @@ body.is-mob .mob-menu{display:inline-block}
         📧課長へ … 選択カードを課長宛にメール送信<br><br>
         <b style="color:#718096">【共通】</b><br>
         検索 … 氏名・住所・地名で絞り込み（スペース区切りで複数）<br>
-        並び替え … 最新・住所・心理・スコア・追判・初訪・遅れ・再訪から選択<br>
+        並び替え … 最新・再訪・住所・スコア・心理・ランク・遅れ・初訪から選択<br>
         一覧の各カードには「追客ランク」「心理ステージ」が表示されます
       </div>
     </div>
@@ -1434,7 +1439,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.25";
+var APP_VERSION = "v5.28";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -1802,7 +1807,7 @@ var AIBIS_FAQ=[
   {q:'自動保存先って何？',a:'PC版でOneDriveに設定する主ファイルのことだよ！保存するたびに自動で書き込まれるよ。<br><br>初期設定の「💾 自動保存先を設定」から設定できるよ。ファイル名はz-aibis_氏名.jsonで自動入力されるから変更不要！<br><br>⚠ このファイルを削除すると全データが消えるから絶対に削除しないでね！'},
   {q:'データが消えた！',a:'落ち着いて！まず確認してみてね😊<br><br>【まず試す】⋮その他→⏪1つ前に戻す　で直前の保存状態に復元できるよ！<br><br>【PC版】OneDriveのz-aibis_氏名.jsonが残っていないか確認。コピー保存先も確認してみて。<br>【スマホ版】PCにバックアップ（📧 PCへ）が残っていないか確認。<br><br>これからはPC版でコピー保存先も設定しておくと二重に守れるよ！'},
   {q:'1つ前に戻すって何？',a:'⏪1つ前に戻すは、直前の保存状態に復元する機能だよ！<br><br>保存するたびに、その直前のデータが自動でバックアップされてるよ。<br><br>誤ってカードを消した・上書きしてしまった・読み込みミスをした、そんなときに⋮その他→⏪1つ前に戻すで復活できるよ😊<br><br>※もう一度押すと、戻す前の状態に戻せるよ（行ったり来たり）。ただし2つ前より前には戻れないから注意してね！'},
-  {q:'検索ってどう使うの？',a:'名前や住所を入れるだけ！スペース区切りで複数キーワードも使えるよ🔍<br>並び替えは最新・住所・心理・スコア・追判・初訪・遅れ・再訪から選べるよ！'},
+  {q:'検索ってどう使うの？',a:'名前や住所を入れるだけ！スペース区切りで複数キーワードも使えるよ🔍<br>並び替えは最新・再訪・住所・スコア・心理・ランク・遅れ・初訪から選べるよ！'},
   {q:'バージョンアップするには？',a:'Claudeに修正を頼んで、GitHubに上書きするだけ！みんな次回アクセスで自動的に最新版になるよ👏'},
   {q:'マニュアルはどこ？',a:function(){return isMob?'⋮その他→📖マニュアルから見れるよ！タイトルをタップすると詳細が開くよ。':'⋮その他→📖マニュアルから見れるよ！各セクションをクリックすると詳細が開くよ。';}},
   {q:'戦略協議ってどう使うの？',a:'戦略協議は、お客様の情報をAI（会社のCopilot）に分析してもらう機能だよ！<br><br>①「💭 戦略協議」タブを開く<br>②分析テーマを選ぶ（7種）<br>③「🤖 分析用に抽出」でカード情報をコピー<br>④「🤖 AI分析」でCopilotが開く<br>⑤貼り付けて送信→回答を貼り付け欄にペースト<br><br>総合分析では追客ランク（S〜E）が自動で検出されるよ🧚'},
@@ -2528,6 +2533,8 @@ function devGenHash(){
 window.onRoleChange=onRoleChange; window.devGenHash=devGenHash; window.isMgrUnlocked=isMgrUnlocked;
 function openSelfDash(){ var p=document.getElementById('selfDashPanel'); if(!p) return; p.style.display='block'; if(window.renderSelfDash) renderSelfDash(); p.scrollTop=0; }
 function closeSelfDash(){ var p=document.getElementById('selfDashPanel'); if(p) p.style.display='none'; }
+function dashOverlayClick(ev){ var id=(ev&&ev.target)?ev.target.id:''; if(id==='selfDashPanel'){ closeSelfDash(); } else if(id==='analysisPanel'){ if(window.closeAnalysis) closeAnalysis(); } }
+window.dashOverlayClick=dashOverlayClick;
 function toggleSelfDash(){ openSelfDash(); }
 function _zSpark(arr,color){
   arr=arr||[]; if(arr.length<2) return '';
@@ -2848,14 +2855,14 @@ function toggleSort(key) {
 }
 function updateSortBtns() {
   // 非アクティブ時の基本ラベル
-  var base = {lv:'🚶 最新', ad:'🏠 住所', st:'📊 心理', sc:'⭐ スコア', pj:'🎯 追判', dt:'📅 初訪', kw:'💬 会話', pace:'⏰ 遅れ', rv:'🔁 再訪'};
+  var base = {lv:'🚶 最新', ad:'🏠 住所', st:'📊 心理', sc:'⭐ スコア', pj:'🎯 ランク', dt:'📅 初訪', kw:'💬 会話', pace:'⏰ 遅れ', rv:'🔁 再訪'};
   // アクティブ時：その状態で「実際に先頭に来る方」を表示（＝現在の表示順）
   var act = {
     lv:   {desc:'🚶 古い→',     asc:'🚶 最新→'},
     ad:   {desc:'🏠 住所 わ→',  asc:'🏠 住所 あ→'},
     st:   {desc:'📊 心理 低→',  asc:'📊 心理 高→'},
     sc:   {desc:'⭐ スコア 低→', asc:'⭐ スコア 高→'},
-    pj:   {desc:'🎯 追判 X→',   asc:'🎯 追判 S→'},
+    pj:   {desc:'🎯 ランク X→',   asc:'🎯 ランク S→'},
     dt:   {desc:'📅 初訪 古→',  asc:'📅 初訪 新→'},
     kw:   {desc:'💬 会話 浅→',  asc:'💬 会話 深→'},
     pace: {desc:'⏰ 遅れ 小→',  asc:'⏰ 遅れ 大→'},
