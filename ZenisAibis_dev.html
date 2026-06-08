@@ -944,14 +944,14 @@ body.is-mob .mob-menu{display:inline-block}
 </div>
 
 <!-- 本日の予定表（PC専用） -->
-<div id="plannerView" style="display:none;position:fixed;inset:0;background:rgba(8,15,30,0.42);-webkit-backdrop-filter:blur(6px) saturate(115%);backdrop-filter:blur(6px) saturate(115%);z-index:2000;overflow-y:auto">
+<div id="plannerView" onclick="plannerOverlayClick(event)" style="display:none;position:fixed;inset:0;background:rgba(8,15,30,0.42);-webkit-backdrop-filter:blur(6px) saturate(115%);backdrop-filter:blur(6px) saturate(115%);z-index:2000;overflow-y:auto">
   <div style="max-width:900px;margin:18px auto;padding:18px;background:rgba(255,255,255,0.94);-webkit-backdrop-filter:blur(14px) saturate(135%);backdrop-filter:blur(14px) saturate(135%);border:1px solid rgba(255,255,255,0.6);border-radius:16px;box-shadow:0 24px 60px -12px rgba(15,23,42,0.5)">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
       <span style="font-size:16px;font-weight:700;color:#2c5282">📅 本日の予定表</span>
     </div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
-      <button onclick="history.back()" style="background:#e2e8f0;color:#2d3748;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">← 一覧に戻る</button><button class="pl-tab pl-on" data-t="input" onclick="plannerTab('input')">✏️ 入力</button>
-      <button class="pl-tab" data-t="prev" onclick="plannerTab('prev')">🖨 プレビュー</button>
+      <button onclick="savePlan();history.back()" style="background:#e2e8f0;color:#2d3748;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">← 一覧に戻る</button><button class="pl-tab pl-on" data-t="input" onclick="plannerTab('input')">✏️ 入力</button>
+      <button class="pl-tab" data-t="prev" onclick="plannerTab('prev')">🖨 予定表印刷</button>
       <button onclick="plannerToPhone()" style="margin-left:auto;background:#3182ce;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">📧 スマホへ</button>
     </div>
     <div id="plannerInput"></div>
@@ -1434,7 +1434,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.23";
+var APP_VERSION = "v5.25";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -3240,7 +3240,7 @@ function openCard(id){
   _navGo('edit',curId);
   if(typeof updateCardNav==='function') updateCardNav();
 }
-function fitTabsTop(){ if(isMob) return; var h=document.querySelector('#editView header'); if(h && h.offsetHeight) document.documentElement.style.setProperty('--tabsTop', h.offsetHeight+'px'); }
+function fitTabsTop(){ var h=document.querySelector('#editView header'); var hh=(h&&h.offsetHeight)||66; document.documentElement.style.setProperty('--hdrTop', hh+'px'); if(isMob) return; var nav=document.getElementById('cardNav'); var nh=(nav && nav.style.display!=='none' && nav.offsetHeight)?nav.offsetHeight:0; document.documentElement.style.setProperty('--tabsTop', (hh+nh)+'px'); }
 window.fitTabsTop=fitTabsTop;
 function navCard(dir){
   if(!Array.isArray(lastVisible)||!lastVisible.length||!curId) return;
@@ -3254,12 +3254,13 @@ function navCard(dir){
 function updateCardNav(){
   var bar=document.getElementById('cardNav'); if(!bar) return;
   var idx=(Array.isArray(lastVisible)&&curId)?lastVisible.findIndex(function(c){return c.id===curId;}):-1;
-  if(idx<0){ bar.style.display='none'; return; }
+  if(idx<0){ bar.style.display='none'; try{ fitTabsTop(); }catch(e){} return; }
   bar.style.display='flex';
   var pos=document.getElementById('cardNavPos'); if(pos) pos.textContent=(idx+1)+' / '+lastVisible.length;
   var pv=document.getElementById('cardNavPrev'), nx=document.getElementById('cardNavNext');
   if(pv){ pv.disabled=(idx<=0); pv.style.opacity=(idx<=0)?'.35':'1'; }
   if(nx){ nx.disabled=(idx>=lastVisible.length-1); nx.style.opacity=(idx>=lastVisible.length-1)?'.35':'1'; }
+  try{ fitTabsTop(); }catch(e){}
 }
 window.navCard=navCard; window.updateCardNav=updateCardNav;
 window.addEventListener('resize',fitTabsTop);
@@ -6113,13 +6114,12 @@ function planHasTodayAppo(c){ var t=todayStr(); var arr=[].concat(c.revisits||[]
 function makePlanEntry(c){ var appo=planHasTodayAppo(c); return {cardId:c.id,target:(c.name||'(無名)'),sub:planAreaStage(c),kind:appo?'k1':'k3',purpose:planSuggestPurpose(c.stage),time:'',note:'',result:''}; }
 function openPlannerFromSelected(){
   var ids=Object.keys(selectedIds);
-  if(!ids.length){ aibisAlert('予定表に入れるカードにチェックを入れてね☑'); return; }
   _plan=loadPlan(); var added=0;
   cards.filter(function(c){return selectedIds[c.id];}).forEach(function(c){
     if(_plan.entries.some(function(e){return e.cardId===c.id;})) return;
     _plan.entries.push(makePlanEntry(c)); added++;
   });
-  savePlan(); selectNone(); showPlanner();
+  savePlan(); if(ids.length) selectNone(); showPlanner();
   if(added) toast(added+'件を予定表に追加しました');
 }
 function openPlannerToday(){ _plan=loadPlan(); showPlanner(); }
@@ -6129,11 +6129,14 @@ function showPlanner(){
   var v=document.getElementById('plannerView'); if(v) v.style.display='block';
   plannerTab('input');
   _navGo('planner');
+  if(!_silent){ try{ aibisToast('前日分はリセットしてね！🗑'); }catch(e){} }
 }
 function closePlanner(){
   var v=document.getElementById('plannerView'); if(v) v.style.display='none';
   document.getElementById('listView').style.display=(hasFSA&&!isMob)?'flex':'block';
 }
+function plannerOverlayClick(ev){ if(ev.target&&ev.target.id==='plannerView'){ try{savePlan();}catch(e){} history.back(); } }
+window.plannerOverlayClick=plannerOverlayClick;
 
 /* ===== ブラウザ履歴ナビゲーション ===== */
 var _silent=false;
@@ -6201,10 +6204,8 @@ function renderPlanner(){
 }
 function planUpdateAddState(){
   var t=document.getElementById('plEvTime'); var on=!!(t&&t.value);
-  var ps=document.getElementById('plSearch'); if(ps){ ps.disabled=!on; ps.style.opacity=on?'1':'0.45'; ps.placeholder=on?'見込み客を検索…':'先に時刻を選択'; }
-  var mb=document.getElementById('plMicBtn'); if(mb){ mb.disabled=!on; mb.style.opacity=on?'1':'0.45'; mb.style.pointerEvents=on?'':'none'; }
-  var bs=document.querySelectorAll('.pl-evbtn'); for(var k=0;k<bs.length;k++){ bs[k].disabled=!on; bs[k].style.opacity=on?'1':'0.45'; bs[k].style.cursor=on?'pointer':'not-allowed'; }
-  if(!on){ var box=document.getElementById('plSearchResults'); if(box) box.innerHTML=''; if(ps) ps.value=''; }
+  var bs=document.querySelectorAll('.pl-evbtn'); for(var k=0;k<bs.length;k++){ bs[k].style.opacity=on?'1':'0.55'; }
+  var ps=document.getElementById('plSearch'); if(ps){ ps.style.opacity=on?'1':'0.85'; ps.placeholder=on?'見込み客を検索…':'時刻を選んでから検索'; }
 }
 function planEntryTags(en){
   if(en.cardId){ var s=''; var w=planAreaOf(en);
@@ -6955,7 +6956,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       </div>
     </div>
   </header>
-    <div id="cardNav" class="no-print" style="display:none;position:relative;z-index:1;align-items:center;justify-content:space-between;gap:8px;padding:7px 12px;background:#eef3fb;border-bottom:1px solid #d8e2f0">
+    <div id="cardNav" class="no-print" style="display:none;position:sticky;top:var(--hdrTop,66px);z-index:48;align-items:center;justify-content:space-between;gap:8px;padding:7px 12px;background:#eef3fb;border-bottom:1px solid #d8e2f0">
       <button id="cardNavPrev" onclick="navCard(-1)" style="background:#fff;border:1px solid #b9cce8;color:#2c5282;border-radius:8px;font-size:13px;font-weight:700;padding:8px 18px;min-height:38px;cursor:pointer;font-family:inherit">‹ 前</button>
       <span id="cardNavPos" style="font-size:12px;font-weight:700;color:#5a6b85;white-space:nowrap">- / -</span>
       <button id="cardNavNext" onclick="navCard(1)" style="background:#fff;border:1px solid #b9cce8;color:#2c5282;border-radius:8px;font-size:13px;font-weight:700;padding:8px 18px;min-height:38px;cursor:pointer;font-family:inherit">次 ›</button>
