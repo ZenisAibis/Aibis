@@ -71,7 +71,7 @@ body{font-family:-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-seri
     align-items:center;
     background:#e8ecf0;
   }
-  #listView > *,#helpView > *,#setupView > *,#editView > *{
+  #listView > *:not(.fam-mo):not(.mo),#helpView > *:not(.fam-mo):not(.mo),#setupView > *:not(.fam-mo):not(.mo),#editView > *:not(.fam-mo):not(.mo){
     width:100%;
     max-width:794px;
     box-sizing:border-box;
@@ -1434,7 +1434,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.22";
+var APP_VERSION = "v5.23";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
