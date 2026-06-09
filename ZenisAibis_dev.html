@@ -158,6 +158,9 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:#2c5282;box-sh
 textarea{resize:vertical;min-height:80px}
 .cg{display:flex;gap:6px;flex-wrap:wrap}
 .ci{display:inline-flex;align-items:center;gap:4px;padding:8px 12px;background:white;border:1px solid #cbd5e0;border-radius:4px;cursor:pointer;font-size:13px;min-height:38px}
+#rusuRow{gap:4px;width:100%}
+#rusuRow .ci{flex:1 1 0;min-width:0;padding:8px 2px;justify-content:center;gap:3px}
+#rusuRow .ci span{font-size:13px}
 .stsel{display:grid;grid-template-columns:repeat(6,1fr);gap:4px}
 @media(max-width:600px){.stsel{grid-template-columns:repeat(3,1fr)}}
 .stbtn{padding:10px 4px;border:2px solid #cbd5e0;background:white;border-radius:6px;cursor:pointer;text-align:center;font-size:11px;font-weight:600;min-height:48px;touch-action:manipulation}
@@ -852,6 +855,7 @@ body.is-mob .mob-menu{display:inline-block}
       <button onclick="selectNone()" class="bc" style="font-size:11px;padding:5px 8px">全解除</button>
       <button onclick="openPlannerFromSelected()" class="bp pc-only-btn" style="font-size:11px;padding:5px 8px;background:#319795">📅 本日の予定表</button>
       <button onclick="mailSelectedToSelf()" class="bp" style="font-size:11px;padding:5px 8px" id="btnSendSelf">📧 スマホへ</button>
+      <button onclick="mailSelectedToStaff()" class="bp" style="font-size:11px;padding:5px 8px;background:#553c9a;display:none" id="btnSendStaff">📧 担当へ</button>
       <button onclick="mailSelectedToManager()" class="bw" style="font-size:11px;padding:5px 8px">📧 課長へ</button>
     </div>
   </div>
@@ -1256,6 +1260,13 @@ body.is-mob .mob-menu{display:inline-block}
         <div><label>自分のメールアドレス</label><input type="email" id="sSelf" placeholder="dt0000001@kentaku.co.jp" oninput="autoSaveSetup()"><p class="ht">「📧 PCへ」で送る宛先</p></div>
         <div><label>上司のメールアドレス <span class="req">*</span></label><input type="email" id="sMgr" placeholder="to071024@kentaku.co.jp" oninput="autoSaveSetup()"><p class="ht">📧 課長報告の宛先</p></div>
       </div>
+      <div id="staffMailSection" style="display:none;margin-top:10px;padding:10px;background:#faf7ff;border:1px solid #d6bcfa;border-radius:6px">
+        <label style="color:#553c9a">担当者リスト（個別送付用・管理職のみ）</label>
+        <p class="ht" style="margin:2px 0 6px">「📧 担当へ」で選ぶ宛先だよ。名前は<b>カードの担当名と一致</b>させてね（スペース不可）。</p>
+        <div id="staffMailChips" style="display:flex;gap:4px;flex-wrap:wrap;margin:4px 0;align-items:center"></div>
+        <div id="staffMailRows"></div>
+        <button type="button" onclick="addStaffMailRow()" style="margin-top:6px;background:#ede9fe;border:1px dashed #b794f4;color:#553c9a;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">＋ 担当者を追加</button>
+      </div>
       <div id="changeNote" style="display:none;margin-top:10px;padding:10px;background:#fef5e7;border-left:3px solid #ed8936;border-radius:4px;font-size:12px">
         <strong style="color:#c05621">📢 異動の場合</strong>：変更後は新規カードのみに反映。既存カードは変更されません。
       </div>
@@ -1329,13 +1340,13 @@ if(Z_ALLOW.indexOf(location.hostname)<0){
 // ===== スコア計算（優先順位） =====
 // スコア計算
 function calcScore(c){
-  // ① ステージ（8段階・最大8点）3:連想を強調
-  var stageScore=[0,1,2,4,6,7,8,8];
+  // ① ステージ（8段階・最大12点）3:連想を強調
+  var stageScore=[0,1,3,5,8,10,12,12];
   var si=+(c.stage||0);
   var s=stageScore[Math.min(si,7)]||0;
 
-  // ② 追客ランク（最大7点）
-  var rankMap={S:7,A:6,B:4,C:2,D:1,E:0,X:0};
+  // ② 追客ランク（最大8点）
+  var rankMap={S:8,A:6,B:4,C:2,D:1,E:0,X:0};
   var r=rankMap[c.pursuit_judge]||0;
 
   // ③ 会話状況（最大10点）上り込みを最重視
@@ -1370,11 +1381,11 @@ function calcScore(c){
   var landFinal=Math.round(landScore*rosenCoef*10)/10;
   if(c.asset_type) landFinal=0; // アセット系は土地点を無視
 
-  // ⑥ KP・所有者面談済（最大2点）
+  // ⑥ KP・所有者面談済（最大4点）
   var fam=c.family||[];
   var hasOwnerMet=fam.some(function(m){return m.owner&&m.met;});
   var hasKpMet=fam.some(function(m){return m.kp&&m.met;});
-  var famScore=(hasOwnerMet?1:0)+(hasKpMet?1:0);
+  var famScore=(hasOwnerMet?2:0)+(hasKpMet?2:0);
 
   // ⑦ 資産背景（最大10点・大きいほど良い）
   // 保有物量（老朽賃貸・駐車場・自宅・生産緑地の合計／「5以上」=6）
@@ -1391,11 +1402,14 @@ function calcScore(c){
   var laMap={'1億以下':1,'3億以下':2,'5億以下':3,'10億未満':4,'10億以上':5};
   var assetScore=invScore+(laMap[c.land_asset]||0); // 最大10点
 
-  // ⑧ 最寄り駅 徒歩区分（〜10分+3 / 21分以上-3）
-  var ekiScore=(c.ekitoho==='〜10分')?3:(c.ekitoho==='21分以上')?-3:0;
+  // ⑧ 最寄り駅 徒歩区分（〜10分+2 / 21分以上-2）
+  var ekiScore=(c.ekitoho==='〜10分')?2:(c.ekitoho==='21分以上')?-2:0;
   // ⑨ 提案依頼取得＝顧客の意思表示（最重要・高スコア）
-  var proposalScore=c.proposal_req?10:0;
-  return Math.max(0, Math.round(s+r+k+landFinal+famScore+assetScore+ekiScore+proposalScore));
+  var proposalScore=c.proposal_req?15:0;
+  // ⑩ 連続留守（4点スタートで減算・最小級の要素）
+  var rusuMap=[4,3,2,1,0,0];
+  var rusuScore=rusuMap[Math.max(0,Math.min(5,parseInt(c.rusu,10)||0))];
+  return Math.max(0, Math.round(s+r+k+landFinal+famScore+assetScore+ekiScore+proposalScore+rusuScore));
 }
 function basicInputStat(c){
   c=c||{};
@@ -1434,13 +1448,14 @@ var _mgrPrompted=false;
 var BRK  = 'prospect_branch_v1';
 var SCK  = 'prospect_sec_v1';
 var RLK  = 'prospect_role_v1';
+var SMK  = 'prospect_staffmails_v1';
 var NICKK = 'prospect_nick_v1';
 var LSDK = 'prospect_last_saved';
 var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.36";
+var APP_VERSION = "v5.44";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -1448,6 +1463,7 @@ var cards = [];
 var bootDone = false; // 起動完了フラグ（読込ハング検知用）
 var cur = null, curId = null;
 var uName = '', mgrEmail = '', selfEmail = '', branch = '', section = '', userRole = '';
+var staffMails = [];
 var uNick = '';
 var fHandle = null;
 var sortKey = 'lv'; // lv=最新, ad=住所, st=段階, dt=初訪
@@ -1619,6 +1635,7 @@ function init() {
   uName     = localStorage.getItem(UNK) || '';
   mgrEmail  = localStorage.getItem(MEK) || '';
   selfEmail = localStorage.getItem(SEK) || '';
+  try{ staffMails=JSON.parse(localStorage.getItem(SMK)||'[]'); if(!Array.isArray(staffMails)) staffMails=[]; }catch(_e){ staffMails=[]; }
   setTimeout(function(){ try{maybePromptMgrUnlock();}catch(_e){} }, 700);
   branch    = localStorage.getItem(BRK) || '';
   section   = localStorage.getItem(SCK) || '';
@@ -1844,8 +1861,8 @@ var AIBIS_FAQ=[
     +'上り込みでお茶・雑談・お菓子。この関係を大切にしてね！'},
   {q:'ソーシャル',a:'ソーシャルスタイルは4タイプだよ！<br><b>ドライバー</b>…決断が早く結果重視。手短に要点を。<br><b>エクスプレッシブ</b>…感情豊か。共感を示して。<br><b>アナリティカル</b>…データ・論理重視。根拠をしっかり。<br><b>エミアブル</b>…協調性が高い。急がせず丁寧に。'},
   {q:'Judgmentって何？',a:'Judgmentはお客様の現状を課長と協議して判定するもの。<br><br>【再訪Judgment】追客開始 / 継続訪問 / 打ち切り の3択<br>【追撃Judgment】A見込み / 訪問継続 / 打ち切り の3択<br><br>🔒 再訪Judgmentは再訪3回目（日付・訪問内容・録音要約のいずれか）を記録すると押せるよ。追撃カードの発行には先に再訪Judgmentが必要。15回超の追撃追加には追撃Judgmentが必要。<br>ボタンはもう一度押すと選択解除（未選択ならAIの判定を優先）。A見込み=A・訪問継続=B・打ち切り=X。<br><br>必ず課長との協議のうえで選択してね！'},
-  {q:'スコアってどう計算するの？',a:function(){return isMgrUnlocked()?'ステージ8点＋会話状況10点＋追客ランク7点＋土地面積5点（路線価補正）＋資産背景10点＋KP面談2点の合計で約40点満点！上り込み・100〜200坪の土地・資産背景が大きいお客様ほど高得点になるよ。スコア順の並び替えで今週誰に行くべきかが一目でわかるよ📊':'スコアは「今週どのお客様を優先するか」を見やすくする並び替え用の目安だよ📊 細かい配点は内部設定なので、まずはスコア順の上位から動いてみてね！';}},
-  {q:'提案依頼ボタンって何？',a:'再訪タブの「連続留守カウント」の右にあるボタン！タップで ❌提案依頼未取得 ⇔ ⭕提案依頼取得 を切替。提案依頼の取得はお客様の意思表示なのでスコアが大きく上がるよ(+10)😊 ベストは「3:連想」でテストクロージングし、動機を引き上げながら取得すること💡 取得すると10客・40客リストにも⭕提案依頼が出るよ。'},
+  {q:'スコアってどう計算するの？',a:function(){return isMgrUnlocked()?'提案依頼15点＋ステージ12点＋会話状況10点＋資産背景10点＋追客ランク8点＋連続留守4点（留守ゼロで満点・減点式）＋土地面積×路線価 約7.5点＋KP面談4点＋最寄駅±2点の合計で約73点満点！提案依頼の取得・連想到達・上り込み・資産背景が大きいお客様ほど高得点になるよ。スコア順の並び替えで今週誰に行くべきかが一目でわかるよ📊':'スコアは「今週どのお客様を優先するか」を見やすくする並び替え用の目安だよ📊 細かい配点は内部設定なので、まずはスコア順の上位から動いてみてね！';}},
+  {q:'提案依頼ボタンって何？',a:'再訪タブの「連続留守カウント」の右にあるボタン！タップで ❌提案依頼未取得 ⇔ ⭕提案依頼取得 を切替。提案依頼の取得はお客様の意思表示なのでスコアが大きく上がるよ(+15)😊 ベストは「3:連想」でテストクロージングし、動機を引き上げながら取得すること💡 取得すると10客・40客リストにも⭕提案依頼が出るよ。'},
   {q:'駅徒歩フラグって何？',a:'計画地の最寄り駅からの徒歩区分だよ🚉 計画地の「🚉最寄り駅 徒歩」ボタンをタップで 未確認→〜10分→〜20分→21分以上 と切り替わるよ（同行ボタンと同じ要領）。〜10分は加点(+3)、21分以上は減点(-3)＆赤フラグ（一覧・課分析にも表示）。分数は地図で一度確認して印を付けるだけでOK😊'},
   {q:'現在地ボタンって何？',a:'初訪タブの住所欄の下にある📍現在地取得ボタン！GPSで現在地を取得して住所をクリップボードにコピーするよ。訪問先でそのまま貼り付けて使えるね😊'},
   {q:'家族構成ってどう入れるの？',a:'初訪タブの「家族構成」セクションから入力できるよ！<br><br>＋ボタンで追加→続柄・氏名・年齢・居住形態を入力<br>★所有者 / KP（キーパーソン）/ 面談済 も記録できるよ<br>スタンス（ポジティブ/ネガティブ）も記録して戦略に活かしてね！<br>👶 子世代・兄弟姉妹は婚姻状況と子の人数も記録できるよ（相続人の把握に役立つ）。'},
@@ -2046,6 +2063,75 @@ window.autoSaveSetup=autoSaveSetup;
 window.closeAibisAlert=function(){ var o=document.getElementById('aibisAlertOverlay'); if(o&&o.parentNode) o.parentNode.removeChild(o); };
 
 
+// ===== 担当者リスト（個別送付用・管理職のみ） =====
+function saveStaffMails(){ try{ localStorage.setItem(SMK, JSON.stringify(staffMails)); }catch(_e){} }
+function renderStaffMailRows(){
+  var box=document.getElementById('staffMailRows'); if(!box) return;
+  box.innerHTML = (staffMails&&staffMails.length) ? staffMails.map(function(s,i){
+    return '<div style="display:grid;grid-template-columns:1fr 1.4fr auto;gap:6px;margin-bottom:6px;align-items:center">'
+      +'<input type="text" placeholder="担当者名" value="'+eAttr(s.name||'')+'" oninput="onStaffMailInput('+i+',\'name\',this.value)" style="font-size:13px">'
+      +'<input type="email" inputmode="email" autocapitalize="none" spellcheck="false" placeholder="メールアドレス" value="'+eAttr(s.email||'')+'" oninput="onStaffMailInput('+i+',\'email\',this.value)" style="font-size:13px">'
+      +'<button type="button" onclick="removeStaffMailRow('+i+')" title="削除" style="background:#fff5f5;border:1px solid #feb2b2;color:#c53030;border-radius:6px;padding:6px 9px;font-size:12px;cursor:pointer;font-family:inherit">✕</button>'
+      +'</div>';
+  }).join('') : '<p class="ht" style="margin:4px 0">まだ登録がありません。「＋ 担当者を追加」または下の候補から追加してね。</p>';
+}
+function renderStaffMailChips(){
+  var box=document.getElementById('staffMailChips'); if(!box) return;
+  var known={}; (staffMails||[]).forEach(function(s){ if(s.name) known[s.name]=1; });
+  var cand=[]; (cards||[]).forEach(function(c){ var n=(c.manager||'').trim(); if(n && n!==uName && !known[n] && cand.indexOf(n)<0) cand.push(n); });
+  box.innerHTML = cand.length ? ('<span class="ht" style="margin-right:2px">カードの担当から追加:</span>'+cand.map(function(n){
+    return '<button type="button" onclick="addStaffMailName(\''+eAttr(n)+'\')" style="background:#fff;border:1px solid #d6bcfa;color:#553c9a;border-radius:12px;padding:3px 9px;font-size:12px;cursor:pointer;font-family:inherit">＋ '+e(n)+'</button>';
+  }).join(' ')) : '';
+}
+function addStaffMailRow(){ staffMails.push({name:'',email:''}); saveStaffMails(); renderStaffMailRows(); }
+function addStaffMailName(n){ staffMails.push({name:n,email:''}); saveStaffMails(); renderStaffMailRows(); renderStaffMailChips(); }
+function removeStaffMailRow(i){ staffMails.splice(i,1); saveStaffMails(); renderStaffMailRows(); renderStaffMailChips(); }
+function onStaffMailInput(i,field,val){ if(!staffMails[i]) return; staffMails[i][field]=(field==='name')?String(val).replace(/[\s　]/g,''):String(val).trim(); saveStaffMails(); if(field==='name') renderStaffMailChips(); }
+window.addStaffMailRow=addStaffMailRow; window.addStaffMailName=addStaffMailName; window.removeStaffMailRow=removeStaffMailRow; window.onStaffMailInput=onStaffMailInput;
+// ===== 複数担当の警告＋個別送付 =====
+function _selMgrs(sel){ var a=[]; sel.forEach(function(c){ var n=(c.manager||'').trim()||'(担当未設定)'; if(a.indexOf(n)<0)a.push(n); }); return a; }
+function _multiMgrOk(sel, retryCb){
+  var ms=_selMgrs(sel);
+  if(ms.length<=1) return true;
+  aibisConfirm('⚠ 選択に<b>複数の担当</b>のカードが含まれています<br><br>'+ms.map(function(x){return '・<b>'+e(x)+'</b>';}).join('<br>')+'<br><br>このまま送信しますか？<br><span style="font-size:12px;color:#718096">個別に送るなら、担当フィルタで対象者に絞ってから全選択してね。</span>', retryCb, '送信する', 'やめる');
+  return false;
+}
+function _sendSelectedToEmail(toEmail, label, skipWarn){
+  var ids=Object.keys(selectedIds);
+  if(ids.length===0){ aibisAlert('送りたいカードにチェックを入れてね。<br>一緒に頑張ろう！☑'); return; }
+  var selected=cards.filter(function(c){ return selectedIds[c.id]; });
+  if(!skipWarn && !_multiMgrOk(selected, function(){ _sendSelectedToEmail(toEmail,label,true); })) return;
+  var data=JSON.stringify(selected,null,2);
+  var blob=new Blob([data],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var now=new Date();
+  var ts=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+'_'+String(now.getHours()).padStart(2,'0')+String(now.getMinutes()).padStart(2,'0');
+  var fn='AIBIS_'+(uName||'staff')+'_'+APP_VERSION+'_'+selected.length+'cards_'+ts+'.json';
+  var a=document.createElement('a'); a.href=url; a.download=fn; a.click();
+  var subj='AIBIS cards '+ts+' ('+selected.length+' cards)';
+  var body='AIBIS cards\nDate: '+ts+'\nCards: '+selected.length+'\nFile: '+fn;
+  setTimeout(function(){
+    URL.revokeObjectURL(url);
+    window.location.href='mailto:'+encodeURIComponent(toEmail)+(selfEmail?'?cc='+encodeURIComponent(selfEmail)+'&subject=':'?subject=')+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
+    toast('JSONをDL済 → '+(label||'担当')+'宛に添付して送信してください');
+    selectNone();
+  },500);
+}
+function mailSelectedToStaff(){
+  var ids=Object.keys(selectedIds);
+  if(ids.length===0){ aibisAlert((cards&&cards.length===0)?'まだカードがないね。<br>最初の一人に会いに行こう！🌱':'送りたいカードにチェックを入れてね。<br>一緒に頑張ろう！☑'); return; }
+  var list=(staffMails||[]).filter(function(s){ return s && s.name && s.email; });
+  if(list.length===0){ aibisAlert('まず初期設定で担当者を登録してね。<br><br>⚙ 初期設定 →「担当者リスト」に<br>名前とメールアドレスを入れてね。'); return; }
+  var selected=cards.filter(function(c){ return selectedIds[c.id]; });
+  var ms=_selMgrs(selected);
+  var rec=(ms.length===1)?ms[0]:null;
+  var btns=list.map(function(s){
+    var isRec=(rec && s.name===rec);
+    return '<button onclick="closeAibisAlert();_sendSelectedToEmail(\''+eAttr(s.email)+'\',\''+eAttr(s.name)+'\')" style="display:block;width:100%;text-align:left;margin-bottom:6px;padding:9px 10px;background:'+(isRec?'#ede9fe':'#f7fafc')+';border:'+(isRec?'2px solid #805ad5':'1px solid #e2e8f0')+';border-radius:8px;cursor:pointer;font-family:inherit;font-size:13px"><b>'+e(s.name)+'</b>'+(isRec?' <span style="color:#805ad5;font-size:11px">★ 選択カードの担当</span>':'')+'<br><span style="font-size:11px;color:#718096">'+e(s.email)+'</span></button>';
+  }).join('');
+  aibisAlert('<b>どの担当へ送る？</b><br><span style="font-size:12px;color:#718096">選択 '+selected.length+'件</span><br><br>'+btns);
+}
+window.mailSelectedToStaff=mailSelectedToStaff; window._sendSelectedToEmail=_sendSelectedToEmail; window._multiMgrOk=_multiMgrOk;
 // ===== 担当フィルター =====
 var staffFilter='all';
 function updateStaffFilter(){
@@ -2425,6 +2511,7 @@ function showSetup() {
   if ((el=document.getElementById('sRole')))   el.value = userRole||'';
   if ((el=document.getElementById('sNick')))   el.value = uNick||'';
   if ((el=document.getElementById('sCopilotUrl'))) el.value = localStorage.getItem(CPK)||'';
+  var _sm=document.getElementById('staffMailSection'); if(_sm){ _sm.style.display=isMgrUnlocked()?'block':'none'; if(typeof renderStaffMailRows==='function'){renderStaffMailRows();renderStaffMailChips();} }
   var has = !!(uName && mgrEmail && branch && section);
   ['setupCancel'].forEach(function(id){
     var b = document.getElementById(id); if(b) b.style.display = has?'inline-block':'none';
@@ -2494,6 +2581,8 @@ function applyRoleUI(){
   if(apBar) apBar.style.display=isManager?'flex':'none';
   var sdBar=document.getElementById('selfDashBar');
   if(sdBar) sdBar.style.display=(!isManager)?'flex':'none';
+  var stb=document.getElementById('btnSendStaff'); if(stb) stb.style.display=isManager?'inline-block':'none';
+  var _sms=document.getElementById('staffMailSection'); if(_sms) _sms.style.display=isManager?'block':'none';
   if(isManager) renderAnalysis();
   // カードの印刷ボタンはPC版のみ
   var cp=document.getElementById('cardPrintBtn');
@@ -2717,7 +2806,7 @@ function _repPoints(arr){return arr.reduce(function(s,c){return s+_actPoints(c);
 function _xpRank(pts){var T=[0,500,1000,2000,3500,5000];var NM=['見習い','開拓者','追客職人','見込み育成士','戦略営業','課のエース'];var lv=1;for(var i=0;i<T.length;i++){if(pts>=T[i])lv=i+1;}var lo=T[lv-1],hi=(lv<6)?T[lv]:null;return {lv:lv,name:NM[lv-1],lo:lo,hi:hi,next:(lv<6)?NM[lv]:null,remain:hi!==null?Math.max(0,hi-pts):0,prog:(hi!==null)?Math.max(0,Math.min(100,Math.round((pts-lo)/(hi-lo)*100))):100};}
 function _monthlyGain(arr,ym){var g=0;arr.forEach(function(c){if((c.discovery_date||'').slice(0,7)===ym)g+=10;if(c.proposal_req&&(c.proposal_req_at||'').slice(0,7)===ym)g+=50;if(c.doukou&&(c.doukou_at||'').slice(0,7)===ym)g+=20;if(c.family_headcount&&(c.family_headcount_at||'').slice(0,7)===ym)g+=10;(c.revisits||[]).forEach(function(r){if((r.date||'').slice(0,7)===ym)g+=20;});(c.pursuits||[]).forEach(function(pp){if((pp.date||'').slice(0,7)===ym)g+=15;});});return g;}
 function _ptColor(pct){return pct>=100?'#9BE15D':pct>=90?'#68D391':pct>=70?'#F6AD55':pct>=40?'#63B3ED':'#CBD5E0';}
-function _tempBand(s){return s>=33?['👑','契約接近']:s>=26?['🏆','A候補']:s>=18?['🔥','HOT見込み']:s>=10?['🔍','育成候補']:['🌱','接点づくり'];}
+function _tempBand(s){return s>=55?['👑','契約接近']:s>=42?['🏆','A候補']:s>=30?['🔥','HOT見込み']:s>=18?['🔍','育成候補']:['🌱','接点づくり'];}
 function _genjoPie(arr){ var cnt={}; _GENJO.forEach(function(x){cnt[x[0]]=0;}); arr.forEach(function(c){var gj=(c.genjo||''); if(!(gj in cnt))gj=''; cnt[gj]++;}); var rows=_GENJO.filter(function(x){return cnt[x[0]]>0;}); var segs=rows.map(function(x){return {value:cnt[x[0]],color:x[2]};}); var tot=arr.length||1; var leg='<div style="display:flex;flex-direction:column;gap:3px;font-size:11px">'+rows.map(function(x){var v=cnt[x[0]];return '<div style="display:flex;align-items:center;gap:6px"><i style="width:9px;height:9px;border-radius:2px;background:'+x[2]+';flex-shrink:0;display:inline-block"></i><span style="color:var(--z-mut)">'+x[1]+'</span><b style="margin-left:auto;color:var(--z-ink)">'+v+'</b><span style="color:var(--z-dim);width:36px;text-align:right">'+Math.round(v/tot*100)+'%</span></div>';}).join('')+'</div>'; return '<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'+_zDonut(segs,arr.length,'件')+'<div style="flex:1;min-width:128px">'+leg+'</div></div>'; }
 function _ryokuchiRing(arr){ var own=arr.filter(function(c){return (parseFloat(c.ryokuchi)||0)>0;}).length; var tot=arr.length||1; var pct=Math.round(own/tot*100); var segs=[{value:own,color:'#2f9e44'},{value:tot-own,color:'rgba(130,150,180,.22)'}]; return '<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'+_zDonut(segs,pct+'%','生産緑地')+'<div style="flex:1;min-width:120px"><div style="font-size:13px;color:var(--z-ink);font-weight:700"><b style="font-size:24px;color:#2f9e44;font-family:Sora,sans-serif">'+own+'</b> / '+arr.length+' 人が保有</div><div class="z-sub" style="margin-top:4px">生産緑地（1枚以上）を持つ見込み客の割合。2022年問題・納税猶予の打ち手対象。</div></div></div>'; }
 
@@ -2770,7 +2859,7 @@ function renderSelfDash(tid){
  var H='<div class="zdash zdash-rep"><div class="z-bento">';
  H+='<div class="z-card z-hero z-cf"><div class="z-ring" style="--p:'+renso+'"><div class="z-ring-in"><b>'+renso+'<small>%</small></b><span>育成率</span></div></div><div class="z-hmeta"><div class="z-lv">⚔ '+e(uName||'あなた')+' さんの成長ランク</div><h2>Lv.'+_rk.lv+' '+_rk.name+'</h2><div class="z-chips"><span class="z-chip">保有 <b>'+n+'</b>件</span><span class="z-chip">A・S <b>'+asN+'</b>件</span><span class="z-chip">要フォロー <b>'+fuN+'</b>件</span><span class="z-chip">育成率 <b>'+renso+'</b>%</span></div><div class="z-xp"><div class="z-xpl"><span>'+(_rk.next?'あと <b>'+_rk.remain+'pt</b> で Lv.'+(_rk.lv+1)+' '+_rk.next:'最高ランクに到達！')+'</span><span>今月 +'+_mg+'pt</span></div><div class="z-xptrack"><i style="width:'+_rk.prog+'%"></i></div></div><div class="z-sub" style="margin-top:6px">成長ポイント（営業経験値）累計 '+_pts+'pt</div></div></div>';
  H+='<div class="z-card z-c2"><h3>✅ 今日のミッション</h3><div class="z-sub">迷ったらここから。最大3つ。</div>'+_mis.map(function(m){return '<div class="z-mrow"><span class="z-mck">□</span><span>'+e(m)+'</span></div>';}).join('')+'</div>';
- H+='<div class="z-card z-c2"><h3>🔥 今日の優先見込み</h3><div class="z-sub">見込み温度の高い順（最大3件）。</div>'+(_prio.length?_prio.map(function(o,i){var c=o.c;var tag=(c.pursuit_judge==='A'||c.pursuit_judge==='S')?'A候補':(lastContactDays(c)>=14?lastContactDays(c)+'日未接触':(!c.family_headcount?'家族構成未確認':_tempBand(o.s)[1]));return '<div class="z-prow"><span class="z-pno">'+(i+1)+'</span><b class="z-pnm">'+e(c.name||'無名')+'様</b><span class="z-ptemp">'+_tempBand(o.s)[0]+' '+o.s+'<small>/40</small></span><span class="z-ptag">'+tag+'</span></div>';}).join(''):'<div class="z-sub">カードを追加すると表示されます</div>')+'</div>';
+ H+='<div class="z-card z-c2"><h3>🔥 今日の優先見込み</h3><div class="z-sub">見込み温度の高い順（最大3件）。</div>'+(_prio.length?_prio.map(function(o,i){var c=o.c;var tag=(c.pursuit_judge==='A'||c.pursuit_judge==='S')?'A候補':(lastContactDays(c)>=14?lastContactDays(c)+'日未接触':(!c.family_headcount?'家族構成未確認':_tempBand(o.s)[1]));return '<div class="z-prow"><span class="z-pno">'+(i+1)+'</span><b class="z-pnm">'+e(c.name||'無名')+'様</b><span class="z-ptemp">'+_tempBand(o.s)[0]+' '+o.s+'<small>/73</small></span><span class="z-ptag">'+tag+'</span></div>';}).join(''):'<div class="z-sub">カードを追加すると表示されます</div>')+'</div>';
  var bodyState='',bodyGrow='';
  H+='</div>';
  
@@ -3135,7 +3224,7 @@ function updateSelectCount(){
   if(bar) bar.style.background=n>0?'#ebf4ff':'#f7fafc';
   if(bar) bar.style.borderColor=n>0?'#2c5282':'#e2e8f0';
 }
-function mailSelectedToManager(){
+function mailSelectedToManager(skipWarn){
   if(!mgrEmail){toast('設定で上司のメールアドレスを登録してください');return;}
   var ids=Object.keys(selectedIds);
   if(ids.length===0){
@@ -3143,6 +3232,7 @@ function mailSelectedToManager(){
     return;
   }
   var selected=cards.filter(function(c){ return selectedIds[c.id]; });
+  if(!skipWarn && !_multiMgrOk(selected, function(){ mailSelectedToManager(true); })) return;
   var data=JSON.stringify(selected,null,2);
   var blob=new Blob([data],{type:'application/json'});
   var url=URL.createObjectURL(blob);
@@ -3159,13 +3249,14 @@ function mailSelectedToManager(){
     selectNone();
   },500);
 }
-function mailSelectedToSelf(){
+function mailSelectedToSelf(skipWarn){
   var ids=Object.keys(selectedIds);
   if(ids.length===0){
     aibisAlert(cards&&cards.length===0?'まだカードがないね。<br>最初の一人に会いに行こう！🌱':'送りたいカードにチェックを入れてね。<br>一緒に頑張ろう！☑');
     return;
   }
   var selected=cards.filter(function(c){ return selectedIds[c.id]; });
+  if(!skipWarn && !_multiMgrOk(selected, function(){ mailSelectedToSelf(true); })) return;
   var data=JSON.stringify(selected,null,2);
   var blob=new Blob([data],{type:'application/json'});
   var url=URL.createObjectURL(blob);
@@ -3219,7 +3310,7 @@ function mkBlank() {
     kouzou:'', kosu:'', kaisuu:'', prate:'',
     kaiwa:'', materials:[], maefuri:[],
     initial_content:'', manager_instruction_initial:'',
-    jchecks:{}, rusu:'', rusu_date:'',
+    jchecks:{}, rusu:'0', rusu_date:'',
     revisits:[{num:1,date:'',appo:'',content:'',instruction:''},{num:2,date:'',appo:'',content:'',instruction:''},{num:3,date:'',appo:'',content:'',instruction:''}],
     revisit_judge_date:'', revisit_judge:'',
     pursuits:[], pursuit_judge_date:'', pursuit_judge:'', pursuit_judge_sel:'', pursuit_judge_ai:'',
@@ -3238,9 +3329,12 @@ function newCard(){
   _navGo('edit',curId);
   if(typeof updateCardNav==='function') updateCardNav();
 }
+var _undoSnaps={};
+function undoCardEdit(){ if(!cur||!curId||!_undoSnaps[curId]){ if(typeof aibisToast==='function') aibisToast('戻せる変更がないよ'); return; } aibisConfirm('このカードを<b>開いた時点</b>の状態に戻す？<br><span style="font-size:12px;color:#718096">この編集での変更は取り消されます（全体の1つ前に戻すとは別だよ）。</span>', function(){ try{ var prev=JSON.parse(_undoSnaps[curId]); var idx=cards.findIndex(function(c){return c.id===curId;}); if(idx>=0){ cards[idx]=prev; } cur=JSON.parse(JSON.stringify(prev)); if(typeof setDirty==='function') setDirty(false); if(typeof doSaveCards==='function') doSaveCards(); fillForm(cur); if(typeof renderCards==='function') renderCards(); if(typeof aibisToast==='function') aibisToast('開いた時点に戻したよ↩️'); }catch(e){ if(typeof aibisToast==='function') aibisToast('戻せなかったよ'); } }, '戻す', 'やめる'); }
+window.undoCardEdit=undoCardEdit;
 function openCard(id){
   var c=cards.find(function(x){return x.id===id;}); if(!c) return;
-  cur=JSON.parse(JSON.stringify(c)); curId=id;
+  cur=JSON.parse(JSON.stringify(c)); curId=id; _undoSnaps[id]=JSON.stringify(c);
   document.getElementById('listView').style.display='none';
   document.getElementById('setupView').style.display='none';
   document.getElementById('editView').style.display=hasFSA&&!isMob?'flex':'block';
@@ -3371,9 +3465,9 @@ function fillForm(c) {
   document.querySelectorAll('#maefuri input').forEach(function(cb){ cb.checked=(c.maefuri||[]).indexOf(cb.value)>=0; });
   document.querySelectorAll('#jChecklist input').forEach(function(cb){ cb.checked=!!(c.jchecks&&c.jchecks[cb.dataset.ck]); });
   _rusuReset(c);
-  document.querySelectorAll('input[name="rusu"]').forEach(function(r){ r.checked=String(r.value)===String(c.rusu); });
+  document.querySelectorAll('input[name="rusu"]').forEach(function(r){ r.checked=String(r.value)===String(c.rusu||'0'); });
   renderFam(); renderRevisits(); renderPursuits();
-  paintRusuDate();
+  paintRusuDate(); paintRusuButtons();
   var _pjOld={'A見込み':'A','訪問継続':'B','打ち切り':'X'}; if(_pjOld[c.pursuit_judge]){ c.pursuit_judge_sel=c.pursuit_judge; c.pursuit_judge=_pjOld[c.pursuit_judge]; }
   if(c.pursuit_judge_ai==null||c.pursuit_judge_ai==='') c.pursuit_judge_ai=c.pursuit_judge||'';
   _rankFanfare='';
@@ -3709,8 +3803,12 @@ function _deriveDoukou(c){ if(!c) return; var ds=[],has=false; (c.revisits||[]).
 window._deriveDoukou=_deriveDoukou;
 function _rusuReset(c){ if(!c||!c.rusu_date||+(c.rusu||0)<1) return; var rd=c.rusu_date; var contacted=(c.revisits||[]).concat(c.pursuits||[]).some(function(v){ return v&&v.date&&v.date>=rd; }); if(contacted){ c.rusu='0'; c.rusu_date=''; } }
 function paintRusuDate(){ var el=document.getElementById('rusuDateDisp'); if(!el) return; var d=(cur&&cur.rusu_date)?cur.rusu_date:''; el.textContent=d?('📅 留守確認日 '+d.replace(/-/g,'/')):''; }
-function onRusuChange(){ if(!cur) return; var rv=document.querySelector('input[name="rusu"]:checked'); var val=rv?rv.value:'0'; cur.rusu=val; if(+val>=1){ cur.rusu_date=todayStr(); } else { cur.rusu_date=''; } paintRusuDate(); if(typeof setDirty==='function') setDirty(true); }
-window.onRusuChange=onRusuChange;
+function paintRusuButtons(){ var cur0=+((cur&&cur.rusu)||0); document.querySelectorAll('input[name="rusu"]').forEach(function(r){ var v=+r.value, on=(v===cur0+1), here=(v===cur0); r.disabled=!on; var lab=r.closest('.ci'); if(lab){ lab.style.opacity=(on||here)?'1':'0.3'; lab.style.cursor=on?'pointer':'default'; lab.style.boxShadow=here?'0 0 0 2px #4aa8ff':'none'; lab.style.borderRadius=here?'8px':''; } }); }
+function rusuReset0(){ if(!cur) return; cur.rusu='0'; cur.rusu_date=''; document.querySelectorAll('input[name="rusu"]').forEach(function(r){ r.checked=(r.value==='0'); }); paintRusuDate(); paintRusuButtons(); if(typeof setDirty==='function') setDirty(true); if(typeof aibisToast==='function') aibisToast('留守カウントを0に戻したよ'); }
+window.rusuReset0=rusuReset0;
+function showRusuAdvice(){ var msgs=['もう訪問するのは、やめた方がいいかもね…😔','5回連続でお留守。そろそろ引き際かもしれないね🚪','ここまで留守が続くなら、深追いは禁物かも💦','脈は薄いサインかも。力は他のお客様へ回そう！🔄','5連続留守…潔く撤退も、立派な戦略だよ🫡','これ以上は時間がもったいないかも。次の見込みへ切り替えよう！🏃']; var m=msgs[Math.floor(Math.random()*msgs.length)]; aibisAlert('<div style="font-size:19px;font-weight:800;line-height:1.5;color:#c92a2a">⚠️ 連続留守 5回</div><div style="font-size:17px;font-weight:700;line-height:1.6;margin-top:10px;color:#2d3748">'+m+'</div>'); }
+function onRusuChange(){ if(!cur) return; var rv=document.querySelector('input[name="rusu"]:checked'); var val=rv?rv.value:'0'; cur.rusu=val; if(+val>=1){ cur.rusu_date=todayStr(); } else { cur.rusu_date=''; } paintRusuDate(); paintRusuButtons(); if(+val===5){ showRusuAdvice(); } if(typeof setDirty==='function') setDirty(true); }
+window.onRusuChange=onRusuChange; window.paintRusuButtons=paintRusuButtons;
 function aibisConfirm(msg,onYes,yesLabel,noLabel){ window._aibisConfirmYes=function(){ if(typeof closeAibisAlert==='function') closeAibisAlert(); try{ onYes&&onYes(); }catch(e){} }; var btns='<div style="display:flex;gap:10px;justify-content:center;margin-top:4px"><button class="zfa-ok" style="background:#e2e8f0;color:#2d3748" onclick="closeAibisAlert()">'+(noLabel||'やめる')+'</button><button class="zfa-ok" style="background:#e53e3e" onclick="_aibisConfirmYes()">'+(yesLabel||'削除する')+'</button></div>'; aibisAlert(msg+btns); }
 function confirmRemPursuit(i){ aibisConfirm('この追撃記録を削除する？🗑<br><span style="font-size:12.5px;color:#718096">入力した内容は元に戻せないよ。</span>', function(){ remPursuit(i); }); }
 window.toggleVisitDoukou=toggleVisitDoukou; window.paintVisitDoukou=paintVisitDoukou; window.aibisConfirm=aibisConfirm; window.confirmRemPursuit=confirmRemPursuit;
@@ -5606,7 +5704,7 @@ function renderAnalysis(){
  var H='<div class="zdash zdash-mgr"><div class="z-cockpit"><div class="z-cmdhead">⌘ COMMAND CENTER <span>課ダッシュボード</span></div>';
  // KPI + gauge
  H+='<div class="z-bento"><div class="z-card z-kpi z-c1"><span class="z-klab">新規発掘（今月）</span>'+(thisM||lastM?'<span class="z-delta '+(dd>=0?'up':'dn')+'">'+(dd>=0?'▲':'▼')+' '+Math.abs(dd)+'</span>':'')+'<div class="z-kval z-num">'+thisM+'<small>件</small></div>'+_zSpark(mDisc,'#34e3d0')+'</div>'
-  +'<div class="z-card z-kpi z-c1"><span class="z-klab">課スコア平均</span><div class="z-kval z-num" style="color:#8b7cff">'+avg+'<small>/40</small></div><div class="z-ksub">対象 '+n+'件</div></div>'
+  +'<div class="z-card z-kpi z-c1"><span class="z-klab">課スコア平均</span><div class="z-kval z-num" style="color:#8b7cff">'+avg+'<small>/73</small></div><div class="z-ksub">対象 '+n+'件</div></div>'
   +'<div class="z-card z-kpi z-c1"><span class="z-klab">連想以上 率</span><div class="z-kval z-num" style="color:#9be15d">'+_zPct(conn,n)+'<small>%</small></div><div class="z-ksub">'+conn+'件</div></div>'
   +'<div class="z-card z-kpi z-c1"><span class="z-klab">ペース遅れ</span><div class="z-kval z-num" style="color:#ff5d7d">'+late+'<small>件</small></div><div class="z-ksub">'+_zPct(late,n)+'%</div></div></div>';
  H+='</div>';
@@ -5660,7 +5758,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
  var bodyArea=_zAreaCard(t);
  // multi
  var asMap={'1億以下':1,'3億以下':2,'5億以下':3,'10億未満':4,'10億以上':5};
- var bub='<svg class="z-bub" viewBox="0 0 560 230">';t.forEach(function(c){var x=20+calcScore(c)/40*520;var av=(asMap[c.land_asset]||0)+(+(c.m2||0)>=200?2:+(c.m2||0)>=100?1:0);var y=210-av/7*190;var rr=5+calcScore(c)/40*11;var rk=_zRevReg('\ud83d\udc8e \u304a\u5b9d\u5ba2',[{name:c.name,score:calcScore(c),sub:STG[+(c.stage||0)]+'\u30fb'+e(c.manager||'')}]);bub+='<circle cx="'+x.toFixed(0)+'" cy="'+y.toFixed(0)+'" r="'+rr.toFixed(0)+'" fill="'+(RC[c.pursuit_judge]||'#888')+'" opacity=".62" stroke="#fff" stroke-width="1" style="cursor:pointer" onpointerdown="zRevShow(this,\''+rk+'\')" onpointerup="zRevHide()" onpointerleave="zRevHide()" onpointercancel="zRevHide()" oncontextmenu="return false"/>';});bub+='<text x="280" y="228" font-size="9" fill="#6b7894" text-anchor="middle">熱量（スコア）→</text></svg>';
+ var bub='<svg class="z-bub" viewBox="0 0 560 230">';t.forEach(function(c){var x=20+calcScore(c)/73*520;var av=(asMap[c.land_asset]||0)+(+(c.m2||0)>=200?2:+(c.m2||0)>=100?1:0);var y=210-av/7*190;var rr=5+calcScore(c)/73*11;var rk=_zRevReg('\ud83d\udc8e \u304a\u5b9d\u5ba2',[{name:c.name,score:calcScore(c),sub:STG[+(c.stage||0)]+'\u30fb'+e(c.manager||'')}]);bub+='<circle cx="'+x.toFixed(0)+'" cy="'+y.toFixed(0)+'" r="'+rr.toFixed(0)+'" fill="'+(RC[c.pursuit_judge]||'#888')+'" opacity=".62" stroke="#fff" stroke-width="1" style="cursor:pointer" onpointerdown="zRevShow(this,\''+rk+'\')" onpointerup="zRevHide()" onpointerleave="zRevHide()" onpointercancel="zRevHide()" oncontextmenu="return false"/>';});bub+='<text x="280" y="228" font-size="9" fill="#6b7894" text-anchor="middle">熱量（スコア）→</text></svg>';
  var ageT=[['〜64',0,64],['65〜74',65,74],['75〜',75,200]];var agH=ageT.map(function(a){var arr=t.filter(function(c){var ag=_zOwnerAge(c);return ag!==null&&ag>=a[1]&&ag<=a[2];});var av2=arr.length?(arr.reduce(function(s,c){return s+ +(c.stage||0);},0)/arr.length).toFixed(1):'0';return '<div class="z-tile"><b>'+arr.length+'</b><span>'+a[0]+'歳／平均St '+av2+'</span></div>';}).join('');var noAge=t.filter(function(c){return _zOwnerAge(c)===null;}).length;
  var pot=Math.round(t.filter(function(c){return c.pursuit_judge==='A'||c.pursuit_judge==='S';}).reduce(function(s,c){return s+(parseFloat(c.rosenka)||0)*1000*(parseFloat(c.m2)||0);},0)/1e8);
  var miniR=board.map(function(b,_bi){var a=g[b.r];var ax=[['発掘',Math.min(Math.round(a.length/30*100),100)],['グリ',(function(){var s=0,nn=0;a.forEach(function(c){var l=getKaiwaLevel(c);if(l>=0){s+=l;nn++;}});return nn?Math.round(s/nn/4*100):0;})()],['ヒア',_zPct(a.filter(function(c){return c.family_headcount;}).length,a.length)],['連想',_zPct(a.filter(function(c){return +(c.stage||0)>=3;}).length,a.length)],['テス',_zPct(a.filter(function(c){return +(c.stage||0)>=4;}).length,Math.max(1,a.filter(function(c){return +(c.stage||0)>=3;}).length))],['ペース',100-_zPct(a.filter(function(c){return calcPaceOverrate(c)>1;}).length,a.length)]];var col=_zAVAS[reps.indexOf(b.r)%8];return _radarHero(b.r,ax,col,_bi);}).join('');
@@ -5732,7 +5830,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
    if(st>=3&&!c.proposal_req) rs.push('提案依頼まだ');
    if(!c.family_headcount) rs.push('家族未把握');
    if(st>=5&&!c.doukou) rs.push('比較以上で同行未');
-   var urg=(rank==='S'?3:rank==='A'?2:1)*2+st/8*2+rs.length+calcScore(c)/40;
+   var urg=(rank==='S'?3:rank==='A'?2:1)*2+st/8*2+rs.length+calcScore(c)/73;
    return {c:c,rs:rs,urg:urg};
  }).sort(function(a,b){return b.urg-a.urg;}).slice(0,5);
  var todayH=todayCand.length?todayCand.map(function(o,i){var c=o.c,st=+(c.stage||0),mv=_nextMove(c);
@@ -5880,7 +5978,7 @@ function copyAnalysisPrompt(){
     prompt+='【担当者別フィードバック：'+memberName+'】\n';
     prompt+='━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
     prompt+='■ 基本データ\n';
-    prompt+='  担当件数：'+n+'件　平均スコア：'+avgScore+'/40点\n';
+    prompt+='  担当件数：'+n+'件　平均スコア：'+avgScore+'/73点\n';
     prompt+='  ステージ分布：'+stageTxt+'\n';
     prompt+='  追客判定：'+(rankTxt||'未入力')+(noRank?'　未判定:'+noRank+'件':'')+'\n';
     prompt+='  ⏰ 訪問ペース遅れ：'+paceLate+'件　👥 家族人数把握済：'+famComp+'件\n\n';
@@ -5905,7 +6003,7 @@ function copyAnalysisPrompt(){
     prompt+='【課全体の見込み客分析】\n';
     prompt+='━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
     prompt+='■ 全体データ\n';
-    prompt+='  総件数：'+n+'件　平均スコア：'+avgScore+'/40点\n';
+    prompt+='  総件数：'+n+'件　平均スコア：'+avgScore+'/73点\n';
     prompt+='  ステージ分布：'+stageTxt+'\n';
     prompt+='  追客判定：'+(rankTxt||'未入力')+(noRank?'　未判定:'+noRank+'件':'')+'\n';
     prompt+='  ⏰ 訪問ペース遅れ：'+paceLate+'件　👥 家族人数把握済：'+famComp+'件\n';
@@ -6984,6 +7082,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <button onclick="toggleCardMenu(event)" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:6px;font-size:16px;padding:4px 8px;cursor:pointer;font-family:inherit;line-height:1.6;min-height:36px;width:36px">⋮</button>
           <div class="mob-dropdown" id="cardDropdown" style="right:0;left:auto;min-width:150px">
             <button id="cardPrintBtn" onclick="closeCardMenu();openPrintModal()">🖨 印刷</button>
+            <button onclick="closeCardMenu();undoCardEdit()" style="color:#c05621">↩️ このカードを1つ前に戻す</button>
             <div style="height:1px;background:#e2e8f0;margin:4px 0"></div>
             <button onclick="closeCardMenu();showSetup()">⚙ 初期設定</button>
             <button onclick="closeCardMenu();setTimeout(function(){showHelp();},50)">📖 マニュアル</button>
@@ -7404,7 +7503,8 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <div style="margin-top:10px">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><label style="margin:0">連続留守カウント</label><span id="rusuDateDisp" style="font-size:12px;color:#2c5282;font-weight:700"></span></div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-        <div class="cg" style="flex-wrap:nowrap">
+        <div class="cg" id="rusuRow" style="flex-wrap:nowrap">
+          <button type="button" onclick="rusuReset0()" title="留守カウントを0に戻す" style="flex-shrink:0;width:auto;min-height:30px;padding:3px 8px;margin-right:3px;border:1px dashed #cbd5e0;border-radius:6px;background:#f1f5f9;color:#94a3b8;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">戻</button>
           <label class="ci"><input type="radio" name="rusu" onchange="onRusuChange()" value="0"><span>0</span></label>
           <label class="ci"><input type="radio" name="rusu" onchange="onRusuChange()" value="1"><span>1</span></label>
           <label class="ci"><input type="radio" name="rusu" onchange="onRusuChange()" value="2"><span>2</span></label>
