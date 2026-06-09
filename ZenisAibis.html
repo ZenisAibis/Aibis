@@ -158,6 +158,9 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:#2c5282;box-sh
 textarea{resize:vertical;min-height:80px}
 .cg{display:flex;gap:6px;flex-wrap:wrap}
 .ci{display:inline-flex;align-items:center;gap:4px;padding:8px 12px;background:white;border:1px solid #cbd5e0;border-radius:4px;cursor:pointer;font-size:13px;min-height:38px}
+#rusuRow{gap:4px;width:100%}
+#rusuRow .ci{flex:1 1 0;min-width:0;padding:8px 2px;justify-content:center;gap:3px}
+#rusuRow .ci span{font-size:13px}
 .stsel{display:grid;grid-template-columns:repeat(6,1fr);gap:4px}
 @media(max-width:600px){.stsel{grid-template-columns:repeat(3,1fr)}}
 .stbtn{padding:10px 4px;border:2px solid #cbd5e0;background:white;border-radius:6px;cursor:pointer;text-align:center;font-size:11px;font-weight:600;min-height:48px;touch-action:manipulation}
@@ -1443,7 +1446,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.42";
+var APP_VERSION = "v5.43";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -7415,7 +7418,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <div style="margin-top:10px">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><label style="margin:0">連続留守カウント</label><span id="rusuDateDisp" style="font-size:12px;color:#2c5282;font-weight:700"></span></div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-        <div class="cg" style="flex-wrap:nowrap">
+        <div class="cg" id="rusuRow" style="flex-wrap:nowrap">
           <button type="button" onclick="rusuReset0()" title="留守カウントを0に戻す" style="flex-shrink:0;width:auto;min-height:30px;padding:3px 8px;margin-right:3px;border:1px dashed #cbd5e0;border-radius:6px;background:#f1f5f9;color:#94a3b8;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">戻</button>
           <label class="ci"><input type="radio" name="rusu" onchange="onRusuChange()" value="0"><span>0</span></label>
           <label class="ci"><input type="radio" name="rusu" onchange="onRusuChange()" value="1"><span>1</span></label>
