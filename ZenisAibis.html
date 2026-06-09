@@ -1440,7 +1440,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.31";
+var APP_VERSION = "v5.35";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -3256,9 +3256,11 @@ function navCard(dir){
   var idx=lastVisible.findIndex(function(c){return c.id===curId;});
   if(idx<0) return;
   var ni=idx+dir; if(ni<0||ni>=lastVisible.length) return;
+  var _act=document.querySelector('.tab.active'); var _keep=_act?_act.dataset.tab:'';
   if(typeof autoCommitEdit==='function') autoCommitEdit();
   _navReplaceNext=true;
   openCard(lastVisible[ni].id);
+  if(_keep){ try{ switchTab(_keep); }catch(e){} }
 }
 function updateCardNav(){
   var bar=document.getElementById('cardNav'); if(!bar) return;
@@ -3425,11 +3427,12 @@ function collectForm() {
   document.querySelectorAll('#jChecklist input').forEach(function(cb){ c.jchecks[cb.dataset.ck]=cb.checked; });
   var rv=document.querySelector('input[name="rusu"]:checked'); c.rusu=rv?rv.value:'';
   c.revisits=Array.from(document.querySelectorAll('.ri')).map(function(el,i){
-    return {num:i+1,date:el.querySelector('[data-f="date"]').value,appo:el.querySelector('[data-f="appo"]').value,content:el.querySelector('[data-f="content"]').value,rec:el.querySelector('[data-f="rec"]')?.value||'',instruction:el.querySelector('[data-f="inst"]').value};
+    return {num:i+1,date:el.querySelector('[data-f="date"]').value,appo:el.querySelector('[data-f="appo"]').value,visit_type:el.querySelector('[data-f="vtype"]')?.value||'',content:el.querySelector('[data-f="content"]').value,rec:el.querySelector('[data-f="rec"]')?.value||'',instruction:el.querySelector('[data-f="inst"]').value};
   });
   c.pursuits=Array.from(document.querySelectorAll('.pi')).map(function(el,i){
     return {num:i+1,date:el.querySelector('[data-f="date"]').value,appo:el.querySelector('[data-f="appo"]').value,interviewer:el.querySelector('[data-f="iv"]').value,next_appo_date:el.querySelector('[data-f="nad"]').value,visit_type:el.querySelector('[data-f="vtype"]')?.value||'',content:el.querySelector('[data-f="content"]').value,rec:el.querySelector('[data-f="rec"]')?.value||'',instruction:el.querySelector('[data-f="inst"]').value};
   });
+  _deriveDoukou(c);
   // テーマ別分析結果を保存（変更時に貼り付け日時を記録）
   ['general','next_visit','motivation','personality','objection','hearing','training'].forEach(function(k){
     var el=document.getElementById('f_ai_'+k); if(el){ var nv=el.value; if(!nv.trim()){ c['ai_'+k+'_at']=''; } else if(!c['ai_'+k+'_at']){ c['ai_'+k+'_at']=new Date().toISOString(); } c['ai_'+k]=nv; }
@@ -3696,6 +3699,14 @@ function addFam(){ famOpenAdd(2); }
 function remFam(i){ cur.family.splice(i,1); renderFam(); }
 
 // ===== 再訪 =====
+function toggleVisitDoukou(btn){ var dk=(btn.value==='同行'); btn.value=dk?'単独':'同行'; paintVisitDoukou(btn); if(typeof setDirty==='function') setDirty(true); }
+function paintVisitDoukou(btn){ var dk=(btn.value==='同行'); btn.textContent=dk?'🔴同行':'🟢単独'; btn.style.borderColor=dk?'#553c9a':'#38a169'; btn.style.background=dk?'linear-gradient(135deg,#2c5282,#553c9a)':'white'; btn.style.color=dk?'#fff':'#38a169'; btn.style.boxShadow=dk?'0 2px 6px rgba(85,60,154,0.3)':'none'; }
+function _doukouBtnHTML(v){ var dk=/同行/.test(v||''); return '<button type="button" data-f="vtype" value="'+(dk?'同行':'単独')+'" onclick="toggleVisitDoukou(this)" style="flex-shrink:0;min-height:32px;padding:4px 9px;border:2px solid '+(dk?'#553c9a':'#38a169')+';border-radius:6px;background:'+(dk?'linear-gradient(135deg,#2c5282,#553c9a)':'white')+';color:'+(dk?'#fff':'#38a169')+';font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:'+(dk?'0 2px 6px rgba(85,60,154,0.3)':'none')+'">'+(dk?'🔴同行':'🟢単独')+'</button>'; }
+function _deriveDoukou(c){ if(!c) return; var ds=[],has=false; (c.revisits||[]).concat(c.pursuits||[]).forEach(function(v){ if(v&&/同行/.test(v.visit_type||'')){ has=true; if(v.date) ds.push(v.date); } }); c.doukou=(c.mgr_involve==='同行')||has; if(c.doukou){ if(!c.doukou_at){ ds.sort(); c.doukou_at=ds.length?ds[ds.length-1]:(typeof todayStr==='function'?todayStr():''); } } else { c.doukou_at=''; } }
+window._deriveDoukou=_deriveDoukou;
+function aibisConfirm(msg,onYes,yesLabel,noLabel){ window._aibisConfirmYes=function(){ if(typeof closeAibisAlert==='function') closeAibisAlert(); try{ onYes&&onYes(); }catch(e){} }; var btns='<div style="display:flex;gap:10px;justify-content:center;margin-top:4px"><button class="zfa-ok" style="background:#e2e8f0;color:#2d3748" onclick="closeAibisAlert()">'+(noLabel||'やめる')+'</button><button class="zfa-ok" style="background:#e53e3e" onclick="_aibisConfirmYes()">'+(yesLabel||'削除する')+'</button></div>'; aibisAlert(msg+btns); }
+function confirmRemPursuit(i){ aibisConfirm('この追撃記録を削除する？🗑<br><span style="font-size:12.5px;color:#718096">入力した内容は元に戻せないよ。</span>', function(){ remPursuit(i); }); }
+window.toggleVisitDoukou=toggleVisitDoukou; window.paintVisitDoukou=paintVisitDoukou; window.aibisConfirm=aibisConfirm; window.confirmRemPursuit=confirmRemPursuit;
 function renderRevisits(){
   var list=document.getElementById('revisitList'); if(!list) return;
   if(!cur.revisits||cur.revisits.length===0){
@@ -3704,10 +3715,10 @@ function renderRevisits(){
   list.innerHTML=cur.revisits.map(function(v,vi){
     var rid='rv_'+vi;
     return '<div class="vcard ri" data-vi="'+vi+'"><div class="vh"><span class="vn">再訪 '+v.num+' 回目</span></div>'
-      +'<div style="display:flex;gap:6px 12px;align-items:center;flex-wrap:wrap;margin-bottom:3px">'
-        +'<label style="margin:0">訪問・会話メモ</label>'
-        +'<span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">訪問日</label><input type="date" data-f="date" value="'+e(v.date||'')+'" style="width:auto;min-height:32px;padding:4px 6px"></span>'
+      +'<div style="display:flex;gap:4px 6px;align-items:center;justify-content:flex-end;flex-wrap:wrap;margin:2px 0 4px">'
+        +'<span style="display:inline-flex;align-items:center;gap:3px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">訪問日</label><input type="date" data-f="date" value="'+e(v.date||'')+'" style="width:auto;min-height:32px;padding:3px 4px;font-size:13px"></span>'
         +'<span style="display:inline-flex;align-items:center;gap:4px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">アポ</label><select data-f="appo" style="width:auto;min-height:32px;padding:4px 4px;font-size:13px"><option value="">-</option><option value="アポ有り"'+(v.appo==='アポ有り'?' selected':'')+'>アポ有り</option><option value="仮アポ"'+(v.appo==='仮アポ'?' selected':'')+'>仮アポ</option><option value="アポ無し"'+(v.appo==='アポ無し'?' selected':'')+'>アポ無し</option></select></span>'
+        +_doukouBtnHTML(v.visit_type)
         +'<button type="button" class="mic-btn" onclick="micStart(\''+rid+'_c\',this)" style="margin-top:0">🎤</button>'
       +'</div>'
       +'<textarea id="'+rid+'_c" data-f="content" rows="3" placeholder="訪問内容・会話メモ">'+e(v.content||'')+'</textarea>'
@@ -3731,17 +3742,17 @@ function renderPursuits(){
   list.innerHTML=cur.pursuits.map(function(v,i){
     var pid='pt_'+i;
     return '<div class="vcard pi"><div class="vh"><span class="vn">追撃 '+v.num+' 回目</span>'
-      +'<div style="display:flex;gap:6px 10px;align-items:center;flex-wrap:wrap">'
-        +'<span style="display:inline-flex;align-items:center;gap:4px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">訪問日</label><input type="date" data-f="date" value="'+e(v.date||'')+'" style="width:auto;min-height:32px;padding:4px 6px"></span>'
-        +'<span style="display:inline-flex;align-items:center;gap:4px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">アポ</label><select data-f="appo" style="width:auto;min-height:32px;padding:4px 4px;font-size:13px"><option value="">-</option><option value="有り"'+(v.appo==='有り'?' selected':'')+'>有り</option><option value="無し"'+(v.appo==='無し'?' selected':'')+'>無し</option></select></span>'
-        +'<span style="display:inline-flex;align-items:center;gap:4px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">面談者</label><select data-f="iv" style="width:auto;min-height:32px;padding:4px 6px"><option value="">-</option>'+famRoles.map(function(r){return '<option value="'+e(r)+'"'+(v.interviewer===r?' selected':'')+'>'+e(r)+'</option>';}).join('')+((v.interviewer&&famRoles.indexOf(v.interviewer)<0)?'<option value="'+e(v.interviewer)+'" selected>'+e(v.interviewer)+'</option>':'')+'</select></span>'
-        +'<button type="button" class="ibt" onclick="remPursuit('+i+')">×</button>'
+      +'<div style="display:flex;gap:4px 6px;align-items:center;flex-wrap:wrap">'
+        +'<span style="display:inline-flex;align-items:center;gap:3px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">訪問日</label><input type="date" data-f="date" value="'+e(v.date||'')+'" style="width:auto;min-height:32px;padding:3px 4px;font-size:13px"></span>'
+        +'<span style="display:inline-flex;align-items:center;gap:3px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">アポ</label><select data-f="appo" style="width:auto;min-height:32px;padding:4px 2px;font-size:12px"><option value="">-</option><option value="有り"'+(v.appo==='有り'?' selected':'')+'>有り</option><option value="無し"'+(v.appo==='無し'?' selected':'')+'>無し</option></select></span>'
+        +_doukouBtnHTML(v.visit_type)
+        +'<button type="button" class="ibt" onclick="confirmRemPursuit('+i+')">×</button>'
       +'</div></div>'
       +(i===0?'<div class="tcro">★ テスクロ！提案依頼を持ち掛けよう！</div>':'')
-      +'<div style="display:flex;gap:6px 12px;align-items:center;flex-wrap:wrap;margin-bottom:3px">'
-        +'<label style="margin:0">訪問内容</label>'
-        +'<span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">同行?</label><select data-f="vtype" style="width:auto;min-height:32px;padding:4px 6px"><option value="">-</option>'+['単独訪問','課長同行','税理士同行','その他同行'].map(function(t){return '<option value="'+t+'"'+(v.visit_type===t?' selected':'')+'>'+t+'</option>';}).join('')+'</select></span>'
-        +'<span style="display:inline-flex;align-items:center;gap:4px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">次回</label><input type="date" data-f="nad" value="'+e(v.next_appo_date||'')+'" style="width:auto;min-height:32px;padding:4px 6px"></span>'
+      +'<div style="display:flex;gap:4px 6px;align-items:center;flex-wrap:wrap;margin:2px 0 4px">'
+        +'<label style="margin:0;font-size:12px">訪問内容</label>'
+        +'<span style="display:inline-flex;align-items:center;gap:3px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">面談者</label><select data-f="iv" style="width:auto;min-height:32px;padding:4px 4px;font-size:12px"><option value="">-</option>'+famRoles.map(function(r){return '<option value="'+e(r)+'"'+(v.interviewer===r?' selected':'')+'>'+e(r)+'</option>';}).join('')+((v.interviewer&&famRoles.indexOf(v.interviewer)<0)?'<option value="'+e(v.interviewer)+'" selected>'+e(v.interviewer)+'</option>':'')+'</select></span>'
+        +'<span style="display:inline-flex;align-items:center;gap:3px;margin-left:auto"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">次回</label><input type="date" data-f="nad" value="'+e(v.next_appo_date||'')+'" style="width:auto;min-height:32px;padding:3px 4px;font-size:13px"></span>'
         +'<button type="button" class="mic-btn" onclick="micStart(\''+pid+'_c\',this)" style="margin-top:0">🎤</button>'
       +'</div>'
       +'<textarea id="'+pid+'_c" data-f="content" rows="3" placeholder="会話・気づき・観察">'+e(v.content||'')+'</textarea>'
@@ -6892,13 +6903,12 @@ function toggleDoukou(){
   var order=['単独','相談','同行'];
   var i=order.indexOf(cur.mgr_involve||'単独'); i=(i+1)%order.length;
   cur.mgr_involve=order[i];
-  cur.doukou=(cur.mgr_involve==='同行');
-  cur.doukou_at=cur.doukou?(cur.doukou_at||todayStr()):'';
+  _deriveDoukou(cur);
   updateDoukouBtn();
 }
 function updateDoukouBtn(){
   var btn=document.getElementById('doukouBtn'); if(!btn) return;
-  if(cur){ if(cur.mgr_involve==null||cur.mgr_involve===''){ cur.mgr_involve=cur.doukou?'同行':'単独'; } cur.doukou=(cur.mgr_involve==='同行'); }
+  if(cur){ if(cur.mgr_involve==null||cur.mgr_involve===''){ cur.mgr_involve=cur.doukou?'同行':'単独'; } _deriveDoukou(cur); }
   var lv=cur?(cur.mgr_involve||'単独'):'単独';
   var map={'単独':{t:'🟢単独',bg:'white',bd:'#38a169',fg:'#38a169',sh:'none'},'相談':{t:'🟡相談',bg:'linear-gradient(135deg,#d69e2e,#b7791f)',bd:'#b7791f',fg:'#ffffff',sh:'0 2px 6px rgba(183,121,31,0.3)'},'同行':{t:'🔴同行',bg:'linear-gradient(135deg,#2c5282,#553c9a)',bd:'#553c9a',fg:'#ffffff',sh:'0 2px 6px rgba(85,60,154,0.3)'}};
   var s=map[lv]||map['単独'];
