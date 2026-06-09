@@ -1440,7 +1440,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.29";
+var APP_VERSION = "v5.32";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -2839,6 +2839,7 @@ function getLastVD(c) {
   return dates.length ? dates.sort(function(a,b){return b.localeCompare(a);})[0] : '';
 }
 function _han(s){ return s?String(s).replace(/[０-９]/g,function(d){return String.fromCharCode(d.charCodeAt(0)-0xFEE0);}):s; }
+function cleanAddr(s){ if(!s) return s; var a=String(s); a=a.replace(/〒\s*\d{3}[-－ー‐]?\d{4}/g,''); a=a.replace(/〒/g,''); a=a.replace(/^[\s　]*\d{3}[-－ー‐]?\d{4}(?!\d)/,''); a=a.replace(/[\s　]+/g,''); return a.trim(); }
 function _shortAddr(a){ if(!a) return ''; var i=a.indexOf('丁目'); if(i>=0) return a.slice(0,i+2); return a.replace(/[0-9０-９]+[‐ー\-－][0-9０-９]+.*$/,'').trim()||a; }
 function getArea(addr) {
   if(!addr) return '';
@@ -3255,9 +3256,11 @@ function navCard(dir){
   var idx=lastVisible.findIndex(function(c){return c.id===curId;});
   if(idx<0) return;
   var ni=idx+dir; if(ni<0||ni>=lastVisible.length) return;
+  var _act=document.querySelector('.tab.active'); var _keep=_act?_act.dataset.tab:'';
   if(typeof autoCommitEdit==='function') autoCommitEdit();
   _navReplaceNext=true;
   openCard(lastVisible[ni].id);
+  if(_keep){ try{ switchTab(_keep); }catch(e){} }
 }
 function updateCardNav(){
   var bar=document.getElementById('cardNav'); if(!bar) return;
@@ -3404,6 +3407,7 @@ function collectForm() {
     c.email=_loc?(_loc+'@'+_dom):'';
   }
   if(c.name) c.name=c.name.replace(/[\s　]+/g,'');
+  ['address','plan_address'].forEach(function(k){ if(c[k]) c[k]=cleanAddr(c[k]); });
   // 金額フィールドのカンマを除去して保存
   ['rosenka','m2tanka','chusharyo'].forEach(function(k){
     if(c[k]) c[k]=String(c[k]).replace(/,/g,'');
@@ -3423,7 +3427,7 @@ function collectForm() {
   document.querySelectorAll('#jChecklist input').forEach(function(cb){ c.jchecks[cb.dataset.ck]=cb.checked; });
   var rv=document.querySelector('input[name="rusu"]:checked'); c.rusu=rv?rv.value:'';
   c.revisits=Array.from(document.querySelectorAll('.ri')).map(function(el,i){
-    return {num:i+1,date:el.querySelector('[data-f="date"]').value,appo:el.querySelector('[data-f="appo"]').value,content:el.querySelector('[data-f="content"]').value,rec:el.querySelector('[data-f="rec"]')?.value||'',instruction:el.querySelector('[data-f="inst"]').value};
+    return {num:i+1,date:el.querySelector('[data-f="date"]').value,appo:el.querySelector('[data-f="appo"]').value,visit_type:el.querySelector('[data-f="vtype"]')?.value||'',content:el.querySelector('[data-f="content"]').value,rec:el.querySelector('[data-f="rec"]')?.value||'',instruction:el.querySelector('[data-f="inst"]').value};
   });
   c.pursuits=Array.from(document.querySelectorAll('.pi')).map(function(el,i){
     return {num:i+1,date:el.querySelector('[data-f="date"]').value,appo:el.querySelector('[data-f="appo"]').value,interviewer:el.querySelector('[data-f="iv"]').value,next_appo_date:el.querySelector('[data-f="nad"]').value,visit_type:el.querySelector('[data-f="vtype"]')?.value||'',content:el.querySelector('[data-f="content"]').value,rec:el.querySelector('[data-f="rec"]')?.value||'',instruction:el.querySelector('[data-f="inst"]').value};
@@ -3694,6 +3698,12 @@ function addFam(){ famOpenAdd(2); }
 function remFam(i){ cur.family.splice(i,1); renderFam(); }
 
 // ===== 再訪 =====
+function toggleVisitDoukou(btn){ var dk=(btn.value==='同行'); btn.value=dk?'単独':'同行'; paintVisitDoukou(btn); if(typeof setDirty==='function') setDirty(true); }
+function paintVisitDoukou(btn){ var dk=(btn.value==='同行'); btn.textContent=dk?'🤝 同行':'単独'; btn.style.borderColor=dk?'#dd6b20':'#e2e8f0'; btn.style.background=dk?'#fffaf0':'#fff'; btn.style.color=dk?'#c05621':'#718096'; }
+function _doukouBtnHTML(v){ var dk=/同行/.test(v||''); return '<button type="button" data-f="vtype" value="'+(dk?'同行':'単独')+'" onclick="toggleVisitDoukou(this)" style="flex-shrink:0;min-height:32px;padding:4px 11px;border:2px solid '+(dk?'#dd6b20':'#e2e8f0')+';border-radius:6px;background:'+(dk?'#fffaf0':'#fff')+';color:'+(dk?'#c05621':'#718096')+';font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap">'+(dk?'🤝 同行':'単独')+'</button>'; }
+function aibisConfirm(msg,onYes,yesLabel,noLabel){ window._aibisConfirmYes=function(){ if(typeof closeAibisAlert==='function') closeAibisAlert(); try{ onYes&&onYes(); }catch(e){} }; var btns='<div style="display:flex;gap:10px;justify-content:center;margin-top:4px"><button class="zfa-ok" style="background:#e2e8f0;color:#2d3748" onclick="closeAibisAlert()">'+(noLabel||'やめる')+'</button><button class="zfa-ok" style="background:#e53e3e" onclick="_aibisConfirmYes()">'+(yesLabel||'削除する')+'</button></div>'; aibisAlert(msg+btns); }
+function confirmRemPursuit(i){ aibisConfirm('この追撃記録を削除する？🗑<br><span style="font-size:12.5px;color:#718096">入力した内容は元に戻せないよ。</span>', function(){ remPursuit(i); }); }
+window.toggleVisitDoukou=toggleVisitDoukou; window.paintVisitDoukou=paintVisitDoukou; window.aibisConfirm=aibisConfirm; window.confirmRemPursuit=confirmRemPursuit;
 function renderRevisits(){
   var list=document.getElementById('revisitList'); if(!list) return;
   if(!cur.revisits||cur.revisits.length===0){
@@ -3706,6 +3716,7 @@ function renderRevisits(){
         +'<label style="margin:0">訪問・会話メモ</label>'
         +'<span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">訪問日</label><input type="date" data-f="date" value="'+e(v.date||'')+'" style="width:auto;min-height:32px;padding:4px 6px"></span>'
         +'<span style="display:inline-flex;align-items:center;gap:4px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">アポ</label><select data-f="appo" style="width:auto;min-height:32px;padding:4px 4px;font-size:13px"><option value="">-</option><option value="アポ有り"'+(v.appo==='アポ有り'?' selected':'')+'>アポ有り</option><option value="仮アポ"'+(v.appo==='仮アポ'?' selected':'')+'>仮アポ</option><option value="アポ無し"'+(v.appo==='アポ無し'?' selected':'')+'>アポ無し</option></select></span>'
+        +_doukouBtnHTML(v.visit_type)
         +'<button type="button" class="mic-btn" onclick="micStart(\''+rid+'_c\',this)" style="margin-top:0">🎤</button>'
       +'</div>'
       +'<textarea id="'+rid+'_c" data-f="content" rows="3" placeholder="訪問内容・会話メモ">'+e(v.content||'')+'</textarea>'
@@ -3732,14 +3743,14 @@ function renderPursuits(){
       +'<div style="display:flex;gap:6px 10px;align-items:center;flex-wrap:wrap">'
         +'<span style="display:inline-flex;align-items:center;gap:4px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">訪問日</label><input type="date" data-f="date" value="'+e(v.date||'')+'" style="width:auto;min-height:32px;padding:4px 6px"></span>'
         +'<span style="display:inline-flex;align-items:center;gap:4px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">アポ</label><select data-f="appo" style="width:auto;min-height:32px;padding:4px 4px;font-size:13px"><option value="">-</option><option value="有り"'+(v.appo==='有り'?' selected':'')+'>有り</option><option value="無し"'+(v.appo==='無し'?' selected':'')+'>無し</option></select></span>'
-        +'<span style="display:inline-flex;align-items:center;gap:4px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">面談者</label><select data-f="iv" style="width:auto;min-height:32px;padding:4px 6px"><option value="">-</option>'+famRoles.map(function(r){return '<option value="'+e(r)+'"'+(v.interviewer===r?' selected':'')+'>'+e(r)+'</option>';}).join('')+((v.interviewer&&famRoles.indexOf(v.interviewer)<0)?'<option value="'+e(v.interviewer)+'" selected>'+e(v.interviewer)+'</option>':'')+'</select></span>'
-        +'<button type="button" class="ibt" onclick="remPursuit('+i+')">×</button>'
+        +_doukouBtnHTML(v.visit_type)
+        +'<button type="button" class="ibt" onclick="confirmRemPursuit('+i+')">×</button>'
       +'</div></div>'
       +(i===0?'<div class="tcro">★ テスクロ！提案依頼を持ち掛けよう！</div>':'')
       +'<div style="display:flex;gap:6px 12px;align-items:center;flex-wrap:wrap;margin-bottom:3px">'
         +'<label style="margin:0">訪問内容</label>'
-        +'<span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">同行?</label><select data-f="vtype" style="width:auto;min-height:32px;padding:4px 6px"><option value="">-</option>'+['単独訪問','課長同行','税理士同行','その他同行'].map(function(t){return '<option value="'+t+'"'+(v.visit_type===t?' selected':'')+'>'+t+'</option>';}).join('')+'</select></span>'
-        +'<span style="display:inline-flex;align-items:center;gap:4px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">次回</label><input type="date" data-f="nad" value="'+e(v.next_appo_date||'')+'" style="width:auto;min-height:32px;padding:4px 6px"></span>'
+        +'<span style="display:inline-flex;align-items:center;gap:4px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">面談者</label><select data-f="iv" style="width:auto;min-height:32px;padding:4px 6px"><option value="">-</option>'+famRoles.map(function(r){return '<option value="'+e(r)+'"'+(v.interviewer===r?' selected':'')+'>'+e(r)+'</option>';}).join('')+((v.interviewer&&famRoles.indexOf(v.interviewer)<0)?'<option value="'+e(v.interviewer)+'" selected>'+e(v.interviewer)+'</option>':'')+'</select></span>'
+        +'<span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">次回</label><input type="date" data-f="nad" value="'+e(v.next_appo_date||'')+'" style="width:auto;min-height:32px;padding:4px 6px"></span>'
         +'<button type="button" class="mic-btn" onclick="micStart(\''+pid+'_c\',this)" style="margin-top:0">🎤</button>'
       +'</div>'
       +'<textarea id="'+pid+'_c" data-f="content" rows="3" placeholder="会話・気づき・観察">'+e(v.content||'')+'</textarea>'
@@ -3780,8 +3791,8 @@ window.isRevisitJudgeLocked=isRevisitJudgeLocked; window.applyRevisitLock=applyR
 function isRevisitJudgeDone(){ return !!(cur && (cur.revisit_judge || cur.revisit_judge_date || (cur.revisit_4eyes && String(cur.revisit_4eyes).trim()))); }
 function applyPursuitLock(){ var b=document.getElementById('addPursuitBtn'); if(b) b.classList.toggle('pursuit-locked', !isRevisitJudgeDone()); }
 window.isRevisitJudgeDone=isRevisitJudgeDone; window.applyPursuitLock=applyPursuitLock;
-function setRJ(v,user){ if(user){ if(typeof collectForm==='function') collectForm(); if(isRevisitJudgeLocked()){ applyRevisitLock(); aibisAlert('再訪Judgmentはまだロック中だよ🔒<br><br>ヒアリングは足りてる？課長と協議した？<br><br>再訪3回目の「訪問日・訪問内容・録音要約」のどれかを記録するとJudgmentできるよ。'); return; } if(cur.revisit_judge===v) v=''; } cur.revisit_judge=v; document.querySelectorAll('[data-rj]').forEach(function(b){b.classList.toggle('active',b.dataset.rj===v);}); if(user) recomputeRank(); if(window.updateTabProgress) updateTabProgress(); }
-function setPJ(v,user){ if(user&&cur.pursuit_judge_sel===v) v=''; cur.pursuit_judge_sel=v; document.querySelectorAll('[data-pj]').forEach(function(b){b.classList.toggle('active',b.dataset.pj===v);}); if(user) recomputeRank(); if(window.updateTabProgress) updateTabProgress(); }
+function setRJ(v,user){ if(user){ if(typeof collectForm==='function') collectForm(); if(isRevisitJudgeLocked()){ applyRevisitLock(); aibisAlert('再訪Judgmentはまだロック中だよ🔒<br><br>ヒアリングは足りてる？課長と協議した？<br><br>再訪3回目の「訪問日・訪問内容・録音要約」のどれかを記録するとJudgmentできるよ。'); return; } if(cur.revisit_judge===v) v=''; } cur.revisit_judge=v; document.querySelectorAll('[data-rj]').forEach(function(b){b.classList.toggle('active',b.dataset.rj===v);}); if(user){ recomputeRank(); if(typeof setDirty==='function') setDirty(true); } if(window.updateTabProgress) updateTabProgress(); }
+function setPJ(v,user){ if(user&&cur.pursuit_judge_sel===v) v=''; cur.pursuit_judge_sel=v; document.querySelectorAll('[data-pj]').forEach(function(b){b.classList.toggle('active',b.dataset.pj===v);}); if(user){ recomputeRank(); if(typeof setDirty==='function') setDirty(true); } if(window.updateTabProgress) updateTabProgress(); }
 
 // ===== 保存 =====
 // ===== 下書き自動保存＆画面離脱時の自動確定（保存忘れ対策） =====
@@ -3809,7 +3820,7 @@ function autoCommitEdit(){
     if(curId){ var idx=cards.findIndex(function(c){return c.id===curId;}); if(idx>=0) cards[idx]=cur; else { cards.push(cur); curId=cur.id; } }
     else { cards.push(cur); curId=cur.id; }
     setDirty(false);
-    doSaveCards(function(ok){ if(ok) clearDraft(); });
+    doSaveCards(function(ok){ if(ok){ clearDraft(); if(typeof renderCards==='function') renderCards(); } });
   }catch(ex){}
 }
 function maybeRestoreDraft(){
@@ -3850,7 +3861,7 @@ function saveCard(){
     updateCount();
     setDirty(false);
     clearDraft();
-    if(wasNew){ if(typeof renderCards==='function') renderCards(); if(typeof updateCardNav==='function') updateCardNav(); }
+    if(typeof renderCards==='function') renderCards(); if(wasNew && typeof updateCardNav==='function') updateCardNav();
     // 最終更新表示も更新
     var ud=document.getElementById('dispUpdated');
     if(ud&&cur.updated_at){
@@ -6177,7 +6188,7 @@ function plannerTab(t){
 function planCity(c){ if(!c||!c.address) return ''; var a=(typeof _han==='function')?_han(String(c.address)):String(c.address); a=a.replace(/\s+/g,''); a=a.replace(/^(北海道|東京都|京都府|大阪府|.{2,3}県)/,''); a=a.replace(/[0-9].*$/,''); a=a.replace(/[一二三四五六七八九十百千]+丁目.*$/,''); a=a.replace(/丁目.*$/,''); return a; }
 function planAddrTail(c){ if(!c||!c.address) return ''; var a=(typeof _han==='function')?_han(String(c.address)):String(c.address); a=a.replace(/\s+/g,''); return a.replace(/^(北海道|東京都|京都府|大阪府|.{2,3}県)/,''); }
 function planAddrNum(c){ if(!c||!c.address) return []; var a=(typeof _han==='function')?_han(String(c.address)):String(c.address); var m=a.match(/\d+/g); return m?m.map(Number):[]; }
-function plannerBack(){ try{ savePlan(); }catch(e){} try{ history.back(); }catch(e){ if(typeof _navToList==='function') _navToList(); } }
+function plannerBack(){ try{ savePlan(); }catch(e){} try{ if(history.state&&history.state.zv==='planner'){ history.back(); } else { if(typeof _navToList==='function') _navToList(); } }catch(e){ if(typeof _navToList==='function') _navToList(); } }
 function planAreaRows(){ var ents=(_plan.entries||[]).filter(function(en){return en.cardId;}); var rows=ents.map(function(en){ var c=cards.filter(function(x){return x.id===en.cardId;})[0]||{}; return {en:en,c:c,city:planCity(c)||'（住所未設定）',nums:planAddrNum(c),tail:planAddrTail(c)}; }); var order=[],groups={}; rows.forEach(function(r){ if(!groups[r.city]){groups[r.city]=[];order.push(r.city);} groups[r.city].push(r); }); order.sort(function(a,b){ if(a==='（住所未設定）')return 1; if(b==='（住所未設定）')return -1; return a.localeCompare(b,'ja'); }); var html=''; order.forEach(function(city){ var g=groups[city]; g.sort(function(a,b){ var an=a.nums,bn=b.nums,L=Math.max(an.length,bn.length); for(var i=0;i<L;i++){ var x=an[i]||0,y=bn[i]||0; if(x!==y)return x-y; } return (a.en.target||'').localeCompare(b.en.target||'','ja'); }); html+='<tr class="pareah"><td colspan="3">📍 '+e(city)+'　<span style="font-weight:400;font-size:10px">'+g.length+'件</span></td></tr>'; g.forEach(function(r){ html+='<tr><td class="ptt">'+e(r.en.target)+'</td><td class="pm">'+e(r.tail)+'</td><td class="pc">'+e(r.en.purpose||'')+'</td></tr>'; }); }); if(!html) html='<tr><td colspan="3" style="text-align:center;color:#999;padding:10px">見込み客の予定がありません</td></tr>'; return html; }
 window.plannerBack=plannerBack;
 function planWard(c){ if(!c||!c.address) return ''; var a=getArea(c.address); var m=a.match(/(.+?[都道府県])(.+?[市区町村郡])/); return m?m[2]:a; }
@@ -6458,6 +6469,8 @@ function migrateRosenka(){
       if(v>=1000){ c.rosenka=String(Math.round(v/1000)); changed=true; }
     }
     if(c.name && /[\s　]/.test(c.name)){ c.name=c.name.replace(/[\s　]+/g,''); }
+    if(c.address){ c.address=cleanAddr(c.address); }
+    if(c.plan_address){ c.plan_address=cleanAddr(c.plan_address); }
     if(c.mgr_involve==='助言'){ c.mgr_involve='相談'; }
   });
   if(changed){ toast('💡 路線価を千円/㎡単位に自動変換しました'); }
