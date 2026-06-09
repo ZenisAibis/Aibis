@@ -1455,7 +1455,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.45";
+var APP_VERSION = "v5.46";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -7081,8 +7081,8 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <div class="mob-menu" style="position:relative">
           <button onclick="toggleCardMenu(event)" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:6px;font-size:16px;padding:4px 8px;cursor:pointer;font-family:inherit;line-height:1.6;min-height:36px;width:36px">⋮</button>
           <div class="mob-dropdown" id="cardDropdown" style="right:0;left:auto;min-width:150px">
-            <button id="cardPrintBtn" onclick="closeCardMenu();openPrintModal()">🖨 印刷</button>
             <button onclick="closeCardMenu();undoCardEdit()">⏪ 1つ前に戻す</button>
+            <button id="cardPrintBtn" onclick="closeCardMenu();openPrintModal()">🖨 印刷</button>
             <div style="height:1px;background:#e2e8f0;margin:4px 0"></div>
             <button onclick="closeCardMenu();showSetup()">⚙ 初期設定</button>
             <button onclick="closeCardMenu();setTimeout(function(){showHelp();},50)">📖 マニュアル</button>
