@@ -1440,7 +1440,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.34";
+var APP_VERSION = "v5.35";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -3715,7 +3715,7 @@ function renderRevisits(){
   list.innerHTML=cur.revisits.map(function(v,vi){
     var rid='rv_'+vi;
     return '<div class="vcard ri" data-vi="'+vi+'"><div class="vh"><span class="vn">再訪 '+v.num+' 回目</span></div>'
-      +'<div style="display:flex;gap:4px 6px;align-items:center;flex-wrap:wrap;margin:2px 0 4px">'
+      +'<div style="display:flex;gap:4px 6px;align-items:center;justify-content:flex-end;flex-wrap:wrap;margin:2px 0 4px">'
         +'<span style="display:inline-flex;align-items:center;gap:3px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">訪問日</label><input type="date" data-f="date" value="'+e(v.date||'')+'" style="width:auto;min-height:32px;padding:3px 4px;font-size:13px"></span>'
         +'<span style="display:inline-flex;align-items:center;gap:4px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">アポ</label><select data-f="appo" style="width:auto;min-height:32px;padding:4px 4px;font-size:13px"><option value="">-</option><option value="アポ有り"'+(v.appo==='アポ有り'?' selected':'')+'>アポ有り</option><option value="仮アポ"'+(v.appo==='仮アポ'?' selected':'')+'>仮アポ</option><option value="アポ無し"'+(v.appo==='アポ無し'?' selected':'')+'>アポ無し</option></select></span>'
         +_doukouBtnHTML(v.visit_type)
