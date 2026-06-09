@@ -855,6 +855,7 @@ body.is-mob .mob-menu{display:inline-block}
       <button onclick="selectNone()" class="bc" style="font-size:11px;padding:5px 8px">全解除</button>
       <button onclick="openPlannerFromSelected()" class="bp pc-only-btn" style="font-size:11px;padding:5px 8px;background:#319795">📅 本日の予定表</button>
       <button onclick="mailSelectedToSelf()" class="bp" style="font-size:11px;padding:5px 8px" id="btnSendSelf">📧 スマホへ</button>
+      <button onclick="mailSelectedToStaff()" class="bp" style="font-size:11px;padding:5px 8px;background:#553c9a;display:none" id="btnSendStaff">📧 担当へ</button>
       <button onclick="mailSelectedToManager()" class="bw" style="font-size:11px;padding:5px 8px">📧 課長へ</button>
     </div>
   </div>
@@ -1259,6 +1260,13 @@ body.is-mob .mob-menu{display:inline-block}
         <div><label>自分のメールアドレス</label><input type="email" id="sSelf" placeholder="dt0000001@kentaku.co.jp" oninput="autoSaveSetup()"><p class="ht">「📧 PCへ」で送る宛先</p></div>
         <div><label>上司のメールアドレス <span class="req">*</span></label><input type="email" id="sMgr" placeholder="to071024@kentaku.co.jp" oninput="autoSaveSetup()"><p class="ht">📧 課長報告の宛先</p></div>
       </div>
+      <div id="staffMailSection" style="display:none;margin-top:10px;padding:10px;background:#faf7ff;border:1px solid #d6bcfa;border-radius:6px">
+        <label style="color:#553c9a">担当者リスト（個別送付用・管理職のみ）</label>
+        <p class="ht" style="margin:2px 0 6px">「📧 担当へ」で選ぶ宛先だよ。名前は<b>カードの担当名と一致</b>させてね（スペース不可）。</p>
+        <div id="staffMailChips" style="display:flex;gap:4px;flex-wrap:wrap;margin:4px 0;align-items:center"></div>
+        <div id="staffMailRows"></div>
+        <button type="button" onclick="addStaffMailRow()" style="margin-top:6px;background:#ede9fe;border:1px dashed #b794f4;color:#553c9a;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">＋ 担当者を追加</button>
+      </div>
       <div id="changeNote" style="display:none;margin-top:10px;padding:10px;background:#fef5e7;border-left:3px solid #ed8936;border-radius:4px;font-size:12px">
         <strong style="color:#c05621">📢 異動の場合</strong>：変更後は新規カードのみに反映。既存カードは変更されません。
       </div>
@@ -1440,13 +1448,14 @@ var _mgrPrompted=false;
 var BRK  = 'prospect_branch_v1';
 var SCK  = 'prospect_sec_v1';
 var RLK  = 'prospect_role_v1';
+var SMK  = 'prospect_staffmails_v1';
 var NICKK = 'prospect_nick_v1';
 var LSDK = 'prospect_last_saved';
 var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.43";
+var APP_VERSION = "v5.45";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -1454,6 +1463,7 @@ var cards = [];
 var bootDone = false; // 起動完了フラグ（読込ハング検知用）
 var cur = null, curId = null;
 var uName = '', mgrEmail = '', selfEmail = '', branch = '', section = '', userRole = '';
+var staffMails = [];
 var uNick = '';
 var fHandle = null;
 var sortKey = 'lv'; // lv=最新, ad=住所, st=段階, dt=初訪
@@ -1625,6 +1635,7 @@ function init() {
   uName     = localStorage.getItem(UNK) || '';
   mgrEmail  = localStorage.getItem(MEK) || '';
   selfEmail = localStorage.getItem(SEK) || '';
+  try{ staffMails=JSON.parse(localStorage.getItem(SMK)||'[]'); if(!Array.isArray(staffMails)) staffMails=[]; }catch(_e){ staffMails=[]; }
   setTimeout(function(){ try{maybePromptMgrUnlock();}catch(_e){} }, 700);
   branch    = localStorage.getItem(BRK) || '';
   section   = localStorage.getItem(SCK) || '';
@@ -2052,6 +2063,75 @@ window.autoSaveSetup=autoSaveSetup;
 window.closeAibisAlert=function(){ var o=document.getElementById('aibisAlertOverlay'); if(o&&o.parentNode) o.parentNode.removeChild(o); };
 
 
+// ===== 担当者リスト（個別送付用・管理職のみ） =====
+function saveStaffMails(){ try{ localStorage.setItem(SMK, JSON.stringify(staffMails)); }catch(_e){} }
+function renderStaffMailRows(){
+  var box=document.getElementById('staffMailRows'); if(!box) return;
+  box.innerHTML = (staffMails&&staffMails.length) ? staffMails.map(function(s,i){
+    return '<div style="display:grid;grid-template-columns:1fr 1.4fr auto;gap:6px;margin-bottom:6px;align-items:center">'
+      +'<input type="text" placeholder="担当者名" value="'+eAttr(s.name||'')+'" oninput="onStaffMailInput('+i+',\'name\',this.value)" style="font-size:13px">'
+      +'<input type="email" inputmode="email" autocapitalize="none" spellcheck="false" placeholder="メールアドレス" value="'+eAttr(s.email||'')+'" oninput="onStaffMailInput('+i+',\'email\',this.value)" style="font-size:13px">'
+      +'<button type="button" onclick="removeStaffMailRow('+i+')" title="削除" style="background:#fff5f5;border:1px solid #feb2b2;color:#c53030;border-radius:6px;padding:6px 9px;font-size:12px;cursor:pointer;font-family:inherit">✕</button>'
+      +'</div>';
+  }).join('') : '<p class="ht" style="margin:4px 0">まだ登録がありません。「＋ 担当者を追加」または下の候補から追加してね。</p>';
+}
+function renderStaffMailChips(){
+  var box=document.getElementById('staffMailChips'); if(!box) return;
+  var known={}; (staffMails||[]).forEach(function(s){ if(s.name) known[s.name]=1; });
+  var cand=[]; (cards||[]).forEach(function(c){ var n=(c.manager||'').trim(); if(n && n!==uName && !known[n] && cand.indexOf(n)<0) cand.push(n); });
+  box.innerHTML = cand.length ? ('<span class="ht" style="margin-right:2px">カードの担当から追加:</span>'+cand.map(function(n){
+    return '<button type="button" onclick="addStaffMailName(\''+eAttr(n)+'\')" style="background:#fff;border:1px solid #d6bcfa;color:#553c9a;border-radius:12px;padding:3px 9px;font-size:12px;cursor:pointer;font-family:inherit">＋ '+e(n)+'</button>';
+  }).join(' ')) : '';
+}
+function addStaffMailRow(){ staffMails.push({name:'',email:''}); saveStaffMails(); renderStaffMailRows(); }
+function addStaffMailName(n){ staffMails.push({name:n,email:''}); saveStaffMails(); renderStaffMailRows(); renderStaffMailChips(); }
+function removeStaffMailRow(i){ staffMails.splice(i,1); saveStaffMails(); renderStaffMailRows(); renderStaffMailChips(); }
+function onStaffMailInput(i,field,val){ if(!staffMails[i]) return; staffMails[i][field]=(field==='name')?String(val).replace(/[\s　]/g,''):String(val).trim(); saveStaffMails(); if(field==='name') renderStaffMailChips(); }
+window.addStaffMailRow=addStaffMailRow; window.addStaffMailName=addStaffMailName; window.removeStaffMailRow=removeStaffMailRow; window.onStaffMailInput=onStaffMailInput;
+// ===== 複数担当の警告＋個別送付 =====
+function _selMgrs(sel){ var a=[]; sel.forEach(function(c){ var n=(c.manager||'').trim()||'(担当未設定)'; if(a.indexOf(n)<0)a.push(n); }); return a; }
+function _multiMgrOk(sel, retryCb){
+  var ms=_selMgrs(sel);
+  if(ms.length<=1) return true;
+  aibisConfirm('⚠ 選択に<b>複数の担当</b>のカードが含まれています<br><br>'+ms.map(function(x){return '・<b>'+e(x)+'</b>';}).join('<br>')+'<br><br>このまま送信しますか？<br><span style="font-size:12px;color:#718096">個別に送るなら、担当フィルタで対象者に絞ってから全選択してね。</span>', retryCb, '送信する', 'やめる');
+  return false;
+}
+function _sendSelectedToEmail(toEmail, label, skipWarn){
+  var ids=Object.keys(selectedIds);
+  if(ids.length===0){ aibisAlert('送りたいカードにチェックを入れてね。<br>一緒に頑張ろう！☑'); return; }
+  var selected=cards.filter(function(c){ return selectedIds[c.id]; });
+  if(!skipWarn && !_multiMgrOk(selected, function(){ _sendSelectedToEmail(toEmail,label,true); })) return;
+  var data=JSON.stringify(selected,null,2);
+  var blob=new Blob([data],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var now=new Date();
+  var ts=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+'_'+String(now.getHours()).padStart(2,'0')+String(now.getMinutes()).padStart(2,'0');
+  var fn='AIBIS_'+(uName||'staff')+'_'+APP_VERSION+'_'+selected.length+'cards_'+ts+'.json';
+  var a=document.createElement('a'); a.href=url; a.download=fn; a.click();
+  var subj='AIBIS cards '+ts+' ('+selected.length+' cards)';
+  var body='AIBIS cards\nDate: '+ts+'\nCards: '+selected.length+'\nFile: '+fn;
+  setTimeout(function(){
+    URL.revokeObjectURL(url);
+    window.location.href='mailto:'+encodeURIComponent(toEmail)+(selfEmail?'?cc='+encodeURIComponent(selfEmail)+'&subject=':'?subject=')+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
+    toast('JSONをDL済 → '+(label||'担当')+'宛に添付して送信してください');
+    selectNone();
+  },500);
+}
+function mailSelectedToStaff(){
+  var ids=Object.keys(selectedIds);
+  if(ids.length===0){ aibisAlert((cards&&cards.length===0)?'まだカードがないね。<br>最初の一人に会いに行こう！🌱':'送りたいカードにチェックを入れてね。<br>一緒に頑張ろう！☑'); return; }
+  var list=(staffMails||[]).filter(function(s){ return s && s.name && s.email; });
+  if(list.length===0){ aibisAlert('まず初期設定で担当者を登録してね。<br><br>⚙ 初期設定 →「担当者リスト」に<br>名前とメールアドレスを入れてね。'); return; }
+  var selected=cards.filter(function(c){ return selectedIds[c.id]; });
+  var ms=_selMgrs(selected);
+  var rec=(ms.length===1)?ms[0]:null;
+  var btns=list.map(function(s){
+    var isRec=(rec && s.name===rec);
+    return '<button onclick="closeAibisAlert();_sendSelectedToEmail(\''+eAttr(s.email)+'\',\''+eAttr(s.name)+'\')" style="display:block;width:100%;text-align:left;margin-bottom:6px;padding:9px 10px;background:'+(isRec?'#ede9fe':'#f7fafc')+';border:'+(isRec?'2px solid #805ad5':'1px solid #e2e8f0')+';border-radius:8px;cursor:pointer;font-family:inherit;font-size:13px"><b>'+e(s.name)+'</b>'+(isRec?' <span style="color:#805ad5;font-size:11px">★ 選択カードの担当</span>':'')+'<br><span style="font-size:11px;color:#718096">'+e(s.email)+'</span></button>';
+  }).join('');
+  aibisAlert('<b>どの担当へ送る？</b><br><span style="font-size:12px;color:#718096">選択 '+selected.length+'件</span><br><br>'+btns);
+}
+window.mailSelectedToStaff=mailSelectedToStaff; window._sendSelectedToEmail=_sendSelectedToEmail; window._multiMgrOk=_multiMgrOk;
 // ===== 担当フィルター =====
 var staffFilter='all';
 function updateStaffFilter(){
@@ -2431,6 +2511,7 @@ function showSetup() {
   if ((el=document.getElementById('sRole')))   el.value = userRole||'';
   if ((el=document.getElementById('sNick')))   el.value = uNick||'';
   if ((el=document.getElementById('sCopilotUrl'))) el.value = localStorage.getItem(CPK)||'';
+  var _sm=document.getElementById('staffMailSection'); if(_sm){ _sm.style.display=isMgrUnlocked()?'block':'none'; if(typeof renderStaffMailRows==='function'){renderStaffMailRows();renderStaffMailChips();} }
   var has = !!(uName && mgrEmail && branch && section);
   ['setupCancel'].forEach(function(id){
     var b = document.getElementById(id); if(b) b.style.display = has?'inline-block':'none';
@@ -2500,6 +2581,8 @@ function applyRoleUI(){
   if(apBar) apBar.style.display=isManager?'flex':'none';
   var sdBar=document.getElementById('selfDashBar');
   if(sdBar) sdBar.style.display=(!isManager)?'flex':'none';
+  var stb=document.getElementById('btnSendStaff'); if(stb) stb.style.display=isManager?'inline-block':'none';
+  var _sms=document.getElementById('staffMailSection'); if(_sms) _sms.style.display=isManager?'block':'none';
   if(isManager) renderAnalysis();
   // カードの印刷ボタンはPC版のみ
   var cp=document.getElementById('cardPrintBtn');
@@ -3141,7 +3224,7 @@ function updateSelectCount(){
   if(bar) bar.style.background=n>0?'#ebf4ff':'#f7fafc';
   if(bar) bar.style.borderColor=n>0?'#2c5282':'#e2e8f0';
 }
-function mailSelectedToManager(){
+function mailSelectedToManager(skipWarn){
   if(!mgrEmail){toast('設定で上司のメールアドレスを登録してください');return;}
   var ids=Object.keys(selectedIds);
   if(ids.length===0){
@@ -3149,6 +3232,7 @@ function mailSelectedToManager(){
     return;
   }
   var selected=cards.filter(function(c){ return selectedIds[c.id]; });
+  if(!skipWarn && !_multiMgrOk(selected, function(){ mailSelectedToManager(true); })) return;
   var data=JSON.stringify(selected,null,2);
   var blob=new Blob([data],{type:'application/json'});
   var url=URL.createObjectURL(blob);
@@ -3165,13 +3249,14 @@ function mailSelectedToManager(){
     selectNone();
   },500);
 }
-function mailSelectedToSelf(){
+function mailSelectedToSelf(skipWarn){
   var ids=Object.keys(selectedIds);
   if(ids.length===0){
     aibisAlert(cards&&cards.length===0?'まだカードがないね。<br>最初の一人に会いに行こう！🌱':'送りたいカードにチェックを入れてね。<br>一緒に頑張ろう！☑');
     return;
   }
   var selected=cards.filter(function(c){ return selectedIds[c.id]; });
+  if(!skipWarn && !_multiMgrOk(selected, function(){ mailSelectedToSelf(true); })) return;
   var data=JSON.stringify(selected,null,2);
   var blob=new Blob([data],{type:'application/json'});
   var url=URL.createObjectURL(blob);
@@ -6997,7 +7082,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <button onclick="toggleCardMenu(event)" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:6px;font-size:16px;padding:4px 8px;cursor:pointer;font-family:inherit;line-height:1.6;min-height:36px;width:36px">⋮</button>
           <div class="mob-dropdown" id="cardDropdown" style="right:0;left:auto;min-width:150px">
             <button id="cardPrintBtn" onclick="closeCardMenu();openPrintModal()">🖨 印刷</button>
-            <button onclick="closeCardMenu();undoCardEdit()" style="color:#c05621">↩️ このカードを1つ前に戻す</button>
+            <button onclick="closeCardMenu();undoCardEdit()">⏪ 1つ前に戻す</button>
             <div style="height:1px;background:#e2e8f0;margin:4px 0"></div>
             <button onclick="closeCardMenu();showSetup()">⚙ 初期設定</button>
             <button onclick="closeCardMenu();setTimeout(function(){showHelp();},50)">📖 マニュアル</button>
