@@ -1440,7 +1440,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.35";
+var APP_VERSION = "v5.36";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -3219,7 +3219,7 @@ function mkBlank() {
     kouzou:'', kosu:'', kaisuu:'', prate:'',
     kaiwa:'', materials:[], maefuri:[],
     initial_content:'', manager_instruction_initial:'',
-    jchecks:{}, rusu:'',
+    jchecks:{}, rusu:'', rusu_date:'',
     revisits:[{num:1,date:'',appo:'',content:'',instruction:''},{num:2,date:'',appo:'',content:'',instruction:''},{num:3,date:'',appo:'',content:'',instruction:''}],
     revisit_judge_date:'', revisit_judge:'',
     pursuits:[], pursuit_judge_date:'', pursuit_judge:'', pursuit_judge_sel:'', pursuit_judge_ai:'',
@@ -3370,8 +3370,10 @@ function fillForm(c) {
   document.querySelectorAll('#materials input').forEach(function(cb){ cb.checked=(c.materials||[]).indexOf(cb.value)>=0; });
   document.querySelectorAll('#maefuri input').forEach(function(cb){ cb.checked=(c.maefuri||[]).indexOf(cb.value)>=0; });
   document.querySelectorAll('#jChecklist input').forEach(function(cb){ cb.checked=!!(c.jchecks&&c.jchecks[cb.dataset.ck]); });
+  _rusuReset(c);
   document.querySelectorAll('input[name="rusu"]').forEach(function(r){ r.checked=String(r.value)===String(c.rusu); });
   renderFam(); renderRevisits(); renderPursuits();
+  paintRusuDate();
   var _pjOld={'A見込み':'A','訪問継続':'B','打ち切り':'X'}; if(_pjOld[c.pursuit_judge]){ c.pursuit_judge_sel=c.pursuit_judge; c.pursuit_judge=_pjOld[c.pursuit_judge]; }
   if(c.pursuit_judge_ai==null||c.pursuit_judge_ai==='') c.pursuit_judge_ai=c.pursuit_judge||'';
   _rankFanfare='';
@@ -3433,6 +3435,7 @@ function collectForm() {
     return {num:i+1,date:el.querySelector('[data-f="date"]').value,appo:el.querySelector('[data-f="appo"]').value,interviewer:el.querySelector('[data-f="iv"]').value,next_appo_date:el.querySelector('[data-f="nad"]').value,visit_type:el.querySelector('[data-f="vtype"]')?.value||'',content:el.querySelector('[data-f="content"]').value,rec:el.querySelector('[data-f="rec"]')?.value||'',instruction:el.querySelector('[data-f="inst"]').value};
   });
   _deriveDoukou(c);
+  _rusuReset(c);
   // テーマ別分析結果を保存（変更時に貼り付け日時を記録）
   ['general','next_visit','motivation','personality','objection','hearing','training'].forEach(function(k){
     var el=document.getElementById('f_ai_'+k); if(el){ var nv=el.value; if(!nv.trim()){ c['ai_'+k+'_at']=''; } else if(!c['ai_'+k+'_at']){ c['ai_'+k+'_at']=new Date().toISOString(); } c['ai_'+k]=nv; }
@@ -3704,6 +3707,10 @@ function paintVisitDoukou(btn){ var dk=(btn.value==='同行'); btn.textContent=d
 function _doukouBtnHTML(v){ var dk=/同行/.test(v||''); return '<button type="button" data-f="vtype" value="'+(dk?'同行':'単独')+'" onclick="toggleVisitDoukou(this)" style="flex-shrink:0;min-height:32px;padding:4px 9px;border:2px solid '+(dk?'#553c9a':'#38a169')+';border-radius:6px;background:'+(dk?'linear-gradient(135deg,#2c5282,#553c9a)':'white')+';color:'+(dk?'#fff':'#38a169')+';font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:'+(dk?'0 2px 6px rgba(85,60,154,0.3)':'none')+'">'+(dk?'🔴同行':'🟢単独')+'</button>'; }
 function _deriveDoukou(c){ if(!c) return; var ds=[],has=false; (c.revisits||[]).concat(c.pursuits||[]).forEach(function(v){ if(v&&/同行/.test(v.visit_type||'')){ has=true; if(v.date) ds.push(v.date); } }); c.doukou=(c.mgr_involve==='同行')||has; if(c.doukou){ if(!c.doukou_at){ ds.sort(); c.doukou_at=ds.length?ds[ds.length-1]:(typeof todayStr==='function'?todayStr():''); } } else { c.doukou_at=''; } }
 window._deriveDoukou=_deriveDoukou;
+function _rusuReset(c){ if(!c||!c.rusu_date||+(c.rusu||0)<1) return; var rd=c.rusu_date; var contacted=(c.revisits||[]).concat(c.pursuits||[]).some(function(v){ return v&&v.date&&v.date>=rd; }); if(contacted){ c.rusu='0'; c.rusu_date=''; } }
+function paintRusuDate(){ var el=document.getElementById('rusuDateDisp'); if(!el) return; var d=(cur&&cur.rusu_date)?cur.rusu_date:''; el.textContent=d?('📅 留守確認日 '+d.replace(/-/g,'/')):''; }
+function onRusuChange(){ if(!cur) return; var rv=document.querySelector('input[name="rusu"]:checked'); var val=rv?rv.value:'0'; cur.rusu=val; if(+val>=1){ cur.rusu_date=todayStr(); } else { cur.rusu_date=''; } paintRusuDate(); if(typeof setDirty==='function') setDirty(true); }
+window.onRusuChange=onRusuChange;
 function aibisConfirm(msg,onYes,yesLabel,noLabel){ window._aibisConfirmYes=function(){ if(typeof closeAibisAlert==='function') closeAibisAlert(); try{ onYes&&onYes(); }catch(e){} }; var btns='<div style="display:flex;gap:10px;justify-content:center;margin-top:4px"><button class="zfa-ok" style="background:#e2e8f0;color:#2d3748" onclick="closeAibisAlert()">'+(noLabel||'やめる')+'</button><button class="zfa-ok" style="background:#e53e3e" onclick="_aibisConfirmYes()">'+(yesLabel||'削除する')+'</button></div>'; aibisAlert(msg+btns); }
 function confirmRemPursuit(i){ aibisConfirm('この追撃記録を削除する？🗑<br><span style="font-size:12.5px;color:#718096">入力した内容は元に戻せないよ。</span>', function(){ remPursuit(i); }); }
 window.toggleVisitDoukou=toggleVisitDoukou; window.paintVisitDoukou=paintVisitDoukou; window.aibisConfirm=aibisConfirm; window.confirmRemPursuit=confirmRemPursuit;
@@ -7395,15 +7402,15 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <label class="jitem"><input type="checkbox" data-ck="invest"><span>投資に興味又はやっている</span></label>
       </div>
       <div style="margin-top:10px">
-        <label>連続留守カウント</label>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><label style="margin:0">連続留守カウント</label><span id="rusuDateDisp" style="font-size:12px;color:#2c5282;font-weight:700"></span></div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <div class="cg" style="flex-wrap:nowrap">
-          <label class="ci"><input type="radio" name="rusu" value="0"><span>0</span></label>
-          <label class="ci"><input type="radio" name="rusu" value="1"><span>1</span></label>
-          <label class="ci"><input type="radio" name="rusu" value="2"><span>2</span></label>
-          <label class="ci"><input type="radio" name="rusu" value="3"><span>3</span></label>
-          <label class="ci"><input type="radio" name="rusu" value="4"><span>4</span></label>
-          <label class="ci"><input type="radio" name="rusu" value="5"><span>5</span></label>
+          <label class="ci"><input type="radio" name="rusu" onchange="onRusuChange()" value="0"><span>0</span></label>
+          <label class="ci"><input type="radio" name="rusu" onchange="onRusuChange()" value="1"><span>1</span></label>
+          <label class="ci"><input type="radio" name="rusu" onchange="onRusuChange()" value="2"><span>2</span></label>
+          <label class="ci"><input type="radio" name="rusu" onchange="onRusuChange()" value="3"><span>3</span></label>
+          <label class="ci"><input type="radio" name="rusu" onchange="onRusuChange()" value="4"><span>4</span></label>
+          <label class="ci"><input type="radio" name="rusu" onchange="onRusuChange()" value="5"><span>5</span></label>
         </div>
           <button type="button" id="proposalReqBtn" onclick="toggleProposalReq()" style="margin-left:auto;flex-shrink:0;padding:8px 14px;border:2px solid #cbd5e0;border-radius:7px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;color:#718096;white-space:nowrap;min-height:38px">❌ 提案依頼未取得</button>
         </div>
