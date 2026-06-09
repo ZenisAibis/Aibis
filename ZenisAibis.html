@@ -98,6 +98,7 @@ table.pltt .ptt{font-weight:700}
 table.pltt .psub{font-weight:400;color:#718096;font-size:10px}
 table.pltt .pc{text-align:center;width:64px}
 table.pltt .pm{font-size:11px;color:#4a5568}
+table.pltt .pareah td{background:#ebf4ff;color:#2c5282;font-weight:800;text-align:left;font-size:12px}
 .pbadge{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;color:#fff}
 .pb-k1{background:#276749}.pb-k2{background:#dd6b20}.pb-k3{background:#718096}.pb-ev{background:#553c9a}
 .pstamp{border:1px solid #cbd5e0;border-radius:4px;width:78px;height:50px;font-size:10px;color:#718096;text-align:center;padding-top:3px;box-sizing:border-box}
@@ -955,7 +956,7 @@ body.is-mob .mob-menu{display:inline-block}
       <span style="font-size:16px;font-weight:700;color:#2c5282">📅 本日の予定表</span>
     </div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
-      <button onclick="savePlan();history.back()" style="background:#e2e8f0;color:#2d3748;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">← 一覧に戻る</button><button class="pl-tab pl-on" data-t="input" onclick="plannerTab('input')">✏️ 入力</button>
+      <button onclick="plannerBack()" style="background:#e2e8f0;color:#2d3748;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">← 一覧に戻る</button><button class="pl-tab pl-on" data-t="input" onclick="plannerTab('input')">✏️ 入力</button>
       <button class="pl-tab" data-t="prev" onclick="plannerTab('prev')">🖨 予定表印刷</button>
       <button onclick="plannerToPhone()" style="margin-left:auto;background:#3182ce;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">📧 スマホへ</button>
     </div>
@@ -1439,7 +1440,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.28";
+var APP_VERSION = "v5.31";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -2838,6 +2839,7 @@ function getLastVD(c) {
   return dates.length ? dates.sort(function(a,b){return b.localeCompare(a);})[0] : '';
 }
 function _han(s){ return s?String(s).replace(/[０-９]/g,function(d){return String.fromCharCode(d.charCodeAt(0)-0xFEE0);}):s; }
+function cleanAddr(s){ if(!s) return s; var a=String(s); a=a.replace(/〒\s*\d{3}[-－ー‐]?\d{4}/g,''); a=a.replace(/〒/g,''); a=a.replace(/^[\s　]*\d{3}[-－ー‐]?\d{4}(?!\d)/,''); a=a.replace(/[\s　]+/g,''); return a.trim(); }
 function _shortAddr(a){ if(!a) return ''; var i=a.indexOf('丁目'); if(i>=0) return a.slice(0,i+2); return a.replace(/[0-9０-９]+[‐ー\-－][0-9０-９]+.*$/,'').trim()||a; }
 function getArea(addr) {
   if(!addr) return '';
@@ -3403,6 +3405,7 @@ function collectForm() {
     c.email=_loc?(_loc+'@'+_dom):'';
   }
   if(c.name) c.name=c.name.replace(/[\s　]+/g,'');
+  ['address','plan_address'].forEach(function(k){ if(c[k]) c[k]=cleanAddr(c[k]); });
   // 金額フィールドのカンマを除去して保存
   ['rosenka','m2tanka','chusharyo'].forEach(function(k){
     if(c[k]) c[k]=String(c[k]).replace(/,/g,'');
@@ -3779,8 +3782,8 @@ window.isRevisitJudgeLocked=isRevisitJudgeLocked; window.applyRevisitLock=applyR
 function isRevisitJudgeDone(){ return !!(cur && (cur.revisit_judge || cur.revisit_judge_date || (cur.revisit_4eyes && String(cur.revisit_4eyes).trim()))); }
 function applyPursuitLock(){ var b=document.getElementById('addPursuitBtn'); if(b) b.classList.toggle('pursuit-locked', !isRevisitJudgeDone()); }
 window.isRevisitJudgeDone=isRevisitJudgeDone; window.applyPursuitLock=applyPursuitLock;
-function setRJ(v,user){ if(user){ if(typeof collectForm==='function') collectForm(); if(isRevisitJudgeLocked()){ applyRevisitLock(); aibisAlert('再訪Judgmentはまだロック中だよ🔒<br><br>ヒアリングは足りてる？課長と協議した？<br><br>再訪3回目の「訪問日・訪問内容・録音要約」のどれかを記録するとJudgmentできるよ。'); return; } if(cur.revisit_judge===v) v=''; } cur.revisit_judge=v; document.querySelectorAll('[data-rj]').forEach(function(b){b.classList.toggle('active',b.dataset.rj===v);}); if(user) recomputeRank(); if(window.updateTabProgress) updateTabProgress(); }
-function setPJ(v,user){ if(user&&cur.pursuit_judge_sel===v) v=''; cur.pursuit_judge_sel=v; document.querySelectorAll('[data-pj]').forEach(function(b){b.classList.toggle('active',b.dataset.pj===v);}); if(user) recomputeRank(); if(window.updateTabProgress) updateTabProgress(); }
+function setRJ(v,user){ if(user){ if(typeof collectForm==='function') collectForm(); if(isRevisitJudgeLocked()){ applyRevisitLock(); aibisAlert('再訪Judgmentはまだロック中だよ🔒<br><br>ヒアリングは足りてる？課長と協議した？<br><br>再訪3回目の「訪問日・訪問内容・録音要約」のどれかを記録するとJudgmentできるよ。'); return; } if(cur.revisit_judge===v) v=''; } cur.revisit_judge=v; document.querySelectorAll('[data-rj]').forEach(function(b){b.classList.toggle('active',b.dataset.rj===v);}); if(user){ recomputeRank(); if(typeof setDirty==='function') setDirty(true); } if(window.updateTabProgress) updateTabProgress(); }
+function setPJ(v,user){ if(user&&cur.pursuit_judge_sel===v) v=''; cur.pursuit_judge_sel=v; document.querySelectorAll('[data-pj]').forEach(function(b){b.classList.toggle('active',b.dataset.pj===v);}); if(user){ recomputeRank(); if(typeof setDirty==='function') setDirty(true); } if(window.updateTabProgress) updateTabProgress(); }
 
 // ===== 保存 =====
 // ===== 下書き自動保存＆画面離脱時の自動確定（保存忘れ対策） =====
@@ -3808,7 +3811,7 @@ function autoCommitEdit(){
     if(curId){ var idx=cards.findIndex(function(c){return c.id===curId;}); if(idx>=0) cards[idx]=cur; else { cards.push(cur); curId=cur.id; } }
     else { cards.push(cur); curId=cur.id; }
     setDirty(false);
-    doSaveCards(function(ok){ if(ok) clearDraft(); });
+    doSaveCards(function(ok){ if(ok){ clearDraft(); if(typeof renderCards==='function') renderCards(); } });
   }catch(ex){}
 }
 function maybeRestoreDraft(){
@@ -3849,7 +3852,7 @@ function saveCard(){
     updateCount();
     setDirty(false);
     clearDraft();
-    if(wasNew){ if(typeof renderCards==='function') renderCards(); if(typeof updateCardNav==='function') updateCardNav(); }
+    if(typeof renderCards==='function') renderCards(); if(wasNew && typeof updateCardNav==='function') updateCardNav();
     // 最終更新表示も更新
     var ud=document.getElementById('dispUpdated');
     if(ud&&cur.updated_at){
@@ -6142,7 +6145,7 @@ function closePlanner(){
   var v=document.getElementById('plannerView'); if(v) v.style.display='none';
   document.getElementById('listView').style.display=(hasFSA&&!isMob)?'flex':'block';
 }
-function plannerOverlayClick(ev){ if(ev.target&&ev.target.id==='plannerView'){ try{savePlan();}catch(e){} history.back(); } }
+function plannerOverlayClick(ev){ if(ev.target&&ev.target.id==='plannerView'){ plannerBack(); } }
 window.plannerOverlayClick=plannerOverlayClick;
 
 /* ===== ブラウザ履歴ナビゲーション ===== */
@@ -6173,8 +6176,14 @@ function plannerTab(t){
   document.querySelectorAll('.pl-tab').forEach(function(b){ b.classList.toggle('pl-on', b.getAttribute('data-t')===t); });
   if(t==='input') renderPlanner(); else renderPlannerSheet();
 }
+function planCity(c){ if(!c||!c.address) return ''; var a=(typeof _han==='function')?_han(String(c.address)):String(c.address); a=a.replace(/\s+/g,''); a=a.replace(/^(北海道|東京都|京都府|大阪府|.{2,3}県)/,''); a=a.replace(/[0-9].*$/,''); a=a.replace(/[一二三四五六七八九十百千]+丁目.*$/,''); a=a.replace(/丁目.*$/,''); return a; }
+function planAddrTail(c){ if(!c||!c.address) return ''; var a=(typeof _han==='function')?_han(String(c.address)):String(c.address); a=a.replace(/\s+/g,''); return a.replace(/^(北海道|東京都|京都府|大阪府|.{2,3}県)/,''); }
+function planAddrNum(c){ if(!c||!c.address) return []; var a=(typeof _han==='function')?_han(String(c.address)):String(c.address); var m=a.match(/\d+/g); return m?m.map(Number):[]; }
+function plannerBack(){ try{ savePlan(); }catch(e){} try{ if(history.state&&history.state.zv==='planner'){ history.back(); } else { if(typeof _navToList==='function') _navToList(); } }catch(e){ if(typeof _navToList==='function') _navToList(); } }
+function planAreaRows(){ var ents=(_plan.entries||[]).filter(function(en){return en.cardId;}); var rows=ents.map(function(en){ var c=cards.filter(function(x){return x.id===en.cardId;})[0]||{}; return {en:en,c:c,city:planCity(c)||'（住所未設定）',nums:planAddrNum(c),tail:planAddrTail(c)}; }); var order=[],groups={}; rows.forEach(function(r){ if(!groups[r.city]){groups[r.city]=[];order.push(r.city);} groups[r.city].push(r); }); order.sort(function(a,b){ if(a==='（住所未設定）')return 1; if(b==='（住所未設定）')return -1; return a.localeCompare(b,'ja'); }); var html=''; order.forEach(function(city){ var g=groups[city]; g.sort(function(a,b){ var an=a.nums,bn=b.nums,L=Math.max(an.length,bn.length); for(var i=0;i<L;i++){ var x=an[i]||0,y=bn[i]||0; if(x!==y)return x-y; } return (a.en.target||'').localeCompare(b.en.target||'','ja'); }); html+='<tr class="pareah"><td colspan="3">📍 '+e(city)+'　<span style="font-weight:400;font-size:10px">'+g.length+'件</span></td></tr>'; g.forEach(function(r){ html+='<tr><td class="ptt">'+e(r.en.target)+'</td><td class="pm">'+e(r.tail)+'</td><td class="pc">'+e(r.en.purpose||'')+'</td></tr>'; }); }); if(!html) html='<tr><td colspan="3" style="text-align:center;color:#999;padding:10px">見込み客の予定がありません</td></tr>'; return html; }
+window.plannerBack=plannerBack;
 function planWard(c){ if(!c||!c.address) return ''; var a=getArea(c.address); var m=a.match(/(.+?[都道府県])(.+?[市区町村郡])/); return m?m[2]:a; }
-function planAreaOf(en){ if(!en||!en.cardId) return ''; var c=cards.filter(function(x){return x.id===en.cardId;})[0]; return c?planWard(c):''; }
+function planAreaOf(en){ if(!en||!en.cardId) return ''; var c=cards.filter(function(x){return x.id===en.cardId;})[0]; return c?planCity(c):''; }
 function sortPlan(){ var mode=(_plan&&_plan.sort)||'time';
   if(mode==='area'){ _plan.entries.sort(function(a,b){ var aa=planAreaOf(a)||'\uffff', ba=planAreaOf(b)||'\uffff'; if(aa!==ba) return aa.localeCompare(ba,'ja'); return (a.time||'99').localeCompare(b.time||'99'); }); }
   else { _plan.entries.sort(function(a,b){ return (a.time||'99').localeCompare(b.time||'99'); }); }
@@ -6275,15 +6284,17 @@ function renderPlannerSheet(){
     +'<h2 style="text-align:center;letter-spacing:4px;border-bottom:3px double #2d3748;padding-bottom:8px;margin:0 0 10px;font-size:18px">日 次 予 定 表</h2>'
     +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:12px"><span>日付：'+planDateLabel()+'</span><span>担当者：'+e(uName||'')+'</span><span>'+e((branch||'')+' '+(section||''))+'</span></div>'
     +'<table class="pltt"><thead><tr><th class="pti">時刻</th><th>対象</th><th class="pc">アポ</th><th class="pc">目的</th><th>備考</th><th>結果</th></tr></thead><tbody>'+planRowsHTML()+'</tbody></table>'
-    +'<div style="display:flex;justify-content:flex-end;gap:12px;margin-top:14px"><div class="pstamp">担当印</div><div class="pstamp">課長確認</div></div></div>';
+    +'<div style="display:flex;justify-content:flex-end;gap:12px;margin-top:14px"><div class="pstamp">担当印</div><div class="pstamp">課長確認</div></div></div>'
+    +'<div style="background:#fff;max-width:780px;margin:18px auto 0;padding:24px 28px;box-shadow:0 2px 12px rgba(0,0,0,.12);page-break-before:always"><h2 style="text-align:center;letter-spacing:3px;border-bottom:3px double #2d3748;padding-bottom:8px;margin:0 0 12px;font-size:17px">エリア順 見込み一覧</h2><table class="pltt"><thead><tr><th>対象</th><th>住所（市区町・番地）</th><th class="pc">目的</th></tr></thead><tbody>'+planAreaRows()+'</tbody></table></div>';
 }
 function printPlanner(){
   if(!hasFSA){ aibisAlert('印刷はPC版（Chrome）でのみ使えるよ！'); return; }
-  var css='body{font-family:sans-serif;margin:0;padding:16px}h2{text-align:center;letter-spacing:4px;border-bottom:3px double #2d3748;padding-bottom:8px;margin:0 0 10px;font-size:18px}.meta{display:flex;justify-content:space-between;font-size:12px;margin-bottom:12px}table{width:100%;border-collapse:collapse;table-layout:fixed}th{background:#2c5282;color:#fff;font-size:11px;padding:5px 4px}td{border:1px solid #cbd5e0;padding:2px 6px;height:22px;font-size:12px}.pti{width:48px;text-align:center;font-weight:700;color:#4a5568;background:#f7fafc;font-size:11px}.ph{border-top:2px solid #94a3b8}.ptt{font-weight:700}.psub{font-weight:400;color:#718096;font-size:10px}.pc{text-align:center;width:64px}.pm{font-size:11px;color:#4a5568}.pbadge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;color:#fff}.pb-k1{background:#276749}.pb-k2{background:#dd6b20}.pb-k3{background:#718096}.pb-ev{background:#553c9a}.foot{display:flex;justify-content:flex-end;gap:12px;margin-top:14px}.pstamp{border:1px solid #cbd5e0;border-radius:4px;width:78px;height:50px;font-size:10px;color:#718096;text-align:center;padding-top:3px}';
+  var css='body{font-family:sans-serif;margin:0;padding:16px}h2{text-align:center;letter-spacing:4px;border-bottom:3px double #2d3748;padding-bottom:8px;margin:0 0 10px;font-size:18px}.meta{display:flex;justify-content:space-between;font-size:12px;margin-bottom:12px}table{width:100%;border-collapse:collapse;table-layout:fixed}th{background:#2c5282;color:#fff;font-size:11px;padding:5px 4px}td{border:1px solid #cbd5e0;padding:2px 6px;height:22px;font-size:12px}.pti{width:48px;text-align:center;font-weight:700;color:#4a5568;background:#f7fafc;font-size:11px}.ph{border-top:2px solid #94a3b8}.ptt{font-weight:700}.psub{font-weight:400;color:#718096;font-size:10px}.pc{text-align:center;width:64px}.pm{font-size:11px;color:#4a5568}.pbadge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;color:#fff}.pb-k1{background:#276749}.pb-k2{background:#dd6b20}.pb-k3{background:#718096}.pb-ev{background:#553c9a}.foot{display:flex;justify-content:flex-end;gap:12px;margin-top:14px}.pstamp{border:1px solid #cbd5e0;border-radius:4px;width:78px;height:50px;font-size:10px;color:#718096;text-align:center;padding-top:3px}.pareah td{background:#ebf4ff;color:#2c5282;font-weight:800;text-align:left}';
   var html='<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><style>'+css+'</style></head><body>'
     +'<h2>日 次 予 定 表</h2><div class="meta"><span>日付：'+planDateLabel()+'</span><span>担当者：'+e(uName||'')+'</span><span>'+e((branch||'')+' '+(section||''))+'</span></div>'
     +'<table><thead><tr><th>時刻</th><th>対象</th><th>アポ</th><th>目的</th><th>備考</th><th>結果</th></tr></thead><tbody>'+planRowsHTML()+'</tbody></table>'
-    +'<div class="foot"><div class="pstamp">担当印</div><div class="pstamp">課長確認</div></div></body></html>';
+    +'<div class="foot"><div class="pstamp">担当印</div><div class="pstamp">課長確認</div></div>'
+    +'<div style="page-break-before:always"><h2>エリア順 見込み一覧</h2><table><thead><tr><th>対象</th><th>住所（市区町・番地）</th><th>目的</th></tr></thead><tbody>'+planAreaRows()+'</tbody></table></div></body></html>';
   printHTMLDocument(html);
 }
 function plannerToPhone(){
@@ -6449,6 +6460,8 @@ function migrateRosenka(){
       if(v>=1000){ c.rosenka=String(Math.round(v/1000)); changed=true; }
     }
     if(c.name && /[\s　]/.test(c.name)){ c.name=c.name.replace(/[\s　]+/g,''); }
+    if(c.address){ c.address=cleanAddr(c.address); }
+    if(c.plan_address){ c.plan_address=cleanAddr(c.plan_address); }
     if(c.mgr_involve==='助言'){ c.mgr_involve='相談'; }
   });
   if(changed){ toast('💡 路線価を千円/㎡単位に自動変換しました'); }
