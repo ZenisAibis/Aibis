@@ -1455,7 +1455,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.48";
+var APP_VERSION = "v5.54";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -1649,6 +1649,7 @@ function init() {
 
   // バージョン表示
   var mv=document.getElementById('mobVersion'); if(mv) mv.textContent='z.Aibis '+APP_VERSION;
+  try{_streakTick();}catch(_e){}
   document.querySelectorAll('.aibisVer').forEach(function(el){ el.textContent=APP_VERSION; });
   var btnSelf=document.getElementById('btnSendSelf');
   if(btnSelf) btnSelf.textContent=isMob?'📧 PCへ':'📧 スマホへ';
@@ -2639,12 +2640,13 @@ function _zSpark(arr,color){
   var id='zs'+Math.floor(Math.random()*1e6);
   return '<svg class="z-spark" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none"><defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+color+'" stop-opacity=".35"/><stop offset="1" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs><path d="'+line+' L'+w+' '+h+' L0 '+h+' Z" fill="url(#'+id+')"/><path d="'+line+'" fill="none" stroke="'+color+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="'+pts[pts.length-1][0].toFixed(1)+'" cy="'+pts[pts.length-1][1].toFixed(1)+'" r="2.6" fill="'+color+'"/></svg>';
 }
-function _zRadar(axes){
+function _zRadar(axes,ghost){
   var cx=100,cy=100,R=72,N=axes.length;
   function pt(i,r){var a=-Math.PI/2+i*2*Math.PI/N;return [cx+Math.cos(a)*r,cy+Math.sin(a)*r];}
   var g='';
   [0.25,0.5,0.75,1].forEach(function(s){g+='<polygon points="'+axes.map(function(_x,i){return pt(i,R*s).map(function(z){return z.toFixed(1);}).join(',');}).join(' ')+'" fill="none" stroke="rgba(255,255,255,.10)" stroke-width="1"/>';});
   axes.forEach(function(_x,i){var p=pt(i,R);g+='<line x1="'+cx+'" y1="'+cy+'" x2="'+p[0].toFixed(1)+'" y2="'+p[1].toFixed(1)+'" stroke="rgba(255,255,255,.10)"/>';});
+  if(ghost&&ghost.length===N){ g+='<polygon points="'+axes.map(function(_a,i){return pt(i,R*(+ghost[i]||0)/100).map(function(z){return z.toFixed(1);}).join(',');}).join(' ')+'" fill="rgba(139,124,255,.10)" stroke="#8b7cff" stroke-width="1.5" stroke-dasharray="4 3"/>'; }
   g+='<polygon points="'+axes.map(function(a,i){return pt(i,R*(a[1]||0)/100).map(function(z){return z.toFixed(1);}).join(',');}).join(' ')+'" fill="rgba(52,227,208,.22)" stroke="#34e3d0" stroke-width="2"/>';
   axes.forEach(function(a,i){var p=pt(i,R*(a[1]||0)/100);g+='<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="3" fill="'+a[2]+'"/>';});
   return '<svg class="z-radar" viewBox="0 0 200 200">'+g+'</svg>';
@@ -2837,6 +2839,50 @@ function _zBadges(){
 }
 function _achBadges(arr){var r=[];var conn=arr.filter(function(c){return +(c.stage||0)>=3;}).length;var shin=arr.filter(function(c){return +(c.stage||0)>=6;}).length;var asn=arr.filter(function(c){return c.pursuit_judge==='A'||c.pursuit_judge==='S';}).length;var prop=arr.filter(function(c){return c.proposal_req;}).length;var kp=arr.filter(function(c){return (c.family||[]).some(function(x){return x.met&&(x.owner||x.kp);});}).length;var fam=arr.filter(function(c){return c.family_headcount;}).length;var react=arr.filter(function(c){return _reactivated(c);}).length;var vis=arr.reduce(function(s,c){return s+_zVisitDates(c).length;},0);if(arr.length>=10)r.push({e:'🆕',t:'新規開拓'});if(conn>=5)r.push({e:'🌱',t:'育成職人'});if(shin>=1)r.push({e:'👑',t:'信念到達'});if(asn>=1)r.push({e:'🏆',t:'A見込み創出'});if(prop>=1)r.push({e:'💬',t:'提案依頼獲得'});if(kp>=3)r.push({e:'🎯',t:'決裁者確認'});if(fam>=5)r.push({e:'🤝',t:'家族ヒアリング'});if(react>=1)r.push({e:'⚡',t:'休眠再起動'});if(vis>=20)r.push({e:'🛡',t:'継続訪問'});return r;}
 var _zAVAS=['#9be15d','#34e3d0','#4aa8ff','#8b7cff','#ffb443','#ff5d7d','#ff8ad1','#5ad1a0'];
+var STRK='prospect_streak_v1';
+var SUPK='prospect_stageups_v1';
+var PLNK='prospect_plan_v1';
+function _planLoad(){
+ try{ var p=JSON.parse(localStorage.getItem(PLNK)||'{}')||{}; var t=_ymd(new Date());
+  if(p.d!==t) p={d:t,sel:{}}; if(!p.sel) p.sel={}; return p;
+ }catch(_e){ return {d:_ymd(new Date()),sel:{}}; }
+}
+function zPlanPick(id,act){
+ var p=_planLoad();
+ if(p.sel[id]===act) delete p.sel[id]; else p.sel[id]=act;
+ try{ localStorage.setItem(PLNK,JSON.stringify(p)); }catch(_e){}
+ if(typeof renderSelfDash==='function') renderSelfDash();
+}
+window.zPlanPick=zPlanPick;
+function _stageUpLog(oldC,newC){
+ try{
+  if(!newC) return;
+  var log=JSON.parse(localStorage.getItem(SUPK)||'[]'); if(!Array.isArray(log)) log=[];
+  var changed=false, today=_ymd(new Date());
+  if(oldC){
+    var o=+(oldC.stage||0), nv=+(newC.stage||0);
+    if(nv>o){ log.push({d:today,id:newC.id,f:o,t:nv}); changed=true; }
+    if(!oldC.proposal_req && newC.proposal_req){ log.push({d:today,id:newC.id,p:1}); changed=true; }
+  } else if(newC.proposal_req){ log.push({d:today,id:newC.id,p:1}); changed=true; }
+  if(changed){ if(log.length>800) log=log.slice(-800); localStorage.setItem(SUPK,JSON.stringify(log)); }
+ }catch(_e){}
+}
+function _ymd(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+function _streakTick(){
+ try{
+  var st=JSON.parse(localStorage.getItem(STRK)||'{}')||{};
+  var d=new Date(), dow=d.getDay(), today=_ymd(d);
+  if(dow===0||dow===6) return st; // 土日：カウントなし・途切れもなし
+  if(st.last===today) return st;
+  var p=new Date(d); p.setDate(p.getDate()-1);
+  while(p.getDay()===0||p.getDay()===6){ p.setDate(p.getDate()-1); }
+  st.count=(st.last===_ymd(p))?(+st.count||0)+1:1;
+  st.best=Math.max(+st.best||0,st.count);
+  st.last=today;
+  localStorage.setItem(STRK,JSON.stringify(st));
+  return st;
+ }catch(_e){ return {count:0,best:0}; }
+}
 function renderSelfDash(tid){
  var host=document.getElementById(tid||'selfDashContent'); if(!host) return;
  var mine=cards.slice(), n=mine.length;
@@ -2847,6 +2893,16 @@ function renderSelfDash(tid){
  var inputAvg=Math.round(mine.reduce(function(s,c){return s+(basicInputStat(c).pct||0);},0)/n);
  var avg=Math.round(mine.reduce(function(s,c){return s+calcScore(c);},0)/n*10)/10;
  var axes=[['発掘量',Math.min(Math.round(n/30*100),100),'#ff6b6b'],['グリップ',grip,'#ff922b'],['ヒアリング',inputAvg,'#ffd43b'],['連想到達',renso,'#51cf66'],['テスクロ',_zPct(adv,conn),'#4dabf7'],['追客ペース',Math.max(0,100-_zPct(late,n)),'#cc5de8']];
+ var _ghost=null;
+ try{
+  var _sk=JSON.parse(localStorage.getItem('prospect_skillsnap_v1')||'{}')||{};
+  var _nowD=new Date(), _ymC=_ymd(_nowD).slice(0,7);
+  _sk[_ymC]=axes.map(function(a){return +a[1]||0;});
+  var _sks=Object.keys(_sk).sort(); while(_sks.length>13){ delete _sk[_sks.shift()]; }
+  localStorage.setItem('prospect_skillsnap_v1',JSON.stringify(_sk));
+  var _pmD=new Date(_nowD.getFullYear(),_nowD.getMonth()-1,1);
+  _ghost=_sk[_ymd(_pmD).slice(0,7)]||null;
+ }catch(_e){}
  var leg=axes.map(function(a){return '<div><i style="background:'+(a[2]||'#34e3d0')+'"></i><b>'+a[1]+'</b> '+a[0]+'</div>';}).join('');
  var sc=[0,0,0,0,0,0,0,0];mine.forEach(function(c){var s=+(c.stage||0);if(s>=0&&s<=7)sc[s]++;});
  var mDisc=_zMonthly(mine,function(c){return c.discovery_date;}), mVis=_zMonthly(mine,_zVisitDates), mApo=_zMonthly(mine,_zAppoDates);
@@ -2863,12 +2919,44 @@ function renderSelfDash(tid){
  var _prio=mine.map(function(c){return {c:c,s:calcScore(c)};}).sort(function(a,b){return b.s-a.s;}).slice(0,3);
  var H='<div class="zdash zdash-rep"><div class="z-bento">';
  H+='<div class="z-card z-hero z-cf"><div class="z-ring" style="--p:'+renso+'"><div class="z-ring-in"><b>'+renso+'<small>%</small></b><span>育成率</span></div></div><div class="z-hmeta"><div class="z-lv">⚔ '+e(uName||'あなた')+' さんの成長ランク</div><h2>Lv.'+_rk.lv+' '+_rk.name+'</h2><div class="z-chips"><span class="z-chip">保有 <b>'+n+'</b>件</span><span class="z-chip">A・S <b>'+asN+'</b>件</span><span class="z-chip">要フォロー <b>'+fuN+'</b>件</span><span class="z-chip">育成率 <b>'+renso+'</b>%</span></div><div class="z-xp"><div class="z-xpl"><span>'+(_rk.next?'あと <b>'+_rk.remain+'pt</b> で Lv.'+(_rk.lv+1)+' '+_rk.next:'最高ランクに到達！')+'</span><span>今月 +'+_mg+'pt</span></div><div class="z-xptrack"><i style="width:'+_rk.prog+'%"></i></div></div><div class="z-sub" style="margin-top:6px">成長ポイント（営業経験値）累計 '+_pts+'pt</div></div></div>';
- H+='<div class="z-card z-c2"><h3>✅ 今日のミッション</h3><div class="z-sub">迷ったらここから。最大3つ。</div>'+_mis.map(function(m){return '<div class="z-mrow"><span class="z-mck">□</span><span>'+e(m)+'</span></div>';}).join('')+'</div>';
- H+='<div class="z-card z-c2"><h3>🔥 今日の優先見込み</h3><div class="z-sub">見込み温度の高い順（最大3件）。</div>'+(_prio.length?_prio.map(function(o,i){var c=o.c;var tag=(c.pursuit_judge==='A'||c.pursuit_judge==='S')?'A候補':(lastContactDays(c)>=14?lastContactDays(c)+'日未接触':(!c.family_headcount?'家族構成未確認':_tempBand(o.s)[1]));return '<div class="z-prow"><span class="z-pno">'+(i+1)+'</span><b class="z-pnm">'+e(c.name||'無名')+'様</b><span class="z-ptemp">'+_tempBand(o.s)[0]+' '+o.s+'<small>/78</small></span><span class="z-ptag">'+tag+'</span></div>';}).join(''):'<div class="z-sub">カードを追加すると表示されます</div>')+'</div>';
+  var _st=_streakTick()||{};
+ H+='<div class="z-card z-c2"><h3>\ud83d\udd25 平日ストリーク</h3><div class="z-sub">平日にz.Aibisを開くと継続。土日はお休み（途切れません）。</div><div style="display:flex;gap:16px;align-items:baseline;margin-top:6px"><b style="font-size:32px;line-height:1">'+(+_st.count||0)+'<small style="font-size:12px;font-weight:600"> 日連続</small></b><span class="z-sub">\ud83c\udfc6 最高 '+(+_st.best||0)+'日</span></div></div>';
+  var _sul=[]; try{_sul=JSON.parse(localStorage.getItem(SUPK)||'[]')||[];}catch(_e){}
+ var _ymNow=_ymd(new Date()).slice(0,7);
+ var _sulM=_sul.filter(function(x){return x.d&&x.d.slice(0,7)===_ymNow;});
+ var _suMon=_sulM.filter(function(x){return x.t;}).length, _prMon=_sulM.filter(function(x){return x.p;}).length;
+ var _su3=_sulM.filter(function(x){return x.t===3&&x.f<3;}).length;
+ H+='<div class="z-card z-c2"><h3>\u2934 ステージ引き上げ（今月）</h3><div class="z-sub">お客様の心を動かした回数。動機の引き上げこそ営業の真価。</div><div style="display:flex;gap:16px;align-items:baseline;margin-top:6px;flex-wrap:wrap"><b style="font-size:32px;line-height:1">'+_suMon+'<small style="font-size:12px;font-weight:600"> 回</small></b><span class="z-sub">うち連想到達 <b>'+_su3+'</b>回</span><span class="z-sub">\u2b50 提案依頼 <b>'+_prMon+'</b>件</span></div></div>';
+ var _bym=_ymd(new Date()).slice(0,7);
+ var _bProp=mine.filter(function(c){return c.proposal_req&&(c.proposal_req_at||'').slice(0,7)===_bym;}).length;
+ var _bDk=0; mine.forEach(function(c){(c.revisits||[]).concat(c.pursuits||[]).forEach(function(v){if(v&&/同行/.test(v.visit_type||'')&&(v.date||'').slice(0,7)===_bym)_bDk++;});});
+ var _bFam=mine.filter(function(c){return c.family_headcount&&(c.family_headcount_at||'').slice(0,7)===_bym;}).length;
+ var _bNew=mine.filter(function(c){return (c.discovery_date||'').slice(0,7)===_bym;}).length;
+ function _btier(v,g){return v>=g[0]?'\ud83e\udd47':v>=g[1]?'\ud83e\udd48':v>=g[2]?'\ud83e\udd49':'\ud83c\udfaf';}
+ var _bdef=[['\u2b50 提案依頼',_bProp,[3,2,1]],['\ud83e\udd1d 同行',_bDk,[20,15,10]],['\ud83d\udc6a 家族構成コンプ',_bFam,[5,4,3]],['\ud83c\udd95 新規発掘',_bNew,[45,35,25]]];
+ H+='<div class="z-card z-c2"><h3>\ud83e\udd47 月間バッジ（'+(+_bym.slice(5,7))+'月）</h3><div class="z-sub">今月の達成度。\ud83e\udd47\ud83e\udd48\ud83e\udd49を狙おう。</div>'+_bdef.map(function(b){var pct=Math.min(100,Math.round(b[1]/b[2][0]*100));return '<div style="margin:7px 0 0"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>'+_btier(b[1],b[2])+' '+b[0]+'</span><span><b>'+b[1]+'</b> / '+b[2][0]+'</span></div><div class="z-xptrack"><i style="width:'+pct+'%"></i></div></div>';}).join('')+'</div>';
+ var _rkMap={}; cards.forEach(function(c){var m=String(c.manager||'').trim(); if(!m) return; (_rkMap[m]=_rkMap[m]||[]).push(c);});
+ var _rkNames=Object.keys(_rkMap);
+ if(_rkNames.length>=2){
+  var _rkArr=_rkNames.map(function(m){return {m:m,p:_monthlyGain(_rkMap[m],_curYM)};}).sort(function(a,b){return b.p-a.p;});
+  var _meIdx=-1; for(var _ri=0;_ri<_rkArr.length;_ri++){ if(_rkArr[_ri].m===uName){_meIdx=_ri;break;} }
+  var _med=['\ud83e\udd47','\ud83e\udd48','\ud83e\udd49'];
+  H+='<div class="z-card z-c2"><h3>\ud83c\udfc6 課内ランキング（今月の成長pt）</h3><div class="z-sub">上位3名のみ表示。比べる相手は昨日の自分、目指すは表彰台。</div>'
+   +_rkArr.slice(0,3).map(function(r,i){return '<div class="z-mrow"><span>'+_med[i]+'</span><b style="flex:1;margin-left:6px">'+e(r.m)+'</b><span class="z-sub"><b>'+r.p+'</b>pt</span></div>';}).join('')
+   +(_meIdx>=0?'<div class="z-sub" style="margin-top:6px">あなたは <b>'+(_meIdx+1)+'位</b>（'+_rkArr[_meIdx].p+'pt）／'+_rkArr.length+'人中</div>':'')
+   +'</div>';
+ }
+ var _plan=_planLoad(); var _acts=['再訪','追撃','テスト提示','家族確認','様子見'];
+ var _selN=Object.keys(_plan.sel||{}).filter(function(k){return _prio.some(function(o){return String(o.c.id||'').replace(/[^\w-]/g,'')===k;});}).length;
+ H+='<div class="z-card z-c2"><h3>\ud83c\udfaf 今日の作戦盤</h3><div class="z-sub">温度の高い順に3件。「今日この方に何をする？」— チップを選んで自分のミッションに（<b>'+_selN+'</b>/'+(_prio.length||0)+'件 選択中）。</div>'
+  +(_prio.length?_prio.map(function(o,i){var c=o.c;var tag=(c.pursuit_judge==='A'||c.pursuit_judge==='S')?'A候補':(lastContactDays(c)>=14?lastContactDays(c)+'日未接触':(!c.family_headcount?'家族構成未確認':_tempBand(o.s)[1]));
+    var chips=_acts.map(function(a){var on=_plan.sel&&_plan.sel[c.id]===a;return '<span class="z-chip" onclick="zPlanPick(\''+String(c.id||'').replace(/[^\w-]/g,'')+'\',\''+a+'\')" style="cursor:pointer;margin:2px 4px 0 0;display:inline-block;'+(on?'background:#34e3d0;color:#0b2230;font-weight:700;':'')+'">'+(on?'\u2713 ':'')+a+'</span>';}).join('');
+    return '<div class="z-prow"><span class="z-pno">'+(i+1)+'</span><b class="z-pnm">'+e(c.name||'無名')+'様</b><span class="z-ptemp">'+_tempBand(o.s)[0]+' '+o.s+'<small>/78</small></span><span class="z-ptag">'+tag+'</span></div><div style="margin:2px 0 10px 26px">'+chips+'</div>';}).join(''):'<div class="z-sub">カードを追加すると表示されます</div>')
+  +'<div class="z-sub" style="margin-top:6px">\ud83d\udca1 '+e(_mis[0]||'')+'</div></div>';
  var bodyState='',bodyGrow='';
  H+='</div>';
  
- bodyGrow+='<div class="z-card z-c2"><h3>🧭 スキルレーダー</h3><div class="z-sub">凹んだ軸が伸びしろ。</div><div class="z-radar-wrap"><svg class="z-radar" viewBox="0 0 200 200">'+_zRadar(axes).replace(/^<svg[^>]*>|<\/svg>$/g,'')+'</svg><div class="z-radar-leg">'+leg+'</div></div>'+_radarTypePanel(axes)+'</div>';
+ bodyGrow+='<div class="z-card z-c2"><h3>🧭 スキルレーダー</h3><div class="z-sub">凹んだ軸が伸びしろ。'+(_ghost?'<span style="color:#8b7cff">点線＝先月の自分。</span>':'来月から点線で「先月の自分」が重なります。')+'</div><div class="z-radar-wrap"><svg class="z-radar" viewBox="0 0 200 200">'+_zRadar(axes,_ghost).replace(/^<svg[^>]*>|<\/svg>$/g,'')+'</svg><div class="z-radar-leg">'+leg+'</div></div>'+_radarTypePanel(axes)+'</div>';
  var _myNow=_kpi3Now(mine);
  bodyState+=_kpi3Cards(mine);
  bodyState+='<div class="z-card z-cf"><h3>📌 重要3指標トレンド（直近6ヶ月）</h3><div class="z-sub">提案依頼・同行・家族構成コンプの月別件数。今月：提案 '+_myNow[0]+'・同行 '+_myNow[1]+'・家族 '+_myNow[2]+'。<br><span style="color:var(--z-dim)">※家族構成は人数把握まで。氏名・年齢・職業まで深掘りを。</span></div>'+_kpi3Chart(mine)+'</div>';
@@ -3933,8 +4021,8 @@ function autoCommitEdit(){
     collectForm();
     if(!curId && !String(cur.name||'').trim()){ if(typeof scheduleDraftSave==='function') scheduleDraftSave(); return; }
     if(cur.address) cur.address=_han(cur.address);
-    if(curId){ var idx=cards.findIndex(function(c){return c.id===curId;}); if(idx>=0) cards[idx]=cur; else { cards.push(cur); curId=cur.id; } }
-    else { cards.push(cur); curId=cur.id; }
+    if(curId){ var idx=cards.findIndex(function(c){return c.id===curId;}); if(idx>=0){ _stageUpLog(cards[idx],cur); cards[idx]=cur; } else { cards.push(cur); curId=cur.id; } }
+    else { _stageUpLog(null,cur); cards.push(cur); curId=cur.id; }
     setDirty(false);
     doSaveCards(function(ok){ if(ok){ clearDraft(); if(typeof renderCards==='function') renderCards(); } });
   }catch(ex){}
@@ -3970,8 +4058,8 @@ function saveCard(){
   if(cur&&cur.address) cur.address=_han(cur.address);
   if(!cur.name){toast('氏名を入力してください');return;}
   var wasNew=!curId;
-  if(curId){ var idx=cards.findIndex(function(c){return c.id===curId;}); if(idx>=0) cards[idx]=cur; }
-  else{ cards.push(cur); curId=cur.id; }
+  if(curId){ var idx=cards.findIndex(function(c){return c.id===curId;}); if(idx>=0){ _stageUpLog(cards[idx],cur); cards[idx]=cur; } }
+  else{ _stageUpLog(null,cur); cards.push(cur); curId=cur.id; }
   doSaveCards(function(ok){
     if(!ok){ toast('⚠ 保存に失敗しました'); return; }
     updateCount();
