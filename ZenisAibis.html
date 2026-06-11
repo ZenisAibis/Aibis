@@ -1341,7 +1341,7 @@ if(Z_ALLOW.indexOf(location.hostname)<0){
 // スコア計算
 function calcScore(c){
   // ① ステージ（8段階・最大12点）3:連想を強調
-  var stageScore=[0,1,3,5,8,10,12,12];
+  var stageScore=[0,1,3,5,8,11,12,13];
   var si=+(c.stage||0);
   var s=stageScore[Math.min(si,7)]||0;
 
@@ -1349,8 +1349,8 @@ function calcScore(c){
   var rankMap={S:8,A:6,B:4,C:2,D:1,E:0,X:0};
   var r=rankMap[c.pursuit_judge]||0;
 
-  // ③ 会話状況（最大10点）上り込みを最重視
-  var kaiwaScore={ピンポン:1,立ち話:3,玄関内:5,連れ出し:7,上り込み:10};
+  // ③ 会話状況（最大12点）上り込みを最重視
+  var kaiwaScore={ピンポン:1,立ち話:3,玄関内:5,連れ出し:8,上り込み:12};
   var karr=Array.isArray(c.kaiwa)?c.kaiwa:(c.kaiwa?[c.kaiwa]:[]);
   var k=0;
   karr.forEach(function(v){ var sc=kaiwaScore[v]||0; if(sc>k) k=sc; });
@@ -1385,7 +1385,7 @@ function calcScore(c){
   var fam=c.family||[];
   var hasOwnerMet=fam.some(function(m){return m.owner&&m.met;});
   var hasKpMet=fam.some(function(m){return m.kp&&m.met;});
-  var famScore=(hasOwnerMet?2:0)+(hasKpMet?2:0);
+  var famScore=(hasOwnerMet?3:0)+(hasKpMet?3:0);
 
   // ⑦ 資産背景（最大10点・大きいほど良い）
   // 保有物量（老朽賃貸・駐車場・自宅・生産緑地の合計／「5以上」=6）
@@ -1455,7 +1455,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.47";
+var APP_VERSION = "v5.48";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -1866,7 +1866,7 @@ var AIBIS_FAQ=[
     +'上り込みでお茶・雑談・お菓子。この関係を大切にしてね！'},
   {q:'ソーシャル',a:'ソーシャルスタイルは4タイプだよ！<br><b>ドライバー</b>…決断が早く結果重視。手短に要点を。<br><b>エクスプレッシブ</b>…感情豊か。共感を示して。<br><b>アナリティカル</b>…データ・論理重視。根拠をしっかり。<br><b>エミアブル</b>…協調性が高い。急がせず丁寧に。'},
   {q:'Judgmentって何？',a:'Judgmentはお客様の現状を課長と協議して判定するもの。<br><br>【再訪Judgment】追客開始 / 継続訪問 / 打ち切り の3択<br>【追撃Judgment】A見込み / 訪問継続 / 打ち切り の3択<br><br>🔒 再訪Judgmentは再訪3回目（日付・訪問内容・録音要約のいずれか）を記録すると押せるよ。追撃カードの発行には先に再訪Judgmentが必要。15回超の追撃追加には追撃Judgmentが必要。<br>ボタンはもう一度押すと選択解除（未選択ならAIの判定を優先）。A見込み=A・訪問継続=B・打ち切り=X。<br><br>必ず課長との協議のうえで選択してね！'},
-  {q:'スコアってどう計算するの？',a:function(){return isMgrUnlocked()?'提案依頼15点＋ステージ12点＋会話状況10点＋資産背景10点＋追客ランク8点＋連続留守4点（留守ゼロで満点・減点式）＋土地面積×路線価 約7.5点＋KP面談4点＋最寄駅±2点の合計で約73点満点！提案依頼の取得・連想到達・上り込み・資産背景が大きいお客様ほど高得点になるよ。スコア順の並び替えで今週誰に行くべきかが一目でわかるよ📊':'スコアは「今週どのお客様を優先するか」を見やすくする並び替え用の目安だよ📊 細かい配点は内部設定なので、まずはスコア順の上位から動いてみてね！';}},
+  {q:'スコアってどう計算するの？',a:function(){return isMgrUnlocked()?'提案依頼15点＋ステージ13点＋会話状況12点＋資産背景10点＋追客ランク8点＋連続留守4点（留守ゼロで満点・減点式）＋土地面積×路線価 約7.5点＋KP面談6点＋最寄駅±2点の合計で約78点満点！提案依頼の取得・連想到達・上り込み・資産背景が大きいお客様ほど高得点になるよ。スコア順の並び替えで今週誰に行くべきかが一目でわかるよ📊':'スコアは「今週どのお客様を優先するか」を見やすくする並び替え用の目安だよ📊 細かい配点は内部設定なので、まずはスコア順の上位から動いてみてね！';}},
   {q:'提案依頼ボタンって何？',a:'再訪タブの「連続留守カウント」の右にあるボタン！タップで ❌提案依頼未取得 ⇔ ⭕提案依頼取得 を切替。提案依頼の取得はお客様の意思表示なのでスコアが大きく上がるよ(+15)😊 ベストは「3:連想」でテストクロージングし、動機を引き上げながら取得すること💡 取得すると10客・40客リストにも⭕提案依頼が出るよ。'},
   {q:'駅徒歩フラグって何？',a:'計画地の最寄り駅からの徒歩区分だよ🚉 計画地の「🚉最寄り駅 徒歩」ボタンをタップで 未確認→〜10分→〜20分→21分以上 と切り替わるよ（同行ボタンと同じ要領）。〜10分は加点(+3)、21分以上は減点(-3)＆赤フラグ（一覧・課分析にも表示）。分数は地図で一度確認して印を付けるだけでOK😊'},
   {q:'現在地ボタンって何？',a:'初訪タブの住所欄の下にある📍現在地取得ボタン！GPSで現在地を取得して住所をクリップボードにコピーするよ。訪問先でそのまま貼り付けて使えるね😊'},
@@ -2864,7 +2864,7 @@ function renderSelfDash(tid){
  var H='<div class="zdash zdash-rep"><div class="z-bento">';
  H+='<div class="z-card z-hero z-cf"><div class="z-ring" style="--p:'+renso+'"><div class="z-ring-in"><b>'+renso+'<small>%</small></b><span>育成率</span></div></div><div class="z-hmeta"><div class="z-lv">⚔ '+e(uName||'あなた')+' さんの成長ランク</div><h2>Lv.'+_rk.lv+' '+_rk.name+'</h2><div class="z-chips"><span class="z-chip">保有 <b>'+n+'</b>件</span><span class="z-chip">A・S <b>'+asN+'</b>件</span><span class="z-chip">要フォロー <b>'+fuN+'</b>件</span><span class="z-chip">育成率 <b>'+renso+'</b>%</span></div><div class="z-xp"><div class="z-xpl"><span>'+(_rk.next?'あと <b>'+_rk.remain+'pt</b> で Lv.'+(_rk.lv+1)+' '+_rk.next:'最高ランクに到達！')+'</span><span>今月 +'+_mg+'pt</span></div><div class="z-xptrack"><i style="width:'+_rk.prog+'%"></i></div></div><div class="z-sub" style="margin-top:6px">成長ポイント（営業経験値）累計 '+_pts+'pt</div></div></div>';
  H+='<div class="z-card z-c2"><h3>✅ 今日のミッション</h3><div class="z-sub">迷ったらここから。最大3つ。</div>'+_mis.map(function(m){return '<div class="z-mrow"><span class="z-mck">□</span><span>'+e(m)+'</span></div>';}).join('')+'</div>';
- H+='<div class="z-card z-c2"><h3>🔥 今日の優先見込み</h3><div class="z-sub">見込み温度の高い順（最大3件）。</div>'+(_prio.length?_prio.map(function(o,i){var c=o.c;var tag=(c.pursuit_judge==='A'||c.pursuit_judge==='S')?'A候補':(lastContactDays(c)>=14?lastContactDays(c)+'日未接触':(!c.family_headcount?'家族構成未確認':_tempBand(o.s)[1]));return '<div class="z-prow"><span class="z-pno">'+(i+1)+'</span><b class="z-pnm">'+e(c.name||'無名')+'様</b><span class="z-ptemp">'+_tempBand(o.s)[0]+' '+o.s+'<small>/73</small></span><span class="z-ptag">'+tag+'</span></div>';}).join(''):'<div class="z-sub">カードを追加すると表示されます</div>')+'</div>';
+ H+='<div class="z-card z-c2"><h3>🔥 今日の優先見込み</h3><div class="z-sub">見込み温度の高い順（最大3件）。</div>'+(_prio.length?_prio.map(function(o,i){var c=o.c;var tag=(c.pursuit_judge==='A'||c.pursuit_judge==='S')?'A候補':(lastContactDays(c)>=14?lastContactDays(c)+'日未接触':(!c.family_headcount?'家族構成未確認':_tempBand(o.s)[1]));return '<div class="z-prow"><span class="z-pno">'+(i+1)+'</span><b class="z-pnm">'+e(c.name||'無名')+'様</b><span class="z-ptemp">'+_tempBand(o.s)[0]+' '+o.s+'<small>/78</small></span><span class="z-ptag">'+tag+'</span></div>';}).join(''):'<div class="z-sub">カードを追加すると表示されます</div>')+'</div>';
  var bodyState='',bodyGrow='';
  H+='</div>';
  
@@ -5713,7 +5713,7 @@ function renderAnalysis(){
  var H='<div class="zdash zdash-mgr"><div class="z-cockpit"><div class="z-cmdhead">⌘ COMMAND CENTER <span>課ダッシュボード</span></div>';
  // KPI + gauge
  H+='<div class="z-bento"><div class="z-card z-kpi z-c1"><span class="z-klab">新規発掘（今月）</span>'+(thisM||lastM?'<span class="z-delta '+(dd>=0?'up':'dn')+'">'+(dd>=0?'▲':'▼')+' '+Math.abs(dd)+'</span>':'')+'<div class="z-kval z-num">'+thisM+'<small>件</small></div>'+_zSpark(mDisc,'#34e3d0')+'</div>'
-  +'<div class="z-card z-kpi z-c1"><span class="z-klab">課スコア平均</span><div class="z-kval z-num" style="color:#8b7cff">'+avg+'<small>/73</small></div><div class="z-ksub">対象 '+n+'件</div></div>'
+  +'<div class="z-card z-kpi z-c1"><span class="z-klab">課スコア平均</span><div class="z-kval z-num" style="color:#8b7cff">'+avg+'<small>/78</small></div><div class="z-ksub">対象 '+n+'件</div></div>'
   +'<div class="z-card z-kpi z-c1"><span class="z-klab">連想以上 率</span><div class="z-kval z-num" style="color:#9be15d">'+_zPct(conn,n)+'<small>%</small></div><div class="z-ksub">'+conn+'件</div></div>'
   +'<div class="z-card z-kpi z-c1"><span class="z-klab">ペース遅れ</span><div class="z-kval z-num" style="color:#ff5d7d">'+late+'<small>件</small></div><div class="z-ksub">'+_zPct(late,n)+'%</div></div></div>';
  H+='</div>';
@@ -5767,7 +5767,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
  var bodyArea=_zAreaCard(t);
  // multi
  var asMap={'1億以下':1,'3億以下':2,'5億以下':3,'10億未満':4,'10億以上':5};
- var bub='<svg class="z-bub" viewBox="0 0 560 230">';t.forEach(function(c){var x=20+calcScore(c)/73*520;var av=(asMap[c.land_asset]||0)+(+(c.m2||0)>=200?2:+(c.m2||0)>=100?1:0);var y=210-av/7*190;var rr=5+calcScore(c)/73*11;var rk=_zRevReg('\ud83d\udc8e \u304a\u5b9d\u5ba2',[{name:c.name,score:calcScore(c),sub:STG[+(c.stage||0)]+'\u30fb'+e(c.manager||'')}]);bub+='<circle cx="'+x.toFixed(0)+'" cy="'+y.toFixed(0)+'" r="'+rr.toFixed(0)+'" fill="'+(RC[c.pursuit_judge]||'#888')+'" opacity=".62" stroke="#fff" stroke-width="1" style="cursor:pointer" onpointerdown="zRevShow(this,\''+rk+'\')" onpointerup="zRevHide()" onpointerleave="zRevHide()" onpointercancel="zRevHide()" oncontextmenu="return false"/>';});bub+='<text x="280" y="228" font-size="9" fill="#6b7894" text-anchor="middle">熱量（スコア）→</text></svg>';
+ var bub='<svg class="z-bub" viewBox="0 0 560 230">';t.forEach(function(c){var x=20+calcScore(c)/78*520;var av=(asMap[c.land_asset]||0)+(+(c.m2||0)>=200?2:+(c.m2||0)>=100?1:0);var y=210-av/7*190;var rr=5+calcScore(c)/78*11;var rk=_zRevReg('\ud83d\udc8e \u304a\u5b9d\u5ba2',[{name:c.name,score:calcScore(c),sub:STG[+(c.stage||0)]+'\u30fb'+e(c.manager||'')}]);bub+='<circle cx="'+x.toFixed(0)+'" cy="'+y.toFixed(0)+'" r="'+rr.toFixed(0)+'" fill="'+(RC[c.pursuit_judge]||'#888')+'" opacity=".62" stroke="#fff" stroke-width="1" style="cursor:pointer" onpointerdown="zRevShow(this,\''+rk+'\')" onpointerup="zRevHide()" onpointerleave="zRevHide()" onpointercancel="zRevHide()" oncontextmenu="return false"/>';});bub+='<text x="280" y="228" font-size="9" fill="#6b7894" text-anchor="middle">熱量（スコア）→</text></svg>';
  var ageT=[['〜64',0,64],['65〜74',65,74],['75〜',75,200]];var agH=ageT.map(function(a){var arr=t.filter(function(c){var ag=_zOwnerAge(c);return ag!==null&&ag>=a[1]&&ag<=a[2];});var av2=arr.length?(arr.reduce(function(s,c){return s+ +(c.stage||0);},0)/arr.length).toFixed(1):'0';return '<div class="z-tile"><b>'+arr.length+'</b><span>'+a[0]+'歳／平均St '+av2+'</span></div>';}).join('');var noAge=t.filter(function(c){return _zOwnerAge(c)===null;}).length;
  var pot=Math.round(t.filter(function(c){return c.pursuit_judge==='A'||c.pursuit_judge==='S';}).reduce(function(s,c){return s+(parseFloat(c.rosenka)||0)*1000*(parseFloat(c.m2)||0);},0)/1e8);
  var miniR=board.map(function(b,_bi){var a=g[b.r];var ax=[['発掘',Math.min(Math.round(a.length/30*100),100)],['グリ',(function(){var s=0,nn=0;a.forEach(function(c){var l=getKaiwaLevel(c);if(l>=0){s+=l;nn++;}});return nn?Math.round(s/nn/4*100):0;})()],['ヒア',_zPct(a.filter(function(c){return c.family_headcount;}).length,a.length)],['連想',_zPct(a.filter(function(c){return +(c.stage||0)>=3;}).length,a.length)],['テス',_zPct(a.filter(function(c){return +(c.stage||0)>=4;}).length,Math.max(1,a.filter(function(c){return +(c.stage||0)>=3;}).length))],['ペース',100-_zPct(a.filter(function(c){return calcPaceOverrate(c)>1;}).length,a.length)]];var col=_zAVAS[reps.indexOf(b.r)%8];return _radarHero(b.r,ax,col,_bi);}).join('');
@@ -5839,7 +5839,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
    if(st>=3&&!c.proposal_req) rs.push('提案依頼まだ');
    if(!c.family_headcount) rs.push('家族未把握');
    if(st>=5&&!c.doukou) rs.push('比較以上で同行未');
-   var urg=(rank==='S'?3:rank==='A'?2:1)*2+st/8*2+rs.length+calcScore(c)/73;
+   var urg=(rank==='S'?3:rank==='A'?2:1)*2+st/8*2+rs.length+calcScore(c)/78;
    return {c:c,rs:rs,urg:urg};
  }).sort(function(a,b){return b.urg-a.urg;}).slice(0,5);
  var todayH=todayCand.length?todayCand.map(function(o,i){var c=o.c,st=+(c.stage||0),mv=_nextMove(c);
@@ -5987,7 +5987,7 @@ function copyAnalysisPrompt(){
     prompt+='【担当者別フィードバック：'+memberName+'】\n';
     prompt+='━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
     prompt+='■ 基本データ\n';
-    prompt+='  担当件数：'+n+'件　平均スコア：'+avgScore+'/73点\n';
+    prompt+='  担当件数：'+n+'件　平均スコア：'+avgScore+'/78点\n';
     prompt+='  ステージ分布：'+stageTxt+'\n';
     prompt+='  追客判定：'+(rankTxt||'未入力')+(noRank?'　未判定:'+noRank+'件':'')+'\n';
     prompt+='  ⏰ 訪問ペース遅れ：'+paceLate+'件　👥 家族人数把握済：'+famComp+'件\n\n';
@@ -6012,7 +6012,7 @@ function copyAnalysisPrompt(){
     prompt+='【課全体の見込み客分析】\n';
     prompt+='━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
     prompt+='■ 全体データ\n';
-    prompt+='  総件数：'+n+'件　平均スコア：'+avgScore+'/73点\n';
+    prompt+='  総件数：'+n+'件　平均スコア：'+avgScore+'/78点\n';
     prompt+='  ステージ分布：'+stageTxt+'\n';
     prompt+='  追客判定：'+(rankTxt||'未入力')+(noRank?'　未判定:'+noRank+'件':'')+'\n';
     prompt+='  ⏰ 訪問ペース遅れ：'+paceLate+'件　👥 家族人数把握済：'+famComp+'件\n';
