@@ -1069,18 +1069,19 @@ body.is-mob .mob-menu{display:inline-block}
         <b style="color:#553c9a">操作手順</b><br>
         ① 「💭 戦略協議」タブを開く<br>
         ② 分析テーマを選ぶ（右に追客ランクが大きく表示）<br>
-        ③「🤖 分析用に抽出」でカード情報をコピー<br>
+        ③「🤖 分析用に抽出」でコピー、または「📎 ファイルで抽出」でtxt保存（Copilotに添付→「添付の指示に従って分析して」とだけ送ればOK）<br>
         ④「🤖 AI分析」で会社のCopilotが開く<br>
         ⑤ Copilotに貼り付けて送信<br>
         ⑥ 回答を貼り付け欄にペースト → 総合分析では追客ランクが自動入力される<br><br>
-        <b style="color:#553c9a">分析テーマ（7種）</b><br>
+        <b style="color:#553c9a">分析テーマ（8種）</b><br>
         💭 総合分析 … 現状分析・追客ランク判定<br>
         🎯 次回作戦 … 次回訪問のアプローチ提案<br>
         🔥 動機引上げ … 購買意欲を高める切り口<br>
         🧠 性格応対 … ソーシャルスタイル別の話し方<br>
         🛡 反論対応 … よくある反論への応答<br>
         👂 聞取補充 … 次回聞くべき情報の整理<br>
-        📝 会話訓練 … ロールプレイ用シナリオ<br><br>
+        📝 会話訓練 … ロールプレイ用シナリオ<br>
+        🏛 相続シナリオ … 相続人・税の論点・気づきの一言<br><br>
         <b style="color:#553c9a">追客ランク（S〜EとX）</b><br>
         S=積極提案 A=積極追客 B=継続追客 C=染み込み D=状況確認 E=初期除外 X=追客打切<br>
         総合分析の貼り付けで自動検出・表示されます<br><br>
@@ -1455,7 +1456,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.54";
+var APP_VERSION = "v5.63";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -1834,13 +1835,13 @@ var AIBIS_FAQ=[
   {q:'検索ってどう使うの？',a:'名前や住所を入れるだけ！スペース区切りで複数キーワードも使えるよ🔍<br>並び替えは最新・再訪・住所・スコア・心理・ランク・遅れ・初訪から選べるよ！'},
   {q:'バージョンアップするには？',a:'Claudeに修正を頼んで、GitHubに上書きするだけ！みんな次回アクセスで自動的に最新版になるよ👏'},
   {q:'マニュアルはどこ？',a:function(){return isMob?'⋮その他→📖マニュアルから見れるよ！タイトルをタップすると詳細が開くよ。':'⋮その他→📖マニュアルから見れるよ！各セクションをクリックすると詳細が開くよ。';}},
-  {q:'戦略協議ってどう使うの？',a:'戦略協議は、お客様の情報をAI（会社のCopilot）に分析してもらう機能だよ！<br><br>①「💭 戦略協議」タブを開く<br>②分析テーマを選ぶ（7種）<br>③「🤖 分析用に抽出」でカード情報をコピー<br>④「🤖 AI分析」でCopilotが開く<br>⑤貼り付けて送信→回答を貼り付け欄にペースト<br><br>総合分析では追客ランク（S〜E）が自動で検出されるよ🧚'},
+  {q:'戦略協議ってどう使うの？',a:'戦略協議は、お客様の情報をAI（会社のCopilot）に分析してもらう機能だよ！<br><br>①「💭 戦略協議」タブを開く<br>②分析テーマを選ぶ（8種）<br>③「🤖 分析用に抽出」でコピー、または「📎 ファイルで抽出」でtxt保存（Copilotに添付→「添付の指示に従って分析して」とだけ送ればOK）<br>④「🤖 AI分析」でCopilotが開く<br>⑤貼り付けて送信→回答を貼り付け欄にペースト<br><br>総合分析では追客ランク（S〜E）が自動で検出されるよ🧚'},
   {q:'追客ランクって何？',a:'S〜EとXの7段階でお客様への訪問頻度・状況を表すよ！<br><br>'
-    +'<b>S：積極提案</b>　お客様が主体的に動いている・クロージング射程内（週1〜毎日）<br>'
-    +'<b>A：積極追客</b>　動機醸成が見えてきた・本物の提案依頼が取れそう（週1〜2週に1回）<br>'
-    +'<b>B：継続追客</b>　ヒアリング途中・注意喚起・興味喚起がまだ必要（月2〜月1回）<br>'
-    +'<b>C：染み込み</b>　提案orTCを試みたが動機不足・低頻度で顔出し継続（月1回程度）<br>'
-    +'<b>D：状況確認</b>　高齢・相続待ち・課題解決待ちの定点観測（3ヶ月〜1年に1回）<br>'
+    +'<b>S：積極提案</b>　お客様が主体的に動いている・クロージング射程内（2日に1回〜毎日）<br>'
+    +'<b>A：積極追客</b>　動機醸成が見えてきた・本物の提案依頼が取れそう（週1回・7日以内）<br>'
+    +'<b>B：継続追客</b>　ヒアリング途中・注意喚起・興味喚起がまだ必要（14日に1回）<br>'
+    +'<b>C：染み込み</b>　提案orTCを試みたが動機不足・低頻度で顔出し継続（30日に1回）<br>'
+    +'<b>D：状況確認</b>　高齢・相続待ち・課題解決待ちの定点観測（60日・2ヶ月に1回）<br>'
     +'<b>E：初期除外</b>　敷地・間口・資金・人柄等で初期判断除外（訪問不要）<br>'
     +'<b>X：追客打切</b>　追客したが最終的に見込みなし・打切（訪問不要）<br><br>'
     +'戦略協議の総合分析を貼り付けると自動で検出・表示されるよ📊'},
@@ -2217,7 +2218,7 @@ function doDeleteStaffCards(name){
 }
 window.renameStaff=renameStaff; window.doRenameStaff=doRenameStaff;
 window.deleteStaffCards=deleteStaffCards; window.deleteStaffCards2=deleteStaffCards2; window.doDeleteStaffCards=doDeleteStaffCards;
-var STRATEGY_THEMES=['general','next_visit','motivation','personality','objection','hearing','training'];
+var STRATEGY_THEMES=['general','next_visit','motivation','personality','objection','hearing','training','inheritance'];
 function _fmtStamp(iso){if(!iso)return '';var d=new Date(iso);if(isNaN(d))return '';return d.getFullYear()+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+('0'+d.getDate()).slice(-2)+' '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);}
 function _fmtDateJP(iso){if(!iso)return '';var d=new Date(iso);if(isNaN(d))return '';return d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日';}
 function switchStrategyTab(key){
@@ -2250,12 +2251,12 @@ function updateAiRankDisp(rank){
     if(cur.discovery_date) allDates.push(cur.discovery_date);
     (cur.revisits||[]).forEach(function(v){if(v.date)allDates.push(v.date);});
     (cur.pursuits||[]).forEach(function(v){if(v.date)allDates.push(v.date);});
-    if(allDates.length&&r!=='E'&&r!=='X'){
+    if(_judgeMissing(cur)){ pace.style.display='block'; pace.textContent='\u26a0 ランク判定必須（再訪フェーズ終了）'; pace.style.color='#c53030'; }
+    else if(allDates.length&&(_isRevisitPhase(cur)||(r!=='E'&&r!=='X'))){
       allDates.sort();
       var last=allDates[allDates.length-1];
       var days=Math.floor((new Date()-new Date(last))/(1000*60*60*24));
-      var limit={S:14,A:14,B:35,C:60,D:400};
-      var lim=limit[r];
+      var lim=_isRevisitPhase(cur)?REVISIT_PHASE.interval:PACE_LIMIT[r];
       if(lim){
         pace.style.display='block';
         if(days>lim){
@@ -2915,7 +2916,7 @@ function renderSelfDash(tid){
  var spar=(c3[0]||mine.filter(function(c){return +(c.stage||0)>=3&&c.name;})[0]||{}).name||'お客様';
  var _pts=_repPoints(mine),_rk=_xpRank(_pts),_curYM=_zMonths()[11],_mg=_monthlyGain(mine,_curYM);
  var asN=mine.filter(function(c){return c.pursuit_judge==='A'||c.pursuit_judge==='S';}).length,fuN=mine.filter(function(c){return lastContactDays(c)>=14;}).length,famNo=mine.filter(function(c){return !c.family_headcount;}).length,aCand=mine.filter(function(c){return +(c.stage||0)>=3&&!(c.pursuit_judge==='A'||c.pursuit_judge==='S');}).length;
- var _mis=[];if(fuN)_mis.push('14日以上ご無沙汰のカードを1件、再訪アポ');if(famNo)_mis.push('家族構成が空のカードを1件、ヒアリング入力');if(aCand)_mis.push('連想到達のカードを1件、追客判定（A化）');if(_mis.length<3&&c3.length)_mis.push('連想(3)のカードにテストクロージング');if(!_mis.length)_mis.push('良いペース！今日も新規発掘を1件');_mis=_mis.slice(0,3);
+ var _jm=mine.filter(_judgeMissing).length;var _mis=[];if(_jm)_mis.push('\u26a0 ランク未判定 '+_jm+'件に追客判定を（判定は必須）');if(fuN)_mis.push('14日以上ご無沙汰のカードを1件、再訪アポ');if(famNo)_mis.push('家族構成が空のカードを1件、ヒアリング入力');if(aCand)_mis.push('連想到達のカードを1件、追客判定（A化）');if(_mis.length<3&&c3.length)_mis.push('連想(3)のカードにテストクロージング');if(!_mis.length)_mis.push('良いペース！今日も新規発掘を1件');_mis=_mis.slice(0,3);
  var _prio=mine.map(function(c){return {c:c,s:calcScore(c)};}).sort(function(a,b){return b.s-a.s;}).slice(0,3);
  var H='<div class="zdash zdash-rep"><div class="z-bento">';
  H+='<div class="z-card z-hero z-cf"><div class="z-ring" style="--p:'+renso+'"><div class="z-ring-in"><b>'+renso+'<small>%</small></b><span>育成率</span></div></div><div class="z-hmeta"><div class="z-lv">⚔ '+e(uName||'あなた')+' さんの成長ランク</div><h2>Lv.'+_rk.lv+' '+_rk.name+'</h2><div class="z-chips"><span class="z-chip">保有 <b>'+n+'</b>件</span><span class="z-chip">A・S <b>'+asN+'</b>件</span><span class="z-chip">要フォロー <b>'+fuN+'</b>件</span><span class="z-chip">育成率 <b>'+renso+'</b>%</span></div><div class="z-xp"><div class="z-xpl"><span>'+(_rk.next?'あと <b>'+_rk.remain+'pt</b> で Lv.'+(_rk.lv+1)+' '+_rk.next:'最高ランクに到達！')+'</span><span>今月 +'+_mg+'pt</span></div><div class="z-xptrack"><i style="width:'+_rk.prog+'%"></i></div></div><div class="z-sub" style="margin-top:6px">成長ポイント（営業経験値）累計 '+_pts+'pt</div></div></div>';
@@ -3064,11 +3065,16 @@ function updateSortBtns() {
     }
   });
 }
+var PACE_LIMIT={S:2,A:7,B:14,C:30,D:60}; // 暫定値（後日協議で差し替え）
+var REVISIT_PHASE={span:14,times:3,interval:5}; // 再訪客：発掘から14日以内に3回（約5日間隔）
+function _isRevisitPhase(c){
+  if(!c||!c.discovery_date) return false;
+  var pv=(c.pursuits||[]).filter(function(v){return v&&v.date;}).length;
+  var rv=(c.revisits||[]).filter(function(v){return v&&v.date;}).length;
+  return pv===0&&rv<REVISIT_PHASE.times;
+}
+function _judgeMissing(c){ return !c.pursuit_judge && !_isRevisitPhase(c); } // 再訪フェーズ終了後もランク未判定
 function calcPaceOverrate(c){
-  var pj=c.pursuit_judge||'';
-  var limit={S:14,A:14,B:35,C:60,D:400};
-  var lim=limit[pj];
-  if(!lim) return -1; // E・X・未判定はソート対象外
   var allDates=[];
   if(c.discovery_date) allDates.push(c.discovery_date);
   (c.revisits||[]).forEach(function(v){if(v.date)allDates.push(v.date);});
@@ -3077,6 +3083,15 @@ function calcPaceOverrate(c){
   allDates.sort();
   var last=allDates[allDates.length-1];
   var days=Math.floor((new Date()-new Date(last))/(1000*60*60*24));
+  if(_isRevisitPhase(c)){
+    // 再訪フェーズは別カウント：約5日間隔。発掘14日超過はさらに遅れ扱い
+    var sinceDisc=Math.floor((new Date()-new Date(c.discovery_date))/(1000*60*60*24));
+    var r=days/REVISIT_PHASE.interval;
+    if(sinceDisc>REVISIT_PHASE.span) r=Math.max(r,sinceDisc/REVISIT_PHASE.span);
+    return r;
+  }
+  var lim=PACE_LIMIT[c.pursuit_judge||''];
+  if(!lim) return -1; // E・X・未判定はソート対象外
   return days/lim; // 超過率（1.0=ちょうど上限、2.0=2倍超過）
 }
 function lastContactDays(c){
@@ -4994,7 +5009,7 @@ function buildFamilyHTML(c){
 
 function buildStrategyHTML(c){
   var e=function(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
-  var THEMES={general:'総合分析',next_visit:'次回作戦',motivation:'動機引上げ',personality:'性格応対',objection:'反論対応',hearing:'聞取補充',training:'会話訓練'};
+  var THEMES={general:'総合分析',next_visit:'次回作戦',motivation:'動機引上げ',personality:'性格応対',objection:'反論対応',hearing:'聞取補充',training:'会話訓練',inheritance:'相続シナリオ'};
   var html='<div class="h2 strat">💭 戦略協議</div>';
   var hasContent=false;
   Object.keys(THEMES).forEach(function(key){
@@ -5133,6 +5148,7 @@ function genPrompt(anon){
   lines.push('以下の見込み客カードを読み、部下が明日すぐ動ける営業戦略のアドバイスをしてください。');
   lines.push('');
   lines.push('【この営業組織の哲学・判断軸】');
+  lines.push('◆【営業アイデンティティ＝最重要前提】私たちは「建てましょう」と迫る建築営業ではない。相続・承継の相談相手として、お客様の潜在的な不安や悩みに寄り添うコンサルタントである。ゴールは契約そのものではなく、ご本人とご家族それぞれのネガティブをポジティブに変え、「なるほどね」という納得を積み重ね、ご家族みんなが「建築に進んでよかった」「大東建託に託してよかった」と思える合意形成。したがって：焦らせる表現・期限やキャンペーンで煽るトーク・ステージを飛ばしたクロージングは一切提案しないこと。すべての提案はこの前提に沿って行う');
   lines.push('◆ 購買心理は8段階で進む：0面識→1注意喚起→2興味→3連想→4欲求→5比較→6信念→7決心');
   lines.push('  ・1注意喚起＝褒めてネガティブを引き出し、問題点に気づいてもらう');
   lines.push('  ・3連想＝「一度提案しましょうか」と提案依頼を取得するクロージングの最重要ポイント。ここでテストクロージングを狙う');
@@ -5154,10 +5170,12 @@ function genPrompt(anon){
     7:'今は「7決心」。契約・申込が取れた段階。事例化と次の関係構築へ。'
   };
   if(c.stage!==''&&c.stage!=null && _stageTone[+c.stage]) lines.push('■ ステージ別トーン指示\n  '+_stageTone[+c.stage]);
-  lines.push('◆【問答無用のE】間口9m以下、または土地面積150㎡以下は、他条件に優先して必ずE（初期除外）。ただし間口・面積が未入力、またはアセット系の場合は適用しない');
+  lines.push('◆【問答無用のE】間口9m以下、または土地面積150㎡以下は、他条件に優先して必ずE（初期除外）。ただし間口・面積が未入力、またはアセット系の場合は適用しない。E＝「この土地では計画が成り立たない」の機械的判定であり打切ではない。E判定時は「他に所有地がないか」の確認を必ず次アクションに挙げる（他の土地があれば別途再評価）');
   lines.push('◆ 追客判定は慎重に。A・Sは本当に可能性が高い案件のみ。【A・Sの最低条件】「土地資産規模」が入力済み かつ「家族人数把握」がコンプリート。どちらか未達ならA・SにせずB以下とし、不足項目を挙げて次に何を確認すべきかを促す');
   lines.push('◆【B/Cの境目】B（継続追客）にできるのは、担当者個人が受け入れられ、こちらの褒めに相手が会話で応じ、相手のネガティブを引き出して「確かにそうですね」と返せる関係（＝1注意喚起の段階に到達）まで育っていること。インターホン（ピンポン）止まりで顔も見せてもらえず、まだ自分・会社を受け入れてもらえていない段階はBにせずC以下とし、まずは自分（特に担当個人）と会社を受け入れてもらう関係づくりを促す');
-  lines.push('◆【Dの扱い】初訪内容が「（未入力）」・録音要約が無い・基本入力率が60%以下のカードは“まだ行動できていない/情報不足”としてDに置き、A〜Cに無理に上げない。確認事項の多さ・まだ会話できていない点を具体的に指摘して次の一手を促す');
+  lines.push('◆【Dの定義＝時期待ち・定点観測】D＝動機の種はあるが、外部イベントが起きるまで動けない客。例：相続の発生待ち／高齢で意思決定が次世代に移るのを待つ／テナント・借家人の契約満了待ち／資金の時期待ち（定期満期・他物件売却）／家族の合意形成待ち・係争中／生産緑地・農地転用等の期限待ち。Dと判定する場合は「何を待っているか（トリガー）」を必ず1つ明記すること。トリガーを特定できない場合はDにせずC（動機不足）とする。Dの訪問目的は売り込みではなく、状況変化の定点観測と「イベント発生時に最初に相談される関係」の維持');
+  lines.push('◆【降格シグナル必読】直近の再訪・追撃・録音要約に次の内容がある場合、他の好材料より優先して判定を下げる：明確な断り・他社で成約/着工→X／他社で検討中・相見積り段階→C／時期未到来・相続待ち等トリガーが明確→D（トリガー明記）／反応が薄い・動機不足のまま→C。前向きな事実が記録に無い限りBに留めない。S〜Xは訪問記録の事実ベースで判定し、全体をA・Bに寄せない');
+  lines.push('◆【情報不足の扱い】初訪内容が「（未入力）」・録音要約が無い・基本入力率が60%以下のカードは“情報不足”。安易にB以上にせず、C以下に置いた上で、不足項目と次に確認すべきことを具体的に挙げる（情報不足を理由にDとはしない。Dは時期待ちの判定）');
   lines.push('');
   if(anon) lines.push('※ 個人情報は匿名化されています');
   lines.push('');
@@ -5181,8 +5199,9 @@ function genPrompt(anon){
   }
   lines.push('  現追客ランク：'+(c.pursuit_judge||'未判定'));
   lines.push('  ※ 追客ランク別の推奨訪問ペース：');
-  lines.push('    S=週1〜毎日 / A=週1〜2週に1回 / B=月2〜月1回');
-  lines.push('    C=月1回 / D=3ヶ月〜1年 / E・X=不要');
+  lines.push('    S=2日に1回〜毎日 / A=週1回以上(7日) / B=14日に1回');
+  lines.push('    C=30日に1回 / D=60日(2ヶ月)に1回 / E・X=不要');
+  lines.push('    ※再訪客（追撃前・再訪3回未満）は別カウント：発掘から14日以内に3回訪問し再訪1〜3の内容を埋める');
   lines.push('  ※ 訪問間隔がランクに対して長すぎないか・短すぎないかも評価してください');
   lines.push('');
   lines.push('■ 購買心理');
@@ -5305,6 +5324,15 @@ function genPrompt(anon){
     lines.push('④ 想定される反応と切り返し');
     lines.push('⑤ 次回アポへの繋ぎ方');
     lines.push('   ソーシャルスタイル「'+(c.social||'未判定')+'」に合わせて');
+  } else if(preset==='inheritance'){
+    lines.push('【相続シナリオ】家族構成・資産情報から、このお客様の相続の論点を設計してください。');
+    lines.push('※ 税額は断定せず概算・幅で示し、必ず「詳細は税理士確認」と添える。推定は推定と明記。不足情報は推測で埋めず「確認すべきこと」に回す。');
+    lines.push('');
+    lines.push('① 推定相続人の整理（法定相続人・代襲/養子の可能性・人数）と意思決定のキーパーソン');
+    lines.push('② 資産側の論点（貸家建付地評価・小規模宅地等の特例の適用可能性・基礎控除との関係など、該当しそうなものだけ）');
+    lines.push('③ 3大リスク「分けられない・納税資金がない・評価が重い」のうち、この家に最も刺さるもの1つと根拠');
+    lines.push('④ お客様に響く「気づきの一言」（ステージ2以下は促し型、3以上はテストクロージングへの橋がけ。ご本人だけでなく、家族の誰の納得がまだ足りないかにも触れる）');
+    lines.push('⑤ 提案依頼につなげる次の一手と、裏取りすべき不足情報（優先順）');
   } else if(preset==='motivation'){
     lines.push('【動機引揚】このお客様の背中を押す動機を引き出してください。');
     lines.push('※ 録音要約・訪問履歴・家族構成をすべて踏まえて、この方固有の事情に即して回答してください。');
@@ -5312,8 +5340,10 @@ function genPrompt(anon){
     lines.push('① 潜在的な不安・悩み・ニーズの推定');
     lines.push('② 土地活用に踏み出せない理由の推定');
     lines.push('③ 動機を引き出すための質問（3〜5個）');
-    lines.push('④ 感情に訴えるトークの例');
+    lines.push('④ 感情に訴えるトークの例（煽らず、寄り添いの言葉で）');
     lines.push('⑤ 具体的なイメージを描かせる言い回し');
+    lines.push('⑥ ご家族それぞれ（配偶者・子世代）が抱きそうな不安と、それをポジティブに変える寄り添いの一言');
+    lines.push('⑦ 家族全員の納得に近づける次の一歩（誰に・何を・どの順で）');
   } else if(preset==='personality'){
     lines.push('【性格応対】このお客様の性格に合わせた話し方を教えてください。');
     lines.push('※ 録音要約や会話の実態から読み取れる人柄も踏まえて回答してください。');
@@ -5346,7 +5376,7 @@ function genPrompt(anon){
     lines.push('※ 録音要約・訪問履歴から、このお客様のこれまでの反応を踏まえたリアルな会話にしてください。');
     lines.push('');
     lines.push('① 玄関先での自然な会話（5〜8ターン）');
-    lines.push('② 断られたときの切り返しパターン（3パターン）');
+    lines.push('② 相手の反応別の会話分岐（前向き／中立／消極の3パターン。断り文句への本格的な切り返しは扱わない＝「反論対応」テーマの領域）');
     lines.push('③ アポを取る場面の会話例');
     lines.push('   ソーシャルスタイル「'+(c.social||'未判定')+'」に合わせたトーンで');
     lines.push('   新人営業マンでも使いやすい自然な言葉で');
@@ -5396,7 +5426,7 @@ function genPrompt(anon){
     lines.push('判定：B');
     lines.push('ステージ2興味で所有者の父とは面談済みだが、長男KPが未面談・土地活用にネガティブ。');
     lines.push('家族の反対材料がまだ揃っておらず結論を出せる段階ではない。継続ヒアリングが必要。');
-    lines.push('②訪問ペース：前回から28日空いており、ランクBの推奨（月2〜月1）に対しやや遅れ。次回は2週以内に。今は関係構築に力を入れる時期。');
+    lines.push('②訪問ペース：前回から28日空いており、ランクBの推奨（14日に1回）に対し2倍の遅れ。次回は今週中に。今は関係構築に力を入れる時期。');
     lines.push('…（以下、各項目を具体的に）');
     lines.push('サマリー：長男KP未面談・父はネガ・相続発生前・建替え動機弱め');
     lines.push('');
@@ -5468,6 +5498,37 @@ function fallbackCopy(txt){
   try{ document.execCommand('copy'); aibisToast('📋 抽出したよ！AI分析に貼ってね'); } catch(ex){ toast('コピー失敗。プレビューから手動でコピーしてください'); }
   document.body.removeChild(ta);
 }
+function promptToFile(){
+  var q=checkInputQuality();
+  if(q!==true){
+    aibisAlert('⚠ 分析精度が下がるかも<br><br>'
+      +q.map(function(w){return '・'+w;}).join('<br>')
+      +'<br><br>会話の実態や家族構成が詳しいほど、AIの分析精度が上がるよ。このままファイル化する？<br><br>'
+      +'<div style="display:flex;gap:8px;margin-top:8px">'
+      +'<button onclick="closeAibisAlert();_promptFileGo()" style="flex:1;padding:8px;background:#2c5282;color:white;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit">このままファイル化</button>'
+      +'<button onclick="closeAibisAlert()" style="flex:1;padding:8px;background:#e2e8f0;color:#2d3748;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit">入力に戻る</button>'
+      +'</div>');
+    return;
+  }
+  _promptFileGo();
+}
+function _promptFileGo(){
+  try{
+    var p=genPrompt(true);
+    var nm=(cur&&cur.name)?String(cur.name).replace(/[\\/:*?"<>|]/g,''):'お客様';
+    var sel=document.getElementById('promptPreset');
+    var th=(sel&&sel.options[sel.selectedIndex])?sel.options[sel.selectedIndex].text:'分析';
+    var d=new Date(); var ts=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+    var fn='AIBIS分析_'+nm+'様_'+th+'_'+ts+'.txt';
+    var blob=new Blob([p],{type:'text/plain;charset=utf-8'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a'); a.href=url; a.download=fn;
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ try{document.body.removeChild(a);URL.revokeObjectURL(url);}catch(_e){} },400);
+    aibisAlert('📎 <b>'+e(fn)+'</b> を保存しました。<br><br>CopilotやチャットAIに<b>ファイルを添付</b>して、チャット欄には<br><br><b>「添付の指示に従って分析してください」</b><br><br>とだけ送ればOK。長文の貼り付けは不要です。');
+  }catch(ex){ toast('⚠ ファイル作成に失敗しました'); }
+}
+window.promptToFile=promptToFile; window._promptFileGo=_promptFileGo;
 function openCopilot(){
   var savedUrl=localStorage.getItem(CPK)||'';
   if(isMob){
@@ -6071,7 +6132,7 @@ function copyAnalysisPrompt(){
   if(isMember){
     // 担当者個別フィードバック
     prompt+='あなたは大東建託の相続コンサルタント課長です。部下一人の見込み客データを分析し、本人に見せる育成フィードバックを作成してください。\n\n';
-    prompt+='【判断軸】購買心理8段階（3連想で提案依頼取得が最重要）。会話状況は上り込みが信頼のゴール。ヒアリング最重要は家族構成・土地の量・土地の持ち方。追客ランク別に訪問ペースを変える（S/A=週単位、B=月2〜月1、C=月1、D=3ヶ月〜1年）。\n\n';
+    prompt+='【判断軸】購買心理8段階（3連想で提案依頼取得が最重要）。会話状況は上り込みが信頼のゴール。ヒアリング最重要は家族構成・土地の量・土地の持ち方。追客ランク別に訪問ペースを変える（S=2日、A=7日、B=14日、C=30日、D=60日。再訪客は発掘14日以内に3回が別基準）。D＝時期待ち（相続発生・契約満了等のトリガー明記必須）であり将来の契約在庫として価値がある。直近訪問記録に断り・他社・時期待ちのシグナルがあれば降格を優先し、全体をA・Bに寄せない。私たちは建築営業ではなく承継の相談相手：焦った営業・煽る指導は推奨せず、家族の納得形成の進み具合を評価軸に含める。\n\n';
     prompt+='【担当者別フィードバック：'+memberName+'】\n';
     prompt+='━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
     prompt+='■ 基本データ\n';
@@ -6096,7 +6157,7 @@ function copyAnalysisPrompt(){
     // 課全体分析
     var members=[]; cards.forEach(function(c){ var m=c.manager||''; if(m&&members.indexOf(m)<0) members.push(m); }); members.sort();
     prompt+='あなたは大東建託の相続コンサルタント課長です。課全体の見込み客データを分析し、課の方向性と強化ポイントを示してください。\n\n';
-    prompt+='【判断軸】購買心理8段階（3連想で提案依頼取得が最重要）。会話状況は上り込みが信頼のゴール。ヒアリング最重要は家族構成・土地の量・土地の持ち方。追客ランク別に訪問ペースを変える。\n\n';
+    prompt+='【判断軸】購買心理8段階（3連想で提案依頼取得が最重要）。会話状況は上り込みが信頼のゴール。ヒアリング最重要は家族構成・土地の量・土地の持ち方。追客ランク別に訪問ペースを変える。D＝時期待ち（トリガー明記必須・将来の契約在庫）。降格シグナル（断り・他社・時期待ち）を優先し、全体をA・Bに寄せない。焦った営業を推奨せず、家族の納得形成を評価軸に含める。\n\n';
     prompt+='【課全体の見込み客分析】\n';
     prompt+='━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
     prompt+='■ 全体データ\n';
@@ -6337,6 +6398,8 @@ function planHasTodayAppo(c){ var t=todayStr(); var arr=[].concat(c.revisits||[]
 function makePlanEntry(c){ var appo=planHasTodayAppo(c); return {cardId:c.id,target:(c.name||'(無名)'),sub:planAreaStage(c),kind:appo?'k1':'k3',purpose:planSuggestPurpose(c.stage),time:'',note:'',result:''}; }
 function openPlannerFromSelected(){
   var ids=Object.keys(selectedIds);
+  if(!ids.length){ openSakusenban(); return; }
+  planMorningSweep();
   _plan=loadPlan(); var added=0;
   cards.filter(function(c){return selectedIds[c.id];}).forEach(function(c){
     if(_plan.entries.some(function(e){return e.cardId===c.id;})) return;
@@ -6345,14 +6408,13 @@ function openPlannerFromSelected(){
   savePlan(); if(ids.length) selectNone(); showPlanner();
   if(added) toast(added+'件を予定表に追加しました');
 }
-function openPlannerToday(){ _plan=loadPlan(); showPlanner(); }
+function openPlannerToday(){ planMorningSweep(); _plan=loadPlan(); showPlanner(); }
 function showPlanner(){
   if(!hasFSA){ aibisAlert('本日の予定表はPC版（Chrome）でのみ使えるよ！'); return; }
   document.getElementById('listView').style.display='none';
   var v=document.getElementById('plannerView'); if(v) v.style.display='block';
   plannerTab('input');
   _navGo('planner');
-  if(!_silent){ try{ aibisToast('前日分はリセットしてね！🗑'); }catch(e){} }
 }
 function closePlanner(){
   var v=document.getElementById('plannerView'); if(v) v.style.display='none';
@@ -6490,13 +6552,153 @@ function planRowsHTML(){
     return '<tr><td class="pti'+(hour?' ph':'')+'">'+s+'</td><td class="ptt">'+e(en.target)+(en.sub?'<span class="psub"> '+e(en.sub)+'</span>':'')+'</td><td class="pc"><span class="pbadge pb-'+en.kind+'">'+PLAN_KIND[en.kind]+'</span></td><td class="pc" style="font-size:11px">'+e(en.purpose)+'</td><td class="pm">'+e(en.note)+'</td><td class="pm">'+e(en.result)+'</td></tr>';
   }).join('');
 }
+/* ===== v5.55 作戦盤・優先3客・0時リセット ===== */
+function planMorningSweep(){
+ try{
+  var tk=planKey(); var olds=[];
+  for(var i=0;i<localStorage.length;i++){ var k=localStorage.key(i); if(/^plan_\d{8}$/.test(k)&&k!==tk) olds.push(k); }
+  if(!olds.length) return;
+  olds.sort(); var last=olds[olds.length-1]; var p=null;
+  try{ p=JSON.parse(localStorage.getItem(last)||'{}'); }catch(_e){}
+  olds.forEach(function(k){ localStorage.removeItem(k); });
+  if(p&&p.entries&&p.entries.length){
+   var done=p.entries.filter(function(en){return String(en.result||'').trim();}).length;
+   aibisAlert('\ud83c\udf05 <b>昨日の作戦ふりかえり</b><br>予定 '+p.entries.length+'件／結果記入 '+done+'件<br>'
+    +p.entries.slice(0,5).map(function(en){return '・'+e(en.target||'')+(en.result?'：'+e(String(en.result).slice(0,12)):'');}).join('<br>')
+    +(p.entries.length>5?'<br>…他'+(p.entries.length-5)+'件':'')
+    +'<br><br>お疲れさまでした。今日の作戦へ！');
+  }
+ }catch(_e){}
+}
+function planPrioBlockHTML(){
+ var ps=(_plan.entries||[]).filter(function(en){return en.prio;}).sort(function(a,b){return (a.prio||9)-(b.prio||9);}).slice(0,3);
+ if(!ps.length) return '';
+ var med=['\ud83e\udd47','\ud83e\udd48','\ud83e\udd49'];
+ return '<div style="border:2px solid #b7791f;border-radius:10px;padding:8px 10px;margin:0 0 12px;background:#fffbeb">'
+  +'<div style="font-size:12px;font-weight:800;color:#b7791f;margin-bottom:4px">\ud83c\udfc6 本日の優先3客</div>'
+  +'<div style="display:flex;gap:8px">'
+  +ps.map(function(en,i){ return '<div style="flex:1;border:1px solid #ecc94b;border-radius:8px;padding:5px 8px;background:#fff"><div style="font-size:11px;color:#b7791f;font-weight:700">'+med[i]+'</div><div style="font-weight:800;font-size:13px">'+e(en.target||'')+'</div><div style="font-size:10px;color:#718096">'+e(en.sub||'')+(en.act?'\u3000<b style="color:#2c5282">\u25b6 '+e(en.act)+'</b>':'')+'</div></div>'; }).join('')
+  +'</div></div>';
+}
+function _sbSid(c){ return String((c&&c.id)||'').replace(/[^\w-]/g,''); }
+function openSakusenban(){
+ if(!hasFSA){ aibisAlert('本日の予定表はPC版（Chrome）でのみ使えるよ！'); return; }
+ planMorningSweep();
+ function byScore(a,b){ return calcScore(b)-calcScore(a); }
+ function byUrg(a,b){ var d=calcPaceOverrate(b)-calcPaceOverrate(a); if(d) return d; return calcScore(b)-calcScore(a); }
+ function fresh(c){ var ld=+lastContactDays(c); return ld<0||ld>=2; } // 直近0-1日に訪問済みは除外
+ // ① 連想以上×S/A/B×訪問期日到来（超過率1.0以上）
+ var pri=cards.filter(function(c){return +(c.stage||0)>=3&&(c.pursuit_judge==='S'||c.pursuit_judge==='A'||c.pursuit_judge==='B')&&calcPaceOverrate(c)>=1&&fresh(c);}).sort(byUrg).slice(0,3);
+ // ② 空き枠は全カードのペース遅れ客（超過率順）で補充
+ if(pri.length<3){
+  var pids0={}; pri.forEach(function(c){pids0[c.id]=1;});
+  var fill=cards.filter(function(c){return !pids0[c.id]&&calcPaceOverrate(c)>=1&&fresh(c);}).sort(byUrg).slice(0,3-pri.length);
+  pri=pri.concat(fill);
+ }
+ // ③ それでも0件のときだけ従来緩和（直近訪問は除外したまま）
+ if(!pri.length) pri=cards.filter(function(c){return +(c.stage||0)>=3&&fresh(c);}).sort(byScore).slice(0,3);
+ if(!pri.length) pri=cards.filter(fresh).sort(byScore).slice(0,3);
+ var pids={}; pri.forEach(function(c){pids[c.id]=1;});
+ var rev=cards.filter(function(c){return !pids[c.id];}).map(function(c){
+   var u=(calcPaceOverrate(c)>1?1000:0)+Math.min(+lastContactDays(c)||0,365)+(100-((basicInputStat(c)||{}).pct||0))*0.5;
+   return {c:c,u:u};
+ }).sort(function(a,b){return b.u-a.u;}).slice(0,9).map(function(o){return o.c;});
+ window._sbPri=pri.map(function(c){return {c:c,sid:_sbSid(c)};});
+ window._sbRev=rev.map(function(c){return {c:c,sid:_sbSid(c)};});
+ window._sbSel={}; window._sbStar={};
+ window._sbPri.forEach(function(o){ window._sbSel[o.sid]=true; window._sbStar[o.sid]=true; });
+ var pl=_planLoad();
+ Object.keys(pl.sel||{}).forEach(function(k){ if(window._sbRev.some(function(o){return o.sid===k;})) window._sbSel[k]=true; });
+ var ov=document.getElementById('sakusenView');
+ if(!ov){
+  ov=document.createElement('div'); ov.id='sakusenView';
+  ov.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,.55);z-index:9000;overflow:auto;padding:26px 12px;display:none';
+  ov.addEventListener('click',function(ev){ if(ev.target===ov) zSbClose(); });
+  document.body.appendChild(ov);
+ }
+ _sbPaint(); ov.style.display='block';
+}
+function _sbRowHTML(o,isPri,ix){
+ var c=o.c, sc=calcScore(c), tb=_tempBand(sc), on=!!window._sbSel[o.sid];
+ var pl=_planLoad(); var act=(pl.sel||{})[o.sid]||'';
+ var tag=isPri?'推奨':(calcPaceOverrate(c)>1?'ペース超過':((+lastContactDays(c)||0)>=14?(+lastContactDays(c))+'日未接触':(((basicInputStat(c)||{}).pct||0)<60?'入力不足':'要再訪')));
+ var chips=['再訪','追撃','テスト提示','家族確認'].map(function(a){
+  var sel=(act===a);
+  return '<span onclick="zSbAct(\''+o.sid+'\',\''+a+'\')" style="cursor:pointer;display:inline-block;font-size:11px;border-radius:10px;padding:2px 8px;margin:2px 3px 0 0;border:1px solid #cbd5e0;'+(sel?'background:#2c5282;color:#fff;border-color:#2c5282;font-weight:700;':'background:#f7fafc;color:#4a5568;')+'">'+(sel?'\u2713 ':'')+a+'</span>';
+ }).join('');
+ var star=!!(window._sbStar&&window._sbStar[o.sid]);
+ return '<div style="display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid #e2e8f0;flex-wrap:wrap">'
+  +'<span onclick="zSbStar(\''+o.sid+'\')" title="優先指定（最大3）" style="cursor:pointer;font-size:17px;line-height:1;width:20px;text-align:center;'+(star?'':'opacity:.45;filter:grayscale(1);')+'">'+(star?'\u2b50':'\u2606')+'</span>'
+  +'<label style="display:flex;align-items:center;gap:8px;flex:1;min-width:250px;cursor:pointer">'
+  +'<input type="checkbox" '+(on?'checked':'')+' onchange="zSbToggle(\''+o.sid+'\')">'
+  +'<b style="font-size:13px">'+e(c.name||'無名')+'様</b>'
+  +'<span style="font-size:11px;color:#718096">'+tb[0]+' '+sc+'/78・'+e((typeof STG!=='undefined'&&STG[+(c.stage||0)])||'')+'・'+e(c.pursuit_judge||'-')+'・'+((+lastContactDays(c)||0)<0?'訪問記録なし':(+lastContactDays(c))+'日前')+'</span>'
+  +'<span style="font-size:10px;background:#edf2f7;border-radius:8px;padding:1px 7px;color:#4a5568;white-space:nowrap">'+tag+'</span>'
+  +'</label><span>'+chips+'</span></div>';
+}
+function _sbPaint(){
+ var ov=document.getElementById('sakusenView'); if(!ov) return;
+ var nSel=0; Object.keys(window._sbSel||{}).forEach(function(k){ if(window._sbSel[k]) nSel++; });
+ ov.innerHTML='<div style="background:#fff;max-width:720px;margin:0 auto;border-radius:12px;padding:18px 20px;box-shadow:0 10px 40px rgba(0,0,0,.3)" onclick="event.stopPropagation()">'
+  +'<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:16px;color:#2c5282">\ud83c\udfaf 今日の作戦盤</b><button onclick="zSbClose()" style="background:none;border:none;font-size:17px;cursor:pointer;font-family:inherit">\u2716</button></div>'
+  +(function(){var jm=cards.filter(_judgeMissing);return jm.length?'<div style="font-size:11.5px;color:#c53030;font-weight:700;background:#fff5f5;border:1px solid #feb2b2;border-radius:6px;padding:5px 8px;margin:6px 0">\u26a0 ランク判定漏れ '+jm.length+'件：'+jm.slice(0,3).map(function(c){return e(c.name||'無名')+'様';}).join('・')+(jm.length>3?' 他':'')+'（判定は必須です）</div>':'';})()+'<div style="font-size:11.5px;color:#718096;margin:4px 0 8px">\u2b50が予定表の金枠に入る優先3客（タップで入れ替え可・最大3）。チェックで予定表入り、チップで今日のアクション。忙しい朝は「選ばずに予定表へ」でOK。</div>'
+  +'<div style="font-weight:800;color:#b7791f;font-size:13px;margin:8px 0 2px">\ud83c\udfc6 推奨・優先3客（連想以上\u00d7B以上\u00d7訪問期日到来）</div>'
+  +(window._sbPri.length?window._sbPri.map(function(o,ix){return _sbRowHTML(o,true,ix);}).join(''):'<div style="font-size:11px;color:#999;padding:6px 4px">該当なし</div>')
+  +'<div style="font-weight:800;color:#2f855a;font-size:13px;margin:14px 0 2px">\ud83d\udeb6 再訪候補9客（ペース超過・未接触・入力不足）</div>'
+  +(window._sbRev.length?window._sbRev.map(function(o){return _sbRowHTML(o,false,0);}).join(''):'<div style="font-size:11px;color:#999;padding:6px 4px">該当なし</div>')
+  +'<div style="display:flex;gap:10px;margin-top:16px">'
+  +'<button onclick="zSbMake()" style="flex:2;background:#2c5282;color:#fff;border:none;border-radius:8px;padding:11px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit">\ud83d\udcc5 選んだ '+nSel+' 件で予定表を作る</button>'
+  +'<button onclick="zSbSkip()" style="flex:1;background:#e2e8f0;color:#2d3748;border:none;border-radius:8px;padding:11px;font-size:12.5px;cursor:pointer;font-family:inherit">\u23e9 選ばずに予定表へ</button>'
+  +'</div></div>';
+}
+function zSbToggle(sid){ window._sbSel[sid]=!window._sbSel[sid]; _sbPaint(); }
+function zSbAct(sid,a){
+ var p=_planLoad(); if(p.sel[sid]===a) delete p.sel[sid]; else p.sel[sid]=a;
+ try{ localStorage.setItem(PLNK,JSON.stringify(p)); }catch(_e){}
+ _sbPaint(); try{ if(typeof renderSelfDash==='function') renderSelfDash(); }catch(_e){}
+}
+function zSbStar(sid){
+ if(!window._sbStar) window._sbStar={};
+ if(window._sbStar[sid]){ delete window._sbStar[sid]; }
+ else{
+  var n=0; Object.keys(window._sbStar).forEach(function(k){ if(window._sbStar[k]) n++; });
+  if(n>=3){ try{ aibisToast('\u2b50の優先指定は3つまでです'); }catch(_e){ toast('\u2b50は3つまで'); } return; }
+  window._sbStar[sid]=true; window._sbSel[sid]=true;
+ }
+ _sbPaint();
+}
+function zSbMake(){
+ var pl=_planLoad(); _plan=loadPlan(); var added=0;
+ var all=window._sbPri.concat(window._sbRev);
+ var starred=all.filter(function(o){return window._sbStar&&window._sbStar[o.sid]&&window._sbSel[o.sid];})
+   .sort(function(a,b){return calcScore(b.c)-calcScore(a.c);}).slice(0,3);
+ var starIds={}; starred.forEach(function(o,ix){ starIds[o.sid]=ix+1; });
+ function put(o){
+  var c=o.c, prio=starIds[o.sid]||0, a=(pl.sel||{})[o.sid]||'';
+  var ex=_plan.entries.filter(function(en){return en.cardId===c.id;})[0];
+  if(ex){ if(prio){ ex.prio=prio; if(a&&!ex.act){ ex.act=a; if(!ex.note) ex.note=a; } } return; }
+  var en=makePlanEntry(c);
+  if(prio) en.prio=prio;
+  if(a){ en.act=a; en.note=a; }
+  _plan.entries.push(en); added++;
+ }
+ all.forEach(function(o){ if(window._sbSel[o.sid]) put(o); });
+ savePlan(); zSbClose(); showPlanner();
+ if(added) toast(added+'件を予定表に追加しました');
+ if(starred.length===3){ setTimeout(function(){ try{ aibisToast('\ud83c\udf96 作戦完了！優先3客を押さえた良い朝です'); }catch(_e){ toast('\ud83c\udf96 作戦完了！'); } },700); }
+}
+function zSbSkip(){ zSbClose(); planMorningSweep(); _plan=loadPlan(); showPlanner(); }
+function zSbClose(){ var ov=document.getElementById('sakusenView'); if(ov) ov.style.display='none'; }
+window.openSakusenban=openSakusenban; window.zSbToggle=zSbToggle; window.zSbAct=zSbAct; window.zSbStar=zSbStar;
+window.zSbMake=zSbMake; window.zSbSkip=zSbSkip; window.zSbClose=zSbClose;
+
 function renderPlannerSheet(){
   var host=document.getElementById('plannerPreview'); if(!host)return;
   host.innerHTML='<div style="text-align:center;margin-bottom:10px"><button onclick="printPlanner()" style="background:#276749;color:#fff;border:none;border-radius:8px;padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">🖨 印刷 / PDFで保存</button></div>'
     +'<div style="background:#fff;max-width:780px;margin:0 auto;padding:24px 28px;box-shadow:0 2px 12px rgba(0,0,0,.12)">'
     +'<h2 style="text-align:center;letter-spacing:4px;border-bottom:3px double #2d3748;padding-bottom:8px;margin:0 0 10px;font-size:18px">日 次 予 定 表</h2>'
     +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:12px"><span>日付：'+planDateLabel()+'</span><span>担当者：'+e(uName||'')+'</span><span>'+e((branch||'')+' '+(section||''))+'</span></div>'
-    +'<table class="pltt"><thead><tr><th class="pti">時刻</th><th>対象</th><th class="pc">アポ</th><th class="pc">目的</th><th>備考</th><th>結果</th></tr></thead><tbody>'+planRowsHTML()+'</tbody></table>'
+    +planPrioBlockHTML()+'<table class="pltt"><thead><tr><th class="pti">時刻</th><th>対象</th><th class="pc">アポ</th><th class="pc">目的</th><th>備考</th><th>結果</th></tr></thead><tbody>'+planRowsHTML()+'</tbody></table>'
     +'<div style="display:flex;justify-content:flex-end;gap:12px;margin-top:14px"><div class="pstamp">担当印</div><div class="pstamp">課長確認</div></div></div>'
     +'<div style="background:#fff;max-width:780px;margin:18px auto 0;padding:24px 28px;box-shadow:0 2px 12px rgba(0,0,0,.12);page-break-before:always"><h2 style="text-align:center;letter-spacing:3px;border-bottom:3px double #2d3748;padding-bottom:8px;margin:0 0 12px;font-size:17px">エリア順 見込み一覧</h2><table class="pltt"><thead><tr><th>対象</th><th>住所（市区町・番地）</th><th class="pc">目的</th></tr></thead><tbody>'+planAreaRows()+'</tbody></table></div>';
 }
@@ -6505,7 +6707,7 @@ function printPlanner(){
   var css='body{font-family:sans-serif;margin:0;padding:16px}h2{text-align:center;letter-spacing:4px;border-bottom:3px double #2d3748;padding-bottom:8px;margin:0 0 10px;font-size:18px}.meta{display:flex;justify-content:space-between;font-size:12px;margin-bottom:12px}table{width:100%;border-collapse:collapse;table-layout:fixed}th{background:#2c5282;color:#fff;font-size:11px;padding:5px 4px}td{border:1px solid #cbd5e0;padding:2px 6px;height:22px;font-size:12px}.pti{width:48px;text-align:center;font-weight:700;color:#4a5568;background:#f7fafc;font-size:11px}.ph{border-top:2px solid #94a3b8}.ptt{font-weight:700}.psub{font-weight:400;color:#718096;font-size:10px}.pc{text-align:center;width:64px}.pm{font-size:11px;color:#4a5568}.pbadge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;color:#fff}.pb-k1{background:#276749}.pb-k2{background:#dd6b20}.pb-k3{background:#718096}.pb-ev{background:#553c9a}.foot{display:flex;justify-content:flex-end;gap:12px;margin-top:14px}.pstamp{border:1px solid #cbd5e0;border-radius:4px;width:78px;height:50px;font-size:10px;color:#718096;text-align:center;padding-top:3px}.pareah td{background:#ebf4ff;color:#2c5282;font-weight:800;text-align:left}';
   var html='<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><style>'+css+'</style></head><body>'
     +'<h2>日 次 予 定 表</h2><div class="meta"><span>日付：'+planDateLabel()+'</span><span>担当者：'+e(uName||'')+'</span><span>'+e((branch||'')+' '+(section||''))+'</span></div>'
-    +'<table><thead><tr><th>時刻</th><th>対象</th><th>アポ</th><th>目的</th><th>備考</th><th>結果</th></tr></thead><tbody>'+planRowsHTML()+'</tbody></table>'
+    +planPrioBlockHTML()+'<table><thead><tr><th>時刻</th><th>対象</th><th>アポ</th><th>目的</th><th>備考</th><th>結果</th></tr></thead><tbody>'+planRowsHTML()+'</tbody></table>'
     +'<div class="foot"><div class="pstamp">担当印</div><div class="pstamp">課長確認</div></div>'
     +'<div style="page-break-before:always"><h2>エリア順 見込み一覧</h2><table><thead><tr><th>対象</th><th>住所（市区町・番地）</th><th>目的</th></tr></thead><tbody>'+planAreaRows()+'</tbody></table></div></body></html>';
   printHTMLDocument(html);
@@ -6719,8 +6921,7 @@ function doListPrint(mode){
     allDates.sort();
     var last=allDates[allDates.length-1];
     var days=Math.floor((new Date()-new Date(last))/(1000*60*60*24));
-    var limit={S:14,A:14,B:35,C:60,D:400};
-    var lim=limit[pj];
+    var lim=_isRevisitPhase(card)?REVISIT_PHASE.interval:PACE_LIMIT[pj];
     if(!lim) return '';
     if(days>lim) return '<span style="color:#c53030;font-weight:700;font-size:9px">⚠'+days+'日</span>';
     return '<span style="color:#276749;font-size:9px">✅'+days+'日</span>';
@@ -7688,6 +7889,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <option value="objection">反論対応</option>
           <option value="hearing">聞取補充</option>
           <option value="training">会話訓練</option>
+          <option value="inheritance">相続シナリオ</option>
         </select>
       </div>
       <!-- 追客ランク（右） -->
@@ -7700,7 +7902,8 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
       <button type="button" style="padding:11px;font-size:13px;background:#2d3748;color:white;border:none;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600" onclick="copyPromptAnon()">🤖 分析用に抽出</button>
-      <button type="button" style="padding:11px;font-size:13px;background:#0078d4;color:white;border:none;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:500" onclick="openCopilot()">🤖 AI分析</button>
+      <button type="button" style="padding:11px;font-size:13px;background:#553c9a;color:white;border:none;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600" onclick="promptToFile()">📎 ファイルで抽出</button>
+      <button type="button" style="grid-column:1/3;padding:11px;font-size:13px;background:#0078d4;color:white;border:none;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:500" onclick="openCopilot()">🤖 AI分析</button>
     </div>
     <div id="strategyTabs">
       <div id="st_general" class="st-panel">
@@ -7787,6 +7990,15 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           </div>
           <textarea id="f_ai_training" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('training')"></textarea>
           <div id="ac_training" style="display:none;margin-top:8px;background:#fffbeb;border:1px solid #f6e05e;border-radius:6px;padding:8px;font-size:12px;color:#744210"></div>
+        </div>
+      </div>
+      <div id="st_inheritance" class="st-panel" style="display:none">
+        <div style="background:#faf5ff;border:1px solid #d6bcfa;border-radius:6px;padding:12px;margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <div style="font-size:12px;font-weight:700;color:#6B46C1">🏛 相続シナリオ − 貼り付け欄</div>
+            <span id="at_ai_inheritance" class="paste-at" style="margin-left:auto;align-self:center;margin-top:0;margin-right:6px"></span><button type="button" onclick="clearStrategyField('f_ai_inheritance')" style="font-size:11px;padding:3px 10px;border:1px solid #d6bcfa;border-radius:4px;background:white;cursor:pointer;color:#718096">🗑</button>
+          </div>
+          <textarea id="f_ai_inheritance" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px"></textarea>
         </div>
       </div>
     </div>
