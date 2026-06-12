@@ -1527,7 +1527,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.99";
+var APP_VERSION = "v6.00";
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
 window.IS_DEV = /_dev/i.test(location.href);
@@ -4176,6 +4176,7 @@ function famSetStance(s){
     if(b) b.className='fam-tbtn'+(s===k?' fa-'+k:'');
   });
 }
+var famCurJutaku='';
 function famSetLiving(v){
   famCurLiving=v;
   var lvCls={'同居':'lv-同居','近居':'lv-近居','別居':'lv-別居','死亡':'lv-死亡','未確認':'lv-未確認'};
@@ -4183,7 +4184,20 @@ function famSetLiving(v){
     var b=document.getElementById('famL'+k);
     if(b) b.className='fam-bbtn '+(lvCls[k]||'')+(k===v?' fa-on':'');
   });
+  var or=document.getElementById('famOwnRent');
+  if(or) or.style.display=(v==='別居')?'inline-block':'none';
 }
+function famPaintJutaku(){
+  var b=document.getElementById('famOwnRent'); if(!b) return;
+  if(famCurJutaku==='持ち家'){ b.textContent='🏠 持ち家'; b.style.background='#e6fffa'; b.style.borderColor='#2c7a7b'; b.style.color='#2c7a7b'; }
+  else if(famCurJutaku==='賃貸'){ b.textContent='🏢 賃貸'; b.style.background='#ebf8ff'; b.style.borderColor='#2c5282'; b.style.color='#2c5282'; }
+  else { b.textContent='持ち家/賃貸'; b.style.background='#f7fafc'; b.style.borderColor='#cbd5e0'; b.style.color='#a0aec0'; }
+}
+function famToggleJutaku(){
+  famCurJutaku=(famCurJutaku==='賃貸')?'持ち家':'賃貸';
+  famPaintJutaku();
+}
+window.famToggleJutaku=famToggleJutaku;
 function famSetMarriage(v){
   famCurMarriage=v;
   ['不明','既婚','未婚'].forEach(function(k){
@@ -4212,6 +4226,11 @@ function famOnRoleChange(){
   var show=FAM_CHILD_ROLES.indexOf(role)>=0 || ['兄','弟','姉','妹'].indexOf(role)>=0;
   document.getElementById('famMarriageRow').style.display=show?'block':'none';
   document.getElementById('famChildRow').style.display=show?'block':'none';
+  // 世帯主・名義人のときは「同居」ボタンを「世帯主」表記にし、最初から選択状態に
+  var isHead=/^世帯主/.test(role)||/^名義人/.test(role);
+  var hb=document.getElementById('famL同居');
+  if(hb) hb.textContent=isHead?'世帯主':'同居';
+  if(isHead && famCurLiving==='未確認') famSetLiving('同居');
 }
 function famSetChildren(n){
   famCurChildren=n;
@@ -4221,6 +4240,8 @@ function famSetChildren(n){
   }
 }
 function famResetModal(){
+  famCurJutaku=''; famPaintJutaku();
+  var hb=document.getElementById('famL同居'); if(hb) hb.textContent='同居';
   famSetStance('unk'); famSetLiving('未確認'); famSetMarriage('不明'); famSetChildren(0);
   famSetFlag('met',false); famSetFlag('owner',false); famSetFlag('kp',false);
   ['famRole','famName','famAddr'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
@@ -4230,26 +4251,32 @@ function famResetModal(){
   var nt=document.getElementById('famNote');if(nt)nt.value='';
   document.getElementById('famMarriageRow').style.display='none';
 }
+var FAM_ROLE_GROUPS=[
+ {label:'祖父母世代',roles:['祖父','祖母']},
+ {label:'世帯主世代',roles:['世帯主（男）','世帯主（女）','夫','妻','—','兄','弟','姉','妹']},
+ {label:'子世代',roles:['長男','次男','三男','長女','次女','三女']}
+];
+function famBuildRoleOptions(gen){
+  // option自体を再構築する（モバイルのネイティブselectはoptionの非表示が効かないため、物理的に絞り込む）
+  var sel=document.getElementById('famRole'); if(!sel) return;
+  var html='<option value="">選択</option>';
+  FAM_ROLE_GROUPS.forEach(function(g,gi){
+    if(gen!==undefined&&gi!==gen) return;
+    html+='<optgroup label="'+g.label+'">'+g.roles.map(function(r){ return r==='—'?'<option disabled data-divider>──────────</option>':'<option>'+r+'</option>'; }).join('')+'</optgroup>';
+  });
+  sel.innerHTML=html;
+  sel.value='';
+}
 function famOpenAdd(gen){
   famEditGen=(gen!==undefined?gen:1); famEditIdx=-1;
   document.getElementById('famModalTitle').textContent='メンバー追加';
   ['famDelBtn','famDelBtnTop'].forEach(function(id){var b=document.getElementById(id);if(b)b.style.display='none';});
   famResetModal();
-  // 世代に合わせてoptionをフィルタリング
-  famFilterRoleOptions(famEditGen);
+  // その世代の続柄だけをoptionに構築
+  famBuildRoleOptions(famEditGen);
   document.getElementById('famModal').classList.add('show');
 }
-function famFilterRoleOptions(gen){
-  var sel=document.getElementById('famRole'); if(!sel) return;
-  var genLabel={0:'祖父母世代',1:'世帯主世代',2:'子世代'};
-  var want=genLabel[gen];
-  Array.from(sel.querySelectorAll('optgroup')).forEach(function(og){
-    var show=(og.label===want);
-    og.hidden=!show; og.style.display=show?'':'none';
-    Array.from(og.children).forEach(function(opt){ opt.style.display=show?'':'none'; opt.disabled = !show || opt.hasAttribute('data-divider'); });
-  });
-  sel.value='';
-}
+function famFilterRoleOptions(gen){ famBuildRoleOptions(gen); }
 function famOpenEdit(idx){
   var m=(cur.family||[])[idx]; if(!m) return;
   famEditIdx=idx;
@@ -4257,15 +4284,16 @@ function famOpenEdit(idx){
   document.getElementById('famModalTitle').textContent=(m.role||'メンバー')+(m.name?' '+m.name:'');
   ['famDelBtn','famDelBtnTop'].forEach(function(id){var b=document.getElementById(id);if(b)b.style.display='inline-block';});
   famResetModal();
-  // 編集時は全option表示
-  var sel=document.getElementById('famRole');
-  if(sel){ Array.from(sel.querySelectorAll('optgroup')).forEach(function(og){og.hidden=false;og.style.display='';}); Array.from(sel.options).forEach(function(opt){opt.style.display='';opt.disabled=opt.hasAttribute('data-divider');}); }
+  // 編集時は全続柄を構築
+  famBuildRoleOptions();
   famSetStance(m.stance||'unk');
   famSetLiving(m.living||m.kyojuu||'同居');
+  famCurJutaku=m.jutaku||''; famPaintJutaku();
   famSetMarriage(m.marriage||'不明');
   famSetChildren(m.children||0);
   famSetFlag('met',!!m.met); famSetFlag('owner',!!m.owner); famSetFlag('kp',!!m.kp);
-  var r=document.getElementById('famRole');if(r)r.value=m.role||'';
+  var r=document.getElementById('famRole');
+  if(r){ r.value=m.role||''; if(m.role&&r.value!==m.role){ var op=document.createElement('option'); op.textContent=m.role; r.appendChild(op); r.value=m.role; } }
   var ag=document.getElementById('famAge');if(ag)ag.value=m.age||'';
   var nm=document.getElementById('famName');if(nm)nm.value=m.name||'';
   var sc=document.getElementById('famSocial');if(sc)sc.value=m.social||'';
@@ -4291,8 +4319,9 @@ function famSave(){
     addr2:document.getElementById('famAddr').value,
     job:document.getElementById('famJob').value,
     note:document.getElementById('famNote').value,
+    jutaku:famCurJutaku,
     // 旧フィールド互換
-    kyojuu:'', jutaku:'', shokugyou:'', bikou:'',
+    kyojuu:'', shokugyou:'', bikou:'',
   };
   if(famEditIdx>=0) cur.family[famEditIdx]=m;
   else cur.family.push(m);
@@ -8827,23 +8856,25 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <button class="fam-del" id="famDelBtnTop" onclick="famDelete()" style="display:none">削除</button>
       <button class="fam-save" onclick="famSave()">保存</button>
     </div>
-    <!-- 1行目：続柄（最上段） -->
-    <label>続柄</label>
-    <select id="famRole" onchange="famOnRoleChange()" style="margin-bottom:8px">
-      <option value="">選択</option>
-      <optgroup label="祖父母世代"><option>祖父</option><option>祖母</option></optgroup>
-      <optgroup label="世帯主世代"><option>世帯主（男）</option><option>世帯主（女）</option><option>夫</option><option>妻</option><option disabled data-divider>──────────</option><option>兄</option><option>弟</option><option>姉</option><option>妹</option></optgroup>
-      <optgroup label="子世代"><option>長男</option><option>次男</option><option>三男</option><option>長女</option><option>次女</option><option>三女</option></optgroup>
-    </select>
-    <!-- 2行目：ソーシャルスタイル -->
-    <label>ソーシャルスタイル</label>
-    <select id="famSocial" style="margin-bottom:8px">
-      <option value="">未判定</option>
-      <option value="ドラ">ドラ</option>
-      <option value="エク">エク</option>
-      <option value="アナ">アナ</option>
-      <option value="エミ">エミ</option>
-    </select>
+    <!-- 1行目：続柄＋ソーシャルスタイル（2列） -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div>
+        <label>続柄</label>
+        <select id="famRole" onchange="famOnRoleChange()" style="margin-bottom:0">
+          <option value="">選択</option>
+        </select>
+      </div>
+      <div>
+        <label>ソーシャルスタイル</label>
+        <select id="famSocial" style="margin-bottom:0">
+          <option value="">未判定</option>
+          <option value="ドラ">ドラ</option>
+          <option value="エク">エク</option>
+          <option value="アナ">アナ</option>
+          <option value="エミ">エミ</option>
+        </select>
+      </div>
+    </div>
     <!-- 3行目：面談済・所有者・KP -->
     <div class="fam-grid3" style="margin-bottom:6px">
       <button type="button" class="fam-fbtn" id="famFMet" onclick="famToggleFlag('met')">面談済</button>
@@ -8857,9 +8888,8 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <button type="button" class="fam-tbtn fa-unk" id="famSUnk" onclick="famSetStance('unk')"><div class="fdot" style="background:white;border:1px solid #cbd5e0"></div>不明</button>
     </div>
     <!-- 5行目：居住 -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:4px;margin-bottom:8px">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;margin-bottom:8px">
       <button type="button" class="fam-bbtn lv-同居" id="famL同居" onclick="famSetLiving('同居')">同居</button>
-      <button type="button" class="fam-bbtn lv-近居" id="famL近居" onclick="famSetLiving('近居')">近居</button>
       <button type="button" class="fam-bbtn lv-別居" id="famL別居" onclick="famSetLiving('別居')">別居</button>
       <button type="button" class="fam-bbtn lv-死亡" id="famL死亡" onclick="famSetLiving('死亡')">死亡</button>
       <button type="button" class="fam-bbtn lv-未確認" id="famL未確認" onclick="famSetLiving('未確認')">未確認</button>
@@ -8896,7 +8926,10 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
     </div>
     <div class="fam-sec-lbl">詳細情報</div>
     <label>住所・居住地</label>
-    <input type="text" id="famAddr" placeholder="例: 東京都世田谷区">
+    <div style="display:flex;gap:6px;align-items:flex-start">
+      <input type="text" id="famAddr" placeholder="例: 東京都世田谷区" style="flex:1;min-width:0">
+      <button type="button" id="famOwnRent" onclick="famToggleJutaku()" style="display:none;flex-shrink:0;min-height:38px;padding:4px 10px;border:1px solid #cbd5e0;border-radius:6px;background:#f7fafc;color:#a0aec0;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">持ち家/賃貸</button>
+    </div>
     <label>職業</label>
     <select id="famJob">
       <option value="">-</option>
