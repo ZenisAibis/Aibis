@@ -1456,7 +1456,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.72";
+var APP_VERSION = "v5.74";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -2971,12 +2971,22 @@ function renderSelfDash(tid){
   +(_hvEx?'<div class="z-sub" style="margin-top:6px;color:#ff8a8a">\ud83d\uddd1 整理対象（E/X）'+_hvEx+'枚 \u2014 月次棚卸しで削除を</div>':'')
   +(_hvJm?'<div class="z-sub" style="margin-top:2px;color:#ffb443">\u26a0 ランク未判定 '+_hvJm+'枚（判定は必須）</div>':'')
   +'</div>';
+ var _jwL=mine.filter(_judgeMissing);
+ if(_jwL.length){
+  var _jwMulti=false; try{ var _jwMs={}; mine.forEach(function(c){var m=String(c.manager||'').trim(); if(m)_jwMs[m]=1;}); _jwMulti=Object.keys(_jwMs).length>=2; }catch(_e){}
+  H+='<div class="z-card z-c2"><h3>\u2696 判定待ち</h3><div class="z-sub">再訪3回（または追撃開始）まで進んだのにランク未判定。判定は必須 \u2014 タップでカードへ。</div>'
+   +'<div style="display:flex;gap:16px;align-items:baseline;margin-top:6px"><b style="font-size:32px;line-height:1;color:#ffb443">'+_jwL.length+'<small style="font-size:12px;font-weight:600"> 件</small></b></div>'
+   +'<div style="margin-top:5px">'+_jwL.slice(0,6).map(function(c){
+     var sid=String(c.id||'').replace(/[^\w-]/g,'');
+     return '<div class="z-mrow" style="cursor:pointer" onclick="openCard(\''+sid+'\')"><b style="flex:1">'+e(c.name||'無名')+'様'+(_jwMulti&&c.manager?'<span style="font-weight:600;opacity:.6">（'+e(c.manager)+'）</span>':'')+'</b><span class="z-sub">'+((+lastContactDays(c)||0)<0?'':((+lastContactDays(c))+'日前'))+'</span><span style="margin-left:8px;opacity:.6">\u203a</span></div>';
+    }).join('')+(_jwL.length>6?'<div class="z-sub">…他 '+(_jwL.length-6)+'件</div>':'')+'</div></div>';
+ }
  var _ftD=mine.filter(function(c){return c.pursuit_judge==='D';});
  if(_ftD.length){
   var _ftG={}, _ftSoon=0, _ftNo=0;
   _ftD.forEach(function(c){ var k=c.d_trigger||''; if(!k){_ftNo++;k='未設定';} _ftG[k]=(_ftG[k]||0)+1; if(_dTrigSoon(c)) _ftSoon++; });
   H+='<div class="z-card z-c2"><h3>\u23f3 将来在庫（D客）</h3><div class="z-sub">時期待ちの含み資産。トリガーが来た瞬間に最初に呼ばれる関係を。</div>'
-   +'<div style="display:flex;gap:16px;align-items:baseline;margin-top:6px;flex-wrap:wrap"><b style="font-size:32px;line-height:1">'+_ftD.length+'<small style="font-size:12px;font-weight:600"> 枚</small></b>'+(_ftSoon?'<span class="z-sub">\ud83d\udd14 時期接近（3ヶ月以内）<b>'+_ftSoon+'</b>件 \u2014 作戦盤に浮上中</span>':'')+'</div>'
+   +'<div style="display:flex;gap:16px;align-items:baseline;margin-top:6px;flex-wrap:wrap"><b style="font-size:32px;line-height:1">'+_ftD.length+'<small style="font-size:12px;font-weight:600"> 枚</small></b>'+(_ftSoon?'<span class="z-sub">\ud83d\udd14 時期接近（3ヶ月以内）<b>'+_ftSoon+'</b>件 \u2014 作戦盤に浮上中</span>':'')+'</div>'+(_ftSoon?'<div class="z-sub" style="margin-top:4px">'+_ftD.filter(_dTrigSoon).slice(0,4).map(function(c){var _sid=String(c.id||'').replace(/[^\w-]/g,'');return '<span style="cursor:pointer" onclick="openCard(\''+_sid+'\')">\ud83d\udd14 '+e(c.name||'無名')+'様'+(c.d_trigger?'（'+e(c.d_trigger)+'）':'')+' \u203a</span>';}).join('<br>')+'</div>':'')
    +'<div style="display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:6px;font-size:11.5px">'+Object.keys(_ftG).map(function(k){return '<span>'+(k==='未設定'?'\u26a0 ':'')+e(k)+' <b>'+_ftG[k]+'</b></span>';}).join('')+'</div>'
    +(_ftNo?'<div class="z-sub" style="margin-top:5px;color:#ffb443">\u26a0 トリガー未設定のDが'+_ftNo+'枚 \u2014 何待ちかをカードに記録しよう</div>':'')
    +'</div>';
@@ -2987,7 +2997,7 @@ function renderSelfDash(tid){
   var _mkHit=_mkM.filter(function(x){return x.hit;}).length;
   var _mkRate=_mkM.length?Math.round(_mkHit/_mkM.length*100):0;
   var _mkMiss=_mkM.filter(function(x){return !x.hit;}).slice(-2);
-  H+='<div class="z-card z-c2"><h3>\ud83c\udfaf 目利き力（今月）</h3><div class="z-sub">AIに聞く前の自分の判定がどれだけ一致したか。ズレた1件こそ教材。</div><div style="display:flex;gap:16px;align-items:baseline;margin-top:6px;flex-wrap:wrap"><b style="font-size:32px;line-height:1">'+_mkRate+'<small style="font-size:12px;font-weight:600">%</small></b><span class="z-sub">一致 <b>'+_mkHit+'</b> / '+_mkM.length+'件</span></div>'+(_mkMiss.length?'<div class="z-sub" style="margin-top:5px">'+_mkMiss.map(function(x){return '\ud83d\udd0d '+e(x.nm||'無名')+'様：あなた '+e(x.my)+' ／ AI '+e(x.ai);}).join('<br>')+'</div>':'')+'</div>';
+  H+='<div class="z-card z-c2"><h3>\ud83c\udfaf 目利き力（今月）</h3><div class="z-sub">AIに聞く前の自分の判定がどれだけ一致したか。ズレた1件こそ教材。</div><div style="display:flex;gap:16px;align-items:baseline;margin-top:6px;flex-wrap:wrap"><b style="font-size:32px;line-height:1">'+_mkRate+'<small style="font-size:12px;font-weight:600">%</small></b><span class="z-sub">一致 <b>'+_mkHit+'</b> / '+_mkM.length+'件</span></div>'+(_mkMiss.length?'<div class="z-sub" style="margin-top:5px">'+_mkMiss.map(function(x){var _ex=cards.some(function(c){return c.id===x.id;});var _sid=String(x.id||'').replace(/[^\w-]/g,'');return '<span'+(_ex?' style="cursor:pointer" onclick="openCard(\''+_sid+'\')"':'')+'>\ud83d\udd0d '+e(x.nm||'無名')+'様：あなた '+e(x.my)+' ／ AI '+e(x.ai)+(_ex?' \u203a':'')+'</span>';}).join('<br>')+'</div>':'')+'</div>';
  }
  var _rkMap={}; cards.forEach(function(c){var m=String(c.manager||'').trim(); if(!m) return; (_rkMap[m]=_rkMap[m]||[]).push(c);});
  var _rkNames=Object.keys(_rkMap);
@@ -3020,7 +3030,7 @@ function renderSelfDash(tid){
  H+='<div class="z-card z-c2"><h3>\ud83c\udfaf 今日の作戦盤</h3><div class="z-sub">温度の高い順に3件。「今日この方に何をする？」— チップを選んで自分のミッションに（<b>'+_selN+'</b>/'+(_prio.length||0)+'件 選択中）。</div>'
   +(_prio.length?_prio.map(function(o,i){var c=o.c;var tag=(c.pursuit_judge==='A'||c.pursuit_judge==='S')?'A候補':(lastContactDays(c)>=14?lastContactDays(c)+'日未接触':(!c.family_headcount?'家族構成未確認':_tempBand(o.s)[1]));
     var chips=_acts.map(function(a){var on=_plan.sel&&_plan.sel[c.id]===a;return '<span class="z-chip" onclick="zPlanPick(\''+String(c.id||'').replace(/[^\w-]/g,'')+'\',\''+a+'\')" style="cursor:pointer;margin:2px 4px 0 0;display:inline-block;'+(on?'background:#34e3d0;color:#0b2230;font-weight:700;':'')+'">'+(on?'\u2713 ':'')+a+'</span>';}).join('');
-    return '<div class="z-prow"><span class="z-pno">'+(i+1)+'</span><b class="z-pnm">'+e(c.name||'無名')+'様</b><span class="z-ptemp">'+_tempBand(o.s)[0]+' '+o.s+'<small>/78</small></span><span class="z-ptag">'+tag+'</span></div><div style="margin:2px 0 10px 26px">'+chips+'</div>';}).join(''):'<div class="z-sub">カードを追加すると表示されます</div>')
+    return '<div class="z-prow"><span class="z-pno">'+(i+1)+'</span><b class="z-pnm" style="cursor:pointer" onclick="openCard(\''+String(c.id||'').replace(/[^\w-]/g,'')+'\')">'+e(c.name||'無名')+'様 \u203a</b><span class="z-ptemp">'+_tempBand(o.s)[0]+' '+o.s+'<small>/78</small></span><span class="z-ptag">'+tag+'</span></div><div style="margin:2px 0 10px 26px">'+chips+'</div>';}).join(''):'<div class="z-sub">カードを追加すると表示されます</div>')
   +'<div class="z-sub" style="margin-top:6px">\ud83d\udca1 '+e(_mis[0]||'')+'</div></div>';
  var bodyState='',bodyGrow='';
  H+='</div>';
