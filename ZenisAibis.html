@@ -341,6 +341,9 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 .help-details[open] summary{background:#ebf4ff;color:#2c5282}
 .msec{border:1px solid #e2e8f0;border-radius:8px;margin-bottom:8px;overflow:hidden}
 .mttl{padding:12px 14px;cursor:pointer;font-weight:600;font-size:13px;background:#f7fafc;display:flex;justify-content:space-between;align-items:center;user-select:none}
+.msub{border:1px solid #e2e8f0;border-radius:6px;margin-top:8px;overflow:hidden}
+.msubttl{padding:9px 12px;cursor:pointer;font-weight:600;font-size:12.5px;background:#f7fafc;display:flex;justify-content:space-between;align-items:center;user-select:none}
+.msubbdy{padding:10px 12px;font-size:12.5px;color:#2d3748;line-height:1.9;border-top:1px solid #edf2f7}
 .mbdy{padding:12px 14px;font-size:13px;color:#2d3748;line-height:2.0}
 
 /* スマホのみ：計画地ボタンを下段に */
@@ -366,6 +369,7 @@ body.is-mob .mob-menu{display:inline-block}
   /* 印刷時はマニュアルのdetailsを全て展開 */
   #helpView details{display:block!important}
   #helpView details .help-body{display:block!important}
+  #helpView .mbdy,#helpView .msubbdy{display:block!important}
   /* 各セクションが途中で改ページされないよう */
   #helpView .help-details{page-break-inside:avoid!important;break-inside:avoid!important}
   /* 印刷不要要素 */
@@ -767,6 +771,7 @@ body.is-mob .mob-menu{display:inline-block}
     </h1>
     <div style="display:flex;gap:6px;align-items:center;flex-wrap:nowrap">
       <button onclick="newCard()" style="background:#c53030;color:white;border:none;border-radius:6px;padding:7px 12px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600">＋ 新規</button>
+      <button onclick="openQuickAdd()" title="最小入力モード（名前＋ステージ＋会話状況だけで保存）" style="background:#d97706;color:white;border:none;border-radius:6px;padding:7px 10px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600">⚡</button>
       <button class="bp" onclick="loadFile()" style="background:#3182ce">📥 読込</button>
       <button class="bs" onclick="saveAll()">💾 保存</button>
       <div class="mob-menu" style="position:relative">
@@ -807,6 +812,7 @@ body.is-mob .mob-menu{display:inline-block}
         <div class="mob-menu" style="position:relative">
           <button class="mob-more-btn" onclick="toggleMobMenu(event)" style="width:100%;height:36px;font-size:11px;padding:0">⋮ その他</button>
           <div class="mob-dropdown" id="mobDropdown">
+            <button onclick="closeMobMenu();openQuickAdd()" style="color:#b45309;font-weight:700">⚡ 最小入力</button>
             <button onclick="closeMobMenu();restoreBackup()">⏪ 1つ前に戻す</button>
             <button onclick="closeMobMenu();showSetup()">⚙ 初期設定</button>
             <button onclick="closeMobMenu();setTimeout(function(){showHelp();},50)">📖 マニュアル</button>
@@ -900,6 +906,27 @@ body.is-mob .mob-menu{display:inline-block}
     <div id="selfDashContent" style="padding:16px"></div>
     </div>
   </div>
+  <!-- ⚡ 最小入力モード -->
+  <div id="quickAddOv" style="display:none;position:fixed;inset:0;background:rgba(13,21,38,0.62);z-index:9000;align-items:center;justify-content:center;padding:14px" onclick="if(event.target===this)closeQuickAdd()">
+    <div style="background:#fff;border-radius:14px;max-width:420px;width:100%;max-height:92vh;overflow-y:auto;padding:16px 16px 14px;box-shadow:0 12px 40px rgba(0,0,0,0.35)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:15px;font-weight:700;color:#1a365d">⚡ 最小入力モード</div>
+        <button onclick="closeQuickAdd()" style="background:#edf2f7;border:none;border-radius:6px;width:30px;height:30px;font-size:14px;cursor:pointer;font-family:inherit">✕</button>
+      </div>
+      <div style="font-size:11.5px;color:#718096;margin-bottom:10px">訪問の合間にサッと登録。名前＋ステージ＋会話状況だけでOK。詳細はあとでカードを開いて追記してね。</div>
+      <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">👤 氏名 <span style="color:#c53030">必須</span></label>
+      <input id="qaName" type="text" placeholder="例：山田" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px;font-family:inherit;margin-bottom:10px">
+      <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">🧠 心理ステージ</label>
+      <div id="qaStage" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px"></div>
+      <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">🗣 会話状況（複数可）</label>
+      <div id="qaKaiwa" style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:14px"></div>
+      <div style="display:flex;gap:8px">
+        <button onclick="qaSave(false)" style="flex:1;background:#38a169;color:#fff;border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer">💾 保存</button>
+        <button onclick="qaSave(true)" style="flex:1;background:#3182ce;color:#fff;border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer">💾 保存して次を入力</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 課分析パネル（管理職PC版のみ） -->
   <div id="analysisPanel" class="z-fullov" onclick="dashOverlayClick(event)" style="display:none;position:fixed;inset:0;overflow:hidden">
     <div class="z-dashcard">
@@ -1024,7 +1051,8 @@ body.is-mob .mob-menu{display:inline-block}
         📥読込 … PCから受け取ったJSONを読み込む<br>
         💾保存 … スマホ内に保存<br>
         📧スマホへ … 選択カードをPC宛にメール送信<br>
-        📧課長へ … 選択カードを課長宛にメール送信<br><br>
+        📧課長へ … 選択カードを課長宛にメール送信<br>
+        ※ <b>チェックなしで押すと、前回送信から更新・新規のカードだけ</b>を自動で選んで送るよ（確認あり）。全部送るなら「全選択」<br><br>
         <b style="color:#718096">【共通】</b><br>
         検索 … 氏名・住所・地名で絞り込み（スペース区切りで複数）<br>
         並び替え … 最新・再訪・住所・スコア・心理・ランク・遅れ・初訪から選択<br>
@@ -1120,24 +1148,40 @@ body.is-mob .mob-menu{display:inline-block}
     <div class="msec mgr-only">
       <div class="mttl" onclick="mtoggle(this)">📊 課分析ダッシュボード（管理職） <span class="marr">▶</span></div>
       <div class="mbdy" style="display:none">
-        管理職かつPC版でのみ表示される育成型「コマンドセンター」です。「今日、誰に何をするか」と「担当をどう伸ばすか」を上段に集約しています。<br><br>
-        <b style="color:#2c5282">① 今日動く（上段）</b><br>
-        ・📌 今日の一手 … 今日フォローすべき上位案件を、誰に・何を・次に聞く質問つきで自動抽出<br>
-        ・🎯 次の一手 準備度 … 次回アポ・家族・KP・提案依頼・連想到達から各案件の準備度を算出。準備OK／要準備／未設定で色分けし、放置しかけの有望案件を表示<br>
-        ・🪜 見込み進捗（3ゾーン）… 未成熟／提案前／クロージングのどこで詰まっているかを可視化<br>
-        ・💼 契約クローズ・トラッカー … 契約に近い案件を近接度順に<br><br>
-        <b style="color:#276749">② 担当を育てる</b><br>
-        ・🎓 課長コーチング … 担当ごとに「良い点＋今週の声掛け」を要フォロー順に提示<br>
-        ・🌱 育成クエスト … 担当の弱点を「次の課題」に変換。今月の成長と次のクエストを表示<br>
-        ・🏆 担当別スコア／担当の特性<br><br>
-        <b style="color:#553c9a">③ 状況を読む</b><br>
-        ・重要3指標（提案依頼・同行・家族構成）・購買心理プロセス<br>
-        ・🟢 稼働率モニター … 基準達成率で担当を順位付け（今月／先月／3・6ヶ月）<br>
-        ・エリア分析・多角分析・🧠 傾向と対策（AIインサイト）<br><br>
-        <b style="color:#2c5282">使い方</b><br>
-        ・担当者セレクトで個人・全体を切替<br>
-        ・「🤖 分析用に抽出」→「🤖 AI分析」でCopilot等に依頼（出力は次回アクション中心の指示形式）／AI結果の貼り付け欄あり<br>
-        ・🖨 レポート印刷 → 表紙＋目次＋ガジェット＋AI分析を1冊のA4レポートに（AI分析を貼り付けると出力可）
+        管理職かつPC版でのみ表示される育成型「コマンドセンター」です。「今日、誰に何をするか」と「担当をどう伸ばすか」を上段に集約しています。
+        <div class="msub">
+          <div class="msubttl" onclick="mtoggle(this)" style="color:#2c5282">⚡ ① 今日動く（上段） <span class="marr">▶</span></div>
+          <div class="msubbdy" style="display:none">
+            ・📌 今日の一手 … 今日フォローすべき上位案件を、誰に・何を・次に聞く質問つきで自動抽出<br>
+            ・🎯 次の一手 準備度 … 次回アポ・家族・KP・提案依頼・連想到達から各案件の準備度を算出。準備OK／要準備／未設定で色分けし、放置しかけの有望案件を表示<br>
+            ・🪜 見込み進捗（3ゾーン）… 未成熟／提案前／クロージングのどこで詰まっているかを可視化<br>
+            ・💼 契約クローズ・トラッカー … 契約に近い案件を近接度順に
+          </div>
+        </div>
+        <div class="msub">
+          <div class="msubttl" onclick="mtoggle(this)" style="color:#276749">🌱 ② 担当を育てる <span class="marr">▶</span></div>
+          <div class="msubbdy" style="display:none">
+            ・🎓 課長コーチング … 担当ごとに「良い点＋今週の声掛け」を要フォロー順に提示<br>
+            ・🌱 育成クエスト … 担当の弱点を「次の課題」に変換。今月の成長と次のクエストを表示<br>
+            ・🏆 担当別スコア／担当の特性
+          </div>
+        </div>
+        <div class="msub">
+          <div class="msubttl" onclick="mtoggle(this)" style="color:#553c9a">🔭 ③ 状況を読む <span class="marr">▶</span></div>
+          <div class="msubbdy" style="display:none">
+            ・重要3指標（提案依頼・同行・家族構成）・購買心理プロセス<br>
+            ・🟢 稼働率モニター … 基準達成率で担当を順位付け（今月／先月／3・6ヶ月）<br>
+            ・エリア分析・多角分析・🧠 傾向と対策（AIインサイト）
+          </div>
+        </div>
+        <div class="msub">
+          <div class="msubttl" onclick="mtoggle(this)" style="color:#b7791f">🛠 ④ 使い方（抽出・AI分析・印刷） <span class="marr">▶</span></div>
+          <div class="msubbdy" style="display:none">
+            ・担当者セレクトで個人・全体を切替<br>
+            ・「🤖 分析用に抽出」→「🤖 AI分析」でCopilot等に依頼（出力は次回アクション中心の指示形式）／AI結果の貼り付け欄あり<br>
+            ・🖨 レポート印刷 → 表紙＋目次＋ガジェット＋AI分析を1冊のA4レポートに（AI分析を貼り付けると出力可）
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1168,6 +1212,8 @@ body.is-mob .mob-menu{display:inline-block}
         ③「💾 保存」で統合保存<br><br>
         <b style="color:#c53030">読込について</b><br>
         読込操作では保存先は変わりません。安全に読み込めます。<br><br>
+        <b style="color:#553c9a">📧 担当へ（個別送付）</b><br>
+        チェックなしで押すと、担当を選ぶだけで<b>その担当の前回送信から更新・新規のカードだけ</b>を自動で送れます（確認あり）。担当ごとに送信基準を別管理。<br><br>
         <b style="color:#276749">担当フィルター・課分析</b><br>
         課長・支店長権限では担当者フィルターと課分析ダッシュボードが使用できます。<br>
         担当を選んで「🤖 分析用に抽出」→ Copilotで個人フィードバックレポートを作成できます。
@@ -1189,7 +1235,7 @@ body.is-mob .mob-menu{display:inline-block}
     </div>
 
     <div style="text-align:center;padding:16px;font-size:12px;color:#a0aec0">
-      z.Aibis v4.7 ― 営業支援ツール ―<br>不明な点は Aibis Master まで
+      z.Aibis <span class="aibisVer"></span> ― 営業支援ツール ―<br>不明な点は Aibis Master まで
     </div>
 
     <div class="msec">
@@ -1275,6 +1321,10 @@ body.is-mob .mob-menu{display:inline-block}
         <div style="display:flex;gap:6px"><input type="text" id="devHashIn" placeholder="新しいパスワード" style="flex:1;margin-bottom:0"><button type="button" onclick="devGenHash()" style="background:#553c9a;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap">生成</button></div>
         <div id="devHashOut" style="font-size:10px;color:#4a5568;word-break:break-all;margin-top:6px"></div>
         <p class="ht">生成したハッシュをソースの MGR_HASH に貼り替えて再デプロイ→パス更新（全端末で次回1回だけ再入力）。</p>
+        <div style="height:1px;background:#e9d8fd;margin:10px 0"></div>
+        <div style="font-size:11px;font-weight:700;color:#553c9a;margin-bottom:6px">🔧 開発者用：規定値ビューア</div>
+        <button type="button" onclick="openDevDefaults()" style="background:#553c9a;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:700">⚙ アプリ規定値を一覧表示</button>
+        <p class="ht">スコア配点・訪問ペース・温度バンドなど、アプリ内部の規定値を一覧確認。<span style="color:#b7791f;font-weight:700">暫定</span>・<span style="color:#c53030;font-weight:700">仮</span>のバッジは数値協議で正式化待ちの項目。</p>
       </div>
     </div>
     <div class="sec" id="setupSaveSection">
@@ -1477,7 +1527,9 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.83";
+var APP_VERSION = "v5.90";
+// 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
+window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -2144,11 +2196,13 @@ function _multiMgrOk(sel, retryCb){
   aibisConfirm('⚠ 選択に<b>複数の担当</b>のカードが含まれています<br><br>'+ms.map(function(x){return '・<b>'+e(x)+'</b>';}).join('<br>')+'<br><br>このまま送信しますか？<br><span style="font-size:12px;color:#718096">個別に送るなら、担当フィルタで対象者に絞ってから全選択してね。</span>', retryCb, '送信する', 'やめる');
   return false;
 }
-function _sendSelectedToEmail(toEmail, label, skipWarn){
+function _sendSelectedToEmail(toEmail, label, skipWarn, diffIds){
   var ids=Object.keys(selectedIds);
-  if(ids.length===0){ aibisAlert('送りたいカードにチェックを入れてね。<br>一緒に頑張ろう！☑'); return; }
-  var selected=cards.filter(function(c){ return selectedIds[c.id]; });
-  if(!skipWarn && !_multiMgrOk(selected, function(){ _sendSelectedToEmail(toEmail,label,true); })) return;
+  var isDiff=false, selected;
+  if(ids.length>0){ selected=cards.filter(function(c){ return selectedIds[c.id]; }); }
+  else if(Array.isArray(diffIds)){ isDiff=true; selected=cards.filter(function(c){ return diffIds.indexOf(c.id)>=0; }); if(selected.length===0){ toast('対象カードがありません'); return; } }
+  else { aibisAlert('送りたいカードにチェックを入れてね。<br>一緒に頑張ろう！☑'); return; }
+  if(!skipWarn && !_multiMgrOk(selected, function(){ _sendSelectedToEmail(toEmail,label,true,diffIds); })) return;
   var data=JSON.stringify(selected,null,2);
   var blob=new Blob([data],{type:'application/json'});
   var url=URL.createObjectURL(blob);
@@ -2163,23 +2217,49 @@ function _sendSelectedToEmail(toEmail, label, skipWarn){
     URL.revokeObjectURL(url);
     window.location.href='mailto:'+encodeURIComponent(toEmail)+(selfEmail?'?cc='+encodeURIComponent(selfEmail)+'&subject=':'?subject=')+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
     toast('JSONをDL済 → '+(label||'担当')+'宛に添付して送信してください');
+    if(isDiff && label) _markSent('staff_'+label, true);
+    else if(label){
+      // チェック送信でも「その担当の全カード」を含むなら基準を更新
+      var allOf=cards.filter(function(c){ return (c.manager||'')===label; });
+      var covered=allOf.length>0 && allOf.every(function(c){ return selected.indexOf(c)>=0; });
+      if(covered) _markSent('staff_'+label, true);
+    }
     selectNone();
   },500);
 }
 function mailSelectedToStaff(){
   var ids=Object.keys(selectedIds);
-  if(ids.length===0){ aibisAlert((cards&&cards.length===0)?'まだカードがないね。<br>最初の一人に会いに行こう！🌱':'送りたいカードにチェックを入れてね。<br>一緒に頑張ろう！☑'); return; }
+  if(cards&&cards.length===0){ aibisAlert('まだカードがないね。<br>最初の一人に会いに行こう！🌱'); return; }
   var list=(staffMails||[]).filter(function(s){ return s && s.name && s.email; });
   if(list.length===0){ aibisAlert('まず初期設定で担当者を登録してね。<br><br>⚙ 初期設定 →「担当者リスト」に<br>名前とメールアドレスを入れてね。'); return; }
-  var selected=cards.filter(function(c){ return selectedIds[c.id]; });
+  var noSel=(ids.length===0);
+  var selected=noSel?[]:cards.filter(function(c){ return selectedIds[c.id]; });
   var ms=_selMgrs(selected);
   var rec=(ms.length===1)?ms[0]:null;
   var btns=list.map(function(s){
     var isRec=(rec && s.name===rec);
-    return '<button onclick="closeAibisAlert();_sendSelectedToEmail(\''+eAttr(s.email)+'\',\''+eAttr(s.name)+'\')" style="display:block;width:100%;text-align:left;margin-bottom:6px;padding:9px 10px;background:'+(isRec?'#ede9fe':'#f7fafc')+';border:'+(isRec?'2px solid #805ad5':'1px solid #e2e8f0')+';border-radius:8px;cursor:pointer;font-family:inherit;font-size:13px"><b>'+e(s.name)+'</b>'+(isRec?' <span style="color:#805ad5;font-size:11px">★ 選択カードの担当</span>':'')+'<br><span style="font-size:11px;color:#718096">'+e(s.email)+'</span></button>';
+    var act=noSel
+      ?'closeAibisAlert();_staffDiffSend(\''+eAttr(s.email)+'\',\''+eAttr(s.name)+'\')'
+      :'closeAibisAlert();_sendSelectedToEmail(\''+eAttr(s.email)+'\',\''+eAttr(s.name)+'\')';
+    var nChg=noSel?_staffChangedSince(s.name).length:0;
+    return '<button onclick="'+act+'" style="display:block;width:100%;text-align:left;margin-bottom:6px;padding:9px 10px;background:'+(isRec?'#ede9fe':'#f7fafc')+';border:'+(isRec?'2px solid #805ad5':'1px solid #e2e8f0')+';border-radius:8px;cursor:pointer;font-family:inherit;font-size:13px"><b>'+e(s.name)+'</b>'+(isRec?' <span style="color:#805ad5;font-size:11px">★ 選択カードの担当</span>':'')+(noSel?' <span style="color:#b45309;font-size:11px;font-weight:700">更新・新規 '+nChg+'件</span>':'')+'<br><span style="font-size:11px;color:#718096">'+e(s.email)+'</span></button>';
   }).join('');
-  aibisAlert('<b>どの担当へ送る？</b><br><span style="font-size:12px;color:#718096">選択 '+selected.length+'件</span><br><br>'+btns);
+  aibisAlert('<b>どの担当へ送る？</b><br><span style="font-size:12px;color:#718096">'+(noSel?'チェックなし＝その担当の<b>前回送信から更新・新規のカードだけ</b>を送るよ':'選択 '+selected.length+'件')+'</span><br><br>'+btns);
 }
+function _staffChangedSince(name){
+  var t0=_lastSentAt('staff_'+name);
+  return cards.filter(function(c){ if((c.manager||'')!==name) return false; var u=new Date(c.updated_at||c.created_at||0).getTime(); return u>t0; });
+}
+function _staffDiffSend(email,name){
+  var chg=_staffChangedSince(name);
+  if(chg.length===0){ aibisAlert('「'+e(name)+'」のカードに<b>前回送信から更新・新規はない</b>みたい😊<br><span style="font-size:12px;color:#718096">特定のカードを送るならチェックを入れてね。</span>'); return; }
+  var first=_lastSentAt('staff_'+name)===0;
+  var msg=first
+    ?'「'+e(name)+'」へは<b>はじめての送信</b>だね！<br><b>担当カード全 '+chg.length+'件</b>を送るよ。'
+    :'「'+e(name)+'」の<b>前回送信から更新・新規の '+chg.length+'件</b>を送るよ。';
+  aibisConfirm(msg, function(){ _sendSelectedToEmail(email, name, false, chg.map(function(c){return c.id;})); }, '送信する', 'やめる');
+}
+window._staffDiffSend=_staffDiffSend;
 window.mailSelectedToStaff=mailSelectedToStaff; window._sendSelectedToEmail=_sendSelectedToEmail; window._multiMgrOk=_multiMgrOk;
 // ===== 担当フィルター =====
 var staffFilter='all';
@@ -2727,12 +2807,97 @@ function _salesType(axes){
   var stg=_SALES_STAGE[st];
   return {arche:ar,stage:st,stageName:stg.n,color:stg.c,avg:avg,domIdx:di,weakIdx:wi,weakAxis:axes[wi][0],weakVal:vals[wi],label:stg.n+ar.n};
 }
+// ===== 📖 営業タイプ図鑑（全50種） =====
+// 50種 = 基本12（武器6×見習い/一人前）+ 上級職30（達人：武器×サブ武器）+ 特殊8
+var _T50_AX=['発掘量','グリップ','ヒアリング','連想到達','テスクロ','追客ペース'];
+var _T50_ADV=[
+ // [main][sub] 上級職の二つ名（main=武器/最高軸, sub=2番目の軸）対角は未使用
+ [null,'パイオニア','スカウト','トレイルブレイザー','ストライカー','レンジャー'],
+ ['コネクター',null,'カウンセラー','メンター','ネゴシエーター','パートナー'],
+ ['インタビュアー','コンシェルジュ',null,'プロファイラー','アナリスト','オブザーバー'],
+ ['エクスプローラー','ガイド','プランナー',null,'ストラテジスト','パイロット'],
+ ['チャレンジャー','ディールメーカー','スナイパー','フィニッシャー',null,'アタッカー'],
+ ['ランナー','キーパー','トラッカー','ペースメーカー','スプリンター',null]
+];
+var _T50_ADV_D=[
+ [null,'切り拓いた縁をがっちり握る','新天地で本音を聞き出す','開拓から連想まで一気に導く','攻め込んでそのまま決めにいく','広い戦線を回り続ける'],
+ ['出会いを深い縁に変える','','寄り添いながら心を開かせる','信頼を土台に動機を引き上げる','握った信頼で交渉をまとめる','長い付き合いで機を待てる'],
+ ['聞く力で新規を切り開く','聞いて尽くして信頼を得る','','聞いた情報から未来を描かせる','聞き切って急所で一発','静かに見て聞いて外さない'],
+ ['物語で新しい扉を開く','導きながら絆を深める','設計図を描いてから動く','','描いた未来をそのまま成約へ','航路を保って迷わせない'],
+ ['初対面から勝負できる','決めた後も関係が固い','急所を突いて短期決戦','連想の熱が冷める前に決める','','決め続けて足も止めない'],
+ ['回り続けて種をまく','通い続けて関係を守る','通うたびに情報が増える','訪問リズムで心理を温める','テンポよく決め切る','']
+];
+var _T50_SPECIAL=[
+ {e:'🐣',n:'ルーキー',c:'カード5枚未満',d:'まずは発掘から。データが増えるとタイプが見えてくる'},
+ {e:'⚖',n:'ジェネラリスト',c:'全軸が均衡（差12以内）×総合40未満',d:'凹みのない素直な型。これからどの武器も選べる'},
+ {e:'🎖',n:'オールラウンダー',c:'全軸が均衡×総合40〜69',d:'穴がないのが武器。チームの安定軸'},
+ {e:'🎼',n:'マエストロ',c:'全軸が均衡×総合70以上',d:'全てを高い水準で操る指揮者'},
+ {e:'👑',n:'グランドマスター',c:'全軸70以上',d:'死角なし。課の最終兵器にして手本'},
+ {e:'⚡',n:'スペシャリスト',c:'1軸90以上かつ最小軸30未満',d:'一点突破の天才肌。尖りこそ才能、弱点は仲間で補完'},
+ {e:'⚔',n:'ツインブレード',c:'上位2軸が同値（差2以内）かつ60以上',d:'二刀流。状況で武器を持ち替えられる'},
+ {e:'🚀',n:'ライジングスター',c:'総合が段階昇格まで残り5以内',d:'昇格目前。あと一押しで化ける'}
+];
+function _salesType50(axes,nCards){
+ var vals=axes.map(function(a){return +(a[1]||0);});
+ var idx=vals.map(function(v,i){return i;}).sort(function(a,b){return vals[b]-vals[a];});
+ var top=idx[0],sub=idx[1];
+ var mx=vals[top],mn=vals[idx[vals.length-1]];
+ var avg=Math.round(vals.reduce(function(s,v){return s+v;},0)/vals.length);
+ var base=_salesType(axes);
+ if(typeof nCards==='number'&&nCards<5) return {e:'🐣',name:'ルーキー',desc:_T50_SPECIAL[0].d,tier:'特殊',base:base};
+ if(mn>=70) return {e:'👑',name:'グランドマスター',desc:_T50_SPECIAL[4].d,tier:'特殊',base:base};
+ if(mx-mn<=12){ var bn=avg>=70?3:avg>=40?2:1; var sp=_T50_SPECIAL[bn]; return {e:sp.e,name:sp.n,desc:sp.d,tier:'特殊',base:base}; }
+ if(mx-vals[sub]<=2&&mx>=60) return {e:'⚔',name:'ツインブレード',desc:_T50_SPECIAL[6].d,tier:'特殊',base:base};
+ if(mx>=90&&mn<30) return {e:'⚡',name:'スペシャリスト',desc:_T50_SPECIAL[5].d,tier:'特殊',base:base};
+ if((avg>=35&&avg<40)||(avg>=65&&avg<70)) return {e:'🚀',name:'ライジングスター',desc:_T50_SPECIAL[7].d,tier:'特殊',base:base};
+ if(avg>=70){ var nm=_T50_ADV[top][sub]||'マエストロ'; return {e:_SALES_ARCHE[top].e,name:nm,desc:(_T50_ADV_D[top][sub]||'')+'（'+_SALES_ARCHE[top].n+'×'+_T50_AX[sub]+'）',tier:'上級職',base:base}; }
+ return {e:_SALES_ARCHE[top].e,name:base.stageName+_SALES_ARCHE[top].n,desc:_SALES_ARCHE[top].d,tier:'基本',base:base};
+}
+function openTypeDex(curName){
+ var sec=function(title,body){return '<div style="margin-bottom:12px"><div style="font-size:13px;font-weight:700;color:#1a365d;background:#f7fafc;border-radius:6px;padding:6px 9px">'+title+'</div>'+body+'</div>';};
+ var row=function(e2,n,c,d){
+   var hit=(curName&&n===curName);
+   return '<div style="padding:6px 4px;border-bottom:1px solid #edf2f7;'+(hit?'background:#fffbeb;border-left:3px solid #b7791f;padding-left:7px;border-radius:4px':'')+'"><div style="display:flex;align-items:center;gap:7px"><span style="font-size:16px">'+e2+'</span><b style="font-size:12.5px;color:#2d3748">'+n+'</b>'+(hit?'<span style="font-size:10px;font-weight:700;color:#b7791f">← いまのあなた</span>':'')+'</div><div style="font-size:10.5px;color:#718096;margin-top:1px">条件：'+c+'</div>'+(d?'<div style="font-size:11px;color:#4a5568">'+d+'</div>':'')+'</div>';
+ };
+ var basic='';
+ [1,2].forEach(function(st){
+  _SALES_ARCHE.forEach(function(ar){
+    basic+=row(ar.e,_SALES_STAGE[st].n+ar.n,'武器＝'+ar.n+'の軸 × 総合'+(st===1?'40未満':'40〜69'),ar.d);
+  });
+ });
+ var adv='';
+ _T50_ADV.forEach(function(rw,mi){
+  rw.forEach(function(nm,si){
+    if(!nm) return;
+    adv+=row(_SALES_ARCHE[mi].e,nm,'達人（総合70以上）× 武器＝'+_T50_AX[mi]+' × サブ武器＝'+_T50_AX[si],_T50_ADV_D[mi][si]);
+  });
+ });
+ var spc=_T50_SPECIAL.map(function(s){return row(s.e,s.n,s.c,s.d);}).join('');
+ var ov=document.getElementById('typeDexOv');
+ if(!ov){
+   ov=document.createElement('div');
+   ov.id='typeDexOv';
+   ov.style.cssText='display:none;position:fixed;inset:0;background:rgba(13,21,38,0.62);z-index:9100;align-items:center;justify-content:center;padding:14px';
+   ov.addEventListener('click',function(ev){ if(ev.target===ov) ov.style.display='none'; });
+   document.body.appendChild(ov);
+ }
+ ov.innerHTML='<div style="background:#fff;border-radius:14px;max-width:560px;width:100%;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 12px 40px rgba(0,0,0,0.35)">'
+  +'<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #e2e8f0"><div><div style="font-size:15px;font-weight:700;color:#1a365d">📖 営業タイプ図鑑（全50種）</div><div style="font-size:10.5px;color:#718096">基本12 ＋ 上級職30（達人で分化）＋ 特殊8。判定は特殊→上級職→基本の順。</div></div><button onclick="document.getElementById(\'typeDexOv\').style.display=\'none\'" style="background:#edf2f7;border:none;border-radius:6px;width:30px;height:30px;font-size:14px;cursor:pointer;font-family:inherit">✕</button></div>'
+  +'<div style="overflow-y:auto;padding:12px 16px">'
+  +sec('🌟 特殊（8種）',spc)
+  +sec('🗡 上級職（30種）— 達人は武器×サブ武器で型が分化',adv)
+  +sec('🛡 基本（12種）— 見習い・一人前 × 武器6',basic)
+  +'<div style="font-size:10.5px;color:#a0aec0;padding:6px 0 2px">※ 軸の算出方法はレーダー下の「各軸のフラグ」を参照。凹んだ軸が伸びしろ、尖った軸があなたの武器。</div></div></div>';
+ ov.style.display='flex';
+}
+window.openTypeDex=openTypeDex;
 function _radarTypePanel(axes){
   var ty=_salesType(axes);
   return '<div style="margin-top:10px;border-top:1px solid var(--z-line);padding-top:10px">'
     +'<div style="display:flex;align-items:center;gap:10px"><div style="font-size:30px">'+ty.arche.e+'</div>'
     +'<div><div style="font-size:9px;color:var(--z-dim);font-weight:700;letter-spacing:1px">あなたの営業タイプ</div>'
     +'<div style="font-size:17px;font-weight:800;color:'+ty.color+'">'+ty.label+'型 <span style="font-size:10px;color:var(--z-dim)">（'+ty.stageName+'／全18タイプ）</span></div></div></div>'
+    +(function(){var t50=_salesType50(axes);return '<div style="margin-top:5px;font-size:12px"><span style="font-size:9px;color:var(--z-dim);font-weight:700;letter-spacing:1px">二つ名</span> <b style="font-size:13px">'+t50.e+' '+t50.name+'</b> <a href="javascript:void(0)" onclick="openTypeDex(\''+t50.name+'\')" style="font-size:10.5px;color:#0c8599;font-weight:700;text-decoration:none">📖 図鑑（全50種）を見る</a></div>';})()
     +'<div class="z-sub" style="margin-top:6px">'+ty.arche.d+' 総合力 '+ty.avg+'。<b style="color:#ffb443">伸びしろは「'+ty.weakAxis+'」</b>（'+ty.weakVal+'）。</div>'
     +'<details style="margin-top:6px"><summary style="cursor:pointer;font-size:11px;color:var(--z-mut)">🔍 各軸が何で決まる？／タイプの仕組み</summary>'
     +'<div class="z-sub" style="margin-top:5px;line-height:1.85">発掘量＝新規発掘の件数（30件で満点）／グリップ＝会話レベル4以上の割合／ヒアリング＝基本情報の入力充足度／連想到達＝ステージ3(連想)以上の割合／テスクロ＝連想到達者がステージ4(欲求)以上へ進んだ割合／追客ペース＝ペース遅れでない割合。<br>型＝<b>最も高い軸＝あなたの武器</b>（6種）×<b>総合力の3段階</b>（見習い40未満・一人前40〜69・達人70以上）＝<b>18タイプ</b>。</div></details></div>';
@@ -2761,6 +2926,7 @@ function _radarHero(name,axes,color,rank){
   +'<div class="z-h2-radar">'+_zRadarHero(axes,color)+'<div class="z-h2-emoji">'+ty.arche.e+'</div></div>'
   +'<div class="z-h2-name">'+e(name)+'</div>'
   +'<div class="z-h2-type">'+ty.label+'</div>'
+  +(function(){var t50=_salesType50(axes);return (t50.name!==ty.label)?'<div style="font-size:9.5px;color:var(--z-mut);font-weight:700;cursor:pointer" onclick="openTypeDex(\''+t50.name+'\')">'+t50.e+' '+t50.name+'</div>':'';})()
   +'<div class="z-h2-stars">'+stars+' <span>'+ty.stageName+'</span></div>'
   +'<div class="z-h2-bar"><i style="width:'+prog.toFixed(0)+'%"></i></div>'
   +'<div class="z-h2-foot"><span>\u2694 '+e(axes[ty.domIdx][0])+'</span><span>\u{1F331} '+e(ty.weakAxis)+'</span></div>'
@@ -3486,6 +3652,29 @@ window.goPage=goPage;
 // ===== 選択送信モード（常時ON） =====
 var selectMode=true;
 var selectedIds={};
+// ===== 差分送信：宛先別の最終送信時刻を記録し、チェックなしなら更新・新規分のみ送る =====
+function _sentKey(kind){ return 'aibis_sent_'+kind; }
+function _lastSentAt(kind){ var ts=null; try{ ts=localStorage.getItem(_sentKey(kind)); }catch(_e){} return ts?new Date(ts).getTime():0; }
+function _changedSince(kind){
+  var t0=_lastSentAt(kind);
+  return cards.filter(function(c){ var u=new Date(c.updated_at||c.created_at||0).getTime(); return u>t0; });
+}
+function _markSent(kind,selected){
+  // 差分送信時、または全カード送信時のみ基準を更新（部分チェック送信では動かさない＝取りこぼし防止）
+  if(selected===true || (Array.isArray(selected)&&selected.length===cards.length)){
+    try{ localStorage.setItem(_sentKey(kind), new Date().toISOString()); }catch(_e){}
+  }
+}
+function _diffConfirm(kind,label,onGo){
+  if(cards&&cards.length===0){ aibisAlert('まだカードがないね。<br>最初の一人に会いに行こう！🌱'); return; }
+  var chg=_changedSince(kind);
+  if(chg.length===0){ aibisAlert('前回送信から<b>更新・新規のカードはない</b>みたい😊<br><span style="font-size:12px;color:#718096">特定のカードを送りたいときはチェックを入れてね。全部送るなら「全選択」だよ。</span>'); return; }
+  var first=_lastSentAt(kind)===0;
+  var msg=first
+    ?'はじめての送信だね！<br><b>全 '+chg.length+'件</b>を'+label+'へ送るよ。'
+    :'チェックなしなので<b>前回送信から更新・新規の '+chg.length+'件</b>だけを'+label+'へ送るよ。<br><span style="font-size:12px;color:#718096">全部送るときは「全選択」、選んで送るときはチェックを入れてね。</span>';
+  aibisConfirm(msg, function(){ onGo(chg.map(function(c){return c.id;})); }, '送信する', 'やめる');
+}
 var lastVisible=[];
 function toggleSelect(id){
   if(selectedIds[id]) delete selectedIds[id];
@@ -3511,15 +3700,14 @@ function updateSelectCount(){
   if(bar) bar.style.background=n>0?'#ebf4ff':'#f7fafc';
   if(bar) bar.style.borderColor=n>0?'#2c5282':'#e2e8f0';
 }
-function mailSelectedToManager(skipWarn){
+function mailSelectedToManager(skipWarn, diffIds){
   if(!mgrEmail){toast('設定で上司のメールアドレスを登録してください');return;}
   var ids=Object.keys(selectedIds);
-  if(ids.length===0){
-    aibisAlert(cards&&cards.length===0?'まだカードがないね。<br>最初の一人に会いに行こう！🌱':'送りたいカードにチェックを入れてね。<br>一緒に頑張ろう！☑');
-    return;
-  }
-  var selected=cards.filter(function(c){ return selectedIds[c.id]; });
-  if(!skipWarn && !_multiMgrOk(selected, function(){ mailSelectedToManager(true); })) return;
+  var isDiff=false, selected;
+  if(ids.length>0){ selected=cards.filter(function(c){ return selectedIds[c.id]; }); }
+  else if(Array.isArray(diffIds)){ isDiff=true; selected=cards.filter(function(c){ return diffIds.indexOf(c.id)>=0; }); if(selected.length===0){ toast('対象カードがありません'); return; } }
+  else { _diffConfirm('mgr','課長',function(idsToSend){ mailSelectedToManager(skipWarn, idsToSend); }); return; }
+  if(!skipWarn && !_multiMgrOk(selected, function(){ mailSelectedToManager(true, diffIds); })) return;
   var data=JSON.stringify(selected,null,2);
   var blob=new Blob([data],{type:'application/json'});
   var url=URL.createObjectURL(blob);
@@ -3534,17 +3722,17 @@ function mailSelectedToManager(skipWarn){
     URL.revokeObjectURL(url);
     window.location.href='mailto:'+encodeURIComponent(mgrEmail)+(selfEmail?'?cc='+encodeURIComponent(selfEmail)+'&subject=':'?subject=')+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
     toast('JSONをDL済 → 添付して送信してください');
+    _markSent('mgr', isDiff?true:selected);
     selectNone();
   },500);
 }
-function mailSelectedToSelf(skipWarn){
+function mailSelectedToSelf(skipWarn, diffIds){
   var ids=Object.keys(selectedIds);
-  if(ids.length===0){
-    aibisAlert(cards&&cards.length===0?'まだカードがないね。<br>最初の一人に会いに行こう！🌱':'送りたいカードにチェックを入れてね。<br>一緒に頑張ろう！☑');
-    return;
-  }
-  var selected=cards.filter(function(c){ return selectedIds[c.id]; });
-  if(!skipWarn && !_multiMgrOk(selected, function(){ mailSelectedToSelf(true); })) return;
+  var isDiff=false, selected;
+  if(ids.length>0){ selected=cards.filter(function(c){ return selectedIds[c.id]; }); }
+  else if(Array.isArray(diffIds)){ isDiff=true; selected=cards.filter(function(c){ return diffIds.indexOf(c.id)>=0; }); if(selected.length===0){ toast('対象カードがありません'); return; } }
+  else { _diffConfirm('self', isMob?'PC':'スマホ', function(idsToSend){ mailSelectedToSelf(skipWarn, idsToSend); }); return; }
+  if(!skipWarn && !_multiMgrOk(selected, function(){ mailSelectedToSelf(true, diffIds); })) return;
   var data=JSON.stringify(selected,null,2);
   var blob=new Blob([data],{type:'application/json'});
   var url=URL.createObjectURL(blob);
@@ -3558,6 +3746,7 @@ function mailSelectedToSelf(skipWarn){
   setTimeout(function(){
     URL.revokeObjectURL(url);
     window.location.href='mailto:'+encodeURIComponent(selfEmail||'')+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
+    _markSent('self', isDiff?true:selected);
     var n=selected.length;
     var msg=n<=2
       ?n+'件、送ったね！一歩一歩が大事だよ。<br>次はもう少し増やしてみよう💪'
@@ -6231,13 +6420,26 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
  var ageT=[['〜64',0,64],['65〜74',65,74],['75〜',75,200]];var agH=ageT.map(function(a){var arr=t.filter(function(c){var ag=_zOwnerAge(c);return ag!==null&&ag>=a[1]&&ag<=a[2];});var av2=arr.length?(arr.reduce(function(s,c){return s+ +(c.stage||0);},0)/arr.length).toFixed(1):'0';return '<div class="z-tile"><b>'+arr.length+'</b><span>'+a[0]+'歳／平均St '+av2+'</span></div>';}).join('');var noAge=t.filter(function(c){return _zOwnerAge(c)===null;}).length;
  var pot=Math.round(t.filter(function(c){return c.pursuit_judge==='A'||c.pursuit_judge==='S';}).reduce(function(s,c){return s+(parseFloat(c.rosenka)||0)*1000*(parseFloat(c.m2)||0);},0)/1e8);
  var miniR=board.map(function(b,_bi){var a=g[b.r];var ax=[['発掘',Math.min(Math.round(a.length/30*100),100)],['グリ',(function(){var s=0,nn=0;a.forEach(function(c){var l=getKaiwaLevel(c);if(l>=0){s+=l;nn++;}});return nn?Math.round(s/nn/4*100):0;})()],['ヒア',_zPct(a.filter(function(c){return c.family_headcount;}).length,a.length)],['連想',_zPct(a.filter(function(c){return +(c.stage||0)>=3;}).length,a.length)],['テス',_zPct(a.filter(function(c){return +(c.stage||0)>=4;}).length,Math.max(1,a.filter(function(c){return +(c.stage||0)>=3;}).length))],['ペース',100-_zPct(a.filter(function(c){return calcPaceOverrate(c)>1;}).length,a.length)]];var col=_zAVAS[reps.indexOf(b.r)%8];return _radarHero(b.r,ax,col,_bi);}).join('');
- var bodyMulti=('🔬 多角分析',
-   _zc('💎','お宝度マトリクス','熱量×資産規模。右上＝お宝。色＝ランク。泡を長押しで客名、タップでカードへ。',bub,'z-cf')
-  +_zc('🌳','生産緑地 保有率（データ）','',_ryokuchiRing(t),'z-c2')
-  +_zc('🥧','現況（現状）の内訳（データ）','現状区分の分布。',_genjoPie(t),'z-c2')
-  +_zc('🏯','相続緊急度 × 進捗','高齢×低ステージは要対応。','<div class="z-tiles">'+agH+'</div>'+(noAge?'<div class="z-sub" style="margin-top:6px">所有者年齢 未入力 '+noAge+'件</div>':''),'z-c2')
-  +_zc('💰','課の総ポテンシャル金額','A・S案件の路線価×面積の概算。','<div style="text-align:center;padding:10px"><div class="z-num" style="font-size:38px;font-weight:800;color:#ffb443">約'+pot+'<span style="font-size:17px">億円</span></div><div class="z-sub">規模感の目安（概算）</div></div>','z-c2')
-  +_zc('🧬','営業スタイル分析（全員）','レーダーの形で営業の「型」を見える化。強みを伸ばして、さらに上を目指そう（6種×3段階＝18タイプ）','<div class="z-heroes">'+miniR+'</div>'+_radarAxisHelp(),'z-cf'));
+ // ===== 🔬 深掘り分析：動的生成（レジストリ方式） =====
+ // 分析カードは配列1要素＝1カード。JSのみで追加できる。
+ // 外部追加用フック：window.Z_DEEP_EXTRAS に {id,e,t,s,sp,render:function(ctx){return html;}} をpush。
+ // ctx＝{t:対象カード, g:担当別Map, reps:担当一覧, cards:全カード, calcScore, STG} を渡す。
+ var _deepCtx={t:t,g:g,reps:reps,cards:cards,calcScore:calcScore,STG:STG};
+ var _deepItems=[
+  {id:'treasure',e:'💎',t:'お宝度マトリクス',s:'熱量×資産規模。右上＝お宝。色＝ランク。泡を長押しで客名、タップでカードへ。',sp:'z-cf',render:function(){return bub;}},
+  {id:'ryokuchi',e:'🌳',t:'生産緑地 保有率（データ）',s:'',sp:'z-c2',render:function(cx){return _ryokuchiRing(cx.t);}},
+  {id:'genjo',e:'🥧',t:'現況（現状）の内訳（データ）',s:'現状区分の分布。',sp:'z-c2',render:function(cx){return _genjoPie(cx.t);}},
+  {id:'souzoku',e:'🏯',t:'相続緊急度 × 進捗',s:'高齢×低ステージは要対応。',sp:'z-c2',render:function(){return '<div class="z-tiles">'+agH+'</div>'+(noAge?'<div class="z-sub" style="margin-top:6px">所有者年齢 未入力 '+noAge+'件</div>':'');}},
+  {id:'potential',e:'💰',t:'課の総ポテンシャル金額',s:'A・S案件の路線価×面積の概算。',sp:'z-c2',render:function(){return '<div style="text-align:center;padding:10px"><div class="z-num" style="font-size:38px;font-weight:800;color:#ffb443">約'+pot+'<span style="font-size:17px">億円</span></div><div class="z-sub">規模感の目安（概算）</div></div>';}},
+  {id:'style18',e:'🧬',t:'営業スタイル分析（全員）',s:'レーダーの形で営業の「型」を見える化。基本18タイプ＋達人で分化する上級職＝<a href="javascript:void(0)" onclick="openTypeDex()" style="color:#0c8599;font-weight:700;text-decoration:none">📖 全50種図鑑</a>',sp:'z-cf',render:function(){return '<div class="z-heroes">'+miniR+'</div>'+_radarAxisHelp();}}
+ ];
+ if(Array.isArray(window.Z_DEEP_EXTRAS)) window.Z_DEEP_EXTRAS.forEach(function(it){ if(it&&typeof it.render==='function') _deepItems.push(it); });
+ var bodyMulti=_deepItems.map(function(it){
+   var bd='';
+   try{ bd=it.render(_deepCtx)||''; }
+   catch(err){ bd='<div class="z-sub">⚠ 「'+(it.id||'?')+'」の描画でエラー（'+String(err&&err.message||err).slice(0,80)+'）</div>'; }
+   return _zc(it.e||'📈',it.t||it.id||'分析',it.s||'',bd,it.sp||'z-c2');
+ }).join('');
 
 
  // ===== 担当の特性・保有状況（チーム管理） =====
@@ -7099,6 +7301,125 @@ function doClearStrategyField(id){
 window.clearStrategyField=clearStrategyField; window.doClearStrategyField=doClearStrategyField;
 window.toggleMobMenu=toggleMobMenu; window.closeMobMenu=closeMobMenu; window.showSyncGuide=showSyncGuide; window.closeSyncModal=closeSyncModal; window.syncMailToSelf=syncMailToSelf; window.showRestoreGuide=showRestoreGuide; window.showOneDriveSaveGuide=showOneDriveSaveGuide; window.doMobExport=doMobExport;
 window.showList=showList; window.showSetup=showSetup; window.saveSetup=saveSetup; window.showHelp=showHelp;
+// ===== 🔧 開発者設定：規定値ビューア =====
+function _devDefaultsData(){
+  return [
+   {g:'⭐ スコア配点（満点78）',note:'カードの優先度スコア。提案依頼＝顧客の意思表示を最重視。',items:[
+    ['提案依頼','取得で 15点','確定','最重要。連想(3)でのテストクロージング取得がベスト'],
+    ['心理ステージ','0→7で [0,1,3,5,8,11,12,13] 最大13点','確定','3:連想以降の伸びを強調'],
+    ['会話状況','ピンポン1/立ち話3/玄関内5/連れ出し8/上り込み12 最大12点','確定','最高到達のみ採点'],
+    ['資産背景','保有物量(最大5)＋土地資産規模(最大5) 最大10点','確定','土地資産：1億以下1〜10億以上5'],
+    ['追客ランク','S8/A6/B4/C2/D1/E0/X0 最大8点','確定',''],
+    ['土地×路線価','面積0〜5点 × 路線価係数0.7〜1.5 最大約7.5点','確定','40坪未満0点・500坪超は4点に抑制。アセット系は対象外'],
+    ['KP/所有者面談','所有者面談＋KP面談 最大6点','確定',''],
+    ['連続留守','4点スタートの減点式 [4,3,2,1,0,0]','確定','留守ゼロで満点'],
+    ['駅徒歩','〜10分 +2 / 21分以上 -2','確定','']
+   ]},
+   {g:'🏃 訪問ペース（日数上限）',note:'PACE_LIMIT / REVISIT_PHASE（コード内グローバル変数）',items:[
+    ['ランク別ペース','S='+PACE_LIMIT.S+' / A='+PACE_LIMIT.A+' / B='+PACE_LIMIT.B+' / C='+PACE_LIMIT.C+' / D='+PACE_LIMIT.D+'日','暫定','高田さん精査待ち（個人差の扱い含む）'],
+    ['再訪客の別基準','発掘から'+REVISIT_PHASE.span+'日以内に'+REVISIT_PHASE.times+'回（約'+REVISIT_PHASE.interval+'日間隔）','暫定','精査待ち'],
+    ['訪問遅れ判定','ランク別ペース超過で遅れ扱い','暫定','最終調整待ち']
+   ]},
+   {g:'🌡 温度バンド（スコア帯）',items:[
+    ['境界値','👑契約接近 55+ / 🏆A候補 42+ / 🔥HOT 30+ / 🔍育成 18+ / 🌱接点づくり','暫定','満点78化後の体感調整待ち']
+   ]},
+   {g:'🥇 月間バッジ基準（金/銀/銅）',items:[
+    ['提案依頼','3 / 2 / 1','確定',''],
+    ['同行','20 / 15 / 10','確定',''],
+    ['家族構成コンプ','5 / 4 / 3','確定',''],
+    ['新規発掘','45 / 35 / 25','仮','銀35・銅25は仮値（精査待ち）']
+   ]},
+   {g:'📦 保有メーター',items:[
+    ['目標・上限','目標75枚 / 上限80枚','仮','精査待ち'],
+    ['内訳の帯','再訪20-25 / S0-1 / A2-3 / B6-8 / C8-10 / D25-30','仮','精査待ち']
+   ]},
+   {g:'⏱ 契約クロック',items:[
+    ['45日ルール','A昇格（追撃判定）から45日が契約目安','確定','超過は赤表示']
+   ]},
+   {g:'💾 容量警告（localStorage）',items:[
+    ['4段階しきい値','2.0 / 3.0 / 3.5 / 4.0 MB','確定','自動退避1世代分を含め実質使用量を案内']
+   ]},
+   {g:'🔒 環境',items:[
+    ['ドメインロック','zenisaibis.github.io のみ起動可','確定','アプリ化のタイミングで見直し予定'],
+    ['管理職パス','SHA-256ハッシュ照合（MGR_HASH）','確定','変更は開発者用ハッシュ生成で']
+   ]}
+  ];
+}
+function openDevDefaults(){
+  var badge=function(st){
+    var c=st==='確定'?['#e6fffa','#2c7a7b']:st==='暫定'?['#fffaf0','#b7791f']:['#fff5f5','#c53030'];
+    return '<span style="font-size:10px;font-weight:700;background:'+c[0]+';color:'+c[1]+';border:1px solid '+c[1]+'33;border-radius:8px;padding:1px 7px;white-space:nowrap">'+st+'</span>';
+  };
+  var pend=0;
+  var html=_devDefaultsData().map(function(grp){
+    var rows=grp.items.map(function(it){
+      if(it[2]!=='確定') pend++;
+      return '<div style="padding:6px 2px;border-bottom:1px solid #edf2f7"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="font-size:12px;font-weight:700;color:#2d3748">'+it[0]+'</span>'+badge(it[2])+'</div><div style="font-size:12px;color:#2c5282;margin-top:2px">'+it[1]+'</div>'+(it[3]?'<div style="font-size:10.5px;color:#a0aec0;margin-top:1px">'+it[3]+'</div>':'')+'</div>';
+    }).join('');
+    return '<div style="margin-bottom:12px"><div style="font-size:13px;font-weight:700;color:#1a365d;background:#f7fafc;border-radius:6px;padding:6px 9px">'+grp.g+'</div>'+(grp.note?'<div style="font-size:10.5px;color:#718096;padding:4px 2px 0">'+grp.note+'</div>':'')+rows+'</div>';
+  }).join('');
+  var ov=document.getElementById('devDefaultsOv');
+  if(!ov){
+    ov=document.createElement('div');
+    ov.id='devDefaultsOv';
+    ov.style.cssText='display:none;position:fixed;inset:0;background:rgba(13,21,38,0.62);z-index:9100;align-items:center;justify-content:center;padding:14px';
+    ov.addEventListener('click',function(ev){ if(ev.target===ov) ov.style.display='none'; });
+    document.body.appendChild(ov);
+  }
+  ov.innerHTML='<div style="background:#fff;border-radius:14px;max-width:560px;width:100%;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 12px 40px rgba(0,0,0,0.35)">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #e2e8f0"><div><div style="font-size:15px;font-weight:700;color:#1a365d">⚙ アプリ規定値ビューア</div><div style="font-size:10.5px;color:#718096">'+APP_VERSION+' ／ 正式化待ち '+pend+'項目（暫定・仮）</div></div><button onclick="document.getElementById(\'devDefaultsOv\').style.display=\'none\'" style="background:#edf2f7;border:none;border-radius:6px;width:30px;height:30px;font-size:14px;cursor:pointer;font-family:inherit">✕</button></div>'
+    +'<div style="overflow-y:auto;padding:12px 16px">'+html
+    +'<div style="font-size:10.5px;color:#a0aec0;padding:6px 0 2px">※ 本画面は読み取り専用です。数値協議の正式化後、コード内の規定値を一元化して編集可能にする予定。</div></div></div>';
+  ov.style.display='flex';
+}
+window.openDevDefaults=openDevDefaults;
+
+// ===== ⚡ 最小入力モード =====
+var QA_STAGES=['0:面識','1:注意','2:興味','3:連想','4:欲求','5:比較','6:信念','7:決心'];
+var QA_KAIWA=['ピンポン','立ち話','玄関内','連れ出し','上り込み'];
+var qaStageSel=-1, qaKaiwaSel=[];
+function openQuickAdd(){
+  qaStageSel=-1; qaKaiwaSel=[];
+  var nm=document.getElementById('qaName'); if(nm) nm.value='';
+  qaRender();
+  var ov=document.getElementById('quickAddOv'); if(ov) ov.style.display='flex';
+  setTimeout(function(){ if(nm) nm.focus(); },80);
+}
+function closeQuickAdd(){ var ov=document.getElementById('quickAddOv'); if(ov) ov.style.display='none'; }
+function qaRender(){
+  var st=document.getElementById('qaStage');
+  if(st) st.innerHTML=QA_STAGES.map(function(s,i){
+    var on=(qaStageSel===i);
+    return '<button onclick="qaSetStage('+i+')" style="border:1px solid '+(on?'#2c5282':'#cbd5e0')+';background:'+(on?'#2c5282':'#f7fafc')+';color:'+(on?'#fff':'#2d3748')+';border-radius:7px;padding:8px 2px;font-size:11.5px;font-weight:'+(on?'700':'500')+';font-family:inherit;cursor:pointer;white-space:nowrap">'+s+'</button>';
+  }).join('');
+  var kw=document.getElementById('qaKaiwa');
+  if(kw) kw.innerHTML=QA_KAIWA.map(function(k){
+    var on=qaKaiwaSel.indexOf(k)>=0;
+    return '<button onclick="qaToggleKaiwa(\''+k+'\')" style="border:1px solid '+(on?'#276749':'#cbd5e0')+';background:'+(on?'#276749':'#f7fafc')+';color:'+(on?'#fff':'#2d3748')+';border-radius:7px;padding:8px 1px;font-size:10.5px;font-weight:'+(on?'700':'500')+';font-family:inherit;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+k+'</button>';
+  }).join('');
+}
+function qaSetStage(i){ qaStageSel=(qaStageSel===i?-1:i); qaRender(); }
+function qaToggleKaiwa(k){ var p=qaKaiwaSel.indexOf(k); if(p>=0) qaKaiwaSel.splice(p,1); else qaKaiwaSel.push(k); qaRender(); }
+function qaSave(cont){
+  var nm=document.getElementById('qaName');
+  var name=nm?nm.value.trim():'';
+  if(!name){ toast('氏名を入力してください'); if(nm) nm.focus(); return; }
+  var c=mkBlank();
+  c.name=name;
+  if(qaStageSel>=0) c.stage=String(qaStageSel);
+  c.kaiwa=qaKaiwaSel.slice();
+  _stageUpLog(null,c);
+  cards.push(c);
+  doSaveCards(function(ok){
+    if(!ok){ toast('⚠ 保存に失敗しました'); return; }
+    updateCount();
+    if(typeof renderCards==='function') renderCards();
+    toast('⚡ '+name+'様を登録しました');
+    if(cont){ openQuickAdd(); }
+    else { closeQuickAdd(); }
+  });
+}
+window.openQuickAdd=openQuickAdd; window.closeQuickAdd=closeQuickAdd; window.qaSetStage=qaSetStage; window.qaToggleKaiwa=qaToggleKaiwa; window.qaSave=qaSave;
 window.newCard=newCard; window.openCard=openCard; window.saveCard=saveCard; window.saveAll=saveAll;
 window.delCard=delCard; window.doDelCard=doDelCard; window.switchTab=switchTab;
 window.clearAllCards=clearAllCards; window.clearAllCards2=clearAllCards2; window.doClearAllCards=doClearAllCards;
