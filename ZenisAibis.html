@@ -1456,7 +1456,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.63";
+var APP_VERSION = "v5.69";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -1823,7 +1823,7 @@ var AIBIS_FAQ=[
   {q:'読込ってどうやるの？',a:function(){return isMob?'📥読込を押してダウンロードフォルダから選んでね。読込しても保存先は変わらないから安心してね！':'📥読込を押してファイルを選択するだけ！読込しても保存先（OneDrive）は変わらないから安心してね😊';}},
   {q:'保存ってどうやるの？',a:function(){return isMob?'💾保存を押すだけ！スマホ内（ブラウザ）に保存されるよ。Chromeのデータをクリアすると消えるから定期的に「📧 PCへ」でバックアップしてね！':'💾保存を押すだけ！OneDrive（自動保存先）とコピー保存先に同時に書き込まれるよ。初期設定で両方設定してね！';}},
   {q:'新規カードってどうやって作るの？',a:function(){return isMob?'画面上の「＋ 新規」を押すだけ！お客様の名前を入れてスタートしてね😊':'一覧画面左上の「＋ 新規」を押すだけ！カードが開いたら氏名から入力してね。';}},
-  {q:'印刷ってどう使うの？',a:'場面で使い分けるよ！<br><br>📅 <b>本日の予定表</b>（朝）<br>一覧で当日の客にチェック→「📅本日の予定表」、または⋮その他→📅本日の予定表。時刻を整えて印刷/PDFで課長へ提出。<br><br>📋 <b>リスト印刷</b>（朝礼・課長同行前）<br>複数チェック→⋮その他→📋リスト印刷。<br><br>🗂 <b>個別カード印刷</b>（訪問前後）<br>複数チェック→⋮その他→🗂個別カード印刷。初訪＋再訪（裏面）＋追撃を一括印刷。<br><br>📄 <b>カード単体印刷</b><br>カードを開いて⋮その他→🖨印刷で、カード・家族構成・戦略協議を選べるよ。'},
+  {q:'印刷ってどう使うの？',a:'場面で使い分けるよ！<br><br>📅 <b>本日の予定表</b>（朝）<br>何もチェックせず「📅本日の予定表」を押すと<b>🎯作戦盤</b>が開き、優先3客（⭐入替可）＋再訪候補9客から選んで予定表を作れるよ。優先3客は予定表トップの金枠に飾られる。従来どおり一覧でチェック→📅でもOK。時刻を整えて印刷/PDFで課長へ提出。日付が変わると前日分は振り返り表示のあと自動リセット。<br><br>📋 <b>リスト印刷</b>（朝礼・課長同行前）<br>複数チェック→⋮その他→📋リスト印刷。<br><br>🗂 <b>個別カード印刷</b>（訪問前後）<br>複数チェック→⋮その他→🗂個別カード印刷。初訪＋再訪（裏面）＋追撃を一括印刷。<br><br>📄 <b>カード単体印刷</b><br>カードを開いて⋮その他→🖨印刷で、カード・家族構成・戦略協議を選べるよ。'},
   {q:'課長関与レベル（単独/相談/同行）って？',a:'氏名の右のボタンをタップするたびに 🟢単独→🟡相談→🔴同行 と切り替わるよ。<br>🟢単独＝自分だけで対応／🟡相談＝課長に相談した／🔴同行＝課長が同行。<br>課長は「課分析ダッシュボード」で担当別の同行率を確認できて、🟡相談→🟢単独へステップアップする育成の目安になるよ。'},
   {q:'PCにデータを送るには？',a:function(){return isMob?'チェックを入れて「📧 PCへ」を押してメーラーで送信！PCで「📥 読込」→マージを選べば統合されるよ😊':'スマホから「📧 PCへ」で送ってもらって、PC版で📥読込→マージを選択してね。';}},
   {q:'課長へ送るには？',a:function(){return isMob?'チェックを入れて「📧 課長へ」を押してメーラーで送信するだけ！':'部下が「📧 課長へ」で送ってくるよ。PC版で📥読込→マージまたは上書きを選んでね。';}},
@@ -1836,6 +1836,7 @@ var AIBIS_FAQ=[
   {q:'バージョンアップするには？',a:'Claudeに修正を頼んで、GitHubに上書きするだけ！みんな次回アクセスで自動的に最新版になるよ👏'},
   {q:'マニュアルはどこ？',a:function(){return isMob?'⋮その他→📖マニュアルから見れるよ！タイトルをタップすると詳細が開くよ。':'⋮その他→📖マニュアルから見れるよ！各セクションをクリックすると詳細が開くよ。';}},
   {q:'戦略協議ってどう使うの？',a:'戦略協議は、お客様の情報をAI（会社のCopilot）に分析してもらう機能だよ！<br><br>①「💭 戦略協議」タブを開く<br>②分析テーマを選ぶ（8種）<br>③「🤖 分析用に抽出」でコピー、または「📎 ファイルで抽出」でtxt保存（Copilotに添付→「添付の指示に従って分析して」とだけ送ればOK）<br>④「🤖 AI分析」でCopilotが開く<br>⑤貼り付けて送信→回答を貼り付け欄にペースト<br><br>総合分析では追客ランク（S〜E）が自動で検出されるよ🧚'},
+  {q:'アイビスは開発が止まっても使える？',a:'使えるよ！設計から「永久に動く」ことを最優先にしてるんだ💪<br><br>・<b>単一HTMLファイルで完結</b>：サーバ・ログイン・通信は一切不要。このファイルがあればブラウザで開くだけで全機能が動く<br>・<b>データは端末内</b>（localStorage）＋JSON書き出しでバックアップ自由<br>・<b>戦略協議のプロンプトは汎用テキスト</b>：CopilotでもChatGPTでも将来のAIでも使える<br>・課長機能が無くても担当ひとりで「カード作成→作戦盤→予定表→AI壁打ち→判定→印刷」が全部回る<br><br><b>保管の心得</b>：最新版のHTMLファイルを ①PC ②スマホ ③クラウドかUSB の3箇所に保存しておこう。それだけで何年先も使い続けられるよ。'},
   {q:'追客ランクって何？',a:'S〜EとXの7段階でお客様への訪問頻度・状況を表すよ！<br><br>'
     +'<b>S：積極提案</b>　お客様が主体的に動いている・クロージング射程内（2日に1回〜毎日）<br>'
     +'<b>A：積極追客</b>　動機醸成が見えてきた・本物の提案依頼が取れそう（週1回・7日以内）<br>'
@@ -1874,7 +1875,7 @@ var AIBIS_FAQ=[
   {q:'現在地ボタンって何？',a:'初訪タブの住所欄の下にある📍現在地取得ボタン！GPSで現在地を取得して住所をクリップボードにコピーするよ。訪問先でそのまま貼り付けて使えるね😊'},
   {q:'家族構成ってどう入れるの？',a:'初訪タブの「家族構成」セクションから入力できるよ！<br><br>＋ボタンで追加→続柄・氏名・年齢・居住形態を入力<br>★所有者 / KP（キーパーソン）/ 面談済 も記録できるよ<br>スタンス（ポジティブ/ネガティブ）も記録して戦略に活かしてね！<br>👶 子世代・兄弟姉妹は婚姻状況と子の人数も記録できるよ（相続人の把握に役立つ）。'},
   {q:'課分析ダッシュボードって何？',a:function(){ return isMgrUnlocked()?'管理職のPC版でのみ使える育成型「コマンドセンター」だよ📊 「今日動く」「担当を育てる」を上段にまとめてる。<br><br>・📌 今日の一手（誰に何を・次に聞く質問つき）<br>・🎯 次の一手 準備度（次回アポ・家族・KP・提案依頼から自動算出）<br>・🪜 見込み進捗3ゾーン<br>・💼 契約クローズ・トラッカー<br>・🎓 課長コーチング（良い点＋今週の声掛け）<br>・🌱 育成クエスト（弱点を次の課題に）<br>・🏆 担当別スコア／重要3指標／🟢 稼働率モニター<br>・🧠 傾向と対策（AIインサイト）<br><br>担当者セレクトで個人・全体を切替。「🤖 分析用に抽出」→「🤖 AI分析」でCopilotに分析依頼（次回アクション中心の指示が出るよ）。「🖨 レポート印刷」で表紙＋目次＋ガジェット＋AI分析を1冊のA4に。':'それは課長・支店長向けの機能だよ😊 担当のみんなは「🔭 自己分析ダッシュボード」で自分の見込みをチェックしてね！'; }},
-  {q:'自己分析ダッシュボードって何？',a:'自分の見込みを自分で研究する「グロースコンソール」だよ🔭<br><br>・連想到達率リング＋レベル表示で成長を実感<br>・🧭 スキルレーダー6軸（発掘量・グリップ深度・ヒアリング・連想到達・テスクロ・追客ペース）で自分の型と伸びしろが分かる<br>・🔻 マイ・パイプライン（転換率つき）<br>・🎯 今日の3手（今すぐ動くべきこと）<br>・🥊 壁打ちワーク（AI相手に1問だけ自問自答してスキルUP）<br><br>スマホでも見れるよ。PCなら「🤖 AI分析」「🖨 印刷」も使えるよ！'},
+  {q:'自己分析ダッシュボードって何？',a:'自分の見込みを自分で研究する「グロースコンソール」だよ🔭<br><br>・連想到達率リング＋レベル表示で成長を実感<br>・🔥 平日ストリーク（平日に開くと継続。土日はお休み）<br>・⤴ ステージ引き上げ（今月お客様の心を動かした回数＋⭐提案依頼）<br>・🥇 月間バッジ（提案依頼・同行・家族構成コンプ・新規発掘の達成度）<br>・🏆 課内ランキング（上位3名＋自分の順位。課長端末で表示）<br>・🎯 今日の作戦盤（優先3件にアクションチップを選んで自分のミッションに）<br>・🧭 スキルレーダー6軸＋<b>点線で先月の自分</b>と比較<br>・🔻 マイ・パイプライン（転換率つき）<br>・🥊 壁打ちワーク（AI相手に1問だけ自問自答してスキルUP）<br><br>スマホでも見れるよ。PCなら「🤖 AI分析」「🖨 印刷」も使えるよ！'},
   {q:'タブにすぐ戻りたい',a:'PCはスクロールしてもタブ（初訪・再訪・追撃・戦略協議）が画面の一番上に残るから、いつでもワンタップで切り替えられるよ。スマホは画面の下にタブが固定されているよ😊'},
 
   {q:'路線価',a:'路線価は国税庁が毎年公表する道路に面した土地1㎡あたりの評価額のこと。相続税・贈与税の計算のベースになるよ。実勢価格の80%程度が目安。毎年7月に公表されるよ📋'},
@@ -2307,6 +2308,17 @@ function autoDetectJudge(text){
   if(cur.pursuit_judge_ai===rank) return;
   cur.pursuit_judge_ai=rank; recomputeRank();
   toast('✅ 追客判定【'+rank+'】を自動入力しました');
+  try{
+   if(cur.my_judge&&cur.my_judge_at&&cur.my_judge_logged!==cur.my_judge_at){
+    var _lg=JSON.parse(localStorage.getItem('prospect_mekiki_v1')||'[]'); if(!Array.isArray(_lg)) _lg=[];
+    _lg.push({d:_ymd(new Date()),id:cur.id,nm:cur.name||'',my:cur.my_judge,ai:rank,hit:(cur.my_judge===rank)?1:0});
+    if(_lg.length>500) _lg=_lg.slice(-500);
+    localStorage.setItem('prospect_mekiki_v1',JSON.stringify(_lg));
+    cur.my_judge_logged=cur.my_judge_at;
+    var _mjMsg=(cur.my_judge===rank)?'🎯 目利き一致！あなた='+cur.my_judge+' ／ AI='+rank:'🔍 判定が分かれた！あなた='+cur.my_judge+' ／ AI='+rank+'（差分こそ教材）';
+    setTimeout(function(){ try{ toast(_mjMsg); }catch(_e){} },1400);
+   }
+  }catch(_e){}
 }
 window.autoDetectJudge=autoDetectJudge;
 window.updateAiRankDisp=updateAiRankDisp;
@@ -2589,6 +2601,7 @@ function applyRoleUI(){
   var sdBar=document.getElementById('selfDashBar');
   if(sdBar) sdBar.style.display=(!isManager)?'flex':'none';
   var stb=document.getElementById('btnSendStaff'); if(stb) stb.style.display=isManager?'inline-block':'none';
+  var mjr=document.getElementById('mgrJudgeRow'); if(mjr) mjr.style.display=isManager?'block':'none';
   var _sms=document.getElementById('staffMailSection'); if(_sms) _sms.style.display=isManager?'block':'none';
   if(isManager) renderAnalysis();
   // カードの印刷ボタンはPC版のみ
@@ -2936,6 +2949,35 @@ function renderSelfDash(tid){
  function _btier(v,g){return v>=g[0]?'\ud83e\udd47':v>=g[1]?'\ud83e\udd48':v>=g[2]?'\ud83e\udd49':'\ud83c\udfaf';}
  var _bdef=[['\u2b50 提案依頼',_bProp,[3,2,1]],['\ud83e\udd1d 同行',_bDk,[20,15,10]],['\ud83d\udc6a 家族構成コンプ',_bFam,[5,4,3]],['\ud83c\udd95 新規発掘',_bNew,[45,35,25]]];
  H+='<div class="z-card z-c2"><h3>\ud83e\udd47 月間バッジ（'+(+_bym.slice(5,7))+'月）</h3><div class="z-sub">今月の達成度。\ud83e\udd47\ud83e\udd48\ud83e\udd49を狙おう。</div>'+_bdef.map(function(b){var pct=Math.min(100,Math.round(b[1]/b[2][0]*100));return '<div style="margin:7px 0 0"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>'+_btier(b[1],b[2])+' '+b[0]+'</span><span><b>'+b[1]+'</b> / '+b[2][0]+'</span></div><div class="z-xptrack"><i style="width:'+pct+'%"></i></div></div>';}).join('')+'</div>';
+ var _hvRv=0,_hvEx=0,_hvJm=0,_hvR={S:0,A:0,B:0,C:0,D:0};
+ mine.forEach(function(c){var pj=c.pursuit_judge||'';
+  if(pj==='E'||pj==='X'){_hvEx++;return;}
+  if(_isRevisitPhase(c)){_hvRv++;return;}
+  if(_hvR.hasOwnProperty(pj)){_hvR[pj]++;}else{_hvJm++;}
+ });
+ var _hvAct=mine.length-_hvEx;
+ var _hvBand={rv:[20,25],S:[0,1],A:[2,3],B:[6,8],C:[8,10],D:[25,30]};
+ function _hvSt(nv,b){return nv>b[1]?'\u26a0':(nv<b[0]?'\u25bd':'\u2705');}
+ var _hvCol=_hvAct<=75?'#34e3d0':(_hvAct<=80?'#ffb443':'#ff5d7d');
+ var _hvPct=Math.min(100,Math.round(_hvAct/80*100));
+ var _hvRows=[['再訪',_hvRv,_hvBand.rv],['S',_hvR.S,_hvBand.S],['A',_hvR.A,_hvBand.A],['B',_hvR.B,_hvBand.B],['C',_hvR.C,_hvBand.C],['D',_hvR.D,_hvBand.D]];
+ H+='<div class="z-card z-c2"><h3>\ud83d\udce6 保有メーター</h3><div class="z-sub">目標75枚・上限80枚。持ちすぎは足と統計を鈍らせる。Dは将来在庫として厚めでOK。</div>'
+  +'<div style="display:flex;align-items:baseline;gap:10px;margin-top:6px"><b style="font-size:32px;line-height:1">'+_hvAct+'<small style="font-size:12px;font-weight:600"> /75枚</small></b><span class="z-sub">上限80</span></div>'
+  +'<div class="z-xptrack" style="margin-top:4px"><i style="width:'+_hvPct+'%;background:'+_hvCol+'"></i></div>'
+  +'<div style="display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:11.5px">'
+  +_hvRows.map(function(r){return '<span>'+_hvSt(r[1],r[2])+' '+r[0]+' <b>'+r[1]+'</b><span style="color:#8aa">/'+r[2][0]+'\u301c'+r[2][1]+'</span></span>';}).join('')
+  +'</div>'
+  +(_hvEx?'<div class="z-sub" style="margin-top:6px;color:#ff8a8a">\ud83d\uddd1 整理対象（E/X）'+_hvEx+'枚 \u2014 月次棚卸しで削除を</div>':'')
+  +(_hvJm?'<div class="z-sub" style="margin-top:2px;color:#ffb443">\u26a0 ランク未判定 '+_hvJm+'枚（判定は必須）</div>':'')
+  +'</div>';
+ var _mk=[]; try{_mk=JSON.parse(localStorage.getItem('prospect_mekiki_v1')||'[]')||[];}catch(_e){}
+ if(_mk.length){
+  var _mkM=_mk.filter(function(x){return x.d&&x.d.slice(0,7)===_bym;});
+  var _mkHit=_mkM.filter(function(x){return x.hit;}).length;
+  var _mkRate=_mkM.length?Math.round(_mkHit/_mkM.length*100):0;
+  var _mkMiss=_mkM.filter(function(x){return !x.hit;}).slice(-2);
+  H+='<div class="z-card z-c2"><h3>\ud83c\udfaf 目利き力（今月）</h3><div class="z-sub">AIに聞く前の自分の判定がどれだけ一致したか。ズレた1件こそ教材。</div><div style="display:flex;gap:16px;align-items:baseline;margin-top:6px;flex-wrap:wrap"><b style="font-size:32px;line-height:1">'+_mkRate+'<small style="font-size:12px;font-weight:600">%</small></b><span class="z-sub">一致 <b>'+_mkHit+'</b> / '+_mkM.length+'件</span></div>'+(_mkMiss.length?'<div class="z-sub" style="margin-top:5px">'+_mkMiss.map(function(x){return '\ud83d\udd0d '+e(x.nm||'無名')+'様：あなた '+e(x.my)+' ／ AI '+e(x.ai);}).join('<br>')+'</div>':'')+'</div>';
+ }
  var _rkMap={}; cards.forEach(function(c){var m=String(c.manager||'').trim(); if(!m) return; (_rkMap[m]=_rkMap[m]||[]).push(c);});
  var _rkNames=Object.keys(_rkMap);
  if(_rkNames.length>=2){
@@ -2946,6 +2988,21 @@ function renderSelfDash(tid){
    +_rkArr.slice(0,3).map(function(r,i){return '<div class="z-mrow"><span>'+_med[i]+'</span><b style="flex:1;margin-left:6px">'+e(r.m)+'</b><span class="z-sub"><b>'+r.p+'</b>pt</span></div>';}).join('')
    +(_meIdx>=0?'<div class="z-sub" style="margin-top:6px">あなたは <b>'+(_meIdx+1)+'位</b>（'+_rkArr[_meIdx].p+'pt）／'+_rkArr.length+'人中</div>':'')
    +'</div>';
+ }
+ if(_rkNames.length>=2){
+  var _syRows=[];
+  _rkNames.forEach(function(m){
+   var cs=_rkMap[m].filter(function(c){return c.mgr_judge&&c.pursuit_judge;});
+   if(!cs.length) return;
+   var hit=cs.filter(function(c){return c.mgr_judge===c.pursuit_judge;}).length;
+   _syRows.push({m:m,n:cs.length,h:hit,r:Math.round(hit/cs.length*100)});
+  });
+  if(_syRows.length){
+   _syRows.sort(function(a,b){return b.r-a.r;});
+   H+='<div class="z-card z-c2"><h3>\ud83d\udc54 判定シンクロ率</h3><div class="z-sub">担当判定と課長判定の一致率＝基準の浸透度。80%以上\u00d75件以上は\ud83c\udf93判定卒業候補。</div>'
+    +_syRows.map(function(o){return '<div class="z-mrow"><b style="flex:1">'+e(o.m)+'</b><span class="z-sub">'+o.h+'/'+o.n+'件</span><b style="margin-left:10px">'+o.r+'%</b>'+((o.r>=80&&o.n>=5)?' <span title="判定卒業候補">\ud83c\udf93</span>':'')+'</div>';}).join('')
+    +'</div>';
+  }
  }
  var _plan=_planLoad(); var _acts=['再訪','追撃','テスト提示','家族確認','様子見'];
  var _selN=Object.keys(_plan.sel||{}).filter(function(k){return _prio.some(function(o){return String(o.c.id||'').replace(/[^\w-]/g,'')===k;});}).length;
@@ -3584,6 +3641,7 @@ function fillForm(c) {
   if(c.pursuit_judge_ai==null||c.pursuit_judge_ai==='') c.pursuit_judge_ai=c.pursuit_judge||'';
   _rankFanfare='';
   setRJ(c.revisit_judge||''); setPJ(c.pursuit_judge_sel||'');
+  paintMgrJudge();
   if(window.applyRevisitLock) applyRevisitLock();
   if(window.applyPursuitLock) applyPursuitLock();
   updateAiRankDisp(c.pursuit_judge||'');
@@ -3938,7 +3996,7 @@ function renderRevisits(){
         +_doukouBtnHTML(v.visit_type)
         +'<button type="button" class="mic-btn" onclick="micStart(\''+rid+'_c\',this)" style="margin-top:0">🎤</button>'
       +'</div>'
-      +'<textarea id="'+rid+'_c" data-f="content" rows="3" placeholder="訪問内容・会話メモ">'+e(v.content||'')+'</textarea>'
+      +'<textarea id="'+rid+'_c" data-f="content" rows="3" placeholder="自分がした事より「投げかけ→相手の反応」を書く。例：固定資産税の話→身を乗り出した／奥様は渋い顔。断り・他社・税理士/税額・時期の発言は「」でそのまま必ず">'+e(v.content||'')+'</textarea>'
       +'<div style="margin-top:6px;padding:7px 10px;background:#f0fff4;border:1px solid #c6f6d5;border-radius:6px">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px"><label style="margin:0;font-size:12px;font-weight:600;color:#276749">🎙 録音要約・メール等貼り付け</label><button type="button" onclick="clearStrategyField(\''+rid+'_rec\')" style="background:none;border:none;color:#c53030;font-size:15px;padding:0 2px;cursor:pointer;font-family:inherit;flex-shrink:0;line-height:1">🗑</button></div>'
       +'<textarea id="'+rid+'_rec" data-f="rec" rows="2" placeholder="録音要約・メールなどを貼り付け" style="font-size:13px;background:transparent;border-color:#c6f6d5">'+e(v.rec||'')+'</textarea>'
@@ -3972,7 +4030,7 @@ function renderPursuits(){
         +'<span style="display:inline-flex;align-items:center;gap:3px;margin-left:auto"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">次回</label><input type="date" data-f="nad" value="'+e(v.next_appo_date||'')+'" style="width:auto;min-height:32px;padding:3px 4px;font-size:13px"></span>'
         +'<button type="button" class="mic-btn" onclick="micStart(\''+pid+'_c\',this)" style="margin-top:0">🎤</button>'
       +'</div>'
-      +'<textarea id="'+pid+'_c" data-f="content" rows="3" placeholder="会話・気づき・観察">'+e(v.content||'')+'</textarea>'
+      +'<textarea id="'+pid+'_c" data-f="content" rows="3" placeholder="提案やテストクロージングへの「相手の反応」を書く。例：プラン見せた→「息子に相談する」と前向き／金額で表情が曇った。断り・他社・税理士/税額・時期の発言は「」でそのまま">'+e(v.content||'')+'</textarea>'
       +'<div style="margin-top:6px;padding:7px 10px;background:#f0fff4;border:1px solid #c6f6d5;border-radius:6px">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px"><label style="margin:0;font-size:12px;font-weight:600;color:#276749">🎙 録音要約・メール等貼り付け</label><button type="button" onclick="clearStrategyField(\''+pid+'_rec\')" style="background:none;border:none;color:#c53030;font-size:15px;padding:0 2px;cursor:pointer;font-family:inherit;flex-shrink:0;line-height:1">🗑</button></div>'
       +'<textarea id="'+pid+'_rec" data-f="rec" rows="2" placeholder="録音要約・メールなどを貼り付け" style="font-size:13px;background:transparent;border-color:#c6f6d5">'+e(v.rec||'')+'</textarea>'
@@ -4011,6 +4069,35 @@ function isRevisitJudgeDone(){ return !!(cur && (cur.revisit_judge || cur.revisi
 function applyPursuitLock(){ var b=document.getElementById('addPursuitBtn'); if(b) b.classList.toggle('pursuit-locked', !isRevisitJudgeDone()); }
 window.isRevisitJudgeDone=isRevisitJudgeDone; window.applyPursuitLock=applyPursuitLock;
 function setRJ(v,user){ if(user){ if(typeof collectForm==='function') collectForm(); if(isRevisitJudgeLocked()){ applyRevisitLock(); aibisAlert('再訪Judgmentはまだロック中だよ🔒<br><br>ヒアリングは足りてる？課長と協議した？<br><br>再訪3回目の「訪問日・訪問内容・録音要約」のどれかを記録するとJudgmentできるよ。'); return; } if(cur.revisit_judge===v) v=''; } cur.revisit_judge=v; document.querySelectorAll('[data-rj]').forEach(function(b){b.classList.toggle('active',b.dataset.rj===v);}); if(user){ recomputeRank(); if(typeof setDirty==='function') setDirty(true); } if(window.updateTabProgress) updateTabProgress(); }
+function setMgrJudge(r){
+ if(!cur) return;
+ if(cur.mgr_judge===r){ delete cur.mgr_judge; delete cur.mgr_judge_at; delete cur.mgr_judge_by; }
+ else{
+  cur.mgr_judge=r; cur.mgr_judge_at=new Date().toISOString(); cur.mgr_judge_by=uName||'';
+  if(r==='E'||r==='X'){
+   aibisConfirm('課長判定【'+r+'】を担当ランクにも即時反映しますか？<br><span style="font-size:11px;color:#718096">（無駄追客の早期停止。理由はフォーアイズ欄に一言残すのを推奨）</span>',
+    function(){ cur.pursuit_judge_ai=r; recomputeRank(); paintMgrJudge(); if(typeof setDirty==='function') setDirty(true); toast('担当ランクにも【'+r+'】を反映しました'); },'反映する','所見のみ');
+  }
+ }
+ paintMgrJudge(); if(typeof setDirty==='function') setDirty(true);
+}
+function paintMgrJudge(){
+ try{
+  document.querySelectorAll('[data-mj]').forEach(function(b){ b.classList.toggle('active',!!(cur&&cur.mgr_judge===b.dataset.mj)); });
+  var d=document.getElementById('mgrJudgeDisp'); if(!d) return;
+  if(cur&&cur.mgr_judge){
+   var mine=cur.pursuit_judge||'未判定';
+   if(cur.mgr_judge===cur.pursuit_judge){
+    d.style.display='block'; d.style.background='#f0fff4'; d.style.color='#22543d';
+    d.innerHTML='👔 課長判定：'+e(cur.mgr_judge)+'（あなたの判定と一致 ✓）';
+   }else{
+    d.style.display='block'; d.style.background='#fffbeb'; d.style.color='#92400e';
+    d.innerHTML='👔 課長判定：'+e(cur.mgr_judge)+'（あなたの判定：'+e(mine)+'）— なぜ違うか、次の協議で話そう';
+   }
+  }else{ d.style.display='none'; d.innerHTML=''; }
+ }catch(_e){}
+}
+window.setMgrJudge=setMgrJudge; window.paintMgrJudge=paintMgrJudge;
 function setPJ(v,user){ if(user&&cur.pursuit_judge_sel===v) v=''; cur.pursuit_judge_sel=v; document.querySelectorAll('[data-pj]').forEach(function(b){b.classList.toggle('active',b.dataset.pj===v);}); if(user){ recomputeRank(); if(typeof setDirty==='function') setDirty(true); } if(window.updateTabProgress) updateTabProgress(); }
 
 // ===== 保存 =====
@@ -5174,7 +5261,8 @@ function genPrompt(anon){
   lines.push('◆ 追客判定は慎重に。A・Sは本当に可能性が高い案件のみ。【A・Sの最低条件】「土地資産規模」が入力済み かつ「家族人数把握」がコンプリート。どちらか未達ならA・SにせずB以下とし、不足項目を挙げて次に何を確認すべきかを促す');
   lines.push('◆【B/Cの境目】B（継続追客）にできるのは、担当者個人が受け入れられ、こちらの褒めに相手が会話で応じ、相手のネガティブを引き出して「確かにそうですね」と返せる関係（＝1注意喚起の段階に到達）まで育っていること。インターホン（ピンポン）止まりで顔も見せてもらえず、まだ自分・会社を受け入れてもらえていない段階はBにせずC以下とし、まずは自分（特に担当個人）と会社を受け入れてもらう関係づくりを促す');
   lines.push('◆【Dの定義＝時期待ち・定点観測】D＝動機の種はあるが、外部イベントが起きるまで動けない客。例：相続の発生待ち／高齢で意思決定が次世代に移るのを待つ／テナント・借家人の契約満了待ち／資金の時期待ち（定期満期・他物件売却）／家族の合意形成待ち・係争中／生産緑地・農地転用等の期限待ち。Dと判定する場合は「何を待っているか（トリガー）」を必ず1つ明記すること。トリガーを特定できない場合はDにせずC（動機不足）とする。Dの訪問目的は売り込みではなく、状況変化の定点観測と「イベント発生時に最初に相談される関係」の維持');
-  lines.push('◆【降格シグナル必読】直近の再訪・追撃・録音要約に次の内容がある場合、他の好材料より優先して判定を下げる：明確な断り・他社で成約/着工→X／他社で検討中・相見積り段階→C／時期未到来・相続待ち等トリガーが明確→D（トリガー明記）／反応が薄い・動機不足のまま→C。前向きな事実が記録に無い限りBに留めない。S〜Xは訪問記録の事実ベースで判定し、全体をA・Bに寄せない');
+  lines.push('◆【降格シグナル必読】直近の再訪・追撃・録音要約に次の内容がある場合、他の好材料より優先して判定を下げる：明確な断り・他社で成約/着工→X／時期未到来・相続待ち等トリガーが明確→D（トリガー明記）／反応が薄い・動機不足のまま→C。前向きな事実が記録に無い限りBに留めない。S〜Xは訪問記録の事実ベースで判定し、全体をA・Bに寄せない。ただし次項の顕在化シグナルがある場合は降格しない');
+  lines.push('◆【顕在化シグナル＝攻め時】次の兆候が記録にあれば、相続・土地の問題が「自分ごと」になっている顕在客。降格要因にせず、むしろ攻め時として扱う：他社・競合の検討や相見積り（→ステージ5比較として比較優位の整理と決めにいく提案を。他社で成約・着工済みのみX）／税理士・銀行・士業への相談／相続税額・評価額を具体的に気にする発言／家族内で話し合った形跡／資料を自分から求める・保管している／固定資産税・空室・修繕など具体的な悩み／身近な相続トラブルへの強い反応／セミナー参加・書籍等の自己学習。総合分析では冒頭に「顕在化シグナル：あり（根拠1行）／なし」を必ず明記すること');
   lines.push('◆【情報不足の扱い】初訪内容が「（未入力）」・録音要約が無い・基本入力率が60%以下のカードは“情報不足”。安易にB以上にせず、C以下に置いた上で、不足項目と次に確認すべきことを具体的に挙げる（情報不足を理由にDとはしない。Dは時期待ちの判定）');
   lines.push('');
   if(anon) lines.push('※ 個人情報は匿名化されています');
@@ -5385,11 +5473,11 @@ function genPrompt(anon){
     lines.push('【総合分析】以下4点について具体的かつ実践的に回答してください。');
     lines.push('');
     lines.push('① 追客可否判定（S〜EとXの7段階）');
-    lines.push('   S=積極提案　お客様主体で動いている・クロージング射程内（週1〜毎日）');
-    lines.push('   A=積極追客　動機醸成が見えてきた・本物の提案依頼が取れそう（週1〜2週に1回）');
-    lines.push('   B=継続追客　ヒアリング途中・注意喚起や興味喚起がまだ必要（月2〜月1回）');
-    lines.push('   C=染み込み　提案orTC試みたが動機不足・低頻度で顔出し継続（月1回程度）');
-    lines.push('   D=状況確認　高齢・相続待ち・課題解決待ちの定点観測（3ヶ月〜1年に1回）');
+    lines.push('   S=積極提案　お客様主体で動いている・クロージング射程内（2日に1回〜毎日）');
+    lines.push('   A=積極追客　動機醸成が見えてきた・本物の提案依頼が取れそう（週1回・7日以内）');
+    lines.push('   B=継続追客　ヒアリング途中・注意喚起や興味喚起がまだ必要（14日に1回）');
+    lines.push('   C=染み込み　提案orTC試みたが動機不足・低頻度で顔出し継続（30日に1回）');
+    lines.push('   D=状況確認　時期待ちの定点観測・トリガー明記必須（60日・2ヶ月に1回）');
     lines.push('   E=初期除外　敷地・間口・資金・人柄等で初期判断除外');
     lines.push('   X=追客打切　追客したが最終的に見込みなし');
     lines.push('   ⚠【最優先・問答無用のE】「間口」が9m以下、または「土地面積（敷地）」が150㎡以下なら、他のどの条件よりも優先して必ずE（初期除外）とする。※ただし間口・面積が「未」（未入力）の場合、またはアセット系（土地情報が対象外）の場合は適用しない');
@@ -5477,7 +5565,9 @@ function copyPrompt(){
   }
   doCopy(genPrompt(false),'通常');
 }
-function copyPromptAnon(){
+function copyPromptAnon(){ _askMyJudge(_copyPromptAnonGo); }
+window._copyPromptAnonGo=_copyPromptAnonGo;
+function _copyPromptAnonGo(){
   var q=checkInputQuality();
   if(q!==true){
     aibisAlert('⚠ 分析精度が下がるかも<br><br>'
@@ -5498,7 +5588,25 @@ function fallbackCopy(txt){
   try{ document.execCommand('copy'); aibisToast('📋 抽出したよ！AI分析に貼ってね'); } catch(ex){ toast('コピー失敗。プレビューから手動でコピーしてください'); }
   document.body.removeChild(ta);
 }
-function promptToFile(){
+function _askMyJudge(cb){
+ try{
+  if(!cur){ cb(); return; }
+  var today=_ymd(new Date());
+  if(cur.my_judge_at&&String(cur.my_judge_at).slice(0,10)===today){ cb(); return; }
+  window._mjCb=cb;
+  var btn=function(r){return '<button onclick="_mjPick(\''+r+'\')" style="flex:1;min-width:36px;padding:9px 0;background:#2c5282;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">'+r+'</button>';};
+  aibisAlert('🎯 <b>あなたの仮判定は？</b><br><span style="font-size:11.5px;color:#718096">AIに聞く前に自分の目で決めよう。AI判定との一致率が「目利き力」として育つよ</span><br><br><div style="display:flex;gap:6px">'+['S','A','B','C','D'].map(btn).join('')+'</div><div style="display:flex;gap:6px;margin-top:6px">'+btn('E')+btn('X')+'<button onclick="_mjPick(\'\')" style="flex:3;padding:9px 0;background:#e2e8f0;color:#2d3748;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit">今回はスキップ</button></div>');
+ }catch(_e){ cb(); }
+}
+function _mjPick(r){
+ closeAibisAlert();
+ try{ if(cur&&r){ cur.my_judge=r; cur.my_judge_at=new Date().toISOString(); delete cur.my_judge_logged; } }catch(_e){}
+ var cb=window._mjCb; window._mjCb=null; if(cb) cb();
+}
+window._askMyJudge=_askMyJudge; window._mjPick=_mjPick;
+function promptToFile(){ _askMyJudge(_promptFileEntry); }
+window._promptFileEntry=_promptFileEntry;
+function _promptFileEntry(){
   var q=checkInputQuality();
   if(q!==true){
     aibisAlert('⚠ 分析精度が下がるかも<br><br>'
@@ -6132,7 +6240,7 @@ function copyAnalysisPrompt(){
   if(isMember){
     // 担当者個別フィードバック
     prompt+='あなたは大東建託の相続コンサルタント課長です。部下一人の見込み客データを分析し、本人に見せる育成フィードバックを作成してください。\n\n';
-    prompt+='【判断軸】購買心理8段階（3連想で提案依頼取得が最重要）。会話状況は上り込みが信頼のゴール。ヒアリング最重要は家族構成・土地の量・土地の持ち方。追客ランク別に訪問ペースを変える（S=2日、A=7日、B=14日、C=30日、D=60日。再訪客は発掘14日以内に3回が別基準）。D＝時期待ち（相続発生・契約満了等のトリガー明記必須）であり将来の契約在庫として価値がある。直近訪問記録に断り・他社・時期待ちのシグナルがあれば降格を優先し、全体をA・Bに寄せない。私たちは建築営業ではなく承継の相談相手：焦った営業・煽る指導は推奨せず、家族の納得形成の進み具合を評価軸に含める。\n\n';
+    prompt+='【判断軸】購買心理8段階（3連想で提案依頼取得が最重要）。会話状況は上り込みが信頼のゴール。ヒアリング最重要は家族構成・土地の量・土地の持ち方。追客ランク別に訪問ペースを変える（S=2日、A=7日、B=14日、C=30日、D=60日。再訪客は発掘14日以内に3回が別基準）。D＝時期待ち（相続発生・契約満了等のトリガー明記必須）であり将来の契約在庫として価値がある。直近訪問記録に断り・時期待ちのシグナルがあれば降格を優先し、全体をA・Bに寄せない。他社の話はニーズ顕在化＝攻め時であり降格要因にしない（他社成約・着工のみX）。私たちは建築営業ではなく承継の相談相手：焦った営業・煽る指導は推奨せず、家族の納得形成の進み具合を評価軸に含める。\n\n';
     prompt+='【担当者別フィードバック：'+memberName+'】\n';
     prompt+='━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
     prompt+='■ 基本データ\n';
@@ -6157,7 +6265,7 @@ function copyAnalysisPrompt(){
     // 課全体分析
     var members=[]; cards.forEach(function(c){ var m=c.manager||''; if(m&&members.indexOf(m)<0) members.push(m); }); members.sort();
     prompt+='あなたは大東建託の相続コンサルタント課長です。課全体の見込み客データを分析し、課の方向性と強化ポイントを示してください。\n\n';
-    prompt+='【判断軸】購買心理8段階（3連想で提案依頼取得が最重要）。会話状況は上り込みが信頼のゴール。ヒアリング最重要は家族構成・土地の量・土地の持ち方。追客ランク別に訪問ペースを変える。D＝時期待ち（トリガー明記必須・将来の契約在庫）。降格シグナル（断り・他社・時期待ち）を優先し、全体をA・Bに寄せない。焦った営業を推奨せず、家族の納得形成を評価軸に含める。\n\n';
+    prompt+='【判断軸】購買心理8段階（3連想で提案依頼取得が最重要）。会話状況は上り込みが信頼のゴール。ヒアリング最重要は家族構成・土地の量・土地の持ち方。追客ランク別に訪問ペースを変える。D＝時期待ち（トリガー明記必須・将来の契約在庫）。降格シグナル（断り・時期待ち）を優先し、全体をA・Bに寄せない。他社の話は顕在化＝攻め時（成約のみX）。焦った営業を推奨せず、家族の納得形成を評価軸に含める。\n\n';
     prompt+='【課全体の見込み客分析】\n';
     prompt+='━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
     prompt+='■ 全体データ\n';
@@ -7770,7 +7878,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <div class="stitle" style="margin-bottom:0">初訪内容（見込み候補だと判断した理由）<span class="req">*</span></div>
         <button type="button" class="mic-btn" onclick="micStart('f_content',this)">🎤</button>
       </div>
-      <textarea id="f_content" rows="5" placeholder="なぜ見込み候補と判断したか、具体的な発言・反応・観察事項を記述"></textarea>
+      <textarea id="f_content" rows="5" placeholder="なぜ見込み候補か＝相手の反応で書く。例：相続の話を振った→「税理士に聞かないとな」と真顔になった。発言は「」でそのまま。表情・家族の様子・土地の悩みも"></textarea>
       <div class="no-print" style="margin-top:8px;padding:8px 10px;background:#f0fff4;border:1px solid #c6f6d5;border-radius:6px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><label style="margin:0;font-size:12px;font-weight:600;color:#276749">🎙 録音要約・メール等貼り付け</label><button type="button" onclick="clearStrategyField('f_content_rec')" style="background:none;border:none;color:#c53030;font-size:15px;padding:0 2px;cursor:pointer;font-family:inherit;flex-shrink:0;line-height:1">🗑</button></div>
         <textarea id="f_content_rec" rows="3" placeholder="録音要約・メールなどを貼り付け" style="font-size:13px;background:transparent;border-color:#c6f6d5"></textarea>
@@ -7867,6 +7975,19 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <button type="button" class="jbtn jp" data-pj="A見込み" onclick="setPJ('A見込み',true)">A見込み</button>
         <button type="button" class="jbtn jc" data-pj="訪問継続" onclick="setPJ('訪問継続',true)">訪問継続</button>
         <button type="button" class="jbtn js" data-pj="打ち切り" onclick="setPJ('打ち切り',true)">打ち切り</button>
+      </div>
+      <div id="mgrJudgeDisp" style="display:none;margin-top:8px;padding:6px 8px;border-radius:4px;font-size:12px;font-weight:600"></div>
+      <div id="mgrJudgeRow" style="display:none;margin-top:8px;padding:8px;background:#fff;border:1px dashed #b7791f;border-radius:6px">
+        <div style="font-size:11.5px;font-weight:700;color:#b7791f;margin-bottom:5px">👔 課長判定（担当のランクは変えない・所見として記録）</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          <button type="button" data-mj="S" onclick="setMgrJudge('S')" class="jbtn">S</button>
+          <button type="button" data-mj="A" onclick="setMgrJudge('A')" class="jbtn">A</button>
+          <button type="button" data-mj="B" onclick="setMgrJudge('B')" class="jbtn">B</button>
+          <button type="button" data-mj="C" onclick="setMgrJudge('C')" class="jbtn">C</button>
+          <button type="button" data-mj="D" onclick="setMgrJudge('D')" class="jbtn">D</button>
+          <button type="button" data-mj="E" onclick="setMgrJudge('E')" class="jbtn">E</button>
+          <button type="button" data-mj="X" onclick="setMgrJudge('X')" class="jbtn">X</button>
+        </div>
       </div>
       <div style="margin-top:8px;padding:6px;background:#fff;border-radius:4px;font-size:11px;color:#c53030;font-weight:600">
         ★ A見込みに引き上げたら目指せ毎日訪問！45日以内の契約を目指そう！
