@@ -1456,7 +1456,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.70";
+var APP_VERSION = "v5.72";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -3143,6 +3143,20 @@ function _isRevisitPhase(c){
 }
 function _judgeMissing(c){ return !c.pursuit_judge && !_isRevisitPhase(c); } // 再訪フェーズ終了後もランク未判定
 function _dTrigSoon(c){ try{ if(!c||!c.d_trigger_when) return false; var due=new Date(c.d_trigger_when+'-01T00:00:00'); return (due-new Date())<=92*86400000; }catch(_e){ return false; } }
+function _cardRichness(c){
+ try{
+  var p=((basicInputStat(c)||{}).pct||0)*0.4; // 基本入力 max40
+  var vis=(c.revisits||[]).concat(c.pursuits||[]);
+  var txt=String(c.initial_content||'')+vis.map(function(v){return String((v&&v.content)||'');}).join('');
+  var lenPt=Math.min(30,txt.length/40); // 記述量 max30（1200字で満点）
+  var quote=/「[^」]+」/.test(txt)?10:0;  // 発言引用
+  var react=/→/.test(txt)?5:0;           // 投げかけ→反応 形式
+  var fam=c.family_headcount?10:0;
+  var rec=(c.initial_content_rec&&String(c.initial_content_rec).trim())?5:0;
+  return Math.round(p+lenPt+quote+react+fam+rec);
+ }catch(_e){ return 0; }
+}
+function _richTier(s){ return s>=75?0:(s>=55?1:(s>=35?2:(s>=15?3:4))); }
 function calcPaceOverrate(c){
   var allDates=[];
   if(c.discovery_date) allDates.push(c.discovery_date);
@@ -5987,6 +6001,23 @@ function renderAnalysis(){
   +'<div class="z-card z-kpi z-c1"><span class="z-klab">連想以上 率</span><div class="z-kval z-num" style="color:#9be15d">'+_zPct(conn,n)+'<small>%</small></div><div class="z-ksub">'+conn+'件</div></div>'
   +'<div class="z-card z-kpi z-c1"><span class="z-klab">ペース遅れ</span><div class="z-kval z-num" style="color:#ff5d7d">'+late+'<small>件</small></div><div class="z-ksub">'+_zPct(late,n)+'%</div></div></div>';
  H+='</div>';
+ // 📐 カード品質ピラミッド
+ var bodyQuality=(function(){
+  var tiers=[['\ud83d\udc8e 完全カード','75〜','#34e3d0'],['\ud83e\udd47 実用','55〜74','#9be15d'],['\ud83e\udd48 骨だけ','35〜54','#ffd43b'],['\ud83e\udd49 メモ程度','15〜34','#ffb443'],['\ud83e\udea8 素材','〜14','#ff5d7d']];
+  var cnt=[0,0,0,0,0];
+  t.forEach(function(c){ cnt[_richTier(_cardRichness(c))]++; });
+  var rows=tiers.map(function(tr,i){
+   var pc=_zPct(cnt[i],n);
+   var w=Math.max(14,pc);
+   return '<div style="margin:3px auto;width:'+w+'%;min-width:190px;background:'+tr[2]+'22;border:1px solid '+tr[2]+'66;border-radius:6px;padding:4px 8px;font-size:11.5px;display:flex;justify-content:space-between;gap:8px"><span>'+tr[0]+' <span style="opacity:.6">'+tr[1]+'</span></span><b>'+pc+'%<span style="opacity:.6;font-weight:600">（'+cnt[i]+'枚）</span></b></div>';
+  }).join('');
+  var byRep='';
+  if(scope==='all'&&reps.length>=2){
+   var rr=reps.map(function(r){var cs=g[r];var hi=cs.filter(function(c){return _richTier(_cardRichness(c))<=1;}).length;return {r:r,n:cs.length,hi:hi,pct:_zPct(hi,cs.length)};}).sort(function(a,b){return b.pct-a.pct;});
+   byRep='<div style="margin-top:9px;border-top:1px solid rgba(255,255,255,.08);padding-top:7px"><div class="z-sub" style="margin-bottom:4px">担当別 高品質率（\ud83d\udc8e＋\ud83e\udd47）</div><div style="display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px">'+rr.map(function(o){return '<span>'+e(o.r)+' <b>'+o.pct+'%</b><span style="opacity:.55">（'+o.hi+'/'+o.n+'）</span></span>';}).join('')+'</div></div>';
+  }
+  return '<div class="z-card z-c2"><h3>\ud83d\udcd0 カード品質ピラミッド</h3><div class="z-sub">内容の濃さ（入力率・記述量・「」引用・→反応・家族把握・録音）で5階層。幅＝全体に占める割合。</div><div style="margin-top:6px">'+rows+'</div>'+byRep+'</div>';
+ })();
  var _k3=reps.map(function(r){var cc=_kpi3Now(g[r]);return {r:r,p:cc[0],d:cc[1],f:cc[2],tot:cc[0]+cc[1]+cc[2]};}).sort(function(a,b){return b.tot-a.tot;});
  var _k3rows=_k3.some(function(x){return x.tot>0;})?_k3.map(function(x,i){return '<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--z-line)"><div style="width:20px;height:20px;border-radius:50%;background:'+_zAVAS[reps.indexOf(x.r)%8]+';color:#06121f;font-weight:800;font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(i+1)+'</div><div style="width:70px;flex-shrink:0;font-weight:700;font-size:12px;color:var(--z-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e(x.r)+'</div><div style="display:flex;gap:9px;margin-left:auto;flex-shrink:0;align-items:center">'+[['#e03131',x.p],['#2f9e44',x.d],['#efc010',x.f]].map(function(m){return '<div style="font-size:15px;font-weight:800;color:'+m[0]+';min-width:24px;text-align:center">'+m[1]+'</div>';}).join('')+'<div style="font-weight:800;color:var(--z-ink);font-size:13px;min-width:30px;text-align:right;border-left:1px solid var(--z-line);padding-left:8px">'+x.tot+'</div></div></div>';}).join('')+'<div class="z-legend" style="margin-top:7px"><span><i style="background:#e03131"></i>提案依頼</span><span><i style="background:#2f9e44"></i>同行</span><span><i style="background:#efc010"></i>家族構成</span></div>':'<div class="z-empty">今月の記録がまだありません（各項目を設定すると当月から計上）</div>';
  var bodyKpi3=('📌 重要3指標（提案依頼・同行・家族構成）',
@@ -6196,7 +6227,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
     +'<div style="font-size:12px;color:var(--z-ink);margin:2px 0 0 28px"><span style="color:#ffb443;font-weight:700">次のクエスト：</span>'+QTYPE[lo][2]+'</div></div>';
  }).join('')||'<div class="z-empty">担当データなし</div>';
  var questCard=_zc('🌱','育成クエスト','担当の弱点を「次の課題」に変換。今月の成長と次の一手を提示。',questH,'z-cf');
- H+=_zsec('today','📌 今日の指示・優先行動 <span class="z-secsub">朝礼前に「今日、誰に何を」</span>',todayCard+readyCard+zoneCard+bodyContract)+_zsec('growth','👥 部下育成 <span class="z-secsub">誰を褒め、誰に指導し、誰に同行するか</span>',coachCard+questCard+bodyRank+bodyTeam)+_zsec('state','📊 課の状態と詰まりどころ <span class="z-secsub">重要3指標・活動量・滞留の原因</span>',bodyKpi3+bodyProcess)+secWork+_zsec('deep','🔬 深掘り分析 <span class="z-secsub">必要なときに開く（エリア・お宝度・営業スタイル）</span>',bodyArea+bodyMulti)+secInsights;
+ H+=_zsec('map','🗺 エリアヒートマップ <span class="z-secsub">戦場の地図 — どの町が熱いか・薄いか</span>',bodyArea)+_zsec('today','📌 今日の指示・優先行動 <span class="z-secsub">朝礼前に「今日、誰に何を」</span>',todayCard+readyCard+zoneCard+bodyContract)+_zsec('state','📊 課の状態と詰まりどころ <span class="z-secsub">重要3指標・活動量・カード品質</span>',bodyKpi3+bodyProcess+bodyQuality)+_zsec('growth','👥 部下育成 <span class="z-secsub">誰を褒め、誰に指導し、誰に同行するか</span>',coachCard+questCard+bodyRank+bodyTeam)+secWork+_zsec('deep','🔬 深掘り分析 <span class="z-secsub">必要なときに開く（お宝度・営業スタイル）</span>',bodyMulti)+secInsights;
  H+='</div>';
  host.innerHTML=H;
  if(window.IS_DEV){var _dw=document.getElementById('devSelfMirrorWrap');if(_dw){_dw.style.display='';if(window.renderSelfDash)renderSelfDash('devSelfMirror');}}
