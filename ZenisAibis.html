@@ -1456,7 +1456,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v5.69";
+var APP_VERSION = "v5.70";
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 状態 =====
@@ -2316,6 +2316,7 @@ function autoDetectJudge(text){
     localStorage.setItem('prospect_mekiki_v1',JSON.stringify(_lg));
     cur.my_judge_logged=cur.my_judge_at;
     var _mjMsg=(cur.my_judge===rank)?'🎯 目利き一致！あなた='+cur.my_judge+' ／ AI='+rank:'🔍 判定が分かれた！あなた='+cur.my_judge+' ／ AI='+rank+'（差分こそ教材）';
+    if(rank==='D'&&!cur.d_trigger){ setTimeout(function(){ try{ toast('\u23f3 D判定：待ちトリガーと目安時期を入力しよう（追客タブ）'); }catch(_e){} },2800); }
     setTimeout(function(){ try{ toast(_mjMsg); }catch(_e){} },1400);
    }
   }catch(_e){}
@@ -2970,6 +2971,16 @@ function renderSelfDash(tid){
   +(_hvEx?'<div class="z-sub" style="margin-top:6px;color:#ff8a8a">\ud83d\uddd1 整理対象（E/X）'+_hvEx+'枚 \u2014 月次棚卸しで削除を</div>':'')
   +(_hvJm?'<div class="z-sub" style="margin-top:2px;color:#ffb443">\u26a0 ランク未判定 '+_hvJm+'枚（判定は必須）</div>':'')
   +'</div>';
+ var _ftD=mine.filter(function(c){return c.pursuit_judge==='D';});
+ if(_ftD.length){
+  var _ftG={}, _ftSoon=0, _ftNo=0;
+  _ftD.forEach(function(c){ var k=c.d_trigger||''; if(!k){_ftNo++;k='未設定';} _ftG[k]=(_ftG[k]||0)+1; if(_dTrigSoon(c)) _ftSoon++; });
+  H+='<div class="z-card z-c2"><h3>\u23f3 将来在庫（D客）</h3><div class="z-sub">時期待ちの含み資産。トリガーが来た瞬間に最初に呼ばれる関係を。</div>'
+   +'<div style="display:flex;gap:16px;align-items:baseline;margin-top:6px;flex-wrap:wrap"><b style="font-size:32px;line-height:1">'+_ftD.length+'<small style="font-size:12px;font-weight:600"> 枚</small></b>'+(_ftSoon?'<span class="z-sub">\ud83d\udd14 時期接近（3ヶ月以内）<b>'+_ftSoon+'</b>件 \u2014 作戦盤に浮上中</span>':'')+'</div>'
+   +'<div style="display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:6px;font-size:11.5px">'+Object.keys(_ftG).map(function(k){return '<span>'+(k==='未設定'?'\u26a0 ':'')+e(k)+' <b>'+_ftG[k]+'</b></span>';}).join('')+'</div>'
+   +(_ftNo?'<div class="z-sub" style="margin-top:5px;color:#ffb443">\u26a0 トリガー未設定のDが'+_ftNo+'枚 \u2014 何待ちかをカードに記録しよう</div>':'')
+   +'</div>';
+ }
  var _mk=[]; try{_mk=JSON.parse(localStorage.getItem('prospect_mekiki_v1')||'[]')||[];}catch(_e){}
  if(_mk.length){
   var _mkM=_mk.filter(function(x){return x.d&&x.d.slice(0,7)===_bym;});
@@ -3131,6 +3142,7 @@ function _isRevisitPhase(c){
   return pv===0&&rv<REVISIT_PHASE.times;
 }
 function _judgeMissing(c){ return !c.pursuit_judge && !_isRevisitPhase(c); } // 再訪フェーズ終了後もランク未判定
+function _dTrigSoon(c){ try{ if(!c||!c.d_trigger_when) return false; var due=new Date(c.d_trigger_when+'-01T00:00:00'); return (due-new Date())<=92*86400000; }catch(_e){ return false; } }
 function calcPaceOverrate(c){
   var allDates=[];
   if(c.discovery_date) allDates.push(c.discovery_date);
@@ -3558,7 +3570,7 @@ window.updateTabProgress=updateTabProgress;
 var TF = ['f_disc','f_name','f_social','f_genjo','f_tel','f_addr','f_plan',
   'f_sreason','f_soutei','f_oldrent','f_parking','f_jitaku','f_ryokuchi','f_landasset','f_rosenka','f_chishaku','f_m2','f_maguchi','f_youto',
   'f_kb','f_ky','f_chiku','f_kuushitsu','f_kuushitsu_aki','f_kuubi','f_fambiko','f_kouzou','f_kosu','f_kai','f_prate','f_m2tanka','f_chusharyo',
-  'f_content','f_rjdate','f_pjdate','f_r4eyes','f_p4eyes','f_analog','f_content_rec',
+  'f_content','f_rjdate','f_pjdate','f_r4eyes','f_p4eyes','f_analog','f_content_rec','f_dtrigger','f_dtrigger_when',
   'f_ai_summary','f_ai_memo'];
 var TFmap = {
   f_disc:'discovery_date', f_name:'name', f_social:'social', f_genjo:'genjo',
@@ -3570,7 +3582,7 @@ var TFmap = {
   f_kuushitsu:'kuushitsu', f_kuushitsu_aki:'kuushitsu_aki', f_kuubi:'kuushitsu_bikou', f_fambiko:'family_bikou',
   f_kouzou:'kouzou', f_kosu:'kosu', f_kai:'kaisuu', f_prate:'prate',
   f_m2tanka:'m2tanka', f_chusharyo:'chusharyo',
-  f_content:'initial_content',
+  f_content:'initial_content', f_dtrigger:'d_trigger', f_dtrigger_when:'d_trigger_when',
   f_rjdate:'revisit_judge_date', f_pjdate:'pursuit_judge_date',
   f_r4eyes:'revisit_4eyes', f_p4eyes:'pursuit_4eyes',
   f_analog:'analog_memo',
@@ -5292,6 +5304,7 @@ function genPrompt(anon){
   lines.push('    ※再訪客（追撃前・再訪3回未満）は別カウント：発掘から14日以内に3回訪問し再訪1〜3の内容を埋める');
   lines.push('  ※ 訪問間隔がランクに対して長すぎないか・短すぎないかも評価してください');
   lines.push('');
+  if(c.d_trigger||c.d_trigger_when){ lines.push('■ 待ちトリガー（D判定の根拠情報）'); lines.push('  '+(c.d_trigger||'未設定')+(c.d_trigger_when?('（目安時期：'+c.d_trigger_when+'）'):'')); lines.push(''); }
   lines.push('■ 購買心理');
   lines.push('  現ステージ：'+stg);
   lines.push('  判断根拠　：'+(c.stage_reason||'未記入'));
@@ -6708,7 +6721,7 @@ function openSakusenban(){
  if(!pri.length) pri=cards.filter(fresh).sort(byScore).slice(0,3);
  var pids={}; pri.forEach(function(c){pids[c.id]=1;});
  var rev=cards.filter(function(c){return !pids[c.id];}).map(function(c){
-   var u=(calcPaceOverrate(c)>1?1000:0)+Math.min(+lastContactDays(c)||0,365)+(100-((basicInputStat(c)||{}).pct||0))*0.5;
+   var u=(calcPaceOverrate(c)>1?1000:0)+(_dTrigSoon(c)?800:0)+Math.min(+lastContactDays(c)||0,365)+(100-((basicInputStat(c)||{}).pct||0))*0.5;
    return {c:c,u:u};
  }).sort(function(a,b){return b.u-a.u;}).slice(0,9).map(function(o){return o.c;});
  window._sbPri=pri.map(function(c){return {c:c,sid:_sbSid(c)};});
@@ -6729,7 +6742,7 @@ function openSakusenban(){
 function _sbRowHTML(o,isPri,ix){
  var c=o.c, sc=calcScore(c), tb=_tempBand(sc), on=!!window._sbSel[o.sid];
  var pl=_planLoad(); var act=(pl.sel||{})[o.sid]||'';
- var tag=isPri?'推奨':(calcPaceOverrate(c)>1?'ペース超過':((+lastContactDays(c)||0)>=14?(+lastContactDays(c))+'日未接触':(((basicInputStat(c)||{}).pct||0)<60?'入力不足':'要再訪')));
+ var tag=isPri?'推奨':(_dTrigSoon(c)?'\u23f3時期接近':(calcPaceOverrate(c)>1?'ペース超過':((+lastContactDays(c)||0)>=14?(+lastContactDays(c))+'日未接触':(((basicInputStat(c)||{}).pct||0)<60?'入力不足':'要再訪'))));
  var chips=['再訪','追撃','テスト提示','家族確認'].map(function(a){
   var sel=(act===a);
   return '<span onclick="zSbAct(\''+o.sid+'\',\''+a+'\')" style="cursor:pointer;display:inline-block;font-size:11px;border-radius:10px;padding:2px 8px;margin:2px 3px 0 0;border:1px solid #cbd5e0;'+(sel?'background:#2c5282;color:#fff;border-color:#2c5282;font-weight:700;':'background:#f7fafc;color:#4a5568;')+'">'+(sel?'\u2713 ':'')+a+'</span>';
@@ -7991,6 +8004,17 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       </div>
       <div style="margin-top:8px;padding:6px;background:#fff;border-radius:4px;font-size:11px;color:#c53030;font-weight:600">
         ★ A見込みに引き上げたら目指せ毎日訪問！45日以内の契約を目指そう！
+      </div>
+      <div style="margin-top:8px;padding:8px;background:#fff;border:1px dashed #4a5568;border-radius:6px">
+        <div style="font-size:11.5px;font-weight:700;color:#4a5568;margin-bottom:5px">⏳ 待ちトリガー（D判定なら必須）— 何を待っているか</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <select id="f_dtrigger" style="flex:2;min-width:150px;min-height:32px">
+            <option value="">（なし／未設定）</option>
+            <option>相続発生待ち</option><option>代替わり待ち</option><option>契約満了・退去待ち</option><option>資金時期待ち</option><option>家族合意待ち</option><option>農地・期限待ち</option><option>その他</option>
+          </select>
+          <label style="margin:0;font-size:11px;color:#718096">目安時期</label>
+          <input type="month" id="f_dtrigger_when" style="flex:1;min-width:130px;min-height:32px">
+        </div>
       </div>
     </div>
   </div>
