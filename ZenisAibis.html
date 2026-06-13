@@ -1253,7 +1253,7 @@ body.is-mob .mob-menu{display:inline-block}
         自分の見込みを自分で研究・分析する「グロースコンソール」です（スマホ・PC両対応）。<br><br>
         <b style="color:#2c5282">主な内容</b><br>
         ・連想到達率リング＋レベル表示 … 成長の手応えを可視化<br>
-        ・🎖 営業ジョブ（9軸・全50職）… 地図・法文・聴心・縁結・追火・成案・策陣・記録・速行から「いまの型」と二つ名・次に伸ばす力を表示。入力と行動＋戦略協議のAI評価で判定<br>
+        ・🎖 営業ジョブ（9軸・全50職）… 現地・権利・傾聴・信頼・追客・提案・作戦・記録・行動から「いまの型」と二つ名・次に伸ばす力を表示。入力と行動＋戦略協議のAI評価で判定<br>
         ・🔻 マイ・パイプライン（転換率つき）… どのステージで詰まっているか<br>
         ・🎯 今日の3手 … 今すぐ動くべきことを自動提案<br>
         ・🥊 壁打ちワーク … AI相手に1問だけ自問自答してスキルを磨く<br>
@@ -1644,7 +1644,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v6.30";
+var APP_VERSION = "v6.31";
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
 window.IS_DEV = /_dev/i.test(location.href);
@@ -3038,17 +3038,17 @@ function _salesType(axes){
   return {arche:ar,stage:st,stageName:stg.n,color:stg.c,avg:avg,domIdx:di,weakIdx:wi,weakAxis:axes[wi][0],weakVal:vals[wi],label:stg.n+ar.n};
 }
 // ===== 🎖 営業ジョブ判定エンジン（9軸／入力信頼度補正／50職） v6.04 =====
-// 軸キー：chizu地図 houbun法文 choshin聴心 enmusubi縁結 tsuibi追火 seian成案 sakujin策陣 kiroku記録 sokko速行
+// 軸キー：chizu現地 houbun権利 choshin傾聴 enmusubi信頼 tsuibi追客 seian提案 sakujin作戦 kiroku記録 sokko行動
 var JOB9_AXES=[
- {k:'chizu',  n:'地図', e:'🗺', d:'現地・土地・計画地を見る力'},
- {k:'houbun', n:'法文', e:'📜', d:'相続・権利・資産背景を読む力'},
- {k:'choshin',n:'聴心', e:'👂', d:'本音・動機・家族事情を聞く力'},
- {k:'enmusubi',n:'縁結',e:'🤝', d:'信頼・家族・関係者をつなぐ力'},
- {k:'tsuibi', n:'追火', e:'🔥', d:'見込みを冷まさず追う力'},
- {k:'seian',  n:'成案', e:'📐', d:'提案化・案件化する力'},
- {k:'sakujin',n:'策陣', e:'🪖', d:'次の一手・勝ち筋を組む力'},
- {k:'kiroku', n:'記録', e:'🗂', d:'入力の濃さ・カード整備力'},
- {k:'sokko',  n:'速行', e:'⚡', d:'行動量・即応性'}
+ {k:'chizu',  n:'現地', e:'🗺', d:'土地・計画地・現地を見る力'},
+ {k:'houbun', n:'権利', e:'📜', d:'相続・所有者・権利関係・法的背景を読む力'},
+ {k:'choshin',n:'傾聴', e:'👂', d:'本音・不安・動機を聴く力'},
+ {k:'enmusubi',n:'信頼',e:'🤝', d:'家族・紹介・関係者をつなぐ信頼を築く力'},
+ {k:'tsuibi', n:'追客', e:'🔥', d:'見込みを冷まさず追い続ける力'},
+ {k:'seian',  n:'提案', e:'📐', d:'課題を提案の形にする力'},
+ {k:'sakujin',n:'作戦', e:'🪖', d:'次回アクション・段取り・勝ち筋を組む力'},
+ {k:'kiroku', n:'記録', e:'🗂', d:'入力・整備・カード管理の正確さ'},
+ {k:'sokko',  n:'行動', e:'⚡', d:'行動量・即応性'}
 ];
 // ステージ別の「期待項目」判定関数（未入力も母数に含めるため）
 function _j9HasLand(c){ return !!(c.rosenka||c.m2||c.maguchi||(c.youto)); }
@@ -3135,19 +3135,19 @@ function j9Axes(cards){
   var now=Date.now();
   var recentNew=0, recentUpd=0, visitTotal=0;
   cards.forEach(function(c){
-    // 地図
+    // 現地
     var chizu=0;
     if(_j9Filled(c.plan_address))chizu+=25; if(_j9Filled(c.genjo))chizu+=15; if(_j9Filled(c.address))chizu+=15;
     if(_j9HasLand(c))chizu+=30; if(_j9Filled(c.kuushitsu_bikou))chizu+=10; if(_j9Filled(c.ekitoho))chizu+=5;
     sum.chizu+=Math.min(100,chizu);
-    // 法文
+    // 権利
     var hb=0, hf=Array.isArray(c.houbun)?c.houbun:[];
     hb+=Math.min(40,hf.length*12);
     if(_j9Fam(c).some(function(m){return m.owner;}))hb+=20;
     if(_j9Filled(c.land_asset))hb+=15; if(_j9Filled(c.shisan_kibo))hb+=10;
     if(_j9Filled(c.ryokuchi))hb+=10; if(_j9Filled(c.jitaku)||_j9Filled(c.old_rent))hb+=5;
     sum.houbun+=Math.min(100,hb);
-    // 聴心
+    // 傾聴
     var ch=0;
     var icl=String(c.initial_content||'').length; ch+=Math.min(25,icl/4);
     var rvc=_j9Revisits(c).reduce(function(s,r){return s+String(r.content||'').length;},0); ch+=Math.min(25,rvc/8);
@@ -3155,14 +3155,14 @@ function j9Axes(cards){
     var stc=_j9Fam(c).filter(function(m){return m.stance&&m.stance!=='unk';}).length; ch+=Math.min(20,stc*10);
     if(_j9Filled(c.souteim))ch+=15;
     sum.choshin+=Math.min(100,ch);
-    // 縁結
+    // 信頼
     var en=0;
     var kl=_j9KaiwaLv(c); if(kl>=3)en+=Math.min(30,(kl-2)*15);
     if(c.doukou)en+=20;
     var metN=_j9Fam(c).filter(function(m){return m.met;}).length; en+=Math.min(25,metN*12);
     if(_j9KpMet(c))en+=15; if(c.mgr_involve&&c.mgr_involve!=='単独')en+=10;
     sum.enmusubi+=Math.min(100,en);
-    // 追火
+    // 追客
     var tb=0;
     tb+=Math.min(30,_j9Revisits(c).length*12);
     tb+=Math.min(20,(Array.isArray(c.pursuits)?c.pursuits.length:0)*10);
@@ -3170,14 +3170,14 @@ function j9Axes(cards){
     if(typeof calcPaceOverrate==='function'){ if(calcPaceOverrate(c)<=1)tb+=20; } else { tb+=10; }
     if(_j9Stage(c)>=3)tb+=15;
     sum.tsuibi+=Math.min(100,tb);
-    // 成案
+    // 提案
     var se=0;
     if(c.proposal_req)se+=35;
     if(_j9Stage(c)>=3)se+=20; if(_j9Stage(c)>=4)se+=10;
     var rk=c.pursuit_judge; if(rk==='S')se+=20; else if(rk==='A')se+=15; else if(rk==='B')se+=8;
     if(_j9Filled(c.souteim))se+=8; if(Array.isArray(c.maefuri)&&c.maefuri.length)se+=7;
     sum.seian+=Math.min(100,se);
-    // 策陣
+    // 作戦
     var sa=0;
     if(_j9Revisits(c).some(function(r){return r.instruction||r.appo;}))sa+=25;
     if(Array.isArray(c.pursuits)&&c.pursuits.length)sa+=20;
@@ -3189,7 +3189,7 @@ function j9Axes(cards){
     sum.kiroku+=Math.round(j9CardTrust(c)*100);
     // 信頼度
     trustSum+=j9CardTrust(c);
-    // 速行の材料
+    // 行動の材料
     visitTotal+=_j9Revisits(c).length;
     var ca=c.created_at?(now-new Date(c.created_at).getTime()):1e18;
     var ua=c.updated_at?(now-new Date(c.updated_at).getTime()):1e18;
@@ -3219,7 +3219,7 @@ function j9Axes(cards){
       ax[k]=_clip(struct);
     }
   });
-  // 速行：担当レベル（発掘量30件で満点・直近更新率・訪問量）
+  // 行動：担当レベル（発掘量30件で満点・直近更新率・訪問量）
   var sokko=0;
   sokko+=Math.min(40,n/30*40);
   sokko+=Math.min(30,recentUpd/Math.max(1,n)*30);
@@ -3234,30 +3234,30 @@ function j9Axes(cards){
 var J9_ORDER=['chizu','houbun','choshin','enmusubi','tsuibi','seian','sakujin','kiroku','sokko'];
 function _j9key(keys){ return keys.slice().sort(function(a,b){return J9_ORDER.indexOf(a)-J9_ORDER.indexOf(b);}).join('+'); }
 // 1強（9）
-var J9_ONE={chizu:'探地士',houbun:'法文師',choshin:'聴心者',enmusubi:'縁結師',tsuibi:'追火師',seian:'成案師',sakujin:'策陣師',kiroku:'記録士',sokko:'速行者'};
+var J9_ONE={chizu:'探地士',houbun:'法読士',choshin:'傾聴士',enmusubi:'結縁士',tsuibi:'追客士',seian:'成案士',sakujin:'策士',kiroku:'記録士',sokko:'疾行士'};
 // 2強（18）— 主要な組み合わせ
 var J9_TWO={
- 'chizu+houbun':'地法読者','chizu+choshin':'地心読者','chizu+enmusubi':'地縁師','chizu+seian':'地案師','chizu+sakujin':'地策士','chizu+sokko':'地走士',
- 'houbun+choshin':'法心師','houbun+seian':'法提師','houbun+sakujin':'法策士','houbun+kiroku':'法録士',
- 'choshin+enmusubi':'聴縁師','choshin+seian':'聴案師','choshin+sakujin':'聴策士',
- 'enmusubi+tsuibi':'縁追師','enmusubi+seian':'縁案師',
- 'tsuibi+seian':'追案師','sakujin+tsuibi':'追策士','kiroku+sakujin':'記策士'
+ 'chizu+houbun':'地権師','chizu+choshin':'見聞師','chizu+enmusubi':'地縁師','chizu+seian':'立案師','chizu+sakujin':'地勢師','chizu+sokko':'踏査師',
+ 'houbun+choshin':'法心師','houbun+seian':'法案師','houbun+sakujin':'法策師','houbun+kiroku':'証録師',
+ 'choshin+enmusubi':'和談師','choshin+seian':'聴案師','choshin+sakujin':'聴策師',
+ 'enmusubi+tsuibi':'継縁師','enmusubi+seian':'成縁師',
+ 'tsuibi+seian':'追案師','sakujin+tsuibi':'追策師','kiroku+sakujin':'分析師'
 };
 // 3強（12）
 var J9_THREE={
- 'chizu+houbun+choshin':'地法心眼者','chizu+houbun+seian':'地法成案師','chizu+choshin+enmusubi':'地心縁者','chizu+seian+sakujin':'地案軍師',
- 'houbun+choshin+enmusubi':'家法聴者','houbun+seian+sakujin':'法案軍師','choshin+enmusubi+tsuibi':'心縁追師','choshin+seian+sakujin':'心案策士',
- 'enmusubi+tsuibi+seian':'縁追成師','tsuibi+sakujin+kiroku':'追録軍師','seian+sakujin+kiroku':'記案軍師','chizu+tsuibi+sokko':'疾地追者'
+ 'chizu+houbun+choshin':'見聞将','chizu+houbun+seian':'地権将','chizu+choshin+enmusubi':'地縁将','chizu+seian+sakujin':'謀略将',
+ 'houbun+choshin+enmusubi':'法心将','houbun+seian+sakujin':'法策将','choshin+enmusubi+tsuibi':'継縁将','choshin+seian+sakujin':'聴策将',
+ 'enmusubi+tsuibi+seian':'成縁将','tsuibi+sakujin+kiroku':'継策将','seian+sakujin+kiroku':'成策将','chizu+tsuibi+sokko':'機動将'
 };
 // 4強（6）
 var J9_FOUR={
- 'chizu+houbun+choshin+seian':'地法成眼師','chizu+seian+sakujin+kiroku':'地案策将','choshin+enmusubi+tsuibi+seian':'心縁成将',
- 'houbun+choshin+enmusubi+sakujin':'家法軍師','tsuibi+seian+sakujin+kiroku':'追案策将','chizu+tsuibi+kiroku+sokko':'疾地録将'
+ 'chizu+houbun+choshin+seian':'棟梁','chizu+seian+sakujin+kiroku':'宗匠','choshin+enmusubi+tsuibi+seian':'大家',
+ 'houbun+choshin+enmusubi+sakujin':'参謀','tsuibi+seian+sakujin+kiroku':'総帥','chizu+tsuibi+kiroku+sokko':'先鋒'
 };
 // 5強（4）
 var J9_FIVE={
- 'chizu+houbun+choshin+seian+sakujin':'天策軍師','choshin+enmusubi+tsuibi+seian+sakujin':'成縁大将',
- 'chizu+tsuibi+seian+kiroku+sokko':'開拓大将','houbun+choshin+seian+sakujin+kiroku':'相続軍師'
+ 'chizu+houbun+choshin+seian+sakujin':'神機妙算','choshin+enmusubi+tsuibi+seian+sakujin':'千客万来',
+ 'chizu+tsuibi+seian+kiroku+sokko':'勇往邁進','houbun+choshin+seian+sakujin+kiroku':'博覧強記'
 };
 var J9_INIT=['芽士','始動者','初陣士']; // 入力信頼度が低いときの初期職
 var J9_CARD_GATE={ meshiMax:35, yorozuMax:40, jobMin:41, tier34:65, tier5:80, trust34:0.70, trust5:0.85 };
@@ -3279,7 +3279,7 @@ function j9JobRank(job, strongCount){
 }
 var J9_KING='天眼王';
 // 称号（二つ名）：軸キー→眼
-var J9_EYE={chizu:'地眼',houbun:'法読',choshin:'心眼',enmusubi:'縁眼',tsuibi:'継火',seian:'商眼',sakujin:'勝眼',kiroku:'緻録',sokko:'疾走'};
+var J9_EYE={chizu:'千里',houbun:'明法',choshin:'心耳',enmusubi:'信望',tsuibi:'継火',seian:'妙案',sakujin:'勝機',kiroku:'克明',sokko:'神速'};
 
 // 強い軸を抽出（しきい値＋信頼度ゲート）
 function j9StrongAxes(corr, trust, cardCap){
@@ -3330,7 +3330,7 @@ function j9DetermineJob(cards, repName){
   var job=null;
   if(ns>=5){
     job=_j9lookup(J9_FIVE, strong.slice(0,5));
-    if(!job) job='天策軍師'; // 5強だが未定義の組み合わせ→代表5強職
+    if(!job) job='神機妙算'; // 5強だが未定義の組み合わせ→代表5強職
   } else if(ns===4){
     job=_j9lookup(J9_FOUR, strong)||_j9lookup(J9_THREE, strong.slice(0,3))||(J9_ONE[strong[0]]);
   } else if(ns===3){
@@ -3538,21 +3538,21 @@ function _job9Radar(corr,color){
 }
 // ジョブ表示名 → 画像ID（ローマ字）。画像は img/jobs/<id>.png を参照（日本語ファイル名を避ける）
 var J9_IMGID={
- // 1強
- '探地士':'tanchishi','法文師':'houbunshi','聴心者':'choushinsha','縁結師':'enmusubishi','追火師':'oibishi','成案師':'seianshi','策陣師':'sakujinshi','記録士':'kirokushi','速行者':'sokkousha',
- // 2強
- '地法読者':'chihoudokusha','地心読者':'chishindokusha','地縁師':'chienshi','地案師':'chianshi','地策士':'chisakushi','地走士':'chisoushi',
- '法心師':'houshinshi','法提師':'houteishi','法策士':'housakushi','法録士':'hourokushi',
- '聴縁師':'chouenshi','聴案師':'chouanshi','聴策士':'chousakushi',
- '縁追師':'enoishi','縁案師':'enanshi','追案師':'oianshi','追策士':'oisakushi','記策士':'kisakushi',
- // 3強
- '地法心眼者':'chihoushingansha','地法成案師':'chihouseianshi','地心縁者':'chishinensha','地案軍師':'chiangunshi',
- '家法聴者':'kahouchousha','法案軍師':'houangunshi','心縁追師':'shinenoishi','心案策士':'shinansakushi',
- '縁追成師':'enoiseishi','追録軍師':'oirokugunshi','記案軍師':'kiangunshi','疾地追者':'shitchioisha',
+ // 1強（表示名は確定版v2、ローマ字ファイル名は既存据え置き＝案ア）
+ '探地士':'tanchishi','法読士':'houbunshi','傾聴士':'choushinsha','結縁士':'enmusubishi','追客士':'oibishi','成案士':'seianshi','策士':'sakujinshi','記録士':'kirokushi','疾行士':'sokkousha',
+ // 2強（表示名は確定版v2、ローマ字ファイル名は既存据え置き）
+ '地権師':'chihoudokusha','見聞師':'chishindokusha','地縁師':'chienshi','立案師':'chianshi','地勢師':'chisakushi','踏査師':'chisoushi',
+ '法心師':'houshinshi','法案師':'houteishi','法策師':'housakushi','証録師':'hourokushi',
+ '和談師':'chouenshi','聴案師':'chouanshi','聴策師':'chousakushi',
+ '継縁師':'enoishi','成縁師':'enanshi','追案師':'oianshi','追策師':'oisakushi','分析師':'kisakushi',
+ // 3強（表示名は確定版v2、ローマ字据え置き）
+ '見聞将':'chihoushingansha','地権将':'chihouseianshi','地縁将':'chishinensha','謀略将':'chiangunshi',
+ '法心将':'kahouchousha','法策将':'houangunshi','継縁将':'shinenoishi','聴策将':'shinansakushi',
+ '成縁将':'enoiseishi','継策将':'oirokugunshi','成策将':'kiangunshi','機動将':'shitchioisha',
  // 4強
- '地法成眼師':'chihouseiganshi','地案策将':'chiansakushou','心縁成将':'shinenseishou','家法軍師':'kahougunshi','追案策将':'oiansakushou','疾地録将':'shitchirokushou',
+ '棟梁':'chihouseiganshi','宗匠':'chiansakushou','大家':'shinenseishou','参謀':'kahougunshi','総帥':'oiansakushou','先鋒':'shitchirokushou',
  // 5強
- '天策軍師':'tensakugunshi','成縁大将':'seiendaishou','開拓大将':'kaitakudaishou','相続軍師':'souzokugunshi',
+ '神機妙算':'tensakugunshi','千客万来':'seiendaishou','勇往邁進':'kaitakudaishou','博覧強記':'souzokugunshi',
  // 最上位・初期職・バランス
  '天眼王':'tenganou','芽士':'meshi','始動者':'shidousha','初陣士':'uijinshi','万屋':'yorozuya'
 };
@@ -9347,7 +9347,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           </select>
         </div>
       </div>
-      <!-- 権利関係（法文チェック） -->
+      <!-- 権利関係チェック -->
       <div style="margin-bottom:8px">
         <label>権利関係チェック</label>
         <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:2px">
