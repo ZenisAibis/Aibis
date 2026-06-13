@@ -344,6 +344,8 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 .msub{border:1px solid #e2e8f0;border-radius:6px;margin-top:8px;overflow:hidden}
 .msubttl{padding:9px 12px;cursor:pointer;font-weight:600;font-size:12.5px;background:#f7fafc;display:flex;justify-content:space-between;align-items:center;user-select:none}
 .msubbdy{padding:10px 12px;font-size:12.5px;color:#2d3748;line-height:1.9;border-top:1px solid #edf2f7}
+.qa-tk{padding:13px;border:1px solid #cbd5e0;border-radius:8px;background:#f7fafc;font-size:18px;font-weight:700;font-family:inherit;cursor:pointer;color:#2d3748}
+.qa-tk:active{background:#e2e8f0}
 .mbdy{padding:12px 14px;font-size:13px;color:#2d3748;line-height:2.0}
 
 /* スマホのみ：計画地ボタンを下段に */
@@ -669,6 +671,10 @@ body.is-mob .mob-menu{display:inline-block}
 .zdash .z-area.z-unk{background:rgba(255,255,255,.06)!important;color:var(--z-mut)!important;border:1px dashed var(--z-line)}
 .z-reveal-pop{position:fixed;z-index:99999;min-width:148px;max-width:260px;background:linear-gradient(160deg,rgba(22,32,52,.97),rgba(13,21,37,.98));border:1px solid rgba(120,150,200,.35);border-radius:13px;padding:10px 12px;box-shadow:0 16px 44px rgba(0,0,0,.55);color:#eaf0fb;opacity:0;transform:translateY(8px) scale(.96);transition:opacity .16s ease,transform .18s ease;pointer-events:none}
 .z-reveal-pop.on{opacity:1;transform:translateY(0) scale(1)}
+.z-reveal-pop.z-rev-live{pointer-events:auto;max-width:300px}
+.z-reveal-pop .z-rev-list{max-height:46vh;overflow-y:auto;margin:0 -4px;padding:0 4px}
+.z-rev-live .z-rev-row.z-rev-go{cursor:pointer;border-radius:8px;padding:5px 6px;margin:0 -6px;transition:background .12s}
+.z-rev-live .z-rev-row.z-rev-go:hover,.z-rev-live .z-rev-row.z-rev-go:active{background:rgba(255,255,255,.10)}
 .z-reveal-pop .z-rev-h{font-size:11px;font-weight:800;color:#9fb3d6;letter-spacing:.4px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;gap:8px}
 .z-reveal-pop .z-rev-h em{font-size:9px;color:#6b7d9e;font-weight:700;font-style:normal}
 .z-reveal-pop .z-rev-row{display:flex;align-items:center;gap:7px;padding:4px 0;border-bottom:1px solid rgba(120,150,200,.12)}
@@ -771,7 +777,6 @@ body.is-mob .mob-menu{display:inline-block}
     </h1>
     <div style="display:flex;gap:6px;align-items:center;flex-wrap:nowrap">
       <button onclick="newCard()" style="background:#c53030;color:white;border:none;border-radius:6px;padding:7px 12px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600">＋ 新規</button>
-      <button onclick="openQuickAdd()" title="最小入力モード（名前＋ステージ＋会話状況だけで保存）" style="background:#d97706;color:white;border:none;border-radius:6px;padding:7px 10px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600">⚡</button>
       <button class="bp" onclick="loadFile()" style="background:#3182ce">📥 読込</button>
       <button class="bs" onclick="saveAll()">💾 保存</button>
       <div class="mob-menu" style="position:relative">
@@ -797,7 +802,7 @@ body.is-mob .mob-menu{display:inline-block}
   <!-- スマホ版ヘッダー -->
   <header id="listHeaderMob" class="mob-only">
     <h1 style="margin:0;line-height:1;position:relative;flex-shrink:0">
-      <svg width="140" height="44" viewBox="0 0 140 44" xmlns="http://www.w3.org/2000/svg">
+      <svg width="140" height="44" viewBox="0 0 140 44" xmlns="http://www.w3.org/2000/svg" onclick="openQuickAdd()" style="cursor:pointer">
         <defs><linearGradient id="tgm" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#ffffff"/><stop offset="60%" style="stop-color:#e0e7ff"/><stop offset="100%" style="stop-color:#c7d2fe"/></linearGradient></defs>
         <text x="4" y="36" font-family="'Dancing Script','Brush Script MT','Comic Sans MS',cursive" font-size="34" font-weight="700" fill="url(#tgm)" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.4))">z.Aibis</text>
       </svg>
@@ -812,7 +817,6 @@ body.is-mob .mob-menu{display:inline-block}
         <div class="mob-menu" style="position:relative">
           <button class="mob-more-btn" onclick="toggleMobMenu(event)" style="width:100%;height:36px;font-size:11px;padding:0">⋮ その他</button>
           <div class="mob-dropdown" id="mobDropdown">
-            <button onclick="closeMobMenu();openQuickAdd()" style="color:#b45309;font-weight:700">⚡ 最小入力</button>
             <button onclick="closeMobMenu();restoreBackup()">⏪ 1つ前に戻す</button>
             <button onclick="closeMobMenu();showSetup()">⚙ 初期設定</button>
             <button onclick="closeMobMenu();setTimeout(function(){showHelp();},50)">📖 マニュアル</button>
@@ -906,23 +910,71 @@ body.is-mob .mob-menu{display:inline-block}
     <div id="selfDashContent" style="padding:16px"></div>
     </div>
   </div>
-  <!-- ⚡ 最小入力モード -->
+  <!-- ⚡ 光速入力モード（スマホ専用） -->
   <div id="quickAddOv" style="display:none;position:fixed;inset:0;background:rgba(13,21,38,0.62);z-index:9000;align-items:center;justify-content:center;padding:14px" onclick="if(event.target===this)closeQuickAdd()">
     <div style="background:#fff;border-radius:14px;max-width:420px;width:100%;max-height:92vh;overflow-y:auto;padding:16px 16px 14px;box-shadow:0 12px 40px rgba(0,0,0,0.35)">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <div style="font-size:15px;font-weight:700;color:#1a365d">⚡ 最小入力モード</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div style="font-size:15px;font-weight:700;color:#1a365d">⚡ 光速入力モード</div>
         <button onclick="closeQuickAdd()" style="background:#edf2f7;border:none;border-radius:6px;width:30px;height:30px;font-size:14px;cursor:pointer;font-family:inherit">✕</button>
       </div>
-      <div style="font-size:11.5px;color:#718096;margin-bottom:10px">訪問の合間にサッと登録。名前＋ステージ＋会話状況だけでOK。詳細はあとでカードを開いて追記してね。</div>
-      <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">👤 氏名 <span style="color:#c53030">必須</span></label>
-      <input id="qaName" type="text" placeholder="例：山田" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px;font-family:inherit;margin-bottom:10px">
-      <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">🧠 心理ステージ</label>
+      <div style="font-size:11.5px;color:#718096;margin-bottom:10px">訪問の合間にサッと登録。詳細はあとで見込みカードから追記できます。</div>
+      <div style="display:grid;grid-template-columns:1fr 96px;gap:8px;margin-bottom:10px">
+        <div>
+          <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">👤 氏名 <span style="color:#c53030">必須</span></label>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input id="qaName" type="text" placeholder="お客様名" style="flex:1;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px;font-family:inherit">
+            <button type="button" class="mic-btn" onclick="micStart('qaName',this)" style="flex-shrink:0;margin-top:0">🎤</button>
+          </div>
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">現状</label>
+          <select id="qaGenjo" style="width:100%;box-sizing:border-box;padding:10px 6px;border:1px solid #cbd5e0;border-radius:8px;font-size:13px;font-family:inherit;background:#fff">
+            <option value="">-</option><option value="P">P（駐車場）</option>
+            <option value="老朽">老朽</option><option value="店舗">店舗</option><option value="自宅">自宅</option><option value="雑種地">雑種地</option><option value="都外">都外</option>
+          </select>
+        </div>
+      </div>
+      <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">🏠 住所（自宅）</label>
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:10px">
+        <input id="qaAddr" type="text" placeholder="📍で現在地、🔢で番地" style="flex:1;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:13px;font-family:inherit">
+        <button type="button" onclick="qaGeo('qaAddr')" style="flex-shrink:0;width:40px;height:40px;border:1px solid #cbd5e0;border-radius:8px;background:#ebf8ff;font-size:16px;cursor:pointer">📍</button>
+        <button type="button" onclick="qaTenkeyOpen('qaAddr')" style="flex-shrink:0;width:40px;height:40px;border:1px solid #cbd5e0;border-radius:8px;background:#f7fafc;font-size:16px;cursor:pointer">🔢</button>
+      </div>
+      <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">🏛 計画地</label>
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:10px">
+        <input id="qaPlan" type="text" placeholder="📍で現在地、🔢で番地" style="flex:1;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:13px;font-family:inherit">
+        <button type="button" onclick="qaGeo('qaPlan')" style="flex-shrink:0;width:40px;height:40px;border:1px solid #cbd5e0;border-radius:8px;background:#ebf8ff;font-size:16px;cursor:pointer">📍</button>
+        <button type="button" onclick="qaTenkeyOpen('qaPlan')" style="flex-shrink:0;width:40px;height:40px;border:1px solid #cbd5e0;border-radius:8px;background:#f7fafc;font-size:16px;cursor:pointer">🔢</button>
+      </div>
+      <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">🧠 購買心理ステージ</label>
       <div id="qaStage" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px"></div>
       <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">🗣 会話状況（複数可）</label>
-      <div id="qaKaiwa" style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:14px"></div>
-      <div style="display:flex;gap:8px">
-        <button onclick="qaSave(false)" style="flex:1;background:#38a169;color:#fff;border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer">💾 保存</button>
-        <button onclick="qaSave(true)" style="flex:1;background:#3182ce;color:#fff;border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer">💾 保存して次を入力</button>
+      <div id="qaKaiwa" style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:10px"></div>
+      <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">📝 計画地備考</label>
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:14px">
+        <input id="qaKuubi" type="text" placeholder="例：P空き多い・老朽建物あり・間口広め" style="flex:1;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:13px;font-family:inherit">
+        <button type="button" class="mic-btn" onclick="micStart('qaKuubi',this)" style="flex-shrink:0;margin-top:0">🎤</button>
+      </div>
+      <button onclick="qaSave(false)" style="width:100%;background:#38a169;color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer">💾 保存</button>
+    </div>
+  </div>
+  <!-- 🔢 番地入力テンキー -->
+  <div id="qaTenkeyOv" style="display:none;position:fixed;inset:0;background:rgba(13,21,38,0.55);z-index:9200;align-items:flex-end;justify-content:center" onclick="if(event.target===this)qaTenkeyClose()">
+    <div style="background:#fff;border-radius:16px 16px 0 0;max-width:420px;width:100%;padding:14px 16px 18px;box-shadow:0 -8px 30px rgba(0,0,0,0.3)">
+      <div style="font-size:13px;font-weight:700;color:#1a365d;margin-bottom:6px">番地を追加</div>
+      <div style="font-size:10.5px;color:#a0aec0">現在：</div>
+      <div id="qaTkCur" style="font-size:12px;color:#4a5568;font-weight:600;margin-bottom:6px;word-break:break-all"></div>
+      <div style="font-size:10.5px;color:#a0aec0">追加：</div>
+      <div id="qaTkBuf" style="font-size:18px;font-weight:800;color:#1a365d;border:1px solid #cbd5e0;border-radius:8px;padding:8px 10px;min-height:24px;margin-bottom:10px;letter-spacing:1px">&nbsp;</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+        <button onclick="qaTkKey('7')" class="qa-tk">7</button><button onclick="qaTkKey('8')" class="qa-tk">8</button><button onclick="qaTkKey('9')" class="qa-tk">9</button>
+        <button onclick="qaTkKey('4')" class="qa-tk">4</button><button onclick="qaTkKey('5')" class="qa-tk">5</button><button onclick="qaTkKey('6')" class="qa-tk">6</button>
+        <button onclick="qaTkKey('1')" class="qa-tk">1</button><button onclick="qaTkKey('2')" class="qa-tk">2</button><button onclick="qaTkKey('3')" class="qa-tk">3</button>
+        <button onclick="qaTkKey('0')" class="qa-tk">0</button><button onclick="qaTkKey('-')" class="qa-tk">-</button><button onclick="qaTkKey('bs')" class="qa-tk">⌫</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 2fr;gap:6px;margin-top:6px">
+        <button onclick="qaTkKey('clr')" style="padding:12px;border:1px solid #cbd5e0;border-radius:8px;background:#fff5f5;color:#c53030;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer">クリア</button>
+        <button onclick="qaTkKey('ok')" style="padding:12px;border:none;border-radius:8px;background:#2c5282;color:#fff;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer">決定</button>
       </div>
     </div>
   </div>
@@ -1048,6 +1100,7 @@ body.is-mob .mob-menu{display:inline-block}
         　⏪1つ前に戻す … 直前の保存状態に復元（誤削除・誤上書きのときに）<br><br>
         <b style="color:#276749">【スマホ版・一覧画面】</b><br>
         ＋新規 … 新しいカードを作成<br>
+        <b>z.Aibisタイトルをタップ … ⚡光速入力モード</b>（訪問の合間にサッと登録。詳細はあとから追記）<br>
         📥読込 … PCから受け取ったJSONを読み込む<br>
         💾保存 … スマホ内に保存<br>
         📧スマホへ … 選択カードをPC宛にメール送信<br>
@@ -1527,7 +1580,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v6.00";
+var APP_VERSION = "v6.02";
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
 window.IS_DEV = /_dev/i.test(location.href);
@@ -1888,7 +1941,7 @@ window.fmtMoney=fmtMoney;
 
 // ===== アイビスFAQチャット =====
 var AIBIS_FAQ=[
-  {q:'🚀 まずこれだけ！（3分で読める）',a:'<b>アイビスで毎日やること5つ</b><br><br>①朝：ダッシュボードの<b>🎯 作戦盤</b>で今日行くお客様を確認（PCなら📅で予定表まで作れるよ）<br>②訪問したら：<b>ステージ</b>と<b>会話内容</b>を更新——書くのは「投げかけ→相手の反応」！<br>③<b>次回</b>の予定・やることを入れる<br>④再訪3回したら<b>追客判定</b>（S〜X）を必ず付ける<br>⑤週1回：⋮メニューから<b>JSON書き出し</b>（バックアップ）<br><br>迷ったら：カードの<b>戦略協議</b>でAIに壁打ち（📎ファイルで抽出→Copilotに添付して「添付の指示に従って分析して」）。<br>細かいことはこのQ&Aの他の項目で調べてね😊'},
+  {q:'🚀 まずこれだけ！（3分で読める）',a:'<b>アイビスで毎日やること5つ</b><br><br>①朝：<b>🎯 作戦盤</b>で今日行くお客様を確認（PCなら📅で予定表まで作れるよ）<br>②新しい見込みは、スマホの<b>z.Aibisタイトルをタップ</b>して<b>⚡光速入力モード</b>で登録<br>③訪問したら：<b>ステージ</b>と<b>会話内容</b>を更新——書くのは「投げかけ→相手の反応」！次回の予定・やることも入れる<br>④再訪3回したら<b>追客判定</b>（S〜X）を必ず付ける<br>⑤週1回：<b>JSON書き出し</b>でバックアップ<br><br><b>補足：</b>光速入力モードは最初のカードを素早く作るための入口。詳しい情報はあとから通常カードで追記できます。<br>迷ったらカードの<b>戦略協議</b>でAIに相談してね😊'},
   {q:'音声入力のコツは?',a:'話し始めたら最後まで一気に話し切ってね！🎤<br><br>途中でどもったり間が空いてしまうと、そこで認識が切れてしまうよ。「しゃべれるところまで一気に」がポイント。<br><br>空白や句読点もちゃんと認識してくれるから、ゆっくりでも一息で話せる分だけ話してね。何度かに分けて入力すればOK😊<br><br>骨さえつかめば簡単だよ！'},
   {q:'どんなのが候補?',a:'見込み候補は2タイプだよ！<br><br>🏠 <b>問題感知型</b><br>会話や土地・建物を見たときに、担当者が「あ、ここ問題あるな」とイメージが浮かぶ人。お客様自身はまだ気づいていなくてもOK！<br>例：「この建物そろそろ限界だな」「相続大丈夫かな」「この土地もったいないな」「子供たちに財産残せるかな」など、担当者がピンとくる人が狙い目！<br><br>💰 <b>資産家型</b><br>いかにもお金持ちさん。広い土地・古い建物・複数の不動産を持っていそうな方。車・家・庭・服装・言葉遣いから感じ取れるよ。ニーズは潜在的でもアプローチ価値は大きい！<br><br>どちらも「担当者がピンときた直感」を大切にしてね🎯'},
   {q:'聞くべき事は?',a:'初回訪問で必ず確認したい3点！これは暗記してね🧚<br><br>👨‍👩‍👧‍👦 <b>① 家族構成</b><br>同居・別居・人数・年齢層。相続人が何人いるか、誰がキーパーソンかを把握する。<br><br>🗾 <b>② 土地の量</b><br>何筆持っているか、広さはどのくらいか。路線価エリアかどうかも重要。<br><br>📋 <b>③ 土地の持ち方</b><br>自己所有か共有名義か。共有なら誰と持っているか。抵当権・借地・底地はないか。<br><br>この3点が分かれば提案の方向性が見えてくるよ！最初の会話でさりげなく聞いてみてね。'},
@@ -1924,7 +1977,7 @@ var AIBIS_FAQ=[
   {q:'データが消えた！',a:'落ち着いて！まず確認してみてね😊<br><br>【まず試す】⋮その他→⏪1つ前に戻す　で直前の保存状態に復元できるよ！<br><br>【PC版】OneDriveのz-aibis_氏名.jsonが残っていないか確認。コピー保存先も確認してみて。<br>【スマホ版】PCにバックアップ（📧 PCへ）が残っていないか確認。<br><br>これからはPC版でコピー保存先も設定しておくと二重に守れるよ！'},
   {q:'1つ前に戻すって何？',a:'⏪1つ前に戻すは、直前の保存状態に復元する機能だよ！<br><br>保存するたびに、その直前のデータが自動でバックアップされてるよ。<br><br>誤ってカードを消した・上書きしてしまった・読み込みミスをした、そんなときに⋮その他→⏪1つ前に戻すで復活できるよ😊<br><br>※もう一度押すと、戻す前の状態に戻せるよ（行ったり来たり）。ただし2つ前より前には戻れないから注意してね！'},
   {q:'検索ってどう使うの？',a:'名前や住所を入れるだけ！スペース区切りで複数キーワードも使えるよ🔍<br>並び替えは最新・再訪・住所・スコア・心理・ランク・遅れ・初訪から選べるよ！'},
-  {q:'バージョンアップするには？',a:'Claudeに修正を頼んで、GitHubに上書きするだけ！みんな次回アクセスで自動的に最新版になるよ👏'},
+  {q:'バージョンアップするには？',a:function(){ return isMgrUnlocked()?'Claudeに修正を頼んで、GitHubに上書きするだけ！みんな次回アクセスで自動的に最新版になるよ👏':'アップデートは課長が管理しているよ😊 アプリを開き直すだけで、いつでも自動的に最新版が使えるから安心してね！'; }},
   {q:'マニュアルはどこ？',a:function(){return isMob?'⋮その他→📖マニュアルから見れるよ！タイトルをタップすると詳細が開くよ。':'⋮その他→📖マニュアルから見れるよ！各セクションをクリックすると詳細が開くよ。';}},
   {q:'戦略協議ってどう使うの？',a:'戦略協議は、お客様の情報をAI（会社のCopilot）に分析してもらう機能だよ！<br><br>①「💭 戦略協議」タブを開く<br>②分析テーマを選ぶ（8種）<br>③「🤖 分析用に抽出」でコピー、または「📎 ファイルで抽出」でtxt保存（Copilotに添付→「添付の指示に従って分析して」とだけ送ればOK）<br>④「🤖 AI分析」でCopilotが開く<br>⑤貼り付けて送信→回答を貼り付け欄にペースト<br><br>総合分析では追客ランク（S〜E）が自動で検出されるよ🧚'},
   {q:'外部連携で情報はどこに行く？',a:'アイビスの基本データは<b>この端末の中だけ</b>に保存されるよ（サーバ送信なし）。<br><br>ただし次の機能を<b>自分で使ったとき</b>は、入力内容の一部が外部サービスへ渡るよ：<br>・🤖 AI分析（Copilot等への貼り付け／ファイル添付）<br>・🗺 地図・ストリートビュー表示<br>・📧 メール送信／同期<br><br>顧客情報を扱うときは「簡易匿名化」と貼り付け前の内容確認を習慣に。会社で認められた環境で使ってね！'},
@@ -1965,6 +2018,11 @@ var AIBIS_FAQ=[
   {q:'提案依頼ボタンって何？',a:'再訪タブの「連続留守カウント」の右にあるボタン！タップで ❌提案依頼未取得 ⇔ ⭕提案依頼取得 を切替。提案依頼の取得はお客様の意思表示なのでスコアが大きく上がるよ(+15)😊 ベストは「3:連想」でテストクロージングし、動機を引き上げながら取得すること💡 取得すると10客・40客リストにも⭕提案依頼が出るよ。'},
   {q:'駅徒歩フラグって何？',a:'計画地の最寄り駅からの徒歩区分だよ🚉 計画地の「🚉最寄り駅 徒歩」ボタンをタップで 未確認→〜10分→〜20分→21分以上 と切り替わるよ（同行ボタンと同じ要領）。〜10分は加点(+2)、21分以上は減点(-2)＆赤フラグ（一覧・課分析にも表示）。分数は地図で一度確認して印を付けるだけでOK😊'},
   {q:'現在地ボタンって何？',a:'初訪タブの住所欄の下にある📍現在地取得ボタン！GPSで現在地を取得して住所をクリップボードにコピーするよ。訪問先でそのまま貼り付けて使えるね😊'},
+  {q:'光速入力モードって何？',a:'訪問の合間に、スマホで見込みカードをサッと作るための入力モードだよ⚡<br>氏名・現状・住所（自宅）・計画地・購買心理ステージ・会話状況・計画地備考だけを入力できるよ。<br>詳しい情報は、あとで通常の見込みカードから追記してね😊'},
+  {q:'光速入力モードはどこから開く？',a:'スマホの一覧画面で、上部の<b>z.Aibisタイトルをタップ</b>すると開くよ⚡<br>PCでは表示されないから、PCは従来どおり「＋新規」を使ってね。'},
+  {q:'光速入力モードの住所はどう入力する？',a:'住所（自宅）と計画地は、<b>📍現在地取得ボタン</b>で現在地住所を入れるよ。<br>番地が足りない場合は、<b>🔢番地入力</b>で「3-15-2」のように追加できるよ😊'},
+  {q:'光速入力の住所にマイクボタンがないのはなぜ？',a:'丁目・番地・ハイフンは音声入力で誤認識しやすいためだよ🎤❌<br>住所は<b>現在地取得＋番地入力</b>を基本にしているんだ。氏名と計画地備考にはマイクがあるよ！'},
+  {q:'計画地備考には何を書く？',a:'現地で見た計画地まわりの気づきを書くよ📝<br>例：P空き多い、老朽建物あり、店舗裏に余地あり、自宅横が雑種地、間口広め、接道良さそう、など。<br>次回訪問の作戦材料になるよ😊'},
   {q:'家族構成ってどう入れるの？',a:'初訪タブの「家族構成」セクションから入力できるよ！<br><br>＋ボタンで追加→続柄・氏名・年齢・居住形態を入力<br>★所有者 / KP（キーパーソン）/ 面談済 も記録できるよ<br>スタンス（ポジティブ/ネガティブ）も記録して戦略に活かしてね！<br>👶 子世代・兄弟姉妹は婚姻状況と子の人数も記録できるよ（相続人の把握に役立つ）。'},
   {q:'課分析ダッシュボードって何？',a:function(){ return isMgrUnlocked()?'管理職のPC版でのみ使える育成型「コマンドセンター」だよ📊 「今日動く」「担当を育てる」を上段にまとめてる。<br><br>・📌 今日の一手（誰に何を・次に聞く質問つき）<br>・🎯 次の一手 準備度（次回アポ・家族・KP・提案依頼から自動算出）<br>・🪜 見込み進捗3ゾーン<br>・💼 契約クローズ・トラッカー<br>・🎓 課長コーチング（良い点＋今週の声掛け）<br>・🌱 育成クエスト（弱点を次の課題に）<br>・🏆 担当別スコア／重要3指標／🟢 稼働率モニター<br>・🧠 傾向と対策（AIインサイト）<br><br>担当者セレクトで個人・全体を切替。「🤖 分析用に抽出」→「🤖 AI分析」でCopilotに分析依頼（次回アクション中心の指示が出るよ）。「🖨 レポート印刷」で表紙＋目次＋ガジェット＋AI分析を1冊のA4に。':'それは課長・支店長向けの機能だよ😊 担当のみんなは「🔭 自己分析ダッシュボード」で自分の見込みをチェックしてね！'; }},
   {q:'自己分析ダッシュボードって何？',a:'自分の見込みを自分で研究する「グロースコンソール」だよ🔭<br><br>・連想到達率リング＋レベル表示で成長を実感<br>・🔥 平日ストリーク（平日に開くと継続。土日はお休み）<br>・⤴ ステージ引き上げ（今月お客様の心を動かした回数＋⭐提案依頼）<br>・🥇 月間バッジ（提案依頼・同行・家族構成コンプ・新規発掘の達成度）<br>・🏆 課内ランキング（上位3名＋自分の順位。課長端末で表示）<br>・🎯 今日の作戦盤（優先3件にアクションチップを選んで自分のミッションに）<br>・🧭 スキルレーダー6軸＋<b>点線で先月の自分</b>と比較<br>・🔻 マイ・パイプライン（転換率つき）<br>・🥊 壁打ちワーク（AI相手に1問だけ自問自答してスキルUP）<br><br>スマホでも見れるよ。PCなら「🤖 AI分析」「🖨 印刷」も使えるよ！'},
@@ -2976,16 +3034,46 @@ window.zHeavyList=function(){
      +'<span style="opacity:.5">\u203a</span></div>';
   }).join('')+'</div>');
 };
-window.zRevList=function(k){
+window.zRevList=function(k,el){
  var d=_zRev[k]; if(!d||!d.a||!d.a.length) return;
- try{ if(window.zRevHide) zRevHide(); }catch(_e){}
+ el=el||window._zRevLastEl||null;
+ var pop=document.getElementById('zRevPop');
+ if(!pop){pop=document.createElement('div');pop.id='zRevPop';pop.className='z-reveal-pop';document.body.appendChild(pop);}
  var top=d.a.slice().sort(function(a,b){return (b.score||0)-(a.score||0);});
- aibisAlert('<b>'+e(d.t||'該当のお客様')+'</b>（'+d.a.length+'名）<br><div style="max-height:50vh;overflow:auto;margin-top:6px;text-align:left">'+top.map(function(it){
-  return '<div style="padding:7px 4px;border-bottom:1px solid #e2e8f0;display:flex;gap:8px;align-items:center'+(it.id?';cursor:pointer':'')+'"'+(it.id?' onclick="closeAibisAlert();openCard(\''+it.id+'\')"':'')+'><b style="flex:1">'+e(it.name||'無名')+'様</b>'+(it.sub?'<span style="font-size:11px;color:#718096">'+e(it.sub)+'</span>':'')+(it.score!=null?'<span style="font-size:11px;color:#2c5282;font-weight:700">'+it.score+'</span>':'')+(it.id?'<span style="opacity:.5">\u203a</span>':'')+'</div>';
- }).join('')+'</div>');
+ pop.innerHTML='<div class="z-rev-h">'+e(d.t||'該当のお客様')+(d.a.length>1?'<em>'+d.a.length+'名</em>':'')+'</div>'
+  +'<div class="z-rev-list">'+top.map(function(it,i){
+    var click=it.id?' onclick="zJumpCard(\''+it.id+'\')"':'';
+    return '<div class="z-rev-row'+(it.id?' z-rev-go':'')+'"'+click+'>'+(d.a.length>1?'<span class="z-rev-rk">'+(i+1)+'</span>':'')+'<span class="z-rev-nm">'+e(it.name||'無名')+'様</span>'+(it.sub?'<span class="z-rev-sub">'+e(it.sub)+'</span>':'')+(it.score!=null?'<span class="z-rev-sc">'+it.score+'</span>':'')+(it.id?'<span style="opacity:.55;margin-left:2px">\u203a</span>':'')+'</div>';
+  }).join('')+'</div>';
+ pop.classList.add('z-rev-live');
+ var vw=window.innerWidth, vh=window.innerHeight;
+ pop.classList.add('on');
+ var pw=pop.offsetWidth, ph=pop.offsetHeight;
+ var left, tp;
+ if(el&&el.getBoundingClientRect){
+   var r=el.getBoundingClientRect();
+   var cx=r.left+r.width/2;
+   left=Math.max(8,Math.min(vw-pw-8,cx-pw/2));
+   tp=r.top-ph-10; if(tp<8) tp=Math.min(vh-ph-8,r.bottom+10);
+ } else { left=Math.max(8,(vw-pw)/2); tp=Math.max(8,(vh-ph)/2); }
+ pop.style.left=left+'px'; pop.style.top=Math.max(8,tp)+'px';
 };
-window.zRevShow=function(el,k){ var d=_zRev[k]; if(!d||!d.a.length) return; var pop=document.getElementById('zRevPop'); if(!pop){pop=document.createElement('div');pop.id='zRevPop';pop.className='z-reveal-pop';document.body.appendChild(pop);} var top=d.a.slice().sort(function(a,b){return (b.score||0)-(a.score||0);}); var multi=d.a.length>1; var show=top.slice(0,5),more=top.length-show.length; pop.innerHTML='<div class="z-rev-h">'+e(d.t||'\u8a72\u5f53\u306e\u304a\u5ba2\u69d8')+(multi?'<em>'+d.a.length+'\u540d</em>':'')+'</div>'+show.map(function(it,i){return '<div class="z-rev-row">'+(multi?'<span class="z-rev-rk">'+(i+1)+'</span>':'')+'<span class="z-rev-nm">'+e(it.name||'\u7121\u540d')+'\u69d8</span>'+(it.sub?'<span class="z-rev-sub">'+e(it.sub)+'</span>':'')+(it.score!=null?'<span class="z-rev-sc">'+it.score+'</span>':'')+'</div>';}).join('')+(more>0?'<div class="z-rev-more">\uff0b\u4ed6 '+more+' \u540d</div>':''); var r=el.getBoundingClientRect(); var pw=pop.offsetWidth,ph=pop.offsetHeight,vw=window.innerWidth; var cx=r.left+r.width/2; var left=Math.max(8,Math.min(vw-pw-8,cx-pw/2)); var tp=r.top-ph-10; if(tp<8) tp=r.bottom+10; pop.style.left=left+'px'; pop.style.top=tp+'px'; pop.classList.add('on'); };
-window.zRevHide=function(){ var p=document.getElementById('zRevPop'); if(p) p.classList.remove('on'); };
+window.zRevShow=function(el,k){ window._zRevLastEl=el; var d=_zRev[k]; if(!d||!d.a.length) return; var lp=document.getElementById('zRevPop'); if(lp&&lp.classList.contains('z-rev-live')) return; var pop=document.getElementById('zRevPop'); if(!pop){pop=document.createElement('div');pop.id='zRevPop';pop.className='z-reveal-pop';document.body.appendChild(pop);} var top=d.a.slice().sort(function(a,b){return (b.score||0)-(a.score||0);}); var multi=d.a.length>1; var show=top.slice(0,5),more=top.length-show.length; pop.innerHTML='<div class="z-rev-h">'+e(d.t||'\u8a72\u5f53\u306e\u304a\u5ba2\u69d8')+(multi?'<em>'+d.a.length+'\u540d</em>':'')+'</div>'+show.map(function(it,i){return '<div class="z-rev-row">'+(multi?'<span class="z-rev-rk">'+(i+1)+'</span>':'')+'<span class="z-rev-nm">'+e(it.name||'\u7121\u540d')+'\u69d8</span>'+(it.sub?'<span class="z-rev-sub">'+e(it.sub)+'</span>':'')+(it.score!=null?'<span class="z-rev-sc">'+it.score+'</span>':'')+'</div>';}).join('')+(more>0?'<div class="z-rev-more">\uff0b\u4ed6 '+more+' \u540d</div>':''); var r=el.getBoundingClientRect(); var pw=pop.offsetWidth,ph=pop.offsetHeight,vw=window.innerWidth; var cx=r.left+r.width/2; var left=Math.max(8,Math.min(vw-pw-8,cx-pw/2)); var tp=r.top-ph-10; if(tp<8) tp=r.bottom+10; pop.style.left=left+'px'; pop.style.top=tp+'px'; pop.classList.add('on'); };
+window.zRevHide=function(){ var p=document.getElementById('zRevPop'); if(p&&!p.classList.contains('z-rev-live')) p.classList.remove('on'); };
+window.zRevPopClose=function(){ var p=document.getElementById('zRevPop'); if(p){ p.classList.remove('on'); p.classList.remove('z-rev-live'); } };
+window.zJumpCard=function(id){
+  try{ zRevPopClose(); }catch(_e){}
+  try{ if(typeof closeAnalysis==='function') closeAnalysis(); }catch(_e){}
+  try{ if(typeof closeSelfDash==='function') closeSelfDash(); }catch(_e){}
+  openCard(id);
+};
+if(!window._zRevLiveBound){
+  window._zRevLiveBound=true;
+  document.addEventListener('pointerdown',function(ev){
+    var p=document.getElementById('zRevPop');
+    if(p&&p.classList.contains('z-rev-live')&&!p.contains(ev.target)) zRevPopClose();
+  },true);
+}
 /* ---- shared dashboard helpers (real data) ---- */
 var _zAreaMode='ward';
 var _zTown2Ward={};
@@ -3293,7 +3381,7 @@ function renderSelfDash(tid){
  bodyState+='<div class="z-card z-cf"><h3>📌 重要3指標トレンド（直近6ヶ月）</h3><div class="z-sub">提案依頼・同行・家族構成コンプの月別件数。今月：提案 '+_myNow[0]+'・同行 '+_myNow[1]+'・家族 '+_myNow[2]+'。<br><span style="color:var(--z-dim)">※家族構成は人数把握まで。氏名・年齢・職業まで深掘りを。</span></div>'+_kpi3Chart(mine)+'</div>';
  bodyState+='<div class="z-card z-c2"><h3>🔻 マイ・パイプライン <span style="font-size:10px;color:var(--z-dim)">転換率つき</span></h3><div class="z-sub">連想(3)の壁を越えているか。</div>'+_zFunnel(sc)+'</div>';
  bodyState+='<div class="z-card z-cf"><h3>📈 活動の足あと（直近12ヶ月）</h3><div class="z-sub">発掘・訪問・アポの月別量。右肩上がりが努力の証。</div>'+_zLine([{data:mDisc,color:'#2f9e44'},{data:mVis,color:'#1971c2'},{data:mApo,color:'#e8920c'}])+'<div class="z-legend"><span><i style="background:#9be15d"></i>発掘</span><span><i style="background:#4aa8ff"></i>訪問</span><span><i style="background:#ffb443"></i>アポ</span></div><div class="z-sub" style="margin:8px 0 2px">累計発掘（積み上がり）</div>'+_zLine([{data:cum,color:'#0c8599'}])+'</div>';
- bodyState+='<div class="z-card z-c2"><h3>⏱ 45日契約クロック</h3><div class="z-sub">A昇格(追撃判定)から45日が契約の目安。赤は超過。</div>'+(myA.length?myA.map(function(o){var p=Math.max(0,Math.min(100,(45-o.left)/45*100));var col=o.left<0?'#e03131':o.left<=10?'#e8920c':'#2f9e44';return '<div class="z-clock"><div class="z-cdays" style="color:'+col+'">'+(o.left<0?'超過':'残'+o.left)+'</div><div class="z-cbar"><i style="width:'+p+'%;background:'+col+'"></i></div><div class="z-who" style="width:84px"><b>'+e(o.c.name||'無名')+'様</b><span>'+['面識','注意','興味','連想','欲求','比較','信念','決心'][+(o.c.stage||0)]+'・'+e(o.c.pursuit_judge||'')+'</span></div></div>';}).join(''):'<div class="z-sub">A・S案件が出ると表示されます</div>')+'</div>';
+ bodyState+='<div class="z-card z-c2"><h3>⏱ 45日契約クロック</h3><div class="z-sub">A昇格(追撃判定)から45日が契約の目安。赤は超過。タップでカードへ。</div>'+(myA.length?myA.map(function(o){var p=Math.max(0,Math.min(100,(45-o.left)/45*100));var col=o.left<0?'#e03131':o.left<=10?'#e8920c':'#2f9e44';var _msid=String(o.c.id||'').replace(/[^\w-]/g,'');return '<div class="z-clock" style="cursor:pointer" onclick="zJumpCard(\''+_msid+'\')"><div class="z-cdays" style="color:'+col+'">'+(o.left<0?'超過':'残'+o.left)+'</div><div class="z-cbar"><i style="width:'+p+'%;background:'+col+'"></i></div><div class="z-who" style="width:84px"><b>'+e(o.c.name||'無名')+'様</b><span>'+['面識','注意','興味','連想','欲求','比較','信念','決心'][+(o.c.stage||0)]+'・'+e(o.c.pursuit_judge||'')+'</span></div></div>';}).join(''):'<div class="z-sub">A・S案件が出ると表示されます</div>')+'</div>';
  bodyGrow+='<div class="z-card z-c2"><h3>🏅 獲得した称号</h3><div class="z-sub">いろんな軸で輝ける。今の自分の勲章。</div><div class="z-badges">'+(myBadges.length?myBadges.map(function(b){return '<div class="z-badge lit"><div class="z-be">'+b.e+'</div><div class="z-bt">'+b.t+'</div><div class="z-bw">'+b.w+'</div></div>';}).join(''):'<div class="z-sub">あと一歩！どれかの軸でトップを狙おう</div>')+'</div></div>';
  var myAch=_achBadges(mine);
  bodyGrow+='<div class="z-card z-c2"><h3>🎖 実績バッジ</h3><div class="z-sub">行動の積み重ねで誰でも取れる実績。</div><div class="z-badges">'+(myAch.length?myAch.map(function(b){return '<div class="z-badge lit"><div class="z-be">'+b.e+'</div><div class="z-bt">'+b.t+'</div></div>';}).join(''):'<div class="z-sub">行動を重ねると実績が増えるよ。</div>')+'</div></div>';
@@ -6290,7 +6378,7 @@ var _zAreaCtx=null;
 function _zAreaInner(target,toggleFn){ toggleFn=toggleFn||'zSetArea';
  var byWard={},byTown={},byWardC={},byTownC={};
  target.forEach(function(c){var p=_zParseAddr(c.address);byWard[p.ward]=(byWard[p.ward]||0)+1;(byWardC[p.ward]=byWardC[p.ward]||[]).push(c);var key=p.ward+' '+p.town;byTown[key]=(byTown[key]||0)+1;(byTownC[key]=byTownC[key]||[]).push(c);});
- function grid(obj,cmap){var mx=Math.max.apply(null,Object.keys(obj).map(function(k){return obj[k];}))||1;return '<div class="z-areagrid">'+Object.keys(obj).sort(function(a,b){return obj[b]-obj[a];}).map(function(k){var v=obj[k],unk=/未分類|区不明|町名なし/.test(k),disp=k.replace('（町名なし）','(町なし)');var items=(cmap[k]||[]).map(function(c){return {name:c.name,score:calcScore(c),sub:e(c.manager||''),id:String(c.id||'').replace(/[^\w-]/g,'')};});var rk=_zRevReg(disp,items);return '<div class="z-area'+(unk?' z-unk':'')+'" style="'+(unk?'':'background:'+_zHeat(v/mx*100))+'" onpointerdown="zRevShow(this,\''+rk+'\')" onpointerup="zRevHide()" onpointerleave="zRevHide()" onpointercancel="zRevHide()" oncontextmenu="return false" onclick="zRevList(\''+rk+'\')"><b>'+v+'</b><span>'+e(disp)+'</span></div>';}).join('')+'</div>';}
+ function grid(obj,cmap){var mx=Math.max.apply(null,Object.keys(obj).map(function(k){return obj[k];}))||1;return '<div class="z-areagrid">'+Object.keys(obj).sort(function(a,b){return obj[b]-obj[a];}).map(function(k){var v=obj[k],unk=/未分類|区不明|町名なし/.test(k),disp=k.replace('（町名なし）','(町なし)');var items=(cmap[k]||[]).map(function(c){return {name:c.name,score:calcScore(c),sub:e(c.manager||''),id:String(c.id||'').replace(/[^\w-]/g,'')};});var rk=_zRevReg(disp,items);return '<div class="z-area'+(unk?' z-unk':'')+'" style="'+(unk?'':'background:'+_zHeat(v/mx*100))+'" onpointerdown="zRevShow(this,\''+rk+'\')" onpointerup="zRevHide()" onpointerleave="zRevHide()" onpointercancel="zRevHide()" oncontextmenu="return false" onclick="zRevList(\''+rk+'\',this)"><b>'+v+'</b><span>'+e(disp)+'</span></div>';}).join('')+'</div>';}
  var body='<div class="z-toggle"><button class="'+(_zAreaMode==='ward'?'on':'')+'" onclick="'+toggleFn+'(\'ward\')">区</button><button class="'+(_zAreaMode==='town'?'on':'')+'" onclick="'+toggleFn+'(\'town\')">町</button></div><div class="z-sub" style="clear:both;padding-top:6px">件数の濃淡。長押しでプレビュー、タップで一覧→お客様名からカードへ。区・町・不明も全部拾います。</div>'+(_zAreaMode==='ward'?grid(byWard,byWardC):grid(byTown,byTownC));
  return body;
 }
@@ -6410,9 +6498,9 @@ function renderAnalysis(){
  // contract
  var rw={S:35,A:28,B:15,C:8,D:3};function prox(c){return Math.max(0,Math.min(100,Math.round(+(c.stage||0)/7*45)+(rw[c.pursuit_judge]||0)+(calcPaceOverrate(c)>1?0:15)));}
  var deals=t.filter(function(c){return['S','A','B'].indexOf(c.pursuit_judge)>=0||+(c.stage||0)>=3;}).map(function(c){return {c:c,p:prox(c)};}).sort(function(a,b){return b.p-a.p;}).slice(0,6);
- var dealsH=deals.length?deals.map(function(o){return '<div class="z-deal"><div class="z-rk" style="background:'+(RC[o.c.pursuit_judge]||'#4a5568')+'">'+e(o.c.pursuit_judge||'-')+'</div><div class="z-who"><b>'+e(o.c.name||'無名')+'様</b><span>'+STG[+(o.c.stage||0)]+'・'+e(o.c.manager||'')+'</span></div><div class="z-track"><i style="width:'+o.p+'%"></i></div><div class="z-pc">'+o.p+'%</div></div>';}).join(''):'<div class="z-empty">対象案件なし</div>';
+ var dealsH=deals.length?deals.map(function(o){var _dsid=String(o.c.id||'').replace(/[^\w-]/g,'');return '<div class="z-deal" style="cursor:pointer" onclick="zJumpCard(\''+_dsid+'\')"><div class="z-rk" style="background:'+(RC[o.c.pursuit_judge]||'#4a5568')+'">'+e(o.c.pursuit_judge||'-')+'</div><div class="z-who"><b>'+e(o.c.name||'無名')+'様</b><span>'+STG[+(o.c.stage||0)]+'・'+e(o.c.manager||'')+'</span></div><div class="z-track"><i style="width:'+o.p+'%"></i></div><div class="z-pc">'+o.p+'%</div></div>';}).join(''):'<div class="z-empty">対象案件なし</div>';
  var allA=t.filter(function(c){return (c.pursuit_judge==='A'||c.pursuit_judge==='S')&&c.pursuit_judge_date;}).map(function(c){return {c:c,left:45-_zDaysSince(c.pursuit_judge_date)};}).sort(function(a,b){return a.left-b.left;}).slice(0,6);
- var clockH=allA.length?allA.map(function(o){var col=o.left<0?'#ff5d7d':o.left<=10?'#ffb443':'#9be15d';return '<div class="z-clock"><div class="z-cdays" style="color:'+col+'">'+(o.left<0?'超過':'残'+o.left)+'</div><div class="z-cbar"><i style="width:'+Math.max(0,Math.min(100,(45-o.left)/45*100))+'%;background:'+col+'"></i></div><div class="z-who" style="width:90px"><b>'+e(o.c.name||'無名')+'様</b><span>'+e(o.c.manager||'')+'・'+e(o.c.pursuit_judge)+'</span></div></div>';}).join(''):'<div class="z-sub">A・S案件＋追撃判定日が必要</div>';
+ var clockH=allA.length?allA.map(function(o){var col=o.left<0?'#ff5d7d':o.left<=10?'#ffb443':'#9be15d';var _csid=String(o.c.id||'').replace(/[^\w-]/g,'');return '<div class="z-clock" style="cursor:pointer" onclick="zJumpCard(\''+_csid+'\')"><div class="z-cdays" style="color:'+col+'">'+(o.left<0?'超過':'残'+o.left)+'</div><div class="z-cbar"><i style="width:'+Math.max(0,Math.min(100,(45-o.left)/45*100))+'%;background:'+col+'"></i></div><div class="z-who" style="width:90px"><b>'+e(o.c.name||'無名')+'様</b><span>'+e(o.c.manager||'')+'・'+e(o.c.pursuit_judge)+'</span></div></div>';}).join(''):'<div class="z-sub">A・S案件＋追撃判定日が必要</div>';
  var dwell=[0,0,0,0,0,0,0,0],dc=[0,0,0,0,0,0,0,0];t.forEach(function(c){var s=+(c.stage||0);dwell[s]+=lastContactDays(c);dc[s]++;});var dwAvg=dwell.map(function(v,i){return dc[i]?Math.round(v/dc[i]):0;});var slow=dwAvg.indexOf(Math.max.apply(null,dwAvg));
  var fc5=t.filter(function(c){return +(c.stage||0)>=5;}).length, proj=Math.round(fc5*0.4+conn*0.12);
  var _prio=cards.map(function(c){ var rank=(c.pursuit_judge||''); var st=+(c.stage||0); var hi=rank==='S'||rank==='A'||st>=3; if(!hi) return null; var rs=[]; if(calcPaceOverrate(c)>1) rs.push('ペース遅れ'); var dd=lastContactDays(c); if(dd>=14) rs.push(dd+'日 未接触'); if(+(c.rusu||0)>=3) rs.push('連続留守'+c.rusu+'回'); if(!rs.length) return null; var sc=(rank==='S'?3:rank==='A'?2:1)*2+st/8+rs.length; return {c:c,rs:rs,sc:sc}; }).filter(Boolean).sort(function(a,b){return b.sc-a.sc;}).slice(0,6);
@@ -6445,7 +6533,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
  var bodyArea=_zAreaCard(t);
  // multi
  var asMap={'1億以下':1,'3億以下':2,'5億以下':3,'10億未満':4,'10億以上':5};
- var bub='<svg class="z-bub" viewBox="0 0 560 230">';t.forEach(function(c){var x=20+calcScore(c)/78*520;var av=(asMap[c.land_asset]||0)+(+(c.m2||0)>=200?2:+(c.m2||0)>=100?1:0);var y=210-av/7*190;var rr=5+calcScore(c)/78*11;var rk=_zRevReg('\ud83d\udc8e \u304a\u5b9d\u5ba2',[{name:c.name,score:calcScore(c),sub:STG[+(c.stage||0)]+'\u30fb'+e(c.manager||''),id:String(c.id||'').replace(/[^\w-]/g,'')}]);bub+='<circle cx="'+x.toFixed(0)+'" cy="'+y.toFixed(0)+'" r="'+rr.toFixed(0)+'" fill="'+(RC[c.pursuit_judge]||'#888')+'" opacity=".62" stroke="#fff" stroke-width="1" style="cursor:pointer" onpointerdown="zRevShow(this,\''+rk+'\')" onpointerup="zRevHide()" onpointerleave="zRevHide()" onpointercancel="zRevHide()" oncontextmenu="return false" onclick="zRevList(\''+rk+'\')"/>';});bub+='<text x="280" y="228" font-size="9" fill="#6b7894" text-anchor="middle">熱量（スコア）→</text></svg>';
+ var bub='<svg class="z-bub" viewBox="0 0 560 230">';t.forEach(function(c){var x=20+calcScore(c)/78*520;var av=(asMap[c.land_asset]||0)+(+(c.m2||0)>=200?2:+(c.m2||0)>=100?1:0);var y=210-av/7*190;var rr=5+calcScore(c)/78*11;var rk=_zRevReg('\ud83d\udc8e \u304a\u5b9d\u5ba2',[{name:c.name,score:calcScore(c),sub:STG[+(c.stage||0)]+'\u30fb'+e(c.manager||''),id:String(c.id||'').replace(/[^\w-]/g,'')}]);bub+='<circle cx="'+x.toFixed(0)+'" cy="'+y.toFixed(0)+'" r="'+rr.toFixed(0)+'" fill="'+(RC[c.pursuit_judge]||'#888')+'" opacity=".62" stroke="#fff" stroke-width="1" style="cursor:pointer" onpointerdown="zRevShow(this,\''+rk+'\')" onpointerup="zRevHide()" onpointerleave="zRevHide()" onpointercancel="zRevHide()" oncontextmenu="return false" onclick="zRevList(\''+rk+'\',this)"/>';});bub+='<text x="280" y="228" font-size="9" fill="#6b7894" text-anchor="middle">熱量（スコア）→</text></svg>';
  var ageT=[['〜64',0,64],['65〜74',65,74],['75〜',75,200]];var agH=ageT.map(function(a){var arr=t.filter(function(c){var ag=_zOwnerAge(c);return ag!==null&&ag>=a[1]&&ag<=a[2];});var av2=arr.length?(arr.reduce(function(s,c){return s+ +(c.stage||0);},0)/arr.length).toFixed(1):'0';return '<div class="z-tile"><b>'+arr.length+'</b><span>'+a[0]+'歳／平均St '+av2+'</span></div>';}).join('');var noAge=t.filter(function(c){return _zOwnerAge(c)===null;}).length;
  var pot=Math.round(t.filter(function(c){return c.pursuit_judge==='A'||c.pursuit_judge==='S';}).reduce(function(s,c){return s+(parseFloat(c.rosenka)||0)*1000*(parseFloat(c.m2)||0);},0)/1e8);
  var miniR=board.map(function(b,_bi){var a=g[b.r];var ax=[['発掘',Math.min(Math.round(a.length/30*100),100)],['グリ',(function(){var s=0,nn=0;a.forEach(function(c){var l=getKaiwaLevel(c);if(l>=0){s+=l;nn++;}});return nn?Math.round(s/nn/4*100):0;})()],['ヒア',_zPct(a.filter(function(c){return c.family_headcount;}).length,a.length)],['連想',_zPct(a.filter(function(c){return +(c.stage||0)>=3;}).length,a.length)],['テス',_zPct(a.filter(function(c){return +(c.stage||0)>=4;}).length,Math.max(1,a.filter(function(c){return +(c.stage||0)>=3;}).length))],['ペース',100-_zPct(a.filter(function(c){return calcPaceOverrate(c)>1;}).length,a.length)]];var col=_zAVAS[reps.indexOf(b.r)%8];return _radarHero(b.r,ax,col,_bi);}).join('');
@@ -6534,8 +6622,9 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
    return {c:c,rs:rs,urg:urg};
  }).sort(function(a,b){return b.urg-a.urg;}).slice(0,5);
  var todayH=todayCand.length?todayCand.map(function(o,i){var c=o.c,st=+(c.stage||0),mv=_nextMove(c);
+   var _tsid=String(c.id||'').replace(/[^\w-]/g,'');
    return '<div style="padding:10px 0;border-bottom:1px solid var(--z-line)">'
-    +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><div style="width:22px;height:22px;border-radius:50%;background:'+(RC[c.pursuit_judge]||'#4a5568')+';color:#fff;font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(i+1)+'</div><b style="font-size:14px;color:var(--z-ink)">'+e(c.name||'無名')+'様</b><span style="font-size:11px;color:var(--z-mut)">'+STG[st]+'・'+e(c.pursuit_judge||'-')+'判定・'+e(c.manager||'')+'</span></div>'
+    +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><div style="width:22px;height:22px;border-radius:50%;background:'+(RC[c.pursuit_judge]||'#4a5568')+';color:#fff;font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(i+1)+'</div><b style="font-size:14px;color:var(--z-ink);cursor:pointer" onclick="zJumpCard(\''+_tsid+'\')">'+e(c.name||'無名')+'様 \u203a</b><span style="font-size:11px;color:var(--z-mut)">'+STG[st]+'・'+e(c.pursuit_judge||'-')+'判定・'+e(c.manager||'')+'</span></div>'
     +(o.rs.length?'<div style="display:flex;gap:4px;flex-wrap:wrap;margin:5px 0 0 30px">'+o.rs.map(function(x){return '<span style="font-size:10px;background:rgba(255,93,125,.16);color:#ff5d7d;border:1px solid rgba(255,93,125,.3);border-radius:9px;padding:1px 7px">'+x+'</span>';}).join('')+'</div>':'')
     +'<div style="margin:6px 0 0 30px;font-size:12px;color:var(--z-ink)"><span style="color:var(--z-cyan);font-weight:700">次の一手：</span>'+mv[0]+'</div>'
     +'<div style="margin:2px 0 0 30px;font-size:12px;color:var(--z-mut)"><span style="color:var(--z-cyan);font-weight:700">次に聞く：</span>'+mv[1]+'</div></div>';
@@ -6591,7 +6680,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
  var rdHi=_rdScores.filter(function(v){return v>=70;}).length, rdMid=_rdScores.filter(function(v){return v>=30&&v<70;}).length, rdLo=_rdScores.filter(function(v){return v<30;}).length;
  var rdAvg=t.length?Math.round(_rdScores.reduce(function(s,v){return s+v;},0)/t.length):0;
  var rdList=t.filter(function(c){var st=+(c.stage||0);return (c.pursuit_judge==='S'||c.pursuit_judge==='A'||st>=3)&&_readyScore(c)<70;}).map(function(c){return {c:c,sc:_readyScore(c)};}).sort(function(a,b){return a.sc-b.sc;}).slice(0,6);
- var rdListH=rdList.length?rdList.map(function(o){var c=o.c;return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--z-line)"><b style="font-size:13px;color:var(--z-ink);min-width:72px;flex-shrink:0">'+e(c.name||'無名')+'様</b><span style="font-size:11px;color:var(--z-mut);flex:1">'+_readyGap(c)+'</span><span style="font-size:11px;color:var(--z-dim);flex-shrink:0">'+e(c.manager||'')+'</span></div>';}).join(''):'<div class="z-empty">有望案件はすべて次の一手が準備済み◎</div>';
+ var rdListH=rdList.length?rdList.map(function(o){var c=o.c;var _rsid=String(c.id||'').replace(/[^\w-]/g,'');return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--z-line);cursor:pointer" onclick="zJumpCard(\''+_rsid+'\')"><b style="font-size:13px;color:var(--z-ink);min-width:72px;flex-shrink:0">'+e(c.name||'無名')+'様 \u203a</b><span style="font-size:11px;color:var(--z-mut);flex:1">'+_readyGap(c)+'</span><span style="font-size:11px;color:var(--z-dim);flex-shrink:0">'+e(c.manager||'')+'</span></div>';}).join(''):'<div class="z-empty">有望案件はすべて次の一手が準備済み◎</div>';
  var readyH='<div class="z-tiles"><div class="z-tile"><b style="color:#34e3d0">'+rdHi+'</b><span>準備OK（70+）</span></div><div class="z-tile"><b style="color:#ffb443">'+rdMid+'</b><span>要準備（30〜69）</span></div><div class="z-tile"><b style="color:#ff5d7d">'+rdLo+'</b><span>未設定（〜29）</span></div></div><div class="z-sub" style="margin:8px 0 4px"><span style="color:var(--z-cyan);font-weight:700">平均準備度：'+rdAvg+'%</span>　次の接点が未設定の有望案件↓</div>'+rdListH;
  var readyCard=_zc('🎯','次の一手 準備度','次回アポ・家族・KP・提案依頼・連想到達から自動算出（入力欄は増やしていません）',readyH,'z-cf');
  // ===== P2: 育成クエスト =====
@@ -7511,16 +7600,17 @@ function openDevDefaults(){
 }
 window.openDevDefaults=openDevDefaults;
 
-// ===== ⚡ 最小入力モード =====
-var QA_STAGES=['0:面識','1:注意','2:興味','3:連想','4:欲求','5:比較','6:信念','7:決心'];
+// ===== ⚡ 光速入力モード（スマホ専用） =====
+var QA_STAGES=['0:面識','1:注意','2:興味','3:連想'];
 var QA_KAIWA=['ピンポン','立ち話','玄関内','連れ出し','上り込み'];
 var qaStageSel=-1, qaKaiwaSel=[];
 function openQuickAdd(){
+  if(!isMob) return; // スマホ専用（PCは通常の新規カードを使用）
   qaStageSel=-1; qaKaiwaSel=[];
-  var nm=document.getElementById('qaName'); if(nm) nm.value='';
+  ['qaName','qaAddr','qaPlan','qaKuubi'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  var gj=document.getElementById('qaGenjo'); if(gj) gj.value='';
   qaRender();
   var ov=document.getElementById('quickAddOv'); if(ov) ov.style.display='flex';
-  setTimeout(function(){ if(nm) nm.focus(); },80);
 }
 function closeQuickAdd(){ var ov=document.getElementById('quickAddOv'); if(ov) ov.style.display='none'; }
 function qaRender(){
@@ -7543,6 +7633,10 @@ function qaSave(cont){
   if(!name){ toast('氏名を入力してください'); if(nm) nm.focus(); return; }
   var c=mkBlank();
   c.name=name;
+  var gj=document.getElementById('qaGenjo'); if(gj&&gj.value) c.genjo=gj.value;
+  var ad=document.getElementById('qaAddr'); if(ad&&ad.value.trim()) c.address=ad.value.trim();
+  var pl=document.getElementById('qaPlan'); if(pl&&pl.value.trim()) c.plan_address=pl.value.trim();
+  var kb=document.getElementById('qaKuubi'); if(kb&&kb.value.trim()) c.kuushitsu_bikou=kb.value.trim();
   if(qaStageSel>=0) c.stage=String(qaStageSel);
   c.kaiwa=qaKaiwaSel.slice();
   _stageUpLog(null,c);
@@ -7556,7 +7650,39 @@ function qaSave(cont){
     else { closeQuickAdd(); }
   });
 }
+// 📍 現在地取得→対象フォームに即反映→番地テンキーを自動表示
+function qaGeo(targetId){
+  getCurrentAddress(function(addr){
+    var el=document.getElementById(targetId);
+    if(el){ el.value=addr; toast('📍 '+addr); qaTenkeyOpen(targetId); }
+  });
+}
+// 🔢 番地入力テンキー
+var qaTkTarget='', qaTkBufV='';
+function qaTenkeyOpen(targetId){
+  qaTkTarget=targetId; qaTkBufV='';
+  var el=document.getElementById(targetId);
+  var cur=document.getElementById('qaTkCur'); if(cur) cur.textContent=(el&&el.value)?el.value:'（未入力）';
+  qaTkPaint();
+  var ov=document.getElementById('qaTenkeyOv'); if(ov) ov.style.display='flex';
+}
+function qaTenkeyClose(){ var ov=document.getElementById('qaTenkeyOv'); if(ov) ov.style.display='none'; }
+function qaTkPaint(){ var b=document.getElementById('qaTkBuf'); if(b) b.innerHTML=qaTkBufV?e(qaTkBufV):'&nbsp;'; }
+function qaTkKey(k){
+  if(k==='bs'){ qaTkBufV=qaTkBufV.slice(0,-1); qaTkPaint(); return; }
+  if(k==='clr'){ qaTkBufV=''; qaTkPaint(); return; }
+  if(k==='ok'){
+    if(qaTkBufV){
+      var el=document.getElementById(qaTkTarget);
+      if(el){ el.value=(el.value||'')+qaTkBufV; toast('番地を追加しました'); }
+    }
+    qaTenkeyClose(); return;
+  }
+  if(qaTkBufV.length<20) qaTkBufV+=k;
+  qaTkPaint();
+}
 window.openQuickAdd=openQuickAdd; window.closeQuickAdd=closeQuickAdd; window.qaSetStage=qaSetStage; window.qaToggleKaiwa=qaToggleKaiwa; window.qaSave=qaSave;
+window.qaGeo=qaGeo; window.qaTenkeyOpen=qaTenkeyOpen; window.qaTenkeyClose=qaTenkeyClose; window.qaTkKey=qaTkKey;
 window.newCard=newCard; window.openCard=openCard; window.saveCard=saveCard; window.saveAll=saveAll;
 window.delCard=delCard; window.doDelCard=doDelCard; window.switchTab=switchTab;
 window.clearAllCards=clearAllCards; window.clearAllCards2=clearAllCards2; window.doClearAllCards=doClearAllCards;
@@ -7919,7 +8045,7 @@ function closeBook(){var o=document.getElementById("bookOverlay");if(o)o.remove(
 window.openBook=openBook;window.closeBook=closeBook;
 window.mapRoute=mapRoute; window.mapStation=mapStation; window.copyAddrToPlan=copyAddrToPlan; window.copyPlanToClipboard=copyPlanToClipboard; window.closeMap=closeMap;
 
-function getCurrentAddress(){
+function getCurrentAddress(cb){
   if(!navigator.geolocation){ toast('お使いのブラウザは位置情報に対応していません'); return; }
   toast('📍 現在地を取得中...');
   navigator.geolocation.getCurrentPosition(
@@ -7952,6 +8078,7 @@ function getCurrentAddress(){
         if(chome && chome!==ward && chome!==city) parts.push(chome);
         var fullAddr=parts.join('');
         if(!fullAddr){ toast('住所の取得に失敗しました'); return; }
+        if(typeof cb==='function'){ cb(fullAddr); return; }
         navigator.clipboard.writeText(fullAddr).then(function(){
           toast('📋 '+fullAddr);
         }).catch(function(){
@@ -8513,9 +8640,9 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <div><label>空き数（戸）</label><input type="number" id="f_kuushitsu_aki" placeholder="例: 2" inputmode="numeric" pattern="[0-9]*"></div>
       </div>
       <div>
-        <label>空室・空車備考</label>
+        <label>計画地備考</label>
         <div style="display:flex;gap:6px;align-items:center">
-          <input type="text" id="f_kuubi" placeholder="退去予定あり など" style="flex:1">
+          <input type="text" id="f_kuubi" placeholder="P空き多い・退去予定あり など" style="flex:1">
           <button type="button" class="mic-btn" onclick="micStart('f_kuubi',this)" style="flex-shrink:0;margin-top:0">🎤</button>
         </div>
       </div>
