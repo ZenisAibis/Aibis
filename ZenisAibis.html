@@ -365,7 +365,7 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 .job-portrait .job-emoji{font-size:42px}
 .job-id{min-width:0;flex:1}
 .job-name{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:22px;font-weight:800;color:var(--z-ink);line-height:1.18}
-.job-name .jn-txt{white-space:nowrap}
+.job-name .jn-txt{white-space:nowrap} .job-name .jn-yomi{flex:0 0 100%;font-size:11px;font-weight:700;color:#8a94a6;line-height:1;margin-bottom:2px;letter-spacing:.08em}
 .job-title{font-size:12px;font-weight:800;color:#1a202c;background:linear-gradient(135deg,#ffe08a,#ffd43b);border-radius:8px;padding:2px 9px;white-space:nowrap;flex-shrink:0}
 .job-strong{font-size:12px;color:var(--z-mut);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .job-trust{font-size:11px;color:var(--z-dim);margin-top:3px}
@@ -1644,7 +1644,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v6.31";
+var APP_VERSION = "v6.32";
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
 window.IS_DEV = /_dev/i.test(location.href);
@@ -3557,6 +3557,16 @@ var J9_IMGID={
  '天眼王':'tenganou','芽士':'meshi','始動者':'shidousha','初陣士':'uijinshi','万屋':'yorozuya'
 };
 function j9ImgId(name){ return J9_IMGID[name]||encodeURIComponent(name); }
+// ジョブ名の読み（ルビ）— 確定版v2
+var J9_YOMI={
+ '探地士':'たんちし','法読士':'ほうどくし','傾聴士':'けいちょうし','結縁士':'けつえんし','追客士':'ついきゃくし','成案士':'せいあんし','策士':'さくし','記録士':'きろくし','疾行士':'しっこうし',
+ '地権師':'ちけんし','見聞師':'けんぶんし','地縁師':'ちえんし','立案師':'りつあんし','地勢師':'ちせいし','踏査師':'とうさし','法心師':'ほうしんし','法案師':'ほうあんし','法策師':'ほうさくし','証録師':'しょうろくし','和談師':'わだんし','聴案師':'ちょうあんし','聴策師':'ちょうさくし','継縁師':'けいえんし','成縁師':'せいえんし','追案師':'ついあんし','追策師':'ついさくし','分析師':'ぶんせきし',
+ '見聞将':'けんぶんしょう','地権将':'ちけんしょう','地縁将':'ちえんしょう','謀略将':'ぼうりゃくしょう','法心将':'ほうしんしょう','法策将':'ほうさくしょう','継縁将':'けいえんしょう','聴策将':'ちょうさくしょう','成縁将':'せいえんしょう','継策将':'けいさくしょう','成策将':'せいさくしょう','機動将':'きどうしょう',
+ '棟梁':'とうりょう','宗匠':'そうしょう','大家':'たいか','参謀':'さんぼう','総帥':'そうすい','先鋒':'せんぽう',
+ '神機妙算':'しんきみょうさん','千客万来':'せんきゃくばんらい','勇往邁進':'ゆうおうまいしん','博覧強記':'はくらんきょうき',
+ '天眼王':'てんがんおう','芽士':'めし','始動者':'しどうしゃ','初陣士':'ういじんし','万屋':'よろずや'
+};
+function j9Yomi(name){ return J9_YOMI[name]||''; }
 // ジョブのアイコン絵文字（ドット絵が無いときのフォールバック）
 function _jobEmoji(res){
   if(res.job==='天眼王') return '👑';
@@ -3675,7 +3685,7 @@ function jobCardHTML(cards, mode, dispName){
   return '<div class="job-card jc-tier-'+tier+'" style="--jc-accent:'+color+'">'
     +(dispName&&mode==='mgr'?'<div class="job-rep">'+e(dispName)+'</div>':'')
     +'<div class="job-hero">'+_jobPortrait(res)
-      +'<div class="job-id"><div class="job-name"><span class="jn-txt">'+e(res.job)+'</span>'+titleBadge+'</div>'
+      +'<div class="job-id"><div class="job-name">'+(j9Yomi(res.job)?'<span class="jn-yomi">'+e(j9Yomi(res.job))+'</span>':'')+'<span class="jn-txt">'+e(res.job)+'</span>'+titleBadge+'</div>'
       +'<div class="job-strong">強み：'+e(strongNames)+'</div>'
       +precLine+'</div></div>'
     +'<div class="job-graphs">'
