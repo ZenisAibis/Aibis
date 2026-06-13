@@ -1644,7 +1644,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v6.27";
+var APP_VERSION = "v6.30";
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
 window.IS_DEV = /_dev/i.test(location.href);
@@ -3260,11 +3260,21 @@ var J9_FIVE={
  'chizu+tsuibi+seian+kiroku+sokko':'開拓大将','houbun+choshin+seian+sakujin+kiroku':'相続軍師'
 };
 var J9_INIT=['芽士','始動者','初陣士']; // 入力信頼度が低いときの初期職
+var J9_CARD_GATE={ meshiMax:35, yorozuMax:40, jobMin:41, tier34:65, tier5:80, trust34:0.70, trust5:0.85 };
+function j9CardCap(n, trust){
+  if(n<J9_CARD_GATE.jobMin) return 0;
+  if(n<J9_CARD_GATE.tier34) return 2;           // 41〜64：1〜2強
+  if(n<J9_CARD_GATE.tier5){                      // 65〜79：入力率70%以上で3〜4強、未満は2強どまり
+    return (trust>=J9_CARD_GATE.trust34) ? 4 : 2;
+  }
+  // 80以上：入力率85%以上で5強・天眼王、未満は4強どまり
+  return (trust>=J9_CARD_GATE.trust5) ? 9 : 4;
+}
 // ジョブの“格”を数値化（昇格検知用）。初期職0／1強1…5強5／天眼王6。万屋はバランスで1扱い
 function j9JobRank(job, strongCount){
   if(job==='天眼王') return 6;
   if(J9_INIT.indexOf(job)>=0) return 0;
-  if(job==='万屋') return 1;
+  if(job==='万屋') return 0; // ジョブ未確定の助走帯（→本ジョブ確定で昇格扱い）
   return Math.max(1,Math.min(5,strongCount||1));
 }
 var J9_KING='天眼王';
@@ -3272,11 +3282,13 @@ var J9_KING='天眼王';
 var J9_EYE={chizu:'地眼',houbun:'法読',choshin:'心眼',enmusubi:'縁眼',tsuibi:'継火',seian:'商眼',sakujin:'勝眼',kiroku:'緻録',sokko:'疾走'};
 
 // 強い軸を抽出（しきい値＋信頼度ゲート）
-function j9StrongAxes(corr, trust){
+function j9StrongAxes(corr, trust, cardCap){
   var entries=J9_ORDER.map(function(k){return {k:k,v:corr[k]};}).sort(function(a,b){return b.v-a.v;});
-  // 信頼度による上位化の上限
-  var cap; if(trust<0.30)cap=0; else if(trust<0.50)cap=1; else if(trust<0.70)cap=2; else if(trust<0.85)cap=3; else cap=9;
-  var strong=entries.filter(function(e){return e.v>=80;}).map(function(e){return e.k;});
+  var tcap; if(trust<0.30)tcap=0; else if(trust<0.50)tcap=1; else if(trust<0.70)tcap=2; else if(trust<0.85)tcap=3; else tcap=9;
+  var cap=Math.min(tcap, (cardCap==null?9:cardCap));
+  var top=entries[0].v;
+  var strong=entries.filter(function(e){return e.v>=60 && (top-e.v)<=18;}).map(function(e){return e.k;});
+  if(strong.length===0 && top>=55) strong=[entries[0].k];
   if(strong.length>cap) strong=strong.slice(0,cap);
   return strong;
 }
@@ -3293,17 +3305,22 @@ function j9DetermineJob(cards, repName){
   var corr={}; J9_ORDER.forEach(function(k){ corr[k]=_clip(r.axes[k]*coef); });
   var res={axes:r.axes, corr:corr, trust:r.trust, coef:coef, n:r.n, job:'', title:'', strong:[], provisional:false};
   if(r.n===0){ res.job='—'; res.provisional=true; return res; }
-  // 入力信頼度が低い→初期職
-  if(r.trust<0.30){
-    res.job=J9_INIT[Math.min(J9_INIT.length-1, Math.floor(r.n/3))];
+  // 【カード数ゲート】行動量（保有枚数）で段階を区切る
+  if(r.n<=J9_CARD_GATE.meshiMax){
+    res.job=J9_INIT[Math.min(J9_INIT.length-1, Math.floor(r.n/12))];
     res.provisional=true; res.strong=[]; return res;
   }
-  var strong=j9StrongAxes(corr, r.trust);
+  if(r.n<J9_CARD_GATE.jobMin){
+    res.job='万屋'; res.provisional=true; res.strong=[]; return res;
+  }
+  if(r.trust<0.30){ res.provisional=true; }
+  var cardCap=j9CardCap(r.n, r.trust);
+  var strong=j9StrongAxes(corr, r.trust, cardCap);
   res.strong=strong;
   var ns=strong.length;
   // 全軸高水準＋高信頼→天眼王
   var allHigh=J9_ORDER.every(function(k){return corr[k]>=85;});
-  if(allHigh && r.trust>=0.90){
+  if(allHigh && r.trust>=0.90 && r.n>=J9_CARD_GATE.tier5){
     // 天眼王は希少。repName指定時は直近2か月の安定（信頼度90%＆全軸85以上が継続）を必須にする。
     // 履歴がまだ1か月以下の導入初期だけ、当月条件で暫定的に許可（2か月目以降は安定判定で自然に絞られる）。
     var hist=repName?j9RecentSnaps(repName,3).length:0;
@@ -3323,8 +3340,7 @@ function j9DetermineJob(cards, repName){
   } else if(ns===1){
     job=J9_ONE[strong[0]];
   } else {
-    // 強い軸なし＝バランス型 or まだ伸びていない
-    job=(r.trust>=0.70)?'万屋':J9_INIT[0];
+    job='万屋';
     res.provisional=(r.trust<0.50);
   }
   res.job=job||'万屋';
@@ -4546,13 +4562,14 @@ function mailSelectedToManager(skipWarn, diffIds){
   try{localStorage.setItem('aibis_last_export',new Date().toISOString());}catch(_e){}
   var fn='AIBIS_'+(uName||'staff')+'_'+APP_VERSION+'_'+selected.length+'cards_'+ts+'.json';
   var a=document.createElement('a'); a.href=url; a.download=fn; a.click();
+  // 差分の基準時刻は「メーラー起動より前」に確定（mailtoで処理が中断され基準が保存されない不具合の修正）
+  _markSent('mgr', isDiff?true:selected);
   var subj='AIBIS report '+ts+' ('+selected.length+' cards)';
   var body='AIBIS selected cards\nDate: '+ts+'\nCards: '+selected.length+'\nFile: '+fn;
   setTimeout(function(){
     URL.revokeObjectURL(url);
     window.location.href='mailto:'+encodeURIComponent(mgrEmail)+(selfEmail?'?cc='+encodeURIComponent(selfEmail)+'&subject=':'?subject=')+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
     toast('JSONをDL済 → 添付して送信してください');
-    _markSent('mgr', isDiff?true:selected);
     selectNone();
   },500);
 }
@@ -4571,12 +4588,12 @@ function mailSelectedToSelf(skipWarn, diffIds){
   try{localStorage.setItem('aibis_last_export',new Date().toISOString());}catch(_e){}
   var fn='AIBIS_'+(uName||'staff')+'_'+APP_VERSION+'_'+selected.length+'cards_'+ts+'.json';
   var a=document.createElement('a'); a.href=url; a.download=fn; a.click();
+  _markSent('self', isDiff?true:selected);
   var subj='AIBIS selected '+ts+' ('+selected.length+' cards)';
   var body='AIBIS selected cards\nDate: '+ts+'\nCards: '+selected.length+'\nFile: '+fn;
   setTimeout(function(){
     URL.revokeObjectURL(url);
     window.location.href='mailto:'+encodeURIComponent(selfEmail||'')+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
-    _markSent('self', isDiff?true:selected);
     var n=selected.length;
     var msg=n<=2
       ?n+'件、送ったね！一歩一歩が大事だよ。<br>次はもう少し増やしてみよう💪'
