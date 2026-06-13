@@ -346,6 +346,70 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 .msubbdy{padding:10px 12px;font-size:12.5px;color:#2d3748;line-height:1.9;border-top:1px solid #edf2f7}
 .qa-tk{padding:13px;border:1px solid #cbd5e0;border-radius:8px;background:#f7fafc;font-size:18px;font-weight:700;font-family:inherit;cursor:pointer;color:#2d3748}
 .qa-tk:active{background:#e2e8f0}
+.job-card{position:relative;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid var(--z-line);border-radius:14px;padding:14px;transition:box-shadow .4s ease,border-color .4s ease}
+/* 段階で枠を格上げ。色は主系統色(--jc-accent)を薄くまとう */
+.jc-tier-0{border-color:var(--z-line)}
+.jc-tier-1{border-color:color-mix(in srgb,var(--jc-accent) 35%,var(--z-line))}
+.jc-tier-2{border-color:color-mix(in srgb,var(--jc-accent) 50%,var(--z-line));box-shadow:0 0 0 1px color-mix(in srgb,var(--jc-accent) 22%,transparent) inset}
+.jc-tier-3{border-color:color-mix(in srgb,var(--jc-accent) 65%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,var(--jc-accent) 30%,transparent) inset,0 0 12px -4px var(--jc-accent)}
+.jc-tier-4{border:1.5px solid color-mix(in srgb,var(--jc-accent) 78%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,var(--jc-accent) 40%,transparent) inset,0 0 18px -4px var(--jc-accent)}
+.jc-tier-5{border:2px solid color-mix(in srgb,var(--jc-accent) 88%,transparent);box-shadow:0 0 0 1.5px color-mix(in srgb,var(--jc-accent) 50%,transparent) inset,0 0 24px -3px var(--jc-accent)}
+/* 天眼王：金枠＋ゆらぐ後光（別格） */
+.jc-tier-king{border:2px solid #ffd43b;box-shadow:0 0 0 1.5px rgba(255,212,59,.55) inset,0 0 28px -2px rgba(255,212,59,.8);animation:jcKingGlow 2.6s ease-in-out infinite}
+@keyframes jcKingGlow{0%,100%{box-shadow:0 0 0 1.5px rgba(255,212,59,.55) inset,0 0 22px -4px rgba(255,212,59,.7)}50%{box-shadow:0 0 0 1.5px rgba(255,212,59,.7) inset,0 0 34px 0px rgba(255,212,59,.95)}}
+@media(prefers-reduced-motion:reduce){.jc-tier-king{animation:none}}
+.job-rep{font-size:13px;font-weight:800;color:var(--z-ink);margin-bottom:8px}
+.job-hero{display:flex;align-items:center;gap:13px}
+.job-portrait{position:relative;width:84px;height:84px;flex-shrink:0;border-radius:13px;background:rgba(0,0,0,.22);border:1px solid var(--z-line);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.job-portrait img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
+.job-portrait .job-emoji{font-size:42px}
+.job-id{min-width:0;flex:1}
+.job-name{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:22px;font-weight:800;color:var(--z-ink);line-height:1.18}
+.job-name .jn-txt{white-space:nowrap}
+.job-title{font-size:12px;font-weight:800;color:#1a202c;background:linear-gradient(135deg,#ffe08a,#ffd43b);border-radius:8px;padding:2px 9px;white-space:nowrap;flex-shrink:0}
+.job-strong{font-size:12px;color:var(--z-mut);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.job-trust{font-size:11px;color:var(--z-dim);margin-top:3px}
+/* グラフ部：モバイル縦積み／PC横並び */
+.job-graphs{margin:10px 0 4px}
+.job-radar{display:flex;justify-content:center;align-items:center}
+.job-radar svg{width:100%;max-width:240px}
+.job-statwrap{margin-top:8px}
+.job-stats{display:flex;flex-direction:column;gap:9px}
+.stat-row{display:flex;align-items:center;gap:9px}
+.stat-lab{font-size:13px;font-weight:700;width:80px;flex-shrink:0;color:var(--z-ink)}
+.stat-stars{font-size:13px;letter-spacing:1px;width:78px;flex-shrink:0;white-space:nowrap}
+.stat-track{flex:1;height:11px;background:rgba(255,255,255,.07);border-radius:6px;overflow:hidden}
+.stat-fill{display:block;height:100%;border-radius:6px;transition:width .6s ease}
+.stat-num{font-size:13px;font-weight:800;width:28px;text-align:right;flex-shrink:0;color:var(--z-ink);font-variant-numeric:tabular-nums}
+.job-axdetail{margin-top:10px}
+.job-axdetail>summary{cursor:pointer;font-size:11px;color:var(--z-mut);font-weight:700;list-style:none}
+.job-axdetail>summary::-webkit-details-marker{display:none}
+.job-axdetail>summary:before{content:"▸ ";color:var(--z-dim)}
+.job-axdetail[open]>summary:before{content:"▾ "}
+.job-bars{display:flex;flex-direction:column;gap:7px;margin-top:8px}
+.bar-row{display:flex;align-items:center;gap:9px}
+.bar-lab{font-size:12px;width:64px;flex-shrink:0;color:var(--z-mut)}
+.bar-track{flex:1;height:9px;background:rgba(255,255,255,.07);border-radius:5px;overflow:hidden}
+.bar-fill{display:block;height:100%;border-radius:5px;transition:width .5s ease}
+.bar-num{font-size:12px;width:26px;text-align:right;flex-shrink:0;color:var(--z-ink);font-variant-numeric:tabular-nums}
+.bar-strong .bar-lab{color:var(--z-ink);font-weight:800}
+.bar-strong .bar-num{font-weight:800}
+.job-grow{font-size:12.5px;color:var(--z-mut);text-align:center;margin-top:4px}
+.job-grow b{color:#ffb443;font-size:13.5px}
+.job-line{font-size:12px;color:var(--z-mut);line-height:1.75;margin-top:9px;border-top:1px solid var(--z-line);padding-top:9px}
+.z-jobgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.z-jobcell{min-width:0}
+/* PC（広い画面）：レーダーとバーを横並び全幅に */
+@media(min-width:760px){
+  .job-graphs{display:flex;gap:20px;align-items:center}
+  .job-radar{flex:0 0 44%}
+  .job-radar svg{max-width:300px}
+  .job-statwrap{flex:1;margin-top:0}
+}
+.job-growth{font-size:11px;text-align:center;margin-top:5px;line-height:1.6}
+.job-growth-none{color:var(--z-dim)}
+.jg-up{color:#9be15d;font-weight:700}
+.jg-dn{color:#ffb443;font-weight:700}
 .mbdy{padding:12px 14px;font-size:13px;color:#2d3748;line-height:2.0}
 
 /* スマホのみ：計画地ボタンを下段に */
@@ -1189,7 +1253,7 @@ body.is-mob .mob-menu{display:inline-block}
         自分の見込みを自分で研究・分析する「グロースコンソール」です（スマホ・PC両対応）。<br><br>
         <b style="color:#2c5282">主な内容</b><br>
         ・連想到達率リング＋レベル表示 … 成長の手応えを可視化<br>
-        ・🧭 スキルレーダー（6軸）… 発掘量・グリップ深度・ヒアリング・連想到達・テスクロ・追客ペース。凹んだ軸が伸びしろ<br>
+        ・🎖 営業ジョブ（9軸・全50職）… 地図・法文・聴心・縁結・追火・成案・策陣・記録・速行から「いまの型」と二つ名・次に伸ばす力を表示。入力と行動＋戦略協議のAI評価で判定<br>
         ・🔻 マイ・パイプライン（転換率つき）… どのステージで詰まっているか<br>
         ・🎯 今日の3手 … 今すぐ動くべきことを自動提案<br>
         ・🥊 壁打ちワーク … AI相手に1問だけ自問自答してスキルを磨く<br>
@@ -1580,7 +1644,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v6.02";
+var APP_VERSION = "v6.27";
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
 window.IS_DEV = /_dev/i.test(location.href);
@@ -2025,7 +2089,7 @@ var AIBIS_FAQ=[
   {q:'計画地備考には何を書く？',a:'現地で見た計画地まわりの気づきを書くよ📝<br>例：P空き多い、老朽建物あり、店舗裏に余地あり、自宅横が雑種地、間口広め、接道良さそう、など。<br>次回訪問の作戦材料になるよ😊'},
   {q:'家族構成ってどう入れるの？',a:'初訪タブの「家族構成」セクションから入力できるよ！<br><br>＋ボタンで追加→続柄・氏名・年齢・居住形態を入力<br>★所有者 / KP（キーパーソン）/ 面談済 も記録できるよ<br>スタンス（ポジティブ/ネガティブ）も記録して戦略に活かしてね！<br>👶 子世代・兄弟姉妹は婚姻状況と子の人数も記録できるよ（相続人の把握に役立つ）。'},
   {q:'課分析ダッシュボードって何？',a:function(){ return isMgrUnlocked()?'管理職のPC版でのみ使える育成型「コマンドセンター」だよ📊 「今日動く」「担当を育てる」を上段にまとめてる。<br><br>・📌 今日の一手（誰に何を・次に聞く質問つき）<br>・🎯 次の一手 準備度（次回アポ・家族・KP・提案依頼から自動算出）<br>・🪜 見込み進捗3ゾーン<br>・💼 契約クローズ・トラッカー<br>・🎓 課長コーチング（良い点＋今週の声掛け）<br>・🌱 育成クエスト（弱点を次の課題に）<br>・🏆 担当別スコア／重要3指標／🟢 稼働率モニター<br>・🧠 傾向と対策（AIインサイト）<br><br>担当者セレクトで個人・全体を切替。「🤖 分析用に抽出」→「🤖 AI分析」でCopilotに分析依頼（次回アクション中心の指示が出るよ）。「🖨 レポート印刷」で表紙＋目次＋ガジェット＋AI分析を1冊のA4に。':'それは課長・支店長向けの機能だよ😊 担当のみんなは「🔭 自己分析ダッシュボード」で自分の見込みをチェックしてね！'; }},
-  {q:'自己分析ダッシュボードって何？',a:'自分の見込みを自分で研究する「グロースコンソール」だよ🔭<br><br>・連想到達率リング＋レベル表示で成長を実感<br>・🔥 平日ストリーク（平日に開くと継続。土日はお休み）<br>・⤴ ステージ引き上げ（今月お客様の心を動かした回数＋⭐提案依頼）<br>・🥇 月間バッジ（提案依頼・同行・家族構成コンプ・新規発掘の達成度）<br>・🏆 課内ランキング（上位3名＋自分の順位。課長端末で表示）<br>・🎯 今日の作戦盤（優先3件にアクションチップを選んで自分のミッションに）<br>・🧭 スキルレーダー6軸＋<b>点線で先月の自分</b>と比較<br>・🔻 マイ・パイプライン（転換率つき）<br>・🥊 壁打ちワーク（AI相手に1問だけ自問自答してスキルUP）<br><br>スマホでも見れるよ。PCなら「🤖 AI分析」「🖨 印刷」も使えるよ！'},
+  {q:'自己分析ダッシュボードって何？',a:'自分の見込みを自分で研究する「グロースコンソール」だよ🔭<br><br>・連想到達率リング＋レベル表示で成長を実感<br>・🔥 平日ストリーク（平日に開くと継続。土日はお休み）<br>・⤴ ステージ引き上げ（今月お客様の心を動かした回数＋⭐提案依頼）<br>・🥇 月間バッジ（提案依頼・同行・家族構成コンプ・新規発掘の達成度）<br>・🏆 課内ランキング（上位3名＋自分の順位。課長端末で表示）<br>・🎯 今日の作戦盤（優先3件にアクションチップを選んで自分のミッションに）<br>・🎖 営業ジョブ（9軸）… いまの「型」と二つ名、次に伸ばす力を表示（カードを育てるほど正確に）<br>・🔻 マイ・パイプライン（転換率つき）<br>・🥊 壁打ちワーク（AI相手に1問だけ自問自答してスキルUP）<br><br>スマホでも見れるよ。PCなら「🤖 AI分析」「🖨 印刷」も使えるよ！'},
   {q:'タブにすぐ戻りたい',a:'PCはスクロールしてもタブ（初訪・再訪・追撃・戦略協議）が画面の一番上に残るから、いつでもワンタップで切り替えられるよ。スマホは画面の下にタブが固定されているよ😊'},
 
   {q:'路線価',a:'路線価は国税庁が毎年公表する道路に面した土地1㎡あたりの評価額のこと。相続税・贈与税の計算のベースになるよ。実勢価格の80%程度が目安。毎年7月に公表されるよ📋'},
@@ -2544,6 +2608,99 @@ function playRankUp(){
     playNote(3136,2.62,0.30,0.10,sq,ac);
   }catch(e){}
 }
+function playJobUp(){
+  try{
+    var ac=getAC();
+    var sq='square', tri='triangle';
+    function pad(freqs,t,dur,vol){
+      freqs.forEach(function(f){ playNote(f,t,dur,vol,tri,ac); });
+    }
+    function legato(notes,t0,step,overlap,vol){
+      notes.forEach(function(f,i){ playNote(f,t0+i*step,step+overlap,vol,tri,ac); });
+    }
+    // 下地：C → F → G → C(oct up)（2/3に圧縮）
+    pad([262,330,392],0.00,1.13,0.07);
+    pad([349,440,523],1.03,1.03,0.07);
+    pad([392,494,587],1.97,0.97,0.07);
+    pad([523,659,784],2.80,1.20,0.075);
+    // 旋律：なだらかに上行（step/overlapも圧縮してレガート維持）
+    var line=[392,440,523,587,659, 523,587,659,698,784, 659,698,784,880,988, 784,880,1047,1175,1319];
+    legato(line,0.12,0.137,0.11,0.13);
+    // 到達：高音Cメジャーをやわらかく
+    var ct=2.90;
+    pad([1047,1319,1568],ct,1.05,0.10);
+    legato([2093,1976,1760,1568,1760,1976,2093],ct+0.20,0.088,0.12,0.06);
+    playNote(1568,ct+0.88,0.40,0.05,tri,ac);
+  }catch(e){}
+}
+window.playJobUp=playJobUp;
+// 天眼王到達：最上位の特別曲。荘厳・気持ち長め・後光がさすような壮大さ
+function playJobKing(){
+  try{
+    var ac=getAC(); var sq='square', tri='triangle';
+    function pad(freqs,t,dur,vol,type){ freqs.forEach(function(f){ playNote(f,t,dur,vol,type||tri,ac); }); }
+    // レガート旋律（音長>間隔で繋ぐ）
+    function mel(notes,t0,step,over,vol,type){ notes.forEach(function(f,i){ playNote(f,t0+i*step,step+over,vol,type||sq,ac); }); }
+    // 弦のような持続ベース（低音を途切れさせず下に敷き続ける＝無音をなくす土台）
+    function bass(seq){ seq.forEach(function(s){ playNote(s[0],s[1],s[2],0.085,tri,ac); }); }
+
+    // 全体を通して低音を連続的に敷く（C→G→Am→F→G→C…切れ目なし）
+    bass([[131,0.00,1.7],[131,1.65,1.5],[110,3.10,1.5],[98,4.55,1.0],[98,5.50,0.85],[65,6.30,2.6]]);
+    // 中音の持続パッドも重ねて隙間を埋める（コードが途切れず移ろう）
+    pad([262,330],0.00,1.70,0.07); pad([294,392],1.65,1.55,0.07);
+    pad([330,440],3.10,1.55,0.07); pad([349,440],4.55,1.05,0.08);
+    pad([392,494],5.50,0.90,0.09);
+
+    // 【第1主題】気高く立ち上がる金管旋律（レガートで隙間なく）
+    mel([392,523,494,587,659,587,523,587],0.10,0.20,0.16,0.13);
+    // 【第2主題】受けて一段上へ、流れるように上行
+    mel([659,698,784,659,784,880,784,988],1.70,0.185,0.17,0.13);
+    // 【展開】さらに高みへ駆け上がる連続スケール（音を詰めて無音をなくす）
+    mel([880,988,1047,1175,1047,1175,1319,1397,1568],3.30,0.135,0.13,0.12);
+    // 【ドミナント】G7の高鳴り＝終止へ向かう緊張（保持して途切れさせない）
+    pad([784,988,1175,1397],4.60,1.05,0.13,sq);
+    mel([1568,1397,1319,1175,1319,1397],4.65,0.155,0.14,0.11);
+
+    // 【終止＝ゴール】主和音Cメジャーへ解決し、厚く長く保持（到達の山場）
+    var ct=5.70;
+    pad([262,523,659,784,1047],ct,2.60,0.16,sq);   // 厚いCメジャー
+    playNote(131,ct,2.60,0.11,tri,ac);              // 低音の土台
+    playNote(1175,ct+0.02,2.50,0.07,sq,ac);         // 9thできらめき
+    // 解決後も上声をレガートで流して無音を作らない（鐘＋ゆらぎ）
+    mel([2093,1976,2093,1760,2093,2349,2093],ct+0.20,0.22,0.30,0.06,tri);
+    // 最後にもう一度頂点をなぞって余韻へ（途切れず繋ぐ）
+    mel([1047,1319,1568,2093],ct+1.75,0.16,0.34,0.07,tri);
+    var ft=ct+2.55;
+    pad([523,1047,1568,2093],ft,1.80,0.075);        // 長い余韻でやわらかく消える
+  }catch(e){}
+}
+window.playJobKing=playJobKing;
+// 同列移動：中立で軽やかな「持ち替えた」感じの短いモチーフ（上下に揺れて戻る）
+function playJobSide(){
+  try{
+    var ac=getAC(); var tri='triangle';
+    function pad(freqs,t,dur,vol){ freqs.forEach(function(f){ playNote(f,t,dur,vol,tri,ac); }); }
+    pad([392,494,587],0.00,0.80,0.07);          // Gの薄い下地
+    var line=[587,659,587,698,659];              // 上下に揺れて落ち着く＝横移動感
+    line.forEach(function(f,i){ playNote(f,0.05+i*0.13,0.22,0.12,tri,ac); });
+    playNote(784,0.05+5*0.13,0.40,0.10,tri,ac);  // 最後やわらかく着地
+    playNote(392,0.70,0.50,0.05,tri,ac);
+  }catch(e){}
+}
+window.playJobSide=playJobSide;
+// 降格：刺々しくせず、優しく下りる短いモチーフ（triangleで角を取る）
+function playJobDown(){
+  try{
+    var ac=getAC(); var tri='triangle';
+    function pad(freqs,t,dur,vol){ freqs.forEach(function(f){ playNote(f,t,dur,vol,tri,ac); }); }
+    pad([294,370,440],0.00,1.00,0.06);           // 薄い下地
+    var line=[659,587,523,494,440];              // なだらかに下行（落ち込ませすぎない）
+    line.forEach(function(f,i){ playNote(f,0.05+i*0.15,0.26,0.11,tri,ac); });
+    pad([392,494],0.85,0.85,0.07);               // やわらかく着地（短調に寄せすぎない）
+    playNote(330,0.95,0.70,0.05,tri,ac);
+  }catch(e){}
+}
+window.playJobDown=playJobDown;
 function playRankDown(){
   try{
     var ac=getAC();
@@ -2587,6 +2744,21 @@ function autoDetectSummary(text){
   }
 }
 window.autoDetectSummary=autoDetectSummary;
+// #ZX9# 行から9軸ランクを自動抽出してカードに保存（表示はしない・ジョブ判定専用）
+function autoDetectJob9(text){
+  if(!cur||!text||!text.trim()) return;
+  var m=text.match(/#ZX9#\s*([SABCD\-−–—](?:[\s,]+[SABCD\-−–—]){8})/i);
+  if(!m) return;
+  var toks=m[1].toUpperCase().replace(/[−–—]/g,'-').split(/[\s,]+/).filter(Boolean);
+  if(toks.length!==9) return;
+  var valid=toks.every(function(t){ return /^[SABCD-]$/.test(t); });
+  if(!valid) return;
+  var ranks={}; ['chizu','houbun','choshin','enmusubi','tsuibi','seian','sakujin','kiroku','sokko'].forEach(function(k,i){ ranks[k]=(toks[i]==='-')?'':toks[i]; });
+  var prev=cur.job9_ranks?JSON.stringify(cur.job9_ranks):'';
+  cur.job9_ranks=ranks; cur.job9_ranks_at=new Date().toISOString();
+  if(prev!==JSON.stringify(ranks)){ if(typeof setDirty==='function') setDirty(true); toast('🎖 営業力評価をジョブ判定に反映しました'); }
+}
+window.autoDetectJob9=autoDetectJob9;
 var acTimer={};
 function scheduleAibisComment(key){
   clearTimeout(acTimer[key]);
@@ -2865,6 +3037,306 @@ function _salesType(axes){
   var stg=_SALES_STAGE[st];
   return {arche:ar,stage:st,stageName:stg.n,color:stg.c,avg:avg,domIdx:di,weakIdx:wi,weakAxis:axes[wi][0],weakVal:vals[wi],label:stg.n+ar.n};
 }
+// ===== 🎖 営業ジョブ判定エンジン（9軸／入力信頼度補正／50職） v6.04 =====
+// 軸キー：chizu地図 houbun法文 choshin聴心 enmusubi縁結 tsuibi追火 seian成案 sakujin策陣 kiroku記録 sokko速行
+var JOB9_AXES=[
+ {k:'chizu',  n:'地図', e:'🗺', d:'現地・土地・計画地を見る力'},
+ {k:'houbun', n:'法文', e:'📜', d:'相続・権利・資産背景を読む力'},
+ {k:'choshin',n:'聴心', e:'👂', d:'本音・動機・家族事情を聞く力'},
+ {k:'enmusubi',n:'縁結',e:'🤝', d:'信頼・家族・関係者をつなぐ力'},
+ {k:'tsuibi', n:'追火', e:'🔥', d:'見込みを冷まさず追う力'},
+ {k:'seian',  n:'成案', e:'📐', d:'提案化・案件化する力'},
+ {k:'sakujin',n:'策陣', e:'🪖', d:'次の一手・勝ち筋を組む力'},
+ {k:'kiroku', n:'記録', e:'🗂', d:'入力の濃さ・カード整備力'},
+ {k:'sokko',  n:'速行', e:'⚡', d:'行動量・即応性'}
+];
+// ステージ別の「期待項目」判定関数（未入力も母数に含めるため）
+function _j9HasLand(c){ return !!(c.rosenka||c.m2||c.maguchi||(c.youto)); }
+function _j9Stage(c){ return +(c.stage||0); }
+function _j9Filled(v){ if(v==null) return false; if(Array.isArray(v)) return v.length>0; if(typeof v==='boolean') return v; return String(v).trim()!==''; }
+function _j9Fam(c){ return Array.isArray(c.family)?c.family:[]; }
+function _j9OwnerMet(c){ return _j9Fam(c).some(function(m){return m.owner&&m.met;}); }
+function _j9KpMet(c){ return _j9Fam(c).some(function(m){return m.kp&&m.met;}); }
+function _j9Revisits(c){ return (Array.isArray(c.revisits)?c.revisits:[]).filter(function(r){return r&&r.date;}); }
+function _j9KaiwaLv(c){ var o={ピンポン:1,立ち話:2,玄関内:3,連れ出し:4,上り込み:5}; var a=Array.isArray(c.kaiwa)?c.kaiwa:(c.kaiwa?[c.kaiwa]:[]); var mx=0; a.forEach(function(v){ if((o[v]||0)>mx)mx=o[v]; }); return mx; }
+
+// カード状態ごとの期待項目（記録軸／入力信頼度の母数）
+function j9ExpectedItems(c){
+  var st=_j9Stage(c), items=[];
+  // 共通の入口（光速入力直後相当）
+  items.push(['name', _j9Filled(c.name)]);
+  items.push(['genjo', _j9Filled(c.genjo)]);
+  items.push(['address', _j9Filled(c.address)]);
+  items.push(['plan_address', _j9Filled(c.plan_address)]);
+  items.push(['stage', _j9Filled(c.stage)]);
+  items.push(['kaiwa', _j9Filled(c.kaiwa)]);
+  // ステージ0〜1：初訪メモ
+  if(st>=0) items.push(['initial_content', _j9Filled(c.initial_content)]);
+  // ステージ2〜3：家族・土地・資産・動機
+  if(st>=2){
+    items.push(['family', _j9Fam(c).some(function(m){return m.name||m.age;})]);
+    items.push(['land', _j9HasLand(c)]);
+    items.push(['asset', _j9Filled(c.land_asset)||_j9Filled(c.shisan_kibo)]);
+    items.push(['souteim', _j9Filled(c.souteim)]);
+  }
+  // ステージ4以上：提案・KP・所有者・作戦
+  if(st>=4){
+    items.push(['proposal_req', !!c.proposal_req]);
+    items.push(['kp', _j9Fam(c).some(function(m){return m.kp;})]);
+    items.push(['owner', _j9Fam(c).some(function(m){return m.owner;})]);
+    items.push(['strategy', _j9Filled(c.ai_memo)||_j9Filled(c.ai_summary)]);
+  }
+  // 再訪中：追客記録
+  if(_j9Revisits(c).length>0){
+    items.push(['nextplan', _j9Filled(c.pursuit_judge_date)||_j9Revisits(c).some(function(r){return r.appo;})]);
+    items.push(['judge', _j9Filled(c.pursuit_judge)||_j9Filled(c.revisit_judge)]);
+  }
+  return items;
+}
+function j9CardTrust(c){
+  var it=j9ExpectedItems(c); if(!it.length) return 0;
+  var f=it.filter(function(x){return x[1];}).length;
+  return f/it.length;
+}
+function j9TrustCoef(t){
+  if(t<0.30) return 0.50;
+  if(t<0.50) return 0.70;
+  if(t<0.70) return 0.85;
+  if(t<0.85) return 0.95;
+  return 1.00;
+}
+function _clip(v){ return Math.max(0,Math.min(100,Math.round(v))); }
+
+// AIランク(S/A/B/C/D)→点数
+var J9_RANK_PT={S:100,A:85,B:68,C:50,D:30};
+// AI評価の鮮度係数：新しいほど主役。45日で約半減、120日でほぼ無効化（構造化フラグ側に戻る）
+function j9AiFresh(atISO){
+  if(!atISO) return 0;
+  var age=(Date.now()-new Date(atISO).getTime())/864e5;
+  if(age<=14) return 1.0;
+  if(age>=120) return 0;
+  return Math.max(0, 1 - (age-14)/106);
+}
+// カードのAIランク点（その軸のランクがあれば点数、なければnull）
+function j9AiAxis(c, axisKey){
+  if(!c.job9_ranks) return null;
+  var r=c.job9_ranks[axisKey];
+  if(!r||!(r in J9_RANK_PT)) return null;
+  return J9_RANK_PT[r];
+}
+// 担当（カード配列）→ 9軸スコア（0-100, 信頼度補正前）と入力信頼度
+function j9Axes(cards){
+  cards=cards||[];
+  var n=cards.length;
+  var ax={chizu:0,houbun:0,choshin:0,enmusubi:0,tsuibi:0,seian:0,sakujin:0,kiroku:0,sokko:0};
+  if(!n) return {axes:ax, trust:0, n:0};
+  var sum={chizu:0,houbun:0,choshin:0,enmusubi:0,tsuibi:0,seian:0,sakujin:0,kiroku:0,sokko:0};
+  var trustSum=0;
+  var now=Date.now();
+  var recentNew=0, recentUpd=0, visitTotal=0;
+  cards.forEach(function(c){
+    // 地図
+    var chizu=0;
+    if(_j9Filled(c.plan_address))chizu+=25; if(_j9Filled(c.genjo))chizu+=15; if(_j9Filled(c.address))chizu+=15;
+    if(_j9HasLand(c))chizu+=30; if(_j9Filled(c.kuushitsu_bikou))chizu+=10; if(_j9Filled(c.ekitoho))chizu+=5;
+    sum.chizu+=Math.min(100,chizu);
+    // 法文
+    var hb=0, hf=Array.isArray(c.houbun)?c.houbun:[];
+    hb+=Math.min(40,hf.length*12);
+    if(_j9Fam(c).some(function(m){return m.owner;}))hb+=20;
+    if(_j9Filled(c.land_asset))hb+=15; if(_j9Filled(c.shisan_kibo))hb+=10;
+    if(_j9Filled(c.ryokuchi))hb+=10; if(_j9Filled(c.jitaku)||_j9Filled(c.old_rent))hb+=5;
+    sum.houbun+=Math.min(100,hb);
+    // 聴心
+    var ch=0;
+    var icl=String(c.initial_content||'').length; ch+=Math.min(25,icl/4);
+    var rvc=_j9Revisits(c).reduce(function(s,r){return s+String(r.content||'').length;},0); ch+=Math.min(25,rvc/8);
+    if(_j9KaiwaLv(c)>=2)ch+=15;
+    var stc=_j9Fam(c).filter(function(m){return m.stance&&m.stance!=='unk';}).length; ch+=Math.min(20,stc*10);
+    if(_j9Filled(c.souteim))ch+=15;
+    sum.choshin+=Math.min(100,ch);
+    // 縁結
+    var en=0;
+    var kl=_j9KaiwaLv(c); if(kl>=3)en+=Math.min(30,(kl-2)*15);
+    if(c.doukou)en+=20;
+    var metN=_j9Fam(c).filter(function(m){return m.met;}).length; en+=Math.min(25,metN*12);
+    if(_j9KpMet(c))en+=15; if(c.mgr_involve&&c.mgr_involve!=='単独')en+=10;
+    sum.enmusubi+=Math.min(100,en);
+    // 追火
+    var tb=0;
+    tb+=Math.min(30,_j9Revisits(c).length*12);
+    tb+=Math.min(20,(Array.isArray(c.pursuits)?c.pursuits.length:0)*10);
+    if(_j9Filled(c.pursuit_judge_date)||_j9Revisits(c).some(function(r){return r.appo;}))tb+=15;
+    if(typeof calcPaceOverrate==='function'){ if(calcPaceOverrate(c)<=1)tb+=20; } else { tb+=10; }
+    if(_j9Stage(c)>=3)tb+=15;
+    sum.tsuibi+=Math.min(100,tb);
+    // 成案
+    var se=0;
+    if(c.proposal_req)se+=35;
+    if(_j9Stage(c)>=3)se+=20; if(_j9Stage(c)>=4)se+=10;
+    var rk=c.pursuit_judge; if(rk==='S')se+=20; else if(rk==='A')se+=15; else if(rk==='B')se+=8;
+    if(_j9Filled(c.souteim))se+=8; if(Array.isArray(c.maefuri)&&c.maefuri.length)se+=7;
+    sum.seian+=Math.min(100,se);
+    // 策陣
+    var sa=0;
+    if(_j9Revisits(c).some(function(r){return r.instruction||r.appo;}))sa+=25;
+    if(Array.isArray(c.pursuits)&&c.pursuits.length)sa+=20;
+    if(_j9Filled(c.ai_memo)||_j9Filled(c.ai_summary))sa+=30;
+    if(c.mgr_involve&&c.mgr_involve!=='単独')sa+=15;
+    if(_j9Filled(c.pursuit_judge)||_j9Filled(c.revisit_judge))sa+=10;
+    sum.sakujin+=Math.min(100,sa);
+    // 記録（期待項目充足率×100）
+    sum.kiroku+=Math.round(j9CardTrust(c)*100);
+    // 信頼度
+    trustSum+=j9CardTrust(c);
+    // 速行の材料
+    visitTotal+=_j9Revisits(c).length;
+    var ca=c.created_at?(now-new Date(c.created_at).getTime()):1e18;
+    var ua=c.updated_at?(now-new Date(c.updated_at).getTime()):1e18;
+    if(ca<30*864e5)recentNew++;
+    if(ua<30*864e5)recentUpd++;
+  });
+  // AIランクのカード別集計（鮮度重み付き平均）
+  var aiSum={}, aiW={};
+  ['chizu','houbun','choshin','enmusubi','tsuibi','seian','sakujin','kiroku','sokko'].forEach(function(k){ aiSum[k]=0; aiW[k]=0; });
+  cards.forEach(function(c){
+    var fw=j9AiFresh(c.job9_ranks_at);
+    if(fw<=0) return;
+    ['chizu','houbun','choshin','enmusubi','tsuibi','seian','sakujin','kiroku','sokko'].forEach(function(k){
+      var pt=j9AiAxis(c,k);
+      if(pt!=null){ aiSum[k]+=pt*fw; aiW[k]+=fw; }
+    });
+  });
+  // 構造化フラグ平均 ⇔ AIランク を合成。AIランクがあればそれを主（最大7割）に、鮮度で按分
+  ['chizu','houbun','choshin','enmusubi','tsuibi','seian','sakujin','kiroku'].forEach(function(k){
+    var struct=sum[k]/n;
+    if(aiW[k]>0){
+      var ai=aiSum[k]/aiW[k];
+      var freshShare=aiW[k]/n;            // この軸でAI評価が付いているカードの鮮度重み割合
+      var w=0.7*Math.min(1,freshShare);   // AIの最大寄与は7割
+      ax[k]=_clip(ai*w + struct*(1-w));
+    } else {
+      ax[k]=_clip(struct);
+    }
+  });
+  // 速行：担当レベル（発掘量30件で満点・直近更新率・訪問量）
+  var sokko=0;
+  sokko+=Math.min(40,n/30*40);
+  sokko+=Math.min(30,recentUpd/Math.max(1,n)*30);
+  sokko+=Math.min(30,visitTotal/Math.max(1,n)/2*30);
+  if(aiW.sokko>0){ var aiS=aiSum.sokko/aiW.sokko; var wS=0.7*Math.min(1,aiW.sokko/n); ax.sokko=_clip(aiS*wS + sokko*(1-wS)); }
+  else { ax.sokko=_clip(sokko); }
+  return {axes:ax, trust:trustSum/n, n:n};
+}
+
+// ===== 50職 名称テーブル（漢字統一・ピラミッド型） =====
+// キーは軸キーをこの順で並べたもの: chizu<houbun<choshin<enmusubi<tsuibi<seian<sakujin<kiroku<sokko
+var J9_ORDER=['chizu','houbun','choshin','enmusubi','tsuibi','seian','sakujin','kiroku','sokko'];
+function _j9key(keys){ return keys.slice().sort(function(a,b){return J9_ORDER.indexOf(a)-J9_ORDER.indexOf(b);}).join('+'); }
+// 1強（9）
+var J9_ONE={chizu:'探地士',houbun:'法文師',choshin:'聴心者',enmusubi:'縁結師',tsuibi:'追火師',seian:'成案師',sakujin:'策陣師',kiroku:'記録士',sokko:'速行者'};
+// 2強（18）— 主要な組み合わせ
+var J9_TWO={
+ 'chizu+houbun':'地法読者','chizu+choshin':'地心読者','chizu+enmusubi':'地縁師','chizu+seian':'地案師','chizu+sakujin':'地策士','chizu+sokko':'地走士',
+ 'houbun+choshin':'法心師','houbun+seian':'法提師','houbun+sakujin':'法策士','houbun+kiroku':'法録士',
+ 'choshin+enmusubi':'聴縁師','choshin+seian':'聴案師','choshin+sakujin':'聴策士',
+ 'enmusubi+tsuibi':'縁追師','enmusubi+seian':'縁案師',
+ 'tsuibi+seian':'追案師','sakujin+tsuibi':'追策士','kiroku+sakujin':'記策士'
+};
+// 3強（12）
+var J9_THREE={
+ 'chizu+houbun+choshin':'地法心眼者','chizu+houbun+seian':'地法成案師','chizu+choshin+enmusubi':'地心縁者','chizu+seian+sakujin':'地案軍師',
+ 'houbun+choshin+enmusubi':'家法聴者','houbun+seian+sakujin':'法案軍師','choshin+enmusubi+tsuibi':'心縁追師','choshin+seian+sakujin':'心案策士',
+ 'enmusubi+tsuibi+seian':'縁追成師','tsuibi+sakujin+kiroku':'追録軍師','seian+sakujin+kiroku':'記案軍師','chizu+tsuibi+sokko':'疾地追者'
+};
+// 4強（6）
+var J9_FOUR={
+ 'chizu+houbun+choshin+seian':'地法成眼師','chizu+seian+sakujin+kiroku':'地案策将','choshin+enmusubi+tsuibi+seian':'心縁成将',
+ 'houbun+choshin+enmusubi+sakujin':'家法軍師','tsuibi+seian+sakujin+kiroku':'追案策将','chizu+tsuibi+kiroku+sokko':'疾地録将'
+};
+// 5強（4）
+var J9_FIVE={
+ 'chizu+houbun+choshin+seian+sakujin':'天策軍師','choshin+enmusubi+tsuibi+seian+sakujin':'成縁大将',
+ 'chizu+tsuibi+seian+kiroku+sokko':'開拓大将','houbun+choshin+seian+sakujin+kiroku':'相続軍師'
+};
+var J9_INIT=['芽士','始動者','初陣士']; // 入力信頼度が低いときの初期職
+// ジョブの“格”を数値化（昇格検知用）。初期職0／1強1…5強5／天眼王6。万屋はバランスで1扱い
+function j9JobRank(job, strongCount){
+  if(job==='天眼王') return 6;
+  if(J9_INIT.indexOf(job)>=0) return 0;
+  if(job==='万屋') return 1;
+  return Math.max(1,Math.min(5,strongCount||1));
+}
+var J9_KING='天眼王';
+// 称号（二つ名）：軸キー→眼
+var J9_EYE={chizu:'地眼',houbun:'法読',choshin:'心眼',enmusubi:'縁眼',tsuibi:'継火',seian:'商眼',sakujin:'勝眼',kiroku:'緻録',sokko:'疾走'};
+
+// 強い軸を抽出（しきい値＋信頼度ゲート）
+function j9StrongAxes(corr, trust){
+  var entries=J9_ORDER.map(function(k){return {k:k,v:corr[k]};}).sort(function(a,b){return b.v-a.v;});
+  // 信頼度による上位化の上限
+  var cap; if(trust<0.30)cap=0; else if(trust<0.50)cap=1; else if(trust<0.70)cap=2; else if(trust<0.85)cap=3; else cap=9;
+  var strong=entries.filter(function(e){return e.v>=80;}).map(function(e){return e.k;});
+  if(strong.length>cap) strong=strong.slice(0,cap);
+  return strong;
+}
+// 最近接の登録済みジョブを探す（完全一致がなければ部分一致で降格）
+function _j9lookup(table, keys){
+  var k=_j9key(keys);
+  if(table[k]) return table[k];
+  return null;
+}
+// メイン：カード配列→ジョブ判定
+function j9DetermineJob(cards, repName){
+  var r=j9Axes(cards);
+  var coef=j9TrustCoef(r.trust);
+  var corr={}; J9_ORDER.forEach(function(k){ corr[k]=_clip(r.axes[k]*coef); });
+  var res={axes:r.axes, corr:corr, trust:r.trust, coef:coef, n:r.n, job:'', title:'', strong:[], provisional:false};
+  if(r.n===0){ res.job='—'; res.provisional=true; return res; }
+  // 入力信頼度が低い→初期職
+  if(r.trust<0.30){
+    res.job=J9_INIT[Math.min(J9_INIT.length-1, Math.floor(r.n/3))];
+    res.provisional=true; res.strong=[]; return res;
+  }
+  var strong=j9StrongAxes(corr, r.trust);
+  res.strong=strong;
+  var ns=strong.length;
+  // 全軸高水準＋高信頼→天眼王
+  var allHigh=J9_ORDER.every(function(k){return corr[k]>=85;});
+  if(allHigh && r.trust>=0.90){
+    // 天眼王は希少。repName指定時は直近2か月の安定（信頼度90%＆全軸85以上が継続）を必須にする。
+    // 履歴がまだ1か月以下の導入初期だけ、当月条件で暫定的に許可（2か月目以降は安定判定で自然に絞られる）。
+    var hist=repName?j9RecentSnaps(repName,3).length:0;
+    var stableOK = repName ? (j9KingStable(repName) || hist<=1) : true;
+    if(stableOK){ res.job=J9_KING; res.title='天眼'; return res; }
+  }
+  var job=null;
+  if(ns>=5){
+    job=_j9lookup(J9_FIVE, strong.slice(0,5));
+    if(!job) job='天策軍師'; // 5強だが未定義の組み合わせ→代表5強職
+  } else if(ns===4){
+    job=_j9lookup(J9_FOUR, strong)||_j9lookup(J9_THREE, strong.slice(0,3))||(J9_ONE[strong[0]]);
+  } else if(ns===3){
+    job=_j9lookup(J9_THREE, strong)||_j9lookup(J9_TWO, strong.slice(0,2))||(J9_ONE[strong[0]]);
+  } else if(ns===2){
+    job=_j9lookup(J9_TWO, strong)||(J9_ONE[strong[0]]);
+  } else if(ns===1){
+    job=J9_ONE[strong[0]];
+  } else {
+    // 強い軸なし＝バランス型 or まだ伸びていない
+    job=(r.trust>=0.70)?'万屋':J9_INIT[0];
+    res.provisional=(r.trust<0.50);
+  }
+  res.job=job||'万屋';
+  // 称号（二つ名）：最上位軸が高水準＋十分な信頼度
+  if(strong.length && r.trust>=0.85){
+    var top=strong[0];
+    if(corr[top]>=95 && r.trust>=0.90) res.title=J9_EYE[top];
+    else if(corr[top]>=90) res.title=J9_EYE[top];
+  }
+  return res;
+}
+
 // ===== 📖 営業タイプ図鑑（全50種） =====
 // 50種 = 基本12（武器6×見習い/一人前）+ 上級職30（達人：武器×サブ武器）+ 特殊8
 var _T50_AX=['発掘量','グリップ','ヒアリング','連想到達','テスクロ','追客ペース'];
@@ -2949,6 +3421,261 @@ function openTypeDex(curName){
  ov.style.display='flex';
 }
 window.openTypeDex=openTypeDex;
+// ===== 📅 月次スナップショット（成長比較・天眼王の安定性） =====
+var J9_SNAP='prospect_job9_snap_v1';
+function _ymKey(d){ d=d||new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2); }
+function j9LoadSnaps(){ try{ var o=JSON.parse(localStorage.getItem(J9_SNAP)||'{}'); return (o&&typeof o==='object')?o:{}; }catch(_e){ return {}; } }
+function j9SaveSnaps(o){ try{ localStorage.setItem(J9_SNAP,JSON.stringify(o)); }catch(_e){} }
+// 当月のスナップショットを記録（担当名→月→要約）。1日数回呼ばれても上書きで軽量
+function j9Snapshot(repName, cardsArr){
+  if(!repName) return;
+  var res=j9DetermineJob(cardsArr||[]);
+  var ym=_ymKey();
+  var snaps=j9LoadSnaps();
+  if(!snaps[repName]) snaps[repName]={};
+  var now=Date.now();
+  var newN=0,updN=0,rvN=0;
+  (cardsArr||[]).forEach(function(c){
+    var ca=c.created_at?(now-new Date(c.created_at).getTime()):1e18;
+    var ua=c.updated_at?(now-new Date(c.updated_at).getTime()):1e18;
+    if(ca<30*864e5)newN++; if(ua<30*864e5)updN++;
+    rvN+=(Array.isArray(c.revisits)?c.revisits.filter(function(r){return r&&r.date;}).length:0);
+  });
+  var prevNotified = (snaps[repName][ym]&&snaps[repName][ym].promo_notified)||false;
+  snaps[repName][ym]={
+    ym:ym, corr:res.corr, trust:Math.round(res.trust*100), job:res.job, title:res.title,
+    strong:(res.strong||[]).slice(), rank:j9JobRank(res.job,(res.strong||[]).length),
+    n:res.n, newN:newN, updN:updN, rvN:rvN, at:new Date().toISOString(), promo_notified:prevNotified
+  };
+  // 各担当12か月だけ保持（軽量化）
+  Object.keys(snaps).forEach(function(rp){
+    var months=Object.keys(snaps[rp]).sort();
+    while(months.length>12){ delete snaps[rp][months.shift()]; }
+  });
+  j9SaveSnaps(snaps);
+  return snaps[repName][ym];
+}
+// 前月スナップショット取得
+function j9PrevSnap(repName){
+  var snaps=j9LoadSnaps(); if(!snaps[repName]) return null;
+  var d=new Date(); d.setMonth(d.getMonth()-1);
+  return snaps[repName][_ymKey(d)]||null;
+}
+// 直近Nか月ぶんのスナップショット（古→新）
+function j9RecentSnaps(repName, months){
+  var snaps=j9LoadSnaps(); if(!snaps[repName]) return [];
+  return Object.keys(snaps[repName]).sort().slice(-(months||3)).map(function(k){return snaps[repName][k];});
+}
+// 成長比較：前月比で伸びた軸・停滞した軸（補正後スコア差）
+function j9Growth(repName, corrNow){
+  var prev=j9PrevSnap(repName);
+  if(!prev||!prev.corr) return null;
+  var up=[],down=[];
+  JOB9_AXES.forEach(function(a){
+    var d=(corrNow[a.k]||0)-(prev.corr[a.k]||0);
+    if(d>=8) up.push({n:a.n,d:d}); else if(d<=-8) down.push({n:a.n,d:d});
+  });
+  up.sort(function(x,y){return y.d-x.d;}); down.sort(function(x,y){return x.d-y.d;});
+  return {up:up, down:down, prevJob:prev.job};
+}
+// ジョブ昇格を検知（担当の自己分析で当月1回だけ）。スナップショット履歴と比較
+function j9CheckPromotion(repName, res){
+  if(!repName) return false;
+  try{
+    var snaps=j9LoadSnaps(); var ym=_ymKey();
+    var rec=snaps[repName]||{};
+    // 当月すでに通知済みなら鳴らさない
+    if(rec[ym]&&rec[ym].promo_notified) return false;
+    // 直前（前月→当月の途中でもよい）の最も新しい過去ジョブを取得
+    var months=Object.keys(rec).sort();
+    var prevJob=null, prevRank=-1;
+    for(var i=months.length-1;i>=0;i--){
+      if(months[i]===ym) continue;
+      if(rec[months[i]]&&rec[months[i]].job){ prevJob=rec[months[i]].job; prevRank=rec[months[i]].rank!=null?rec[months[i]].rank:j9JobRank(prevJob,(rec[months[i]].strong||[]).length); break; }
+    }
+    if(prevJob==null) return false; // 履歴なし＝初回は鳴らさない
+    var nowRank=j9JobRank(res.job,(res.strong||[]).length);
+    var dir=null;
+    if(nowRank>prevRank) dir='up';
+    else if(nowRank<prevRank) dir='down';
+    else if(res.job!==prevJob) dir='side'; // 同格だがジョブが変わった＝同列移動
+    if(!dir) return false; // 変化なし
+    return {dir:dir, prevJob:prevJob, nowJob:res.job, nowRank:nowRank, prevRank:prevRank};
+  }catch(_e){ return false; }
+}
+// 天眼王の安定性：直近2か月以上、信頼度90%以上＆全軸高水準が継続しているか
+function j9KingStable(repName){
+  var rec=j9RecentSnaps(repName,3);
+  if(rec.length<2) return false; // 履歴が2か月に満たなければ安定とみなさない
+  var last2=rec.slice(-2);
+  return last2.every(function(s){
+    if((s.trust||0)<90) return false;
+    return JOB9_AXES.every(function(a){ return (s.corr&&s.corr[a.k]>=85); });
+  });
+}
+// ===== 🎖 ジョブ図鑑カード UI（9軸・ドット絵スロット付き） v6.06 =====
+function _job9AxKey(k){ for(var i=0;i<JOB9_AXES.length;i++){ if(JOB9_AXES[i].k===k) return JOB9_AXES[i]; } return {n:k,e:'•'}; }
+// 9軸ミニレーダー（_zRadarHeroを9軸で流用）
+function _job9Radar(corr,color){
+  var axes=JOB9_AXES.map(function(a){return [a.n,corr[a.k]||0];});
+  return _zRadarHero(axes,color||'#4dabf7');
+}
+// ジョブ表示名 → 画像ID（ローマ字）。画像は img/jobs/<id>.png を参照（日本語ファイル名を避ける）
+var J9_IMGID={
+ // 1強
+ '探地士':'tanchishi','法文師':'houbunshi','聴心者':'choushinsha','縁結師':'enmusubishi','追火師':'oibishi','成案師':'seianshi','策陣師':'sakujinshi','記録士':'kirokushi','速行者':'sokkousha',
+ // 2強
+ '地法読者':'chihoudokusha','地心読者':'chishindokusha','地縁師':'chienshi','地案師':'chianshi','地策士':'chisakushi','地走士':'chisoushi',
+ '法心師':'houshinshi','法提師':'houteishi','法策士':'housakushi','法録士':'hourokushi',
+ '聴縁師':'chouenshi','聴案師':'chouanshi','聴策士':'chousakushi',
+ '縁追師':'enoishi','縁案師':'enanshi','追案師':'oianshi','追策士':'oisakushi','記策士':'kisakushi',
+ // 3強
+ '地法心眼者':'chihoushingansha','地法成案師':'chihouseianshi','地心縁者':'chishinensha','地案軍師':'chiangunshi',
+ '家法聴者':'kahouchousha','法案軍師':'houangunshi','心縁追師':'shinenoishi','心案策士':'shinansakushi',
+ '縁追成師':'enoiseishi','追録軍師':'oirokugunshi','記案軍師':'kiangunshi','疾地追者':'shitchioisha',
+ // 4強
+ '地法成眼師':'chihouseiganshi','地案策将':'chiansakushou','心縁成将':'shinenseishou','家法軍師':'kahougunshi','追案策将':'oiansakushou','疾地録将':'shitchirokushou',
+ // 5強
+ '天策軍師':'tensakugunshi','成縁大将':'seiendaishou','開拓大将':'kaitakudaishou','相続軍師':'souzokugunshi',
+ // 最上位・初期職・バランス
+ '天眼王':'tenganou','芽士':'meshi','始動者':'shidousha','初陣士':'uijinshi','万屋':'yorozuya'
+};
+function j9ImgId(name){ return J9_IMGID[name]||encodeURIComponent(name); }
+// ジョブのアイコン絵文字（ドット絵が無いときのフォールバック）
+function _jobEmoji(res){
+  if(res.job==='天眼王') return '👑';
+  if(res.provisional) return '🌱';
+  if(res.strong&&res.strong.length) return _job9AxKey(res.strong[0]).e;
+  return '🎖';
+}
+// ドット絵スロット（img/jobs/<job>.png。無ければonerrorで絵文字にフォールバック）
+var J9_AXCOLOR={chizu:'#9be15d',houbun:'#5c7cfa',choshin:'#4dabf7',enmusubi:'#ff922b',tsuibi:'#ff5d7d',seian:'#3b82f6',sakujin:'#9775fa',kiroku:'#adb5bd',sokko:'#ffd43b'};
+// 5ステータス（RPGキャラシート）：9軸を意味でグルーピング
+var J9_STATS=[
+ {k:'kodo', n:'行動力', e:'🦶', col:'#ffd43b', axes:['sokko','tsuibi'], d:'動く量と、止めずに追い続ける力'},
+ {k:'kansatsu', n:'観察力', e:'👁', col:'#9be15d', axes:['chizu','houbun'], d:'土地と権利・背景を見抜く力'},
+ {k:'taiwa', n:'対話力', e:'💬', col:'#4dabf7', axes:['choshin','enmusubi'], d:'聞く力と、関係をつくる力'},
+ {k:'senryaku', n:'戦略力', e:'♟', col:'#9775fa', axes:['seian','sakujin'], d:'提案に変え、勝ち筋を組む力'},
+ {k:'kanri', n:'管理力', e:'📚', col:'#20c997', axes:['kiroku'], d:'カードを整え、抜けなく回す力'}
+];
+// 集約：強い方をやや重く見る加重平均（単純平均だと弱軸に引っ張られて全員平凡に見えるため）
+function j9StatVal(corr, axes){
+  var vs=axes.map(function(k){return corr[k]||0;}).sort(function(a,b){return b-a;});
+  if(vs.length===1) return Math.round(vs[0]);
+  // 高い方0.65 + 低い方0.35
+  return Math.round(vs[0]*0.65 + vs[1]*0.35);
+}
+function j9Stats(corr){
+  return J9_STATS.map(function(s){ return {k:s.k,n:s.n,e:s.e,col:s.col,v:j9StatVal(corr,s.axes)}; });
+}
+// ★5段階（100→5★。半端は切り上げ寄りで“あと一歩”が見えるように）
+function _stars(v){
+  var full=Math.round(v/20);
+  full=Math.max(0,Math.min(5,full));
+  return '★★★★★'.slice(0,full)+'☆☆☆☆☆'.slice(0,5-full);
+}
+// 5ステータス表示（星＋数値の大きめバー）
+function _job9StatHTML(corr, showNum){
+  var rows=j9Stats(corr).map(function(s){
+    return '<div class="stat-row">'
+      +'<span class="stat-lab">'+s.e+' '+s.n+'</span>'
+      +'<span class="stat-stars" style="color:'+s.col+'">'+_stars(s.v)+'</span>'
+      +'<span class="stat-track"><span class="stat-fill" style="width:'+s.v+'%;background:'+s.col+'"></span></span>'
+      +(showNum===false?'':'<span class="stat-num">'+s.v+'</span>')+'</div>';
+  }).join('');
+  return '<div class="job-stats">'+rows+'</div>';
+}
+// 9軸バーメーター（系統色・数値つき。強み軸は強調）。showNum=false で数値を隠す（担当向け配慮時）
+function _job9Bars(corr, strongKeys, showNum){
+  strongKeys=strongKeys||[];
+  var rows=JOB9_AXES.map(function(a){
+    var v=corr[a.k]||0, st=strongKeys.indexOf(a.k)>=0;
+    return '<div class="bar-row'+(st?' bar-strong':'')+'">'
+      +'<span class="bar-lab">'+a.e+' '+a.n+'</span>'
+      +'<span class="bar-track"><span class="bar-fill" style="width:'+v+'%;background:'+(J9_AXCOLOR[a.k]||'#868e96')+'"></span></span>'
+      +(showNum===false?'':'<span class="bar-num">'+v+'</span>')+'</div>';
+  }).join('');
+  return '<div class="job-bars">'+rows+'</div>';
+}
+function _jobPortrait(res){
+  var emoji=_jobEmoji(res);
+  var src='img/jobs/job_'+j9ImgId(res.job)+'.png';
+  return '<div class="job-portrait">'
+    +'<img src="'+src+'" alt="" loading="lazy" onerror="this.remove()">'
+    +'<span class="job-emoji">'+emoji+'</span></div>';
+}
+// 次に伸ばす力（補正後スコアの低い2軸。—扱いの軸も伸びしろとして拾う）
+function _job9Grow(res){
+  var arr=JOB9_AXES.map(function(a){return {n:a.n,v:res.corr[a.k]||0};}).sort(function(a,b){return a.v-b.v;});
+  return arr.slice(0,2).map(function(x){return x.n;});
+}
+// 前向きな一言
+function _job9Line(res, mode){
+  if(res.provisional){
+    return 'まだ情報が少ないため、仮のジョブです。カードを育てるほど、より正確に判定されます。';
+  }
+  var top=res.strong&&res.strong.length?_job9AxKey(res.strong[0]).n:'';
+  var grow=_job9Grow(res);
+  if(res.job==='天眼王') return '複数の営業力が高水準で安定しています。課内でも非常に完成度の高い営業型です。';
+  if(mode==='mgr'){
+    return (top?('「'+top+'」の力が高く出ています。'):'バランス型です。')+'支援のヒント：「'+grow[0]+'」を一緒に伸ばすと次の型へ。';
+  }
+  return (top?('「'+top+'」の力が高く出ています。'):'穴のないバランス型です。')+'「'+grow[0]+'」を伸ばすと、さらに進化します。';
+}
+// 成長比較（前月比）HTML — 課長カード用
+function _job9GrowthHTML(repName, corrNow, mode){
+  if(!repName) return '';
+  var g=j9Growth(repName, corrNow);
+  if(!g) return '<div class="job-growth job-growth-none">'+(mode==='mgr'?'前月データなし（来月から伸び・停滞を表示）':'来月から「先月より伸びた力」が表示されるよ📈')+'</div>';
+  if(mode==='mgr'){
+    var up=g.up.length?('📈 伸びた：'+g.up.slice(0,2).map(function(x){return x.n+'(+'+x.d+')';}).join('・')):'';
+    var dn=g.down.length?('📉 停滞：'+g.down.slice(0,2).map(function(x){return x.n+'('+x.d+')';}).join('・')):'';
+    if(!up&&!dn) return '<div class="job-growth">前月から大きな変化なし</div>';
+    return '<div class="job-growth">'+(up?'<span class="jg-up">'+e(up)+'</span>':'')+(up&&dn?'<br>':'')+(dn?'<span class="jg-dn">'+e(dn)+'</span>':'')+'</div>';
+  }
+  // 担当向け：前向き表現。伸びた力は称え、停滞は「ひと押し」として柔らかく
+  var up=g.up.length?('📈 先月より伸びた力：<b>'+e(g.up.slice(0,2).map(function(x){return x.n;}).join('・'))+'</b> ナイス！'):'';
+  var dn=g.down.length?('🌱 あとひと押し：<b>'+e(g.down.slice(0,1).map(function(x){return x.n;}).join('・'))+'</b>'):'';
+  if(!up&&!dn) return '<div class="job-growth">先月の自分とほぼ同じペース。積み上げを続けよう👍</div>';
+  return '<div class="job-growth">'+(up?'<span class="jg-up">'+up+'</span>':'')+(up&&dn?'<br>':'')+(dn?'<span class="jg-dn">'+dn+'</span>':'')+'</div>';
+}
+// ジョブカード本体（mode: 'self' | 'mgr'）
+function jobCardHTML(cards, mode, dispName){
+  var res=j9DetermineJob(cards, dispName||null);
+  var color = res.job==='天眼王' ? '#ffd43b' : (res.strong&&res.strong.length ? ['#ff6b6b','#845ef7','#ffd43b','#ff922b','#ff5d7d','#4dabf7','#9775fa','#868e96','#20c997'][JOB9_AXES.map(function(a){return a.k;}).indexOf(res.strong[0])%9] : '#868e96');
+  var grow=_job9Grow(res);
+  var trustPct=Math.round(res.trust*100);
+  var precision = res.provisional?'まだ成長中' : (trustPct>=85?'高精度' : trustPct>=70?'おおむね正確' : '成長中');
+  var titleBadge = res.title ? '<span class="job-title">'+res.title+'</span>' : '';
+  var strongNames = (res.strong||[]).map(function(k){return _job9AxKey(k).n;}).join('・')||'バランス';
+  var strongKeys=res.strong||[];
+  var precLine=(mode==='mgr')
+    ? '<div class="job-trust">入力信頼度 '+trustPct+'%（'+res.n+'枚）／判定精度：'+precision+'</div>'
+    : '<div class="job-trust">判定精度：'+precision+'　<span style="opacity:.7">カードを育てるほど正確に</span></div>';
+  var growthHTML=_job9GrowthHTML(mode==='mgr'?dispName:(dispName||(typeof uName!=='undefined'?uName:'')||'自分'), res.corr, mode);
+  // 枠のグレード：強み軸数（0〜5）。天眼王は別格(king)
+  var tier = res.job==='天眼王' ? 'king' : String(Math.min(5,(res.strong||[]).length));
+  if(res.provisional) tier='0';
+  return '<div class="job-card jc-tier-'+tier+'" style="--jc-accent:'+color+'">'
+    +(dispName&&mode==='mgr'?'<div class="job-rep">'+e(dispName)+'</div>':'')
+    +'<div class="job-hero">'+_jobPortrait(res)
+      +'<div class="job-id"><div class="job-name"><span class="jn-txt">'+e(res.job)+'</span>'+titleBadge+'</div>'
+      +'<div class="job-strong">強み：'+e(strongNames)+'</div>'
+      +precLine+'</div></div>'
+    +'<div class="job-graphs">'
+      +'<div class="job-radar">'+_job9Radar(res.corr,color)+'</div>'
+      +'<div class="job-statwrap">'+_job9StatHTML(res.corr, true)
+        +'<details class="job-axdetail"><summary>9軸の内訳を見る</summary>'+_job9Bars(res.corr, strongKeys, true)+'</details>'
+      +'</div>'
+    +'</div>'
+    +'<div class="job-foot">'
+      +'<div class="job-grow">次に伸ばすとよい力：<b>'+e(grow.join('、'))+'</b></div>'
+      +growthHTML
+      +'<div class="job-line">'+e(_job9Line(res,mode))+'</div>'
+    +'</div>'
+    +'</div>';
+}
+
 function _radarTypePanel(axes){
   var ty=_salesType(axes);
   return '<div style="margin-top:10px;border-top:1px solid var(--z-line);padding-top:10px">'
@@ -3375,7 +4102,22 @@ function renderSelfDash(tid){
  var bodyState='',bodyGrow='';
  H+='</div>';
  
- bodyGrow+='<div class="z-card z-c2"><h3>🧭 スキルレーダー</h3><div class="z-sub">凹んだ軸が伸びしろ。'+(_ghost?'<span style="color:#8b7cff">点線＝先月の自分。</span>':'来月から点線で「先月の自分」が重なります。')+'</div><div class="z-radar-wrap"><svg class="z-radar" viewBox="0 0 200 200">'+_zRadar(axes,_ghost).replace(/^<svg[^>]*>|<\/svg>$/g,'')+'</svg><div class="z-radar-leg">'+leg+'</div></div>'+_radarTypePanel(axes)+'</div>';
+ try{
+   var _rep=uName||'自分';
+   var _jres=j9DetermineJob(mine,_rep);
+   var _promo=j9CheckPromotion(_rep,_jres);
+   j9Snapshot(_rep, mine);
+   if(_promo){
+     try{ var _sn=j9LoadSnaps(); var _ym2=_ymKey(); if(_sn[_rep]&&_sn[_rep][_ym2]){ _sn[_rep][_ym2].promo_notified=true; j9SaveSnaps(_sn); } }catch(_e2){}
+     (function(p){ setTimeout(function(){ try{
+       if(p.dir==='up' && p.nowJob==='天眼王'){ if(window.playJobKing) playJobKing(); toast('👑 最上位「天眼王」に到達！『'+p.prevJob+'』→『天眼王』'); }
+       else if(p.dir==='up'){ if(window.playJobUp) playJobUp(); toast('🎖 ジョブが昇格！『'+p.prevJob+'』→『'+p.nowJob+'』'); }
+       else if(p.dir==='side'){ if(window.playJobSide) playJobSide(); toast('🔀 ジョブが変化『'+p.prevJob+'』→『'+p.nowJob+'』'); }
+       else if(p.dir==='down'){ if(window.playJobDown) playJobDown(); toast('🔁 ジョブが変化『'+p.prevJob+'』→『'+p.nowJob+'』'); }
+     }catch(_e3){} }, 600); })(_promo);
+   }
+ }catch(_e){}
+ bodyGrow+='<div class="z-card z-c2"><h3>🎖 あなたの営業ジョブ</h3><div class="z-sub">入力と行動から、いまの「型」と伸ばす方向を表示。カードを育てるほど正確になります。</div>'+jobCardHTML(mine,'self')+'</div>';
  var _myNow=_kpi3Now(mine);
  bodyState+=_kpi3Cards(mine);
  bodyState+='<div class="z-card z-cf"><h3>📌 重要3指標トレンド（直近6ヶ月）</h3><div class="z-sub">提案依頼・同行・家族構成コンプの月別件数。今月：提案 '+_myNow[0]+'・同行 '+_myNow[1]+'・家族 '+_myNow[2]+'。<br><span style="color:var(--z-dim)">※家族構成は人数把握まで。氏名・年齢・職業まで深掘りを。</span></div>'+_kpi3Chart(mine)+'</div>';
@@ -3899,7 +4641,7 @@ function mkBlank() {
     ],
     hissu:'', shisan_kibo:'', souteim:'',
     old_rent:'', parking_lot:'', jitaku:'', ryokuchi:'', land_asset:'',
-    rosenka:'', m2:'', maguchi:'', setsudo:[], hatazao:false,
+    rosenka:'', m2:'', maguchi:'', setsudo:[], hatazao:false, houbun:[],
     youto:'', kenpei_b:'', kenpei_y:'', chikunen:'', kodo:'', bouka:'', chishaku:'',
     kuushitsu:'', kuushitsu_bikou:'',
     kouzou:'', kosu:'', kaisuu:'', prate:'',
@@ -3909,7 +4651,7 @@ function mkBlank() {
     revisits:[{num:1,date:'',appo:'',content:'',instruction:''},{num:2,date:'',appo:'',content:'',instruction:''},{num:3,date:'',appo:'',content:'',instruction:''}],
     revisit_judge_date:'', revisit_judge:'',
     pursuits:[], pursuit_judge_date:'', pursuit_judge:'', pursuit_judge_sel:'', pursuit_judge_ai:'',
-    ai_memo:'', family_headcount:false, family_headcount_at:'', family_bikou:'', doukou:false, doukou_at:'', mgr_involve:'単独', asset_type:false, ekitoho:'', proposal_req:false, proposal_req_at:'',
+    job9_ranks:null, job9_ranks_at:'', ai_memo:'', family_headcount:false, family_headcount_at:'', family_bikou:'', doukou:false, doukou_at:'', mgr_involve:'単独', asset_type:false, ekitoho:'', proposal_req:false, proposal_req_at:'',
     created_at:new Date().toISOString(), updated_at:new Date().toISOString()
   };
 }
@@ -4054,6 +4796,8 @@ function fillForm(c) {
   document.querySelectorAll('.stbtn').forEach(function(b){ b.classList.toggle('active', String(b.dataset.s)===String(c.stage)); });
   var sarr=Array.isArray(c.setsudo)?c.setsudo:(c.setsudo?[c.setsudo]:[]);
   document.querySelectorAll('.pbtn[data-pill="setsudo"]').forEach(function(b){ b.classList.toggle('active', sarr.indexOf(b.dataset.val)>=0); });
+  var harr=Array.isArray(c.houbun)?c.houbun:(c.houbun?[c.houbun]:[]);
+  document.querySelectorAll('.pbtn[data-pill="houbun"]').forEach(function(b){ b.classList.toggle('active', harr.indexOf(b.dataset.val)>=0); });
   ['kodo','bouka'].forEach(function(p){
     document.querySelectorAll('.pbtn[data-pill="'+p+'"]').forEach(function(b){ b.classList.toggle('active', b.dataset.val===(c[p]||'')); });
   });
@@ -4112,6 +4856,7 @@ function collectForm() {
   var hz=document.getElementById('f_hatazao'); c.hatazao=hz?hz.checked:false;
   var sb=document.querySelector('.stbtn.active'); c.stage=sb?sb.dataset.s:'';
   c.setsudo=Array.from(document.querySelectorAll('.pbtn[data-pill="setsudo"].active')).map(function(b){return b.dataset.val;});
+  c.houbun=Array.from(document.querySelectorAll('.pbtn[data-pill="houbun"].active')).map(function(b){return b.dataset.val;});
   ['kodo','bouka'].forEach(function(p){
     var ab=document.querySelector('.pbtn[data-pill="'+p+'"].active');
     c[p]=ab?ab.dataset.val:'';
@@ -5497,7 +6242,7 @@ function buildFamTreeSVG(fam){
     var rf=role.replace('（','').replace('）','').length>4?9.5:11;
     var rLast=alY-(inlaw?2:12);
     rl.forEach((t,i)=>{var yy=rLast-(rl.length-1-i)*11;s+=`<text x="${n.x+NW/2}" y="${yy}" font-size="${rf}" fill="#2d3748" font-weight="700" text-anchor="middle">${esc(t)}</text>`;});
-    if(!inlaw){var lc=(living==='同居'||living==='近居')?'#2563eb':(living==='別居')?'#b7791f':(living==='死亡')?'#64748b':'#94a3b8';var al=(m.age?esc(m.age)+'歳':'')+((m.age&&living)?' ':'')+esc(living);s+=`<text x="${n.x+NW/2}" y="${alY}" font-size="8" fill="${lc}" text-anchor="middle">${al}</text>`;}
+    if(!inlaw){var lc=(living==='同居'||living==='近居')?'#2563eb':(living==='別居')?'#b7791f':(living==='死亡')?'#64748b':'#94a3b8';var lvDisp=(/^世帯主|^名義人/.test(m.role||'')&&living==='同居')?'世帯主':living;var al=(m.age?esc(m.age)+'歳':'')+((m.age&&lvDisp)?' ':'')+esc(lvDisp);s+=`<text x="${n.x+NW/2}" y="${alY}" font-size="8" fill="${lc}" text-anchor="middle">${al}</text>`;}
     return s;
   }
   var svg=`<svg viewBox="0 0 ${Math.round(W)} ${Math.round(H)}" width="${Math.round(W)}" height="${Math.round(H)}" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;display:block;margin:1mm auto 0"><defs><filter id="zfg"><feColorMatrix type="saturate" values="0"/></filter></defs>`;
@@ -5544,7 +6289,7 @@ function buildFamilyHTML(c){
         +'<span style="font-weight:700;min-width:17mm;color:#2d3748">'+(m.owner?'★':'')+e(m.role)+'</span>'
         +(m.name?'<span style="font-weight:600">'+e(m.name)+'</span>':'')
         +(m.age?'<span style="color:#718096">'+e(m.age)+'歳</span>':'')
-        +'<span style="color:'+lc+';font-weight:600">'+e(living)+'</span>'
+        +'<span style="color:'+lc+';font-weight:600">'+e((/^世帯主|^名義人/.test(m.role||'')&&living==='同居')?'世帯主':living)+'</span>'
         +sep+st
         +(tags.length?sep+tags.join(' '):'')
         +(mc?sep+'<span style="color:#718096">'+e(mc)+'</span>':'')
@@ -6009,6 +6754,14 @@ function genPrompt(anon){
     lines.push('上記②の提案をもとに、実際に話す言葉をそのまま書いてください。');
     lines.push('ソーシャルスタイル「'+(c.social||'未判定')+'」に合わせたトーンで。');
     lines.push('玄関先で使える自然な会話の流れで、3〜5ターン分。');
+    lines.push('');
+    lines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    lines.push('【最終行・集計用コード（必ず回答の一番最後に1行だけ出力）】');
+    lines.push('この担当者の営業力を9つの観点でS/A/B/C/D/−の6段階評価し、下記の固定順で記号だけを並べた行を、回答の最後に必ず出力してください。説明・理由・見出しは一切付けないこと。');
+    lines.push('評価の観点（順番厳守）：①現地と土地の把握 ②相続・権利・資産背景の把握 ③本音や動機の聞き取り ④信頼関係・家族や関係者の巻き込み ⑤追客の継続性 ⑥提案化・案件化 ⑦次の一手・作戦設計 ⑧記録の充実 ⑨行動量');
+    lines.push('評価基準：S=その観点をほぼ完璧に押さえている／A=明確な強み／B=一人前／C=平均的／D=着手はしている／−=その話題に一切触れていない（例：相続の話が全く出ていなければ②は−）');
+    lines.push('出力形式（この形のみ。各記号は半角スペース区切り）：');
+    lines.push('#ZX9# B A S C B C A - D');
   }
 
   var _out=lines.join('\n');
@@ -6536,7 +7289,8 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
  var bub='<svg class="z-bub" viewBox="0 0 560 230">';t.forEach(function(c){var x=20+calcScore(c)/78*520;var av=(asMap[c.land_asset]||0)+(+(c.m2||0)>=200?2:+(c.m2||0)>=100?1:0);var y=210-av/7*190;var rr=5+calcScore(c)/78*11;var rk=_zRevReg('\ud83d\udc8e \u304a\u5b9d\u5ba2',[{name:c.name,score:calcScore(c),sub:STG[+(c.stage||0)]+'\u30fb'+e(c.manager||''),id:String(c.id||'').replace(/[^\w-]/g,'')}]);bub+='<circle cx="'+x.toFixed(0)+'" cy="'+y.toFixed(0)+'" r="'+rr.toFixed(0)+'" fill="'+(RC[c.pursuit_judge]||'#888')+'" opacity=".62" stroke="#fff" stroke-width="1" style="cursor:pointer" onpointerdown="zRevShow(this,\''+rk+'\')" onpointerup="zRevHide()" onpointerleave="zRevHide()" onpointercancel="zRevHide()" oncontextmenu="return false" onclick="zRevList(\''+rk+'\',this)"/>';});bub+='<text x="280" y="228" font-size="9" fill="#6b7894" text-anchor="middle">熱量（スコア）→</text></svg>';
  var ageT=[['〜64',0,64],['65〜74',65,74],['75〜',75,200]];var agH=ageT.map(function(a){var arr=t.filter(function(c){var ag=_zOwnerAge(c);return ag!==null&&ag>=a[1]&&ag<=a[2];});var av2=arr.length?(arr.reduce(function(s,c){return s+ +(c.stage||0);},0)/arr.length).toFixed(1):'0';return '<div class="z-tile"><b>'+arr.length+'</b><span>'+a[0]+'歳／平均St '+av2+'</span></div>';}).join('');var noAge=t.filter(function(c){return _zOwnerAge(c)===null;}).length;
  var pot=Math.round(t.filter(function(c){return c.pursuit_judge==='A'||c.pursuit_judge==='S';}).reduce(function(s,c){return s+(parseFloat(c.rosenka)||0)*1000*(parseFloat(c.m2)||0);},0)/1e8);
- var miniR=board.map(function(b,_bi){var a=g[b.r];var ax=[['発掘',Math.min(Math.round(a.length/30*100),100)],['グリ',(function(){var s=0,nn=0;a.forEach(function(c){var l=getKaiwaLevel(c);if(l>=0){s+=l;nn++;}});return nn?Math.round(s/nn/4*100):0;})()],['ヒア',_zPct(a.filter(function(c){return c.family_headcount;}).length,a.length)],['連想',_zPct(a.filter(function(c){return +(c.stage||0)>=3;}).length,a.length)],['テス',_zPct(a.filter(function(c){return +(c.stage||0)>=4;}).length,Math.max(1,a.filter(function(c){return +(c.stage||0)>=3;}).length))],['ペース',100-_zPct(a.filter(function(c){return calcPaceOverrate(c)>1;}).length,a.length)]];var col=_zAVAS[reps.indexOf(b.r)%8];return _radarHero(b.r,ax,col,_bi);}).join('');
+ board.forEach(function(b){ try{ j9Snapshot(b.r, g[b.r]); }catch(_e){} });
+ var miniR=board.map(function(b,_bi){var a=g[b.r];return '<div class="z-jobcell">'+jobCardHTML(a,'mgr',b.r)+'</div>';}).join('');
  // ===== 🔬 深掘り分析：動的生成（レジストリ方式） =====
  // 分析カードは配列1要素＝1カード。JSのみで追加できる。
  // 外部追加用フック：window.Z_DEEP_EXTRAS に {id,e,t,s,sp,render:function(ctx){return html;}} をpush。
@@ -6548,7 +7302,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
   {id:'genjo',e:'🥧',t:'現況（現状）の内訳（データ）',s:'現状区分の分布。',sp:'z-c2',render:function(cx){return _genjoPie(cx.t);}},
   {id:'souzoku',e:'🏯',t:'相続緊急度 × 進捗',s:'高齢×低ステージは要対応。',sp:'z-c2',render:function(){return '<div class="z-tiles">'+agH+'</div>'+(noAge?'<div class="z-sub" style="margin-top:6px">所有者年齢 未入力 '+noAge+'件</div>':'');}},
   {id:'potential',e:'💰',t:'課の総ポテンシャル金額',s:'A・S案件の路線価×面積の概算。',sp:'z-c2',render:function(){return '<div style="text-align:center;padding:10px"><div class="z-num" style="font-size:38px;font-weight:800;color:#ffb443">約'+pot+'<span style="font-size:17px">億円</span></div><div class="z-sub">規模感の目安（概算）</div></div>';}},
-  {id:'style18',e:'🧬',t:'営業スタイル分析（全員）',s:'レーダーの形で営業の「型」を見える化。基本18タイプ＋達人で分化する上級職＝<a href="javascript:void(0)" onclick="openTypeDex()" style="color:#0c8599;font-weight:700;text-decoration:none">📖 全50種図鑑</a>',sp:'z-cf',render:function(){return '<div class="z-heroes">'+miniR+'</div>'+_radarAxisHelp();}}
+  {id:'jobs9',e:'🎖',t:'営業ジョブ（全員）',s:'担当ごとの「型」と次に伸ばす力。入力と行動＋AI評価から判定（9軸・全50職）。',sp:'z-cf',render:function(){return '<div class="z-jobgrid">'+miniR+'</div>';}}
  ];
  if(Array.isArray(window.Z_DEEP_EXTRAS)) window.Z_DEEP_EXTRAS.forEach(function(it){ if(it&&typeof it.render==='function') _deepItems.push(it); });
  var bodyMulti=_deepItems.map(function(it){
@@ -7229,14 +7983,6 @@ function planSearch(q){
 }
 function planAddEvent(label){ var t=document.getElementById('plEvTime'); if(!t||!t.value){ toast('先に時刻を選んでね'); return; } _plan.entries.push({cardId:'',target:label,sub:'行事',kind:'ev',purpose:'—',time:t?t.value:'',note:'',result:''}); savePlan(); renderPlanner(); }
 function planAddFree(){ var t=document.getElementById('plEvTime'); var tv=(t&&t.value)?t.value:''; if(!tv && planUntimedCount()>=PLAN_UNTIMED_MAX){ planUntimedFullWarn(); return; } var name=prompt('対象名を入力'); if(!name)return; _plan.entries.push({cardId:'',target:name,sub:'',kind:'k3',purpose:'情報収集',time:tv,note:'',result:''}); savePlan(); renderPlanner(); }
-function planRowsHTML(){
-  var byTime={}; _plan.entries.forEach(function(en){ if(en.time)byTime[en.time]=en; });
-  return planSlots().map(function(s){
-    var en=byTime[s]; var hour=s.slice(-2)==='00';
-    if(!en) return '<tr><td class="pti'+(hour?' ph':'')+'">'+s+'</td><td></td><td></td><td></td><td></td><td></td></tr>';
-    return '<tr><td class="pti'+(hour?' ph':'')+'">'+s+'</td><td class="ptt">'+e(en.target)+(en.sub?'<span class="psub"> '+e(en.sub)+'</span>':'')+'</td><td class="pc"><span class="pbadge pb-'+en.kind+'">'+PLAN_KIND[en.kind]+'</span></td><td class="pc" style="font-size:11px">'+e(en.purpose)+'</td><td class="pm">'+e(en.note)+'</td><td class="pm">'+e(en.result)+'</td></tr>';
-  }).join('');
-}
 function planUntimedBlockHTML(){
  var us=(_plan.entries||[]).filter(function(en){return !en.time;});
  var items=us.map(function(en){
@@ -8584,6 +9330,17 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           </select>
         </div>
       </div>
+      <!-- 権利関係（法文チェック） -->
+      <div style="margin-bottom:8px">
+        <label>権利関係チェック</label>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:2px">
+          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="共有名義">共有名義</button>
+          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="借地">借地</button>
+          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="底地">底地</button>
+          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="農地">農地</button>
+          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="相続課題">相続課題</button>
+        </div>
+      </div>
       <!-- 建蔽容積・築年数 -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
         <div>
@@ -8835,7 +9592,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
             <div style="font-size:12px;font-weight:700;color:#553c9a">💭 総合分析 − 貼り付け欄</div>
             <span id="at_ai_general" class="paste-at" style="margin-left:auto;align-self:center;margin-top:0;margin-right:6px"></span><button type="button" onclick="clearStrategyField('f_ai_general')" style="font-size:11px;padding:3px 10px;border:1px solid #e2e8f0;border-radius:4px;background:white;cursor:pointer;color:#718096">🗑</button>
           </div>
-          <textarea id="f_ai_general" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('general');autoDetectJudge(this.value);autoDetectSummary(this.value)"></textarea>
+          <textarea id="f_ai_general" rows="14" placeholder="AI分析の回答をここに貼り付け" style="font-size:13px;border:none;background:transparent;resize:vertical;min-height:260px" oninput="scheduleAibisComment('general');autoDetectJudge(this.value);autoDetectSummary(this.value);autoDetectJob9(this.value)"></textarea>
           <div id="ac_general" style="display:none;margin-top:8px;background:#fffbeb;border:1px solid #f6e05e;border-radius:6px;padding:8px;font-size:12px;color:#744210"></div>
         </div>
         <!-- 最優先事項 -->
