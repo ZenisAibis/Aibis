@@ -837,6 +837,7 @@ body.is-mob .mob-menu{display:inline-block}
 </style>
 <style>.paste-at{font-size:11px;color:#5a6b85;font-weight:600;margin-top:4px;text-align:right}.zdash .z-stamp{font-size:10px;color:var(--z-dim);text-align:right;margin-top:6px}</style>
 <style>#planSvBtn:disabled{opacity:.38;cursor:not-allowed}</style>
+<style>/* z.Aibis dashboard polish (scoped, additive) */.zdash-mgr,.zdash-rep{-webkit-font-smoothing:antialiased}.zdash .z-card{border-radius:16px}.zdash-mgr .z-card,.zdash-rep .z-card{background:#fff;border-color:#e6eaf2;box-shadow:0 1px 2px rgba(20,40,80,.04),0 8px 22px -12px rgba(20,40,80,.18)}.zdash .z-kpi .z-klab{display:block;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.02em}.zdash .z-num,.zdash .z-kval,.zdash .stat-num,.zdash .bar-num,.zdash .z-pno,.zdash .z-ptemp{font-variant-numeric:tabular-nums}.zdash-mgr .z-cmdhead{letter-spacing:.13em}.zdash-mgr .z-cmdhead span{letter-spacing:.03em}.zdash .z-sec-h{border-radius:14px;font-size:13.5px}.zdash .z-secsub{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.job-card{border-radius:16px}.zdash-rep .job-card,.zdash-mgr .job-card,.zjf-wrap .job-card{box-shadow:0 1px 2px rgba(20,40,80,.05),0 10px 28px -14px rgba(20,40,80,.22)}.job-card::before{content:'';position:absolute;left:0;right:0;top:0;height:3px;border-radius:16px 16px 0 0;background:linear-gradient(90deg,var(--jc-accent,#8b7cff),transparent 88%);opacity:.85;pointer-events:none}.jc-tier-0::before{opacity:.4}.jc-tier-king::before{background:linear-gradient(90deg,#ffd43b,transparent 80%);opacity:1}.job-name{min-width:0;row-gap:2px;font-size:clamp(18px,4.8vw,22px)}.job-name .jn-txt{min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis}.job-title{min-width:0;overflow:hidden;text-overflow:ellipsis;box-shadow:0 1px 0 rgba(0,0,0,.05)}.job-strong{min-width:0}.stat-row,.bar-row{min-width:0}.stat-lab{width:84px}.bar-lab{width:84px}.stat-num,.bar-num{text-align:right;min-width:30px}.z-jobgrid{gap:14px}.z-jobcell{min-width:0}.zjz-card{border-radius:18px}@media(max-width:620px){.zdash .z-card{padding:13px}.job-card{padding:12px}.job-name{font-size:19px}.z-jobgrid{grid-template-columns:1fr;gap:11px}.zdash-mgr .z-cmdhead{font-size:14px}}</style>
 </head>
 <body>
 <div class="container">
@@ -981,11 +982,11 @@ body.is-mob .mob-menu{display:inline-block}
     <button id="searchClear" onclick="clearSearch()" style="display:none;background:none;border:1px solid #cbd5e0;color:#718096;border-radius:6px;padding:7px 10px;font-size:12px;cursor:pointer;white-space:nowrap">✕ クリア</button>
   </div>
   <div id="mgrDashBar" onclick="openAnalysis()" style="display:none;margin:8px;padding:13px 16px;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;background:#ebf4ff;border:1px solid #bee3f8;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.06)">
-    <span style="font-size:14px;font-weight:700;color:#2c5282">📊 課分析ダッシュボード</span>
+    <span style="font-size:14px;font-weight:700;color:#2c5282">📊 課分析</span>
     <span style="font-size:12px;color:#4a5568;font-weight:700">開く ›</span>
   </div>
   <div id="selfDashBar" onclick="openSelfDash()" style="display:none;margin:8px;padding:13px 16px;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;background:#f0f5ff;border:1px solid #c3dafe;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.06)">
-    <span style="font-size:14px;font-weight:700;color:#2c5282">🔭 自己分析ダッシュボード</span>
+    <span style="font-size:14px;font-weight:700;color:#2c5282">🔭 自己分析</span>
     <span style="font-size:12px;color:#4a5568;font-weight:700">開く ›</span>
   </div>
   <div class="panel" style="padding:8px"><div id="cardList"></div><div id="pager"></div></div>
@@ -994,7 +995,7 @@ body.is-mob .mob-menu{display:inline-block}
   <div id="selfDashPanel" class="z-fullov" onclick="dashOverlayClick(event)" style="display:none;position:fixed;inset:0;overflow:hidden">
     <div class="z-dashcard">
     <div style="position:sticky;top:0;z-index:2;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;background:#f0f5ff;border-bottom:1px solid #c3dafe">
-      <span style="font-size:15px;font-weight:700;color:#2c5282">🔭 自己分析ダッシュボード</span>
+      <span style="font-size:15px;font-weight:700;color:#2c5282">🔭 自己分析</span>
       <button onclick="closeSelfDash()" style="border:1px solid #c3dafe;background:#fff;border-radius:8px;padding:6px 13px;font-size:13px;font-weight:700;color:#2c5282;cursor:pointer;font-family:inherit">✕ 閉じる</button>
     </div>
     <div id="selfDashContent" style="padding:16px"></div>
@@ -1073,7 +1074,7 @@ body.is-mob .mob-menu{display:inline-block}
   <div id="analysisPanel" class="z-fullov" onclick="dashOverlayClick(event)" style="display:none;position:fixed;inset:0;overflow:hidden">
     <div class="z-dashcard">
       <div style="position:sticky;top:0;z-index:2;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;background:#ebf4ff;border-bottom:1px solid #bee3f8">
-        <span style="font-size:15px;font-weight:700;color:#2c5282">📊 課分析ダッシュボード</span>
+        <span style="font-size:15px;font-weight:700;color:#2c5282">📊 課分析</span>
         <button onclick="closeAnalysis()" style="border:1px solid #bee3f8;background:#fff;border-radius:8px;padding:6px 13px;font-size:13px;font-weight:700;color:#2c5282;cursor:pointer;font-family:inherit">✕ 閉じる</button>
       </div>
       <div id="analysisContent" style="padding:16px">
@@ -1674,7 +1675,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v6.42";
+var APP_VERSION = "v6.43";
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
 window.IS_DEV = /_dev/i.test(location.href);
@@ -7307,7 +7308,7 @@ function workMeterInner(){
   var inactH=inact.length?'<div class="z-sub" style="margin-top:8px">😴 未稼働：'+inact.map(function(x){return e(x);}).join('・')+'</div>':'';
   return head+'<div class="z-wkscroll"><div class="z-wkmin">'+rows+'</div></div>'+inactH;
 }
-function workMeterSection(){ return _zsecPlain('work','🟢 稼働率モニター <span style="font-size:10px;color:var(--z-dim);font-weight:600">基準達成度ランキング</span>','<div id="zWorkCard">'+workMeterInner()+'</div>'); }
+function workMeterSection(){ return _zsecPlain('work','🟢 稼働率モニター <span style="font-size:10px;color:var(--z-dim);font-weight:600">達成度</span>','<div id="zWorkCard">'+workMeterInner()+'</div>'); }
 window.setWkP=function(p){ _wkP=p; var el=document.getElementById('zWorkCard'); if(el) el.innerHTML=workMeterInner(); };
 function renderAnalysis(){
  if(!isMgrUnlocked()) return;
@@ -7327,11 +7328,11 @@ function renderAnalysis(){
  // team活動（フル稼働）
  var g=_zByMgr(cards), reps=Object.keys(g).sort(), curMonth=_zMonths()[11];
  var active=reps.filter(function(r){return g[r].some(function(c){return (c.discovery_date||'').slice(0,7)===curMonth||_zVisitDates(c).some(function(d){return d.slice(0,7)===curMonth;});});});
- var H='<div class="zdash zdash-mgr"><div class="z-cockpit"><div class="z-cmdhead">⌘ COMMAND CENTER <span>課ダッシュボード</span></div>';
+ var H='<div class="zdash zdash-mgr"><div class="z-cockpit"><div class="z-cmdhead">⌘ COMMAND CENTER <span>/ 課分析</span></div>';
  // KPI + gauge
- H+='<div class="z-bento"><div class="z-card z-kpi z-c1"><span class="z-klab">新規発掘（今月）</span>'+(thisM||lastM?'<span class="z-delta '+(dd>=0?'up':'dn')+'">'+(dd>=0?'▲':'▼')+' '+Math.abs(dd)+'</span>':'')+'<div class="z-kval z-num">'+thisM+'<small>件</small></div>'+_zSpark(mDisc,'#34e3d0')+'</div>'
+ H+='<div class="z-bento"><div class="z-card z-kpi z-c1"><span class="z-klab">今月発掘</span>'+(thisM||lastM?'<span class="z-delta '+(dd>=0?'up':'dn')+'">'+(dd>=0?'▲':'▼')+' '+Math.abs(dd)+'</span>':'')+'<div class="z-kval z-num">'+thisM+'<small>件</small></div>'+_zSpark(mDisc,'#34e3d0')+'</div>'
   +'<div class="z-card z-kpi z-c1"><span class="z-klab">課スコア平均</span><div class="z-kval z-num" style="color:#8b7cff">'+avg+'<small>/78</small></div><div class="z-ksub">対象 '+n+'件</div></div>'
-  +'<div class="z-card z-kpi z-c1"><span class="z-klab">連想以上 率</span><div class="z-kval z-num" style="color:#9be15d">'+_zPct(conn,n)+'<small>%</small></div><div class="z-ksub">'+conn+'件</div></div>'
+  +'<div class="z-card z-kpi z-c1"><span class="z-klab">連想率</span><div class="z-kval z-num" style="color:#9be15d">'+_zPct(conn,n)+'<small>%</small></div><div class="z-ksub">'+conn+'件</div></div>'
   +'<div class="z-card z-kpi z-c1"><span class="z-klab">ペース遅れ</span><div class="z-kval z-num" style="color:#ff5d7d">'+late+'<small>件</small></div><div class="z-ksub">'+_zPct(late,n)+'%</div></div></div>';
  H+='</div>';
  // 📐 カード品質ピラミッド
@@ -7578,7 +7579,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
  var questCard=_zc('🌱','育成クエスト','担当の弱点を「次の課題」に変換。今月の成長と次の一手を提示。',questH,'z-cf');
  var _cardTreasure=_zc('💎','お宝度マトリクス','熱量×資産規模。右上＝お宝。泡を長押しで客名、タップでカードへ。',bub,'z-cf');
  var _cardHeroes=_zc('🎖','営業タイプ図鑑（担当）','担当ごとの「型」と伸ばす力。タップで拡大。','<div class="z-jobgrid">'+miniR+'</div>','z-cf');
- var _cardWork=_zc('🟢','稼働率モニター','基準達成度ランキング','<div id="zWorkCard">'+workMeterInner()+'</div>','z-cf');
+ var _cardWork=_zc('🟢','稼働率モニター','達成度','<div id="zWorkCard">'+workMeterInner()+'</div>','z-cf');
  var _bodyData=_deepItems.filter(function(it){return it.id!=='treasure'&&it.id!=='jobs9';}).map(function(it){var bd='';try{bd=it.render(_deepCtx)||'';}catch(err){bd='';}return _zc(it.e||'📈',it.t||it.id||'分析',it.s||'',bd,it.sp||'z-c2');}).join('');
  var _cardInsights=_zc('🧠','傾向と対策（AIインサイト）','データから打ち手を自動抽出。',ins,'z-cf');
  var _cardMap=_zc('🗺','マップ','町の熱量とお宝客。',bodyArea+_cardTreasure,'z-cf');
