@@ -1679,7 +1679,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v6.48";
+var APP_VERSION = "v6.49";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -3336,7 +3336,7 @@ function _j9lookup(table, keys){
   return null;
 }
 // メイン：カード配列→ジョブ判定
-function j9DetermineJob(cards, repName){
+function j9DetermineJob(cards, repName, popScale){ var PS=(popScale&&popScale>0)?popScale:1;
   var r=j9Axes(cards);
   var coef=j9TrustCoef(r.trust);
   var corr={}; J9_ORDER.forEach(function(k){ corr[k]=_clip(r.axes[k]*coef); });
@@ -3354,9 +3354,9 @@ function j9DetermineJob(cards, repName){
   var avg9=Math.round(J9_ORDER.reduce(function(s,k){return s+corr[k];},0)/J9_ORDER.length);
   res.avg=avg9;
   // 初心者帯の行き先：35枚以上＋平均55以上なら見込士、それ以外は初陣士
-  var initJob=(r.n>=J9_CARD_GATE.mikomiCardMin && avg9>=J9_CARD_GATE.mikomiAvg) ? '見込士' : '初陣士';
+  var initJob=(r.n>=J9_CARD_GATE.mikomiCardMin*PS && avg9>=J9_CARD_GATE.mikomiAvg) ? '見込士' : '初陣士';
   // 【強欲・前段】中身が薄い（強い軸ゼロ）まま zatsuyokuMin 以上抱える → 雑欲士（整理を促す警告）
-  if(ns===0 && r.n>=J9_CARD_GATE.zatsuyokuMin){
+  if(ns===0 && r.n>=J9_CARD_GATE.zatsuyokuMin*PS){
     res.job='雑欲士'; res.greed=true; res.strong=[]; return res;
   }
   // 本ジョブ＝41枚以上 かつ 強い軸が1つ以上。満たさなければ初心者帯に留める
@@ -3367,7 +3367,7 @@ function j9DetermineJob(cards, repName){
   res.strong=strong;
   // 全軸高水準＋高信頼→天眼王
   var allHigh=J9_ORDER.every(function(k){return corr[k]>=85;});
-  if(allHigh && r.trust>=0.90 && r.n>=J9_CARD_GATE.tier5){
+  if(allHigh && r.trust>=0.90 && r.n>=J9_CARD_GATE.tier5*PS){
     // 天眼王は希少。repName指定時は直近2か月の安定（信頼度90%＆全軸85以上が継続）を必須にする。
     // 履歴がまだ1か月以下の導入初期だけ、当月条件で暫定的に許可（2か月目以降は安定判定で自然に絞られる）。
     var hist=repName?j9RecentSnaps(repName,3).length:0;
@@ -3375,7 +3375,7 @@ function j9DetermineJob(cards, repName){
     if(stableOK){ res.job=J9_KING; res.title='天眼'; return res; }
   }
   // 【強欲・本段】実力はあるが gouyokuMin 以上抱えすぎ → 本来の格でⅡ/Ⅲに振り分け（天眼王は除外）
-  if(r.n>=J9_CARD_GATE.gouyokuMin){
+  if(r.n>=J9_CARD_GATE.gouyokuMin*PS){
     res.job=(ns>=3)?'大欲無限':'強欲師'; res.greed=true; return res;
   }
   var job=null;
@@ -3760,8 +3760,8 @@ function _job9GrowthHTML(repName, corrNow, mode){
   return '<div class="job-growth">'+(up?'<span class="jg-up">'+up+'</span>':'')+(up&&dn?'<br>':'')+(dn?'<span class="jg-dn">'+dn+'</span>':'')+'</div>';
 }
 // ジョブカード本体（mode: 'self' | 'mgr'）
-function jobCardHTML(cards, mode, dispName){
-  var res=j9DetermineJob(cards, dispName||null);
+function jobCardHTML(cards, mode, dispName, popScale){
+  var res=j9DetermineJob(cards, dispName||null, popScale);
   var color = res.job==='天眼王' ? '#ffd43b' : (res.strong&&res.strong.length ? ['#ff6b6b','#845ef7','#ffd43b','#ff922b','#ff5d7d','#4dabf7','#9775fa','#868e96','#20c997'][JOB9_AXES.map(function(a){return a.k;}).indexOf(res.strong[0])%9] : '#868e96');
   var grow=_job9Grow(res);
   var trustPct=Math.round(res.trust*100);
@@ -4238,7 +4238,7 @@ function renderSelfDash(tid){
      }catch(_e3){} }, 600); })(_promo);
    }
  }catch(_e){}
- var _selfJobCard; if(window.IS_DEV){var _byMgr={}; mine.forEach(function(c){var m=(c.manager||'(担当なし)');(_byMgr[m]=_byMgr[m]||[]).push(c);}); var _dg=Object.keys(_byMgr).sort().map(function(m){return jobCardHTML(_byMgr[m],'mgr',m);}).join(''); _selfJobCard='<div class="z-card z-cf z-self-job"><h3>🛠 担当別タイプ（開発確認）</h3><div class="z-sub">全カードを担当ごとに分けたときの型。'+Object.keys(_byMgr).length+'名分。開発確認用。</div><div class="z-jobgrid">'+_dg+'</div></div>';} else { _selfJobCard='<div class="z-card z-cf z-self-job"><h3>🎖 あなたの営業タイプ</h3><div class="z-sub">入力と行動から、いまの「型」と伸ばす方向。育てるほど正確になります。</div>'+jobCardHTML(mine,'self')+'</div>'; } H=H.replace('<!--SELFJOB-->',_selfJobCard);
+ var _selfJobCard; if(window.IS_DEV){var _mgrs={}; mine.forEach(function(c){var m=(c.manager||'').trim(); if(m)_mgrs[m]=1;}); var _hc=Math.max(1,Object.keys(_mgrs).length); _selfJobCard='<div class="z-card z-cf z-self-job"><h3>🛠 課を1人とみなしたタイプ（開発確認）</h3><div class="z-sub">全'+mine.length+'枚を1人に見立て、件数基準を担当'+_hc+'名ぶん（×'+_hc+'）にして判定。開発確認用。</div>'+jobCardHTML(mine,'self',null,_hc)+'</div>';} else { _selfJobCard='<div class="z-card z-cf z-self-job"><h3>🎖 あなたの営業タイプ</h3><div class="z-sub">入力と行動から、いまの「型」と伸ばす方向。育てるほど正確になります。</div>'+jobCardHTML(mine,'self')+'</div>'; } H=H.replace('<!--SELFJOB-->',_selfJobCard);
  var _myNow=_kpi3Now(mine);
  bodyState+=_kpi3Cards(mine);
  bodyState+='<div class="z-card z-cf"><h3>📌 重要3指標トレンド（直近6ヶ月）</h3><div class="z-sub">提案依頼・同行・家族構成コンプの月別件数。今月：提案 '+_myNow[0]+'・同行 '+_myNow[1]+'・家族 '+_myNow[2]+'。<br><span style="color:var(--z-dim)">※家族構成は人数把握まで。氏名・年齢・職業まで深掘りを。</span></div>'+_kpi3Chart(mine)+'</div>';
