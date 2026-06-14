@@ -1644,7 +1644,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v6.32";
+var APP_VERSION = "v6.33";
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
 window.IS_DEV = /_dev/i.test(location.href);
@@ -3259,8 +3259,8 @@ var J9_FIVE={
  'chizu+houbun+choshin+seian+sakujin':'神機妙算','choshin+enmusubi+tsuibi+seian+sakujin':'千客万来',
  'chizu+tsuibi+seian+kiroku+sokko':'勇往邁進','houbun+choshin+seian+sakujin+kiroku':'博覧強記'
 };
-var J9_INIT=['芽士','始動者','初陣士']; // 入力信頼度が低いときの初期職
-var J9_CARD_GATE={ meshiMax:35, yorozuMax:40, jobMin:41, tier34:65, tier5:80, trust34:0.70, trust5:0.85 };
+var J9_INIT=['芽士','初陣士','見込士']; // 初心者帯（rank0）：芽士→初陣士→見込士
+var J9_CARD_GATE={ meshiMax:25, mikomiCardMin:35, mikomiAvg:55, jobMin:41, tier34:65, tier5:80, trust34:0.70, trust5:0.85 };
 function j9CardCap(n, trust){
   if(n<J9_CARD_GATE.jobMin) return 0;
   if(n<J9_CARD_GATE.tier34) return 2;           // 41〜64：1〜2強
@@ -3270,11 +3270,10 @@ function j9CardCap(n, trust){
   // 80以上：入力率85%以上で5強・天眼王、未満は4強どまり
   return (trust>=J9_CARD_GATE.trust5) ? 9 : 4;
 }
-// ジョブの“格”を数値化（昇格検知用）。初期職0／1強1…5強5／天眼王6。万屋はバランスで1扱い
+// ジョブの“格”を数値化（昇格検知用）。初心者帯0／1強1…5強5／天眼王6。
 function j9JobRank(job, strongCount){
   if(job==='天眼王') return 6;
   if(J9_INIT.indexOf(job)>=0) return 0;
-  if(job==='万屋') return 0; // ジョブ未確定の助走帯（→本ジョブ確定で昇格扱い）
   return Math.max(1,Math.min(5,strongCount||1));
 }
 var J9_KING='天眼王';
@@ -3305,19 +3304,25 @@ function j9DetermineJob(cards, repName){
   var corr={}; J9_ORDER.forEach(function(k){ corr[k]=_clip(r.axes[k]*coef); });
   var res={axes:r.axes, corr:corr, trust:r.trust, coef:coef, n:r.n, job:'', title:'', strong:[], provisional:false};
   if(r.n===0){ res.job='—'; res.provisional=true; return res; }
-  // 【カード数ゲート】行動量（保有枚数）で段階を区切る
+  // 【初心者帯：芽士】0〜25枚
   if(r.n<=J9_CARD_GATE.meshiMax){
-    res.job=J9_INIT[Math.min(J9_INIT.length-1, Math.floor(r.n/12))];
-    res.provisional=true; res.strong=[]; return res;
+    res.job='芽士'; res.provisional=true; res.strong=[]; return res;
   }
-  if(r.n<J9_CARD_GATE.jobMin){
-    res.job='万屋'; res.provisional=true; res.strong=[]; return res;
-  }
+  // 26枚以上：補正後スコアから強い軸と9軸平均を算出
   if(r.trust<0.30){ res.provisional=true; }
   var cardCap=j9CardCap(r.n, r.trust);
   var strong=j9StrongAxes(corr, r.trust, cardCap);
-  res.strong=strong;
   var ns=strong.length;
+  var avg9=Math.round(J9_ORDER.reduce(function(s,k){return s+corr[k];},0)/J9_ORDER.length);
+  res.avg=avg9;
+  // 初心者帯の行き先：35枚以上＋平均55以上なら見込士、それ以外は初陣士
+  var initJob=(r.n>=J9_CARD_GATE.mikomiCardMin && avg9>=J9_CARD_GATE.mikomiAvg) ? '見込士' : '初陣士';
+  // 本ジョブ＝41枚以上 かつ 強い軸が1つ以上。満たさなければ初心者帯に留める
+  // （枚数を積んでも中身が薄い＝最高軸すら55未満なら1強にもしない）
+  if(r.n<J9_CARD_GATE.jobMin || ns===0){
+    res.job=initJob; res.provisional=true; res.strong=[]; return res;
+  }
+  res.strong=strong;
   // 全軸高水準＋高信頼→天眼王
   var allHigh=J9_ORDER.every(function(k){return corr[k]>=85;});
   if(allHigh && r.trust>=0.90 && r.n>=J9_CARD_GATE.tier5){
@@ -3337,13 +3342,10 @@ function j9DetermineJob(cards, repName){
     job=_j9lookup(J9_THREE, strong)||_j9lookup(J9_TWO, strong.slice(0,2))||(J9_ONE[strong[0]]);
   } else if(ns===2){
     job=_j9lookup(J9_TWO, strong)||(J9_ONE[strong[0]]);
-  } else if(ns===1){
-    job=J9_ONE[strong[0]];
   } else {
-    job='万屋';
-    res.provisional=(r.trust<0.50);
+    job=J9_ONE[strong[0]]; // ns===1（ns===0は上で初心者帯に分岐済み）
   }
-  res.job=job||'万屋';
+  res.job=job||initJob;
   // 称号（二つ名）：最上位軸が高水準＋十分な信頼度
   if(strong.length && r.trust>=0.85){
     var top=strong[0];
@@ -3554,7 +3556,7 @@ var J9_IMGID={
  // 5強
  '神機妙算':'tensakugunshi','千客万来':'seiendaishou','勇往邁進':'kaitakudaishou','博覧強記':'souzokugunshi',
  // 最上位・初期職・バランス
- '天眼王':'tenganou','芽士':'meshi','始動者':'shidousha','初陣士':'uijinshi','万屋':'yorozuya'
+ '天眼王':'tenganou','芽士':'meshi','初陣士':'uijinshi','見込士':'mikomishi'
 };
 function j9ImgId(name){ return J9_IMGID[name]||encodeURIComponent(name); }
 // ジョブ名の読み（ルビ）— 確定版v2
@@ -3564,7 +3566,7 @@ var J9_YOMI={
  '見聞将':'けんぶんしょう','地権将':'ちけんしょう','地縁将':'ちえんしょう','謀略将':'ぼうりゃくしょう','法心将':'ほうしんしょう','法策将':'ほうさくしょう','継縁将':'けいえんしょう','聴策将':'ちょうさくしょう','成縁将':'せいえんしょう','継策将':'けいさくしょう','成策将':'せいさくしょう','機動将':'きどうしょう',
  '棟梁':'とうりょう','宗匠':'そうしょう','大家':'たいか','参謀':'さんぼう','総帥':'そうすい','先鋒':'せんぽう',
  '神機妙算':'しんきみょうさん','千客万来':'せんきゃくばんらい','勇往邁進':'ゆうおうまいしん','博覧強記':'はくらんきょうき',
- '天眼王':'てんがんおう','芽士':'めし','始動者':'しどうしゃ','初陣士':'ういじんし','万屋':'よろずや'
+ '天眼王':'てんがんおう','芽士':'めし','初陣士':'ういじんし','見込士':'みこみし'
 };
 function j9Yomi(name){ return J9_YOMI[name]||''; }
 // ジョブのアイコン絵文字（ドット絵が無いときのフォールバック）
