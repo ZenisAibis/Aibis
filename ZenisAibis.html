@@ -1674,7 +1674,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v6.41";
+var APP_VERSION = "v6.42";
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
 window.IS_DEV = /_dev/i.test(location.href);
@@ -7379,7 +7379,7 @@ function renderAnalysis(){
   +_zc('⏱','45日契約クロック','A昇格(追撃判定)→45日。赤は超過。',clockH,'z-c2')
   +_zc('🏎','パイプライン・ベロシティ','各段の平均滞留日数。長い段が失速＝<b style="color:#ff5d7d">'+STG[slow]+'</b>。',_zVbars(dwAvg,STG.map(function(s){return s.slice(0,2);}),dwAvg.map(function(v){return v>=50?'#ff5d7d':v>=30?'#ffb443':'#38a169';})),'z-c2')
   +_zc('🔮','着地予測（今月見込み）','現パイプライン×転換率の概算。','<div class="z-tiles"><div class="z-tile"><b>'+proj+'</b><span>契約見込</span></div><div class="z-tile"><b>'+Math.round(conn*0.35)+'</b><span>提案依頼見込</span></div><div class="z-tile"><b>'+fc5+'</b><span>比較以上</span></div></div><div class="z-sub" style="margin-top:8px">※過去転換率の蓄積で精度UP</div>','z-c2')
-  +_zc('🕳','リーク分析（離脱の場所）','転換率が落ちる段を発見。',_zFunnel(sc),'z-c2')+_zc('⚠','要フォロー（最優先）','至急アクションすべき高価値の客。課長から指示を。',prioH,'z-c2'));
+  +_zc('⚠','要フォロー（最優先）','至急アクションすべき高価値の客。課長から指示を。',prioH,'z-c2'));
  // rank & game (team)
  var board=reps.map(function(r){var a=g[r];return {r:r,av:a.length?Math.round(a.reduce(function(s,c){return s+calcScore(c);},0)/a.length*10)/10:0,n:a.length};}).sort(function(a,b){return b.av-a.av;});
  var mxAv=Math.max.apply(null,board.map(function(b){return b.av;}))||1;
@@ -7453,6 +7453,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
    if(!tr.length) tr.push(['標準','#718096']);
    return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--z-line)"><span style="font-weight:700;font-size:13px;min-width:60px;flex-shrink:0">'+e(r)+'</span><span style="display:flex;gap:5px;flex-wrap:wrap">'+tr.map(function(x){return '<span class="z-pill" style="background:'+x[1]+'22;color:'+x[1]+'">'+x[0]+'</span>';}).join('')+'</span></div>';
  }).join('');
+ var _teamCourse=_zc('🕳','リーク分析（離脱の場所）','転換率が落ちる段を発見。',_zFunnel(sc),'z-c2');
  var bodyTeam=('🧑‍💼 担当の特性・保有状況',
    _zc('📇','見込み保有数（全体・担当別）','課全体の母数と担当別の保有件数。','<div style="text-align:center;margin-bottom:8px"><span style="font-family:Sora,sans-serif;font-size:30px;font-weight:800;color:#34e3d0">'+cards.length+'</span><span style="font-size:12px;color:var(--z-dim)"> 件（全体）／平均 '+avgHold.toFixed(1)+'件</span></div>'+_zVbars(holdBars,reps.map(function(r){return r.slice(0,1);}),_zAVAS),'z-c2')
   +_zc('⭕','提案依頼の取得状況','顧客の意思表示＝契約への最短サイン。','<div style="text-align:center;margin-bottom:8px"><span style="font-family:Sora,sans-serif;font-size:30px;font-weight:800;color:#2f9e44">'+prGot+'</span><span style="font-size:12px;color:var(--z-dim)"> 件取得／'+cards.length+'件中（'+_zPct(prGot,cards.length)+'%）</span></div>'+_zVbars(prBars,reps.map(function(r){return r.slice(0,1);}),reps.map(function(){return '#2f9e44';})),'z-c2')
@@ -7580,7 +7581,8 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
  var _cardWork=_zc('🟢','稼働率モニター','基準達成度ランキング','<div id="zWorkCard">'+workMeterInner()+'</div>','z-cf');
  var _bodyData=_deepItems.filter(function(it){return it.id!=='treasure'&&it.id!=='jobs9';}).map(function(it){var bd='';try{bd=it.render(_deepCtx)||'';}catch(err){bd='';}return _zc(it.e||'📈',it.t||it.id||'分析',it.s||'',bd,it.sp||'z-c2');}).join('');
  var _cardInsights=_zc('🧠','傾向と対策（AIインサイト）','データから打ち手を自動抽出。',ins,'z-cf');
- H+=_zsec('today','📌 今日の指示 <span class="z-secsub">朝礼前に「今日、誰に何を」</span>',todayCard+readyCard+zoneCard+bodyContract)+_zsec('map','🗺 マップ <span class="z-secsub">町の熱量とお宝客</span>',bodyArea+_cardTreasure)+_zsec('growth','👥 部下 <span class="z-secsub">タイプ・育成・稼働</span>',_cardHeroes+coachCard+questCard+bodyRank+_cardWork+bodyTeam)+_zsec('state','📊 課の状態 <span class="z-secsub">３指標・活動量・品質</span>',bodyKpi3+bodyProcess+bodyQuality+_bodyData+_cardInsights);
+ var _cardMap=_zc('🗺','マップ','町の熱量とお宝客。',bodyArea+_cardTreasure,'z-cf');
+ H+=_zsec('today','🎯 課の指示 <span class="z-secsub">今日やること・誰に何を</span>',todayCard+readyCard+zoneCard+bodyContract)+_zsec('state','📊 課の確認 <span class="z-secsub">マップ・3指標・活動量・品質・課データ</span>',_cardMap+bodyKpi3+bodyProcess+bodyQuality+_bodyData+_teamCourse+_cardInsights)+_zsec('heroes','🏅 営業タイプ図鑑 <span class="z-secsub">担当の型を一覧</span>',_cardHeroes)+_zsec('teamchk','👥 部下の確認 <span class="z-secsub">担当別スコア・稼働率・保有/提案/入力・特性</span>',bodyRank+_cardWork+bodyTeam)+_zsec('coach','🎓 部下の指導 <span class="z-secsub">コーチング・育成クエスト</span>',coachCard+questCard);
  H+='</div>';
  host.innerHTML=H;
  if(window.IS_DEV){var _dw=document.getElementById('devSelfMirrorWrap');if(_dw){_dw.style.display='';if(window.renderSelfDash)renderSelfDash('devSelfMirror');}}
