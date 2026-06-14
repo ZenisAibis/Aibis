@@ -1644,7 +1644,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v6.33";
+var APP_VERSION = "v6.34";
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
 window.IS_DEV = /_dev/i.test(location.href);
@@ -3260,7 +3260,7 @@ var J9_FIVE={
  'chizu+tsuibi+seian+kiroku+sokko':'勇往邁進','houbun+choshin+seian+sakujin+kiroku':'博覧強記'
 };
 var J9_INIT=['芽士','初陣士','見込士']; // 初心者帯（rank0）：芽士→初陣士→見込士
-var J9_CARD_GATE={ meshiMax:25, mikomiCardMin:35, mikomiAvg:55, jobMin:41, tier34:65, tier5:80, trust34:0.70, trust5:0.85 };
+var J9_CARD_GATE={ meshiMax:25, mikomiCardMin:35, mikomiAvg:55, jobMin:41, tier34:65, tier5:80, trust34:0.70, trust5:0.85, zatsuyokuMin:65, gouyokuMin:81 };
 function j9CardCap(n, trust){
   if(n<J9_CARD_GATE.jobMin) return 0;
   if(n<J9_CARD_GATE.tier34) return 2;           // 41〜64：1〜2強
@@ -3270,10 +3270,12 @@ function j9CardCap(n, trust){
   // 80以上：入力率85%以上で5強・天眼王、未満は4強どまり
   return (trust>=J9_CARD_GATE.trust5) ? 9 : 4;
 }
-// ジョブの“格”を数値化（昇格検知用）。初心者帯0／1強1…5強5／天眼王6。
+// ジョブの“格”を数値化（昇格検知用）。初心者帯/強欲0／1強1…5強5／天眼王6。
+var J9_GREED=['雑欲士','強欲師','大欲無限']; // カード抱えすぎ警告（強制・整理を促す）
 function j9JobRank(job, strongCount){
   if(job==='天眼王') return 6;
   if(J9_INIT.indexOf(job)>=0) return 0;
+  if(J9_GREED.indexOf(job)>=0) return 0;
   return Math.max(1,Math.min(5,strongCount||1));
 }
 var J9_KING='天眼王';
@@ -3317,6 +3319,10 @@ function j9DetermineJob(cards, repName){
   res.avg=avg9;
   // 初心者帯の行き先：35枚以上＋平均55以上なら見込士、それ以外は初陣士
   var initJob=(r.n>=J9_CARD_GATE.mikomiCardMin && avg9>=J9_CARD_GATE.mikomiAvg) ? '見込士' : '初陣士';
+  // 【強欲・前段】中身が薄い（強い軸ゼロ）まま zatsuyokuMin 以上抱える → 雑欲士（整理を促す警告）
+  if(ns===0 && r.n>=J9_CARD_GATE.zatsuyokuMin){
+    res.job='雑欲士'; res.greed=true; res.strong=[]; return res;
+  }
   // 本ジョブ＝41枚以上 かつ 強い軸が1つ以上。満たさなければ初心者帯に留める
   // （枚数を積んでも中身が薄い＝最高軸すら55未満なら1強にもしない）
   if(r.n<J9_CARD_GATE.jobMin || ns===0){
@@ -3331,6 +3337,10 @@ function j9DetermineJob(cards, repName){
     var hist=repName?j9RecentSnaps(repName,3).length:0;
     var stableOK = repName ? (j9KingStable(repName) || hist<=1) : true;
     if(stableOK){ res.job=J9_KING; res.title='天眼'; return res; }
+  }
+  // 【強欲・本段】実力はあるが gouyokuMin 以上抱えすぎ → 本来の格でⅡ/Ⅲに振り分け（天眼王は除外）
+  if(r.n>=J9_CARD_GATE.gouyokuMin){
+    res.job=(ns>=3)?'大欲無限':'強欲師'; res.greed=true; return res;
   }
   var job=null;
   if(ns>=5){
@@ -3556,7 +3566,9 @@ var J9_IMGID={
  // 5強
  '神機妙算':'tensakugunshi','千客万来':'seiendaishou','勇往邁進':'kaitakudaishou','博覧強記':'souzokugunshi',
  // 最上位・初期職・バランス
- '天眼王':'tenganou','芽士':'meshi','初陣士':'uijinshi','見込士':'mikomishi'
+ '天眼王':'tenganou','芽士':'meshi','初陣士':'uijinshi','見込士':'mikomishi',
+ // 強欲（カード抱えすぎ警告）
+ '雑欲士':'zatsuyokushi','強欲師':'gouyokushi','大欲無限':'taiyokumugen'
 };
 function j9ImgId(name){ return J9_IMGID[name]||encodeURIComponent(name); }
 // ジョブ名の読み（ルビ）— 確定版v2
@@ -3566,12 +3578,14 @@ var J9_YOMI={
  '見聞将':'けんぶんしょう','地権将':'ちけんしょう','地縁将':'ちえんしょう','謀略将':'ぼうりゃくしょう','法心将':'ほうしんしょう','法策将':'ほうさくしょう','継縁将':'けいえんしょう','聴策将':'ちょうさくしょう','成縁将':'せいえんしょう','継策将':'けいさくしょう','成策将':'せいさくしょう','機動将':'きどうしょう',
  '棟梁':'とうりょう','宗匠':'そうしょう','大家':'たいか','参謀':'さんぼう','総帥':'そうすい','先鋒':'せんぽう',
  '神機妙算':'しんきみょうさん','千客万来':'せんきゃくばんらい','勇往邁進':'ゆうおうまいしん','博覧強記':'はくらんきょうき',
- '天眼王':'てんがんおう','芽士':'めし','初陣士':'ういじんし','見込士':'みこみし'
+ '天眼王':'てんがんおう','芽士':'めし','初陣士':'ういじんし','見込士':'みこみし',
+ '雑欲士':'ざつよくし','強欲師':'ごうよくし','大欲無限':'たいよくむげん'
 };
 function j9Yomi(name){ return J9_YOMI[name]||''; }
 // ジョブのアイコン絵文字（ドット絵が無いときのフォールバック）
 function _jobEmoji(res){
   if(res.job==='天眼王') return '👑';
+  if(res.greed) return '🤑';
   if(res.provisional) return '🌱';
   if(res.strong&&res.strong.length) return _job9AxKey(res.strong[0]).e;
   return '🎖';
