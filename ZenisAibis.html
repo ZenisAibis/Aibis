@@ -1674,7 +1674,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v6.40";
+var APP_VERSION = "v6.41";
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
 window.IS_DEV = /_dev/i.test(location.href);
@@ -7575,7 +7575,12 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
     +'<div style="font-size:12px;color:var(--z-ink);margin:2px 0 0 28px"><span style="color:#ffb443;font-weight:700">次のクエスト：</span>'+QTYPE[lo][2]+'</div></div>';
  }).join('')||'<div class="z-empty">担当データなし</div>';
  var questCard=_zc('🌱','育成クエスト','担当の弱点を「次の課題」に変換。今月の成長と次の一手を提示。',questH,'z-cf');
- H+=_zsec('map','🗺 エリアヒートマップ <span class="z-secsub">戦場の地図 — どの町が熱いか・薄いか</span>',bodyArea)+_zsec('today','📌 今日の指示・優先行動 <span class="z-secsub">朝礼前に「今日、誰に何を」</span>',todayCard+readyCard+zoneCard+bodyContract)+_zsec('state','📊 課の状態と詰まりどころ <span class="z-secsub">重要3指標・活動量・カード品質</span>',bodyKpi3+bodyProcess+bodyQuality)+_zsec('growth','👥 部下育成 <span class="z-secsub">誰を褒め、誰に指導し、誰に同行するか</span>',coachCard+questCard+bodyRank+bodyTeam)+secWork+_zsec('deep','🔬 深掘り分析 <span class="z-secsub">必要なときに開く（お宝度・営業スタイル）</span>',bodyMulti)+secInsights;
+ var _cardTreasure=_zc('💎','お宝度マトリクス','熱量×資産規模。右上＝お宝。泡を長押しで客名、タップでカードへ。',bub,'z-cf');
+ var _cardHeroes=_zc('🎖','営業タイプ図鑑（担当）','担当ごとの「型」と伸ばす力。タップで拡大。','<div class="z-jobgrid">'+miniR+'</div>','z-cf');
+ var _cardWork=_zc('🟢','稼働率モニター','基準達成度ランキング','<div id="zWorkCard">'+workMeterInner()+'</div>','z-cf');
+ var _bodyData=_deepItems.filter(function(it){return it.id!=='treasure'&&it.id!=='jobs9';}).map(function(it){var bd='';try{bd=it.render(_deepCtx)||'';}catch(err){bd='';}return _zc(it.e||'📈',it.t||it.id||'分析',it.s||'',bd,it.sp||'z-c2');}).join('');
+ var _cardInsights=_zc('🧠','傾向と対策（AIインサイト）','データから打ち手を自動抽出。',ins,'z-cf');
+ H+=_zsec('today','📌 今日の指示 <span class="z-secsub">朝礼前に「今日、誰に何を」</span>',todayCard+readyCard+zoneCard+bodyContract)+_zsec('map','🗺 マップ <span class="z-secsub">町の熱量とお宝客</span>',bodyArea+_cardTreasure)+_zsec('growth','👥 部下 <span class="z-secsub">タイプ・育成・稼働</span>',_cardHeroes+coachCard+questCard+bodyRank+_cardWork+bodyTeam)+_zsec('state','📊 課の状態 <span class="z-secsub">３指標・活動量・品質</span>',bodyKpi3+bodyProcess+bodyQuality+_bodyData+_cardInsights);
  H+='</div>';
  host.innerHTML=H;
  if(window.IS_DEV){var _dw=document.getElementById('devSelfMirrorWrap');if(_dw){_dw.style.display='';if(window.renderSelfDash)renderSelfDash('devSelfMirror');}}
