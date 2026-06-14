@@ -360,9 +360,9 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 @media(prefers-reduced-motion:reduce){.jc-tier-king{animation:none}}
 .job-rep{font-size:13px;font-weight:800;color:var(--z-ink);margin-bottom:8px}
 .job-hero{display:flex;align-items:center;gap:13px}
-.job-portrait{position:relative;width:84px;height:84px;flex-shrink:0;border-radius:13px;background:rgba(0,0,0,.22);border:1px solid var(--z-line);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.job-portrait{position:relative;width:112px;height:112px;flex-shrink:0;border-radius:16px;background:linear-gradient(180deg,color-mix(in srgb,var(--jc-accent) 10%,#fff),color-mix(in srgb,var(--jc-accent) 22%,#fff));border:1px solid color-mix(in srgb,var(--jc-accent) 50%,transparent);box-shadow:inset 0 1px 1px rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center;overflow:hidden}
 .job-portrait img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
-.job-portrait .job-emoji{font-size:42px}
+.job-portrait .job-emoji{font-size:54px}
 .job-id{min-width:0;flex:1}
 .job-name{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:22px;font-weight:800;color:var(--z-ink);line-height:1.18}
 .job-name .jn-txt{white-space:nowrap} .job-name .jn-yomi{flex:0 0 100%;font-size:11px;font-weight:700;color:#8a94a6;line-height:1;margin-bottom:2px;letter-spacing:.08em}
@@ -372,7 +372,7 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 /* グラフ部：モバイル縦積み／PC横並び */
 .job-graphs{margin:10px 0 4px}
 .job-radar{display:flex;justify-content:center;align-items:center}
-.job-radar svg{width:100%;max-width:240px}
+.job-radar svg{width:100%;max-width:260px}
 .job-statwrap{margin-top:8px}
 .job-stats{display:flex;flex-direction:column;gap:9px}
 .stat-row{display:flex;align-items:center;gap:9px}
@@ -397,8 +397,30 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 .job-grow{font-size:12.5px;color:var(--z-mut);text-align:center;margin-top:4px}
 .job-grow b{color:#ffb443;font-size:13.5px}
 .job-line{font-size:12px;color:var(--z-mut);line-height:1.75;margin-top:9px;border-top:1px solid var(--z-line);padding-top:9px}
-.z-jobgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.z-jobgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}
 .z-jobcell{min-width:0}
+/* 課分析（明るい背景）用：カード地・バー溝が白に溶けないよう補正（tier枠色は維持） */
+.zdash-rep .job-card,.zdash-mgr .job-card,.zjf-wrap .job-card{background:#fff}
+.zdash-rep .stat-track,.zdash-mgr .stat-track,.zdash-rep .bar-track,.zdash-mgr .bar-track,.zjf-wrap .stat-track,.zjf-wrap .bar-track{background:rgba(20,30,50,.10)}
+/* ダッシュボードが下部バー（端末ナビ／固定タブ）に隠れないよう余白 */
+.zdash,.zdash-rep,.zdash-mgr{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+/* キャラ拡大ポップ（顔タップ） */
+.zjz-overlay,.zjf-overlay{position:fixed;inset:0;z-index:100000;background:rgba(10,16,28,.62);display:flex;align-items:center;justify-content:center;padding:18px;animation:zjzFade .16s ease}
+@keyframes zjzFade{from{opacity:0}to{opacity:1}}
+.zjz-card{position:relative;background:#fff;border-radius:20px;padding:24px 20px 20px;width:min(360px,92vw);box-shadow:0 24px 60px rgba(0,0,0,.4);border-top:4px solid var(--jc-accent,#868e96);text-align:center}
+.zjz-art{width:230px;height:230px;max-width:72vw;max-height:72vw;margin:2px auto 16px;border-radius:20px;background:linear-gradient(180deg,color-mix(in srgb,var(--jc-accent,#868e96) 10%,#fff),color-mix(in srgb,var(--jc-accent,#868e96) 24%,#fff));border:1px solid color-mix(in srgb,var(--jc-accent,#868e96) 50%,transparent);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.zjz-art img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
+.zjz-emoji{font-size:120px;line-height:1}
+.zjz-yomi{font-size:12px;font-weight:700;color:#8a94a6;letter-spacing:.1em}
+.zjz-job{font-size:28px;font-weight:800;color:#16233a;line-height:1.15;margin-top:2px}
+.zjz-strong{font-size:14px;color:#475569;margin-top:12px}
+.zjz-meta{font-size:13px;color:#5b6b85;margin-top:8px;line-height:1.7}
+.zjz-close,.zjf-close{position:absolute;top:8px;right:10px;width:34px;height:34px;border:none;background:rgba(20,30,50,.08);border-radius:50%;font-size:22px;color:#475569;cursor:pointer;line-height:1;z-index:3}
+/* カード全画面（カードタップ） */
+.zjf-wrap{position:relative;width:min(620px,96vw);max-height:94vh;overflow:auto;background:#fff;border-radius:18px;padding:16px;box-shadow:0 24px 60px rgba(0,0,0,.45);-webkit-overflow-scrolling:touch}
+.zjf-wrap .job-card{padding:6px}
+.zjf-wrap .job-portrait{cursor:zoom-in}
+.job-card .job-portrait{cursor:zoom-in}
 /* PC（広い画面）：レーダーとバーを横並び全幅に */
 @media(min-width:760px){
   .job-graphs{display:flex;gap:20px;align-items:center}
@@ -1644,7 +1666,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v6.34";
+var APP_VERSION = "v6.37";
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
 window.IS_DEV = /_dev/i.test(location.href);
@@ -3639,13 +3661,55 @@ function _job9Bars(corr, strongKeys, showNum){
   }).join('');
   return '<div class="job-bars">'+rows+'</div>';
 }
-function _jobPortrait(res){
+function _jobPortrait(res, acc){
   var emoji=_jobEmoji(res);
   var src='img/jobs/job_'+j9ImgId(res.job)+'.png';
-  return '<div class="job-portrait">'
+  var trustPct=Math.round(res.trust*100);
+  var precision = res.provisional?'まだ成長中' : (trustPct>=85?'高精度' : trustPct>=70?'おおむね正確' : '成長中');
+  var strongNames=(res.strong||[]).map(function(k){return _job9AxKey(k).n;}).join('・')||'バランス';
+  acc = acc || '#868e96';
+  return '<div class="job-portrait" role="button" tabindex="0" title="タップで拡大"'
+    +' data-img="'+src+'" data-emoji="'+e(emoji)+'" data-job="'+e(res.job)+'" data-yomi="'+e(j9Yomi(res.job)||'')+'"'
+    +' data-strong="'+e(strongNames)+'" data-trust="'+trustPct+'" data-n="'+res.n+'" data-prec="'+e(precision)+'" data-accent="'+e(acc)+'">'
     +'<img src="'+src+'" alt="" loading="lazy" onerror="this.remove()">'
     +'<span class="job-emoji">'+emoji+'</span></div>';
 }
+// ===== 顔タップ＝キャラ拡大／カードタップ＝全画面 =====
+window.zJobZoom=function(el){
+  var d=function(k){return el.getAttribute('data-'+k)||'';};
+  var ov=document.createElement('div'); ov.className='zjz-overlay';
+  ov.addEventListener('click',function(ev){ if(ev.target===ov) ov.remove(); });
+  var card=document.createElement('div'); card.className='zjz-card'; card.style.setProperty('--jc-accent', d('accent')||'#868e96');
+  var btn=document.createElement('button'); btn.className='zjz-close'; btn.setAttribute('aria-label','閉じる'); btn.textContent='×'; btn.onclick=function(){ov.remove();};
+  var art=document.createElement('div'); art.className='zjz-art';
+  var img=document.createElement('img'); img.src=d('img'); img.alt='';
+  img.onerror=function(){ this.remove(); var s=document.createElement('span'); s.className='zjz-emoji'; s.textContent=d('emoji'); art.appendChild(s); };
+  art.appendChild(img);
+  var info=document.createElement('div'); info.className='zjz-info';
+  info.innerHTML=(d('yomi')?'<div class="zjz-yomi">'+e(d('yomi'))+'</div>':'')
+    +'<div class="zjz-job">'+e(d('job'))+'</div>'
+    +'<div class="zjz-strong">強み：'+e(d('strong'))+'</div>'
+    +'<div class="zjz-meta">信頼度 '+e(d('trust'))+'%'+(d('n')?'（'+e(d('n'))+'枚）':'')+'　／　精度：'+e(d('prec'))+'</div>';
+  card.appendChild(btn); card.appendChild(art); card.appendChild(info);
+  ov.appendChild(card); document.body.appendChild(ov);
+};
+window.zJobFull=function(cardEl){
+  var ov=document.createElement('div'); ov.className='zjf-overlay';
+  ov.addEventListener('click',function(ev){ if(ev.target===ov) ov.remove(); });
+  var wrap=document.createElement('div'); wrap.className='zjf-wrap';
+  var btn=document.createElement('button'); btn.className='zjf-close'; btn.setAttribute('aria-label','閉じる'); btn.textContent='×'; btn.onclick=function(){ov.remove();};
+  wrap.appendChild(btn); wrap.appendChild(cardEl.cloneNode(true));
+  ov.appendChild(wrap); document.body.appendChild(ov);
+};
+document.addEventListener('click',function(ev){
+  if(ev.target.closest('.zjf-overlay')){ var pp=ev.target.closest('.job-portrait'); if(pp){ window.zJobZoom(pp); } return; }
+  if(ev.target.closest('.zjz-overlay')) return;
+  var port=ev.target.closest('.job-portrait');
+  if(port){ window.zJobZoom(port); return; }
+  if(ev.target.closest('summary,details,a,button,input,select,.job-axdetail')) return;
+  var card=ev.target.closest('.job-card');
+  if(card){ window.zJobFull(card); }
+});
 // 次に伸ばす力（補正後スコアの低い2軸。—扱いの軸も伸びしろとして拾う）
 function _job9Grow(res){
   var arr=JOB9_AXES.map(function(a){return {n:a.n,v:res.corr[a.k]||0};}).sort(function(a,b){return a.v-b.v;});
@@ -3692,15 +3756,15 @@ function jobCardHTML(cards, mode, dispName){
   var strongNames = (res.strong||[]).map(function(k){return _job9AxKey(k).n;}).join('・')||'バランス';
   var strongKeys=res.strong||[];
   var precLine=(mode==='mgr')
-    ? '<div class="job-trust">入力信頼度 '+trustPct+'%（'+res.n+'枚）／判定精度：'+precision+'</div>'
-    : '<div class="job-trust">判定精度：'+precision+'　<span style="opacity:.7">カードを育てるほど正確に</span></div>';
+    ? '<div class="job-trust">信頼度 '+trustPct+'%（'+res.n+'枚）／精度：'+precision+'</div>'
+    : '<div class="job-trust">精度：'+precision+'　<span style="opacity:.7">カードを育てるほど正確に</span></div>';
   var growthHTML=_job9GrowthHTML(mode==='mgr'?dispName:(dispName||(typeof uName!=='undefined'?uName:'')||'自分'), res.corr, mode);
   // 枠のグレード：強み軸数（0〜5）。天眼王は別格(king)
   var tier = res.job==='天眼王' ? 'king' : String(Math.min(5,(res.strong||[]).length));
   if(res.provisional) tier='0';
   return '<div class="job-card jc-tier-'+tier+'" style="--jc-accent:'+color+'">'
     +(dispName&&mode==='mgr'?'<div class="job-rep">'+e(dispName)+'</div>':'')
-    +'<div class="job-hero">'+_jobPortrait(res)
+    +'<div class="job-hero">'+_jobPortrait(res, color)
       +'<div class="job-id"><div class="job-name">'+(j9Yomi(res.job)?'<span class="jn-yomi">'+e(j9Yomi(res.job))+'</span>':'')+'<span class="jn-txt">'+e(res.job)+'</span>'+titleBadge+'</div>'
       +'<div class="job-strong">強み：'+e(strongNames)+'</div>'
       +precLine+'</div></div>'
