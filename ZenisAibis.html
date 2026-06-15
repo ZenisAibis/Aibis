@@ -906,7 +906,7 @@ body.is-mob .mob-menu{display:inline-block}
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:4px;width:100%">
         <button onclick="newCard()" style="background:#c53030;color:white;border:none;border-radius:6px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;height:36px">＋ 新規</button>
         <label for="fileInputMob" style="background:#3182ce;color:white;border-radius:6px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;height:36px;display:flex;align-items:center;justify-content:center">📥 読込</label>
-        <input type="file" id="fileInputMob" accept=".json" style="display:none" onchange="onFileImport(event)">
+        <input type="file" id="fileInputMob" accept=".json,.txt,application/json,text/plain" style="display:none" onchange="onFileImport(event)">
         <button onclick="saveAll()" style="background:#38a169;color:white;border:none;border-radius:6px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;height:36px">💾 保存</button>
         <div class="mob-menu" style="position:relative">
           <button class="mob-more-btn" onclick="toggleMobMenu(event)" style="width:100%;height:36px;font-size:11px;padding:0">⋮ その他</button>
@@ -928,7 +928,7 @@ body.is-mob .mob-menu{display:inline-block}
       </div>
     </div>
   </header>
-  <input type="file" id="fileInput" accept=".json" style="display:none" onchange="onFileImport(event)">
+  <input type="file" id="fileInput" accept=".json,.txt,application/json,text/plain" style="display:none" onchange="onFileImport(event)">
   <div style="background:white;border:1px solid #e2e8f0;border-radius:6px;padding:8px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;font-size:12px">
     <div><span id="cntDisp" style="color:#2c5282;font-weight:600"></span><span style="color:#a0aec0;margin:0 6px">|</span><span id="savedDisp" style="color:#a0aec0">未保存</span></div>
     <div style="display:flex;align-items:center;gap:10px">
@@ -1682,7 +1682,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v6.75";
+var APP_VERSION = "v6.76";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -4857,8 +4857,8 @@ function _sendCards(selected, toEmail, ccEmail, subjPrefix, onDone){
       if(onDone) onDone();
     },500);
   }
-  var file=null;
-  try{ file=new File([data],fn,{type:'application/json'}); }catch(_e){}
+  var file=null; var shareName=fn.replace(/\.json$/,'.txt');
+  try{ file=new File([data],shareName,{type:'text/plain'}); }catch(_e){}
   if(file && typeof navigator!=='undefined' && navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
     var shareText=(toEmail?('To: '+toEmail+(ccEmail?'  Cc: '+ccEmail:'')+'\n'):'')+body+'\n\n※ 共有先で Outlook を選ぶと、このファイルが添付された状態でメール作成できます。';
     navigator.share({files:[file], title:subj, text:shareText})
@@ -4914,7 +4914,7 @@ window.mailSelectedToManager=mailSelectedToManager;
 function sendDiag(){
   var ua=navigator.userAgent||'';
   var isChrome=/Chrome\//.test(ua) && !/EdgA|OPR|SamsungBrowser|FxiOS|CriOS/.test(ua);
-  var f=null; try{ f=new File(['{}'],'t.json',{type:'application/json'}); }catch(_e){}
+  var f=null; try{ f=new File(['{}'],'t.txt',{type:'text/plain'}); }catch(_e){}
   var hasShare=(typeof navigator.share==='function');
   var canFile=!!(f && hasShare && navigator.canShare && navigator.canShare({files:[f]}));
   var verdict=canFile
