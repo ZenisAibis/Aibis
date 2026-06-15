@@ -1682,7 +1682,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v6.83";
+var APP_VERSION = "v6.84";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -3591,7 +3591,7 @@ function openTypeDex(curName){
  var ax=function(k){var a=_job9AxKey(k);return a?a.n:k;};
  var axline=function(key){return key.split('+').map(ax).join('・');};
  var thumb=function(name,locked){
-   var src='img/jobs/job_'+j9ImgId(name)+'.png';
+   var src='img/jobs/job_'+j9ImgId(name)+'.png?v='+APP_VERSION;
    if(locked){ return '<span style="width:34px;height:34px;flex:none;border-radius:7px;background:#cbd5e0;display:inline-flex;align-items:center;justify-content:center;font-size:15px;color:#4a5568;overflow:hidden;position:relative">？<img src="'+src+'" alt="" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(0)" onerror="this.remove()"></span>'; }
    return '<span style="width:34px;height:34px;flex:none;border-radius:7px;background:#0d1526;display:inline-flex;align-items:center;justify-content:center;font-size:18px;overflow:hidden;position:relative">🎖<img src="'+src+'" alt="" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" onerror="this.remove()"></span>';
  };
@@ -3845,7 +3845,7 @@ function _job9Bars(corr, strongKeys, showNum){
 }
 function _jobPortrait(res, acc){
   var emoji=_jobEmoji(res);
-  var src='img/jobs/job_'+j9ImgId(res.job)+'.png';
+  var src='img/jobs/job_'+j9ImgId(res.job)+'.png?v='+APP_VERSION;
   var trustPct=Math.round(res.trust*100);
   var precision = res.provisional?'まだ成長中' : (trustPct>=85?'高精度' : trustPct>=70?'おおむね正確' : '成長中');
   var strongNames=(res.strong||[]).map(function(k){return _job9AxKey(k).n;}).join('・')||'バランス';
@@ -8749,7 +8749,7 @@ function openJobGallery(){
   var names=(typeof J9_IMGID==='object')?Object.keys(J9_IMGID):[];
   var cells=names.map(function(nm){
     var id=j9ImgId(nm);
-    var src='img/jobs/job_'+id+'.png';
+    var src='img/jobs/job_'+id+'.png?v='+APP_VERSION;
     var yomi=(typeof j9Yomi==='function'?j9Yomi(nm):'')||'';
     return '<div class="jg-cell">'
       +'<div class="jg-thumb"><span class="jg-ph">🤤</span><img src="'+src+'" alt="" loading="lazy" onload="jgMark(this,1)" onerror="jgMark(this,0)"></div>'

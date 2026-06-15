@@ -1682,7 +1682,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v6.82";
+var APP_VERSION = "v6.84";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -3591,7 +3591,7 @@ function openTypeDex(curName){
  var ax=function(k){var a=_job9AxKey(k);return a?a.n:k;};
  var axline=function(key){return key.split('+').map(ax).join('・');};
  var thumb=function(name,locked){
-   var src='img/jobs/job_'+j9ImgId(name)+'.png';
+   var src='img/jobs/job_'+j9ImgId(name)+'.png?v='+APP_VERSION;
    if(locked){ return '<span style="width:34px;height:34px;flex:none;border-radius:7px;background:#cbd5e0;display:inline-flex;align-items:center;justify-content:center;font-size:15px;color:#4a5568;overflow:hidden;position:relative">？<img src="'+src+'" alt="" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(0)" onerror="this.remove()"></span>'; }
    return '<span style="width:34px;height:34px;flex:none;border-radius:7px;background:#0d1526;display:inline-flex;align-items:center;justify-content:center;font-size:18px;overflow:hidden;position:relative">🎖<img src="'+src+'" alt="" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" onerror="this.remove()"></span>';
  };
@@ -3845,7 +3845,7 @@ function _job9Bars(corr, strongKeys, showNum){
 }
 function _jobPortrait(res, acc){
   var emoji=_jobEmoji(res);
-  var src='img/jobs/job_'+j9ImgId(res.job)+'.png';
+  var src='img/jobs/job_'+j9ImgId(res.job)+'.png?v='+APP_VERSION;
   var trustPct=Math.round(res.trust*100);
   var precision = res.provisional?'まだ成長中' : (trustPct>=85?'高精度' : trustPct>=70?'おおむね正確' : '成長中');
   var strongNames=(res.strong||[]).map(function(k){return _job9AxKey(k).n;}).join('・')||'バランス';
@@ -7386,13 +7386,16 @@ function micStartRecognition(){
   rec.lang='ja-JP';
   rec.continuous=false;      // 1発話ごとに完結させる
   rec.interimResults=false;  // 確定した結果のみ受け取る
-  rec.maxAlternatives=3;
+  rec.maxAlternatives=5;
   rec.onresult=function(ev){
     if(rec!==micRec) return;
     var fin='';
     for(var i=0;i<ev.results.length;i++){
-      if(ev.results[i].isFinal){
-        fin+=ev.results[i][0].transcript;
+      var r=ev.results[i];
+      if(r.isFinal){
+        var alts=[]; for(var a=0;a<r.length;a++){ if(r[a]&&r[a].transcript) alts.push(r[a].transcript); }
+        var chosen=(window.AibisVoice&&AibisVoice.pickBest)?AibisVoice.pickBest(alts):(alts[0]||'');
+        fin+=chosen;
       }
     }
     if(fin){ if(micTA){ micTA._micRaw=(micTA._micRaw||'')+fin; } if(window.AibisVoice&&AibisVoice.applyDict){ try{ fin=AibisVoice.applyDict(fin); }catch(e){} } micBase+=(micBase?'　':'')+fin; }
@@ -8746,7 +8749,7 @@ function openJobGallery(){
   var names=(typeof J9_IMGID==='object')?Object.keys(J9_IMGID):[];
   var cells=names.map(function(nm){
     var id=j9ImgId(nm);
-    var src='img/jobs/job_'+id+'.png';
+    var src='img/jobs/job_'+id+'.png?v='+APP_VERSION;
     var yomi=(typeof j9Yomi==='function'?j9Yomi(nm):'')||'';
     return '<div class="jg-cell">'
       +'<div class="jg-thumb"><span class="jg-ph">🤤</span><img src="'+src+'" alt="" loading="lazy" onload="jgMark(this,1)" onerror="jgMark(this,0)"></div>'
@@ -10880,7 +10883,16 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
     var L = learnedOnly(); for (k in L) d[k]=L[k];   // 学習結果を後勝ちで優先
     return d;
   }
+  function normalize(text){
+    if(!text) return text;
+    /* 全角数字 -> 半角 */
+    text = text.replace(/[０-９]/g, function(c){ return String.fromCharCode(c.charCodeAt(0)-0xFEE0); });
+    /* 面積単位の表記ゆれ統一 */
+    text = text.split("平方メートル").join("㎡").split("平米").join("㎡");
+    return text;
+  }
   function applyDict(text){
+    text = normalize(text);
     var d = fullDict();
     var keys = Object.keys(d).sort(function(a,b){return b.length-a.length;});
     for (var i=0;i<keys.length;i++){ text = text.split(keys[i]).join(d[keys[i]]); }
@@ -10889,7 +10901,41 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   function learn(raw, correct){
     raw=(raw||"").trim(); correct=(correct||"").trim();
     if(!raw||!correct||raw===correct) return;
-    var L=learnedOnly(); L[raw]=correct; saveLearned(L);
+    var L=learnedOnly();
+    /* 共通の前後を削って「直した語」だけを抽出（一文丸ごとより汎用に効く） */
+    var mn=Math.min(raw.length,correct.length);
+    var p=0; while(p<mn && raw.charAt(p)===correct.charAt(p)) p++;
+    var s=0; while(s<(mn-p) && raw.charAt(raw.length-1-s)===correct.charAt(correct.length-1-s)) s++;
+    var rKey=raw.slice(p, raw.length-s), cVal=correct.slice(p, correct.length-s);
+    /* キーが1字だと誤爆しやすいので前後の文脈を少し足して2字以上にする */
+    while(rKey.length<2 && p>0){ p--; rKey=raw.slice(p,raw.length-s); cVal=correct.slice(p,correct.length-s); }
+    while(rKey.length<2 && s>0){ s--; rKey=raw.slice(p,raw.length-s); cVal=correct.slice(p,correct.length-s); }
+    if(rKey && cVal && rKey!==cVal && rKey.length>=2 && rKey.length<=16 && cVal.length<=16){
+      L[rKey]=cVal;
+    } else {
+      L[raw]=correct;   /* 差分が大きい時は従来どおり一文を記録 */
+    }
+    saveLearned(L);
+  }
+  /* (1) 候補再ランキング：複数候補のうち業務語を最も多く含むものを採用 */
+  function domainTerms(){
+    var d=fullDict(), set={}, k;
+    for(k in d){ if(d[k]) set[d[k]]=1; }   /* 補正後の正表記を語彙に */
+    return Object.keys(set);
+  }
+  function domainScore(text){
+    var t=domainTerms(), n=0;
+    for(var i=0;i<t.length;i++){ if(t[i] && text.indexOf(t[i])>=0) n++; }
+    return n;
+  }
+  function pickBest(alts){
+    if(!alts||!alts.length) return "";
+    var bestI=0, best=domainScore(applyDict(alts[0]));
+    for(var i=1;i<alts.length;i++){
+      var sc=domainScore(applyDict(alts[i]));
+      if(sc>best){ best=sc; bestI=i; }   /* 厳密に多い時だけ乗り換え（同点はエンジン順を尊重） */
+    }
+    return alts[bestI];
   }
 
   /* ============================================================
@@ -11032,6 +11078,7 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   window.AibisVoice = {
     refresh: refresh,
     applyDict: applyDict,
+    pickBest: pickBest,
     learn: learn,
     getLearned: learnedOnly,
     resetLearned: function(){ saveLearned({}); },
