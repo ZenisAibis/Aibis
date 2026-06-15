@@ -1682,7 +1682,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v6.79";
+var APP_VERSION = "v6.81";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -4821,7 +4821,7 @@ function updateSelectCount(){
   if(bar) bar.style.borderColor=n>0?'#2c5282':'#e2e8f0';
 }
 // ===== 送信ヘルパ：Web共有（ファイル添付）優先・mailtoフォールバック v6.75 =====
-function _sendCards(selected, toEmail, ccEmail, subjPrefix, onDone){
+function _sendCards(selected, toEmail, ccEmail, subjPrefix, onDone, copyAddr){
   var data=JSON.stringify(selected,null,2);
   var now=new Date();
   var ts=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+'_'+String(now.getHours()).padStart(2,'0')+String(now.getMinutes()).padStart(2,'0');
@@ -4845,7 +4845,7 @@ function _sendCards(selected, toEmail, ccEmail, subjPrefix, onDone){
   try{ file=new File([data],shareName,{type:'text/plain'}); }catch(_e){}
   if(file && typeof navigator!=='undefined' && navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
     var shareText=(toEmail?('To: '+toEmail+(ccEmail?'  Cc: '+ccEmail:'')+'\n'):'')+body;
-    var clipAddr=ccEmail?(toEmail+'; '+ccEmail):toEmail;
+    var clipAddr=(typeof copyAddr!=='undefined'&&copyAddr!==null&&copyAddr!=='')?copyAddr:toEmail;
     try{ if(clipAddr && navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(clipAddr); } }catch(_e){}
     navigator.share({files:[file], title:subj, text:shareText})
       .then(function(){ toast(clipAddr?('共有OK。宛先「'+clipAddr+'」をコピー済→Outlookの宛先に貼り付け'):'共有しました'); if(onDone) onDone(); })
@@ -4863,7 +4863,7 @@ function mailSelectedToManager(skipWarn, diffIds){
   else { _diffConfirm('mgr','課長',function(idsToSend){ mailSelectedToManager(skipWarn, idsToSend); }); return; }
   if(!skipWarn && !_multiMgrOk(selected, function(){ mailSelectedToManager(true, diffIds); })) return;
   _markSent('mgr', isDiff?true:selected);
-  _sendCards(selected, mgrEmail, selfEmail, 'AIBIS report', function(){ selectNone(); });
+  _sendCards(selected, mgrEmail, selfEmail, 'AIBIS report', function(){ selectNone(); }, mgrEmail+(selfEmail?'; '+selfEmail:''));
 }
 function mailSelectedToSelf(skipWarn, diffIds){
   var ids=Object.keys(selectedIds);
