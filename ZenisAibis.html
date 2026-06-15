@@ -1682,7 +1682,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v6.73";
+var APP_VERSION = "v6.74";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -3594,18 +3594,30 @@ function j9DetermineJob(cards, repName, popScale){ var PS=(popScale&&popScale>0)
 
 // ===== 📖 ジョブ図鑑（漢字57職・j9テーブル駆動）=====
 function openTypeDex(curName){
+ var _full=(typeof isMgrUnlocked==='function'&&isMgrUnlocked());
+ var _reach={};
+ if(!_full){
+   if(curName) _reach[curName]=1;
+   try{
+     var _meK=(typeof uName!=='undefined'&&uName)?uName:'自分';
+     var _sn=j9LoadSnaps(); var _b=_sn[_meK]||null;
+     if(_b) Object.keys(_b).forEach(function(_y){ var _j=_b[_y]&&_b[_y].job; if(_j) _reach[_j]=1; });
+   }catch(_e){}
+ }
  var ax=function(k){var a=_job9AxKey(k);return a?a.n:k;};
  var axline=function(key){return key.split('+').map(ax).join('・');};
- var thumb=function(name){
+ var thumb=function(name,locked){
    var src='img/jobs/job_'+j9ImgId(name)+'.png';
+   if(locked){ return '<span style="width:34px;height:34px;flex:none;border-radius:7px;background:#cbd5e0;display:inline-flex;align-items:center;justify-content:center;font-size:15px;color:#4a5568;overflow:hidden;position:relative">？<img src="'+src+'" alt="" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(0)" onerror="this.remove()"></span>'; }
    return '<span style="width:34px;height:34px;flex:none;border-radius:7px;background:#0d1526;display:inline-flex;align-items:center;justify-content:center;font-size:18px;overflow:hidden;position:relative">🎖<img src="'+src+'" alt="" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" onerror="this.remove()"></span>';
  };
  var row=function(name,sub){
    var hit=(curName&&name===curName);
+   var lock=(!_full && !_reach[name]);
    var ym=j9Yomi(name);
-   return '<div style="display:flex;align-items:center;gap:9px;padding:5px 4px;border-bottom:1px solid #edf2f7;'+(hit?'background:#fffbeb;border-left:3px solid #b7791f;padding-left:7px;border-radius:5px':'')+'">'
-     +thumb(name)
-     +'<div style="flex:1;min-width:0"><div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap"><b style="font-size:13px;color:#2d3748">'+e(name)+'</b>'+(ym?'<span style="font-size:9.5px;color:#a0aec0">'+e(ym)+'</span>':'')+(hit?'<span style="font-size:10px;font-weight:700;color:#b7791f">← いまのあなた</span>':'')+'</div>'+(sub?'<div style="font-size:10.5px;color:#718096">'+sub+'</div>':'')+'</div></div>';
+   return '<div style="display:flex;align-items:center;gap:9px;padding:5px 4px;border-bottom:1px solid #edf2f7;'+(hit?'background:#fffbeb;border-left:3px solid #b7791f;padding-left:7px;border-radius:5px':(lock?'opacity:.78':''))+'">'
+     +thumb(name,lock)
+     +'<div style="flex:1;min-width:0"><div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap"><b style="font-size:13px;color:'+(lock?'#a0aec0':'#2d3748')+'">'+(lock?'？？？':e(name))+'</b>'+((ym&&!lock)?'<span style="font-size:9.5px;color:#a0aec0">'+e(ym)+'</span>':'')+(hit?'<span style="font-size:10px;font-weight:700;color:#b7791f">← いまのあなた</span>':'')+'</div>'+(sub?'<div style="font-size:10.5px;color:#718096">'+sub+'</div>':'')+'</div></div>';
  };
  var sec=function(title,tint,body){return '<div style="margin-bottom:12px"><div style="font-size:12.5px;font-weight:700;color:'+tint+';background:#f7fafc;border-radius:6px;padding:6px 9px">'+title+'</div>'+body+'</div>';};
  var listObj=function(tbl,cond){return Object.keys(tbl).map(function(k){return row(tbl[k],cond+axline(k));}).join('');};
@@ -3628,7 +3640,7 @@ function openTypeDex(curName){
    document.body.appendChild(ov);
  }
  ov.innerHTML='<div style="background:#fff;border-radius:14px;max-width:560px;width:100%;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 12px 40px rgba(0,0,0,0.35)">'
-  +'<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #e2e8f0"><div><div style="font-size:15px;font-weight:700;color:#1a365d">📖 ジョブ図鑑（全'+j9LadderCount()+'職）</div><div style="font-size:10.5px;color:#718096">入力と件数を積むほど上の段位へ。1強→5強→天眼王＝'+j9LadderCount()+'職。いまのあなたをハイライト。</div></div><button onclick="document.getElementById(\'typeDexOv\').style.display=\'none\'" style="background:#edf2f7;border:none;border-radius:6px;width:30px;height:30px;font-size:14px;cursor:pointer;font-family:inherit">✕</button></div>'
+  +'<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #e2e8f0"><div><div style="font-size:15px;font-weight:700;color:#1a365d">📖 ジョブ図鑑（全'+j9LadderCount()+'職）</div><div style="font-size:10.5px;color:#718096">入力と件数を積むほど上の段位へ。1強→5強→天眼王＝'+j9LadderCount()+'職。いまのあなたをハイライト。'+(_full?'':' <b style="color:#0c8599">到達 '+Object.keys(_reach).length+'／'+j9LadderCount()+'</b>')+'</div></div><button onclick="document.getElementById(\'typeDexOv\').style.display=\'none\'" style="background:#edf2f7;border:none;border-radius:6px;width:30px;height:30px;font-size:14px;cursor:pointer;font-family:inherit">✕</button></div>'
   +'<div style="overflow-y:auto;padding:12px 16px">'
   +sec('🌱 育成帯（'+J9_INIT.length+'）— まずは枚数を積む','#2f855a',sInit)
   +sec('① 1強（'+Object.keys(J9_ONE).length+'）— 突出した1軸','#3182ce',s1)
