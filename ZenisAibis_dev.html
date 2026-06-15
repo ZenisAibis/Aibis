@@ -906,7 +906,7 @@ body.is-mob .mob-menu{display:inline-block}
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:4px;width:100%">
         <button onclick="newCard()" style="background:#c53030;color:white;border:none;border-radius:6px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;height:36px">＋ 新規</button>
         <label for="fileInputMob" style="background:#3182ce;color:white;border-radius:6px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;height:36px;display:flex;align-items:center;justify-content:center">📥 読込</label>
-        <input type="file" id="fileInputMob" accept=".json" style="display:none" onchange="onFileImport(event)">
+        <input type="file" id="fileInputMob" accept=".json,.txt,application/json,text/plain" style="display:none" onchange="onFileImport(event)">
         <button onclick="saveAll()" style="background:#38a169;color:white;border:none;border-radius:6px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;height:36px">💾 保存</button>
         <div class="mob-menu" style="position:relative">
           <button class="mob-more-btn" onclick="toggleMobMenu(event)" style="width:100%;height:36px;font-size:11px;padding:0">⋮ その他</button>
@@ -928,7 +928,7 @@ body.is-mob .mob-menu{display:inline-block}
       </div>
     </div>
   </header>
-  <input type="file" id="fileInput" accept=".json" style="display:none" onchange="onFileImport(event)">
+  <input type="file" id="fileInput" accept=".json,.txt,application/json,text/plain" style="display:none" onchange="onFileImport(event)">
   <div style="background:white;border:1px solid #e2e8f0;border-radius:6px;padding:8px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;font-size:12px">
     <div><span id="cntDisp" style="color:#2c5282;font-weight:600"></span><span style="color:#a0aec0;margin:0 6px">|</span><span id="savedDisp" style="color:#a0aec0">未保存</span></div>
     <div style="display:flex;align-items:center;gap:10px">
@@ -1682,7 +1682,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v6.75";
+var APP_VERSION = "v6.79";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -2533,29 +2533,13 @@ function _sendSelectedToEmail(toEmail, label, skipWarn, diffIds){
   else if(Array.isArray(diffIds)){ isDiff=true; selected=cards.filter(function(c){ return diffIds.indexOf(c.id)>=0; }); if(selected.length===0){ toast('対象カードがありません'); return; } }
   else { aibisAlert('送りたいカードにチェックを入れてね。<br>一緒に頑張ろう！☑'); return; }
   if(!skipWarn && !_multiMgrOk(selected, function(){ _sendSelectedToEmail(toEmail,label,true,diffIds); })) return;
-  var data=JSON.stringify(selected,null,2);
-  var blob=new Blob([data],{type:'application/json'});
-  var url=URL.createObjectURL(blob);
-  var now=new Date();
-  var ts=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+'_'+String(now.getHours()).padStart(2,'0')+String(now.getMinutes()).padStart(2,'0');
-  try{localStorage.setItem('aibis_last_export',new Date().toISOString());}catch(_e){}
-  var fn='AIBIS_'+(uName||'staff')+'_'+APP_VERSION+'_'+selected.length+'cards_'+ts+'.json';
-  var a=document.createElement('a'); a.href=url; a.download=fn; a.click();
-  var subj='AIBIS cards '+ts+' ('+selected.length+' cards)';
-  var body='AIBIS cards\nDate: '+ts+'\nCards: '+selected.length+'\nFile: '+fn;
-  setTimeout(function(){
-    URL.revokeObjectURL(url);
-    window.location.href='mailto:'+encodeURIComponent(toEmail)+(selfEmail?'?cc='+encodeURIComponent(selfEmail)+'&subject=':'?subject=')+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
-    toast('JSONをDL済 → '+(label||'担当')+'宛に添付して送信してください');
-    if(isDiff && label) _markSent('staff_'+label, true);
-    else if(label){
-      // チェック送信でも「その担当の全カード」を含むなら基準を更新
-      var allOf=cards.filter(function(c){ return (c.manager||'')===label; });
-      var covered=allOf.length>0 && allOf.every(function(c){ return selected.indexOf(c)>=0; });
-      if(covered) _markSent('staff_'+label, true);
-    }
-    selectNone();
-  },500);
+  if(isDiff && label) _markSent('staff_'+label, true);
+  else if(label){
+    var allOf=cards.filter(function(c){ return (c.manager||'')===label; });
+    var covered=allOf.length>0 && allOf.every(function(c){ return selected.indexOf(c)>=0; });
+    if(covered) _markSent('staff_'+label, true);
+  }
+  _sendCards(selected, toEmail, selfEmail, 'AIBIS cards', function(){ selectNone(); });
 }
 function mailSelectedToStaff(){
   var ids=Object.keys(selectedIds);
@@ -4857,12 +4841,14 @@ function _sendCards(selected, toEmail, ccEmail, subjPrefix, onDone){
       if(onDone) onDone();
     },500);
   }
-  var file=null;
-  try{ file=new File([data],fn,{type:'application/json'}); }catch(_e){}
+  var file=null; var shareName=fn.replace(/\.json$/,'.txt');
+  try{ file=new File([data],shareName,{type:'text/plain'}); }catch(_e){}
   if(file && typeof navigator!=='undefined' && navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
-    var shareText=(toEmail?('To: '+toEmail+(ccEmail?'  Cc: '+ccEmail:'')+'\n'):'')+body+'\n\n※ 共有先で Outlook を選ぶと、このファイルが添付された状態でメール作成できます。';
+    var shareText=(toEmail?('To: '+toEmail+(ccEmail?'  Cc: '+ccEmail:'')+'\n'):'')+body;
+    var clipAddr=ccEmail?(toEmail+'; '+ccEmail):toEmail;
+    try{ if(clipAddr && navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(clipAddr); } }catch(_e){}
     navigator.share({files:[file], title:subj, text:shareText})
-      .then(function(){ toast('共有しました（Outlook等を選んで送信してね）'); if(onDone) onDone(); })
+      .then(function(){ toast(clipAddr?('共有OK。宛先「'+clipAddr+'」をコピー済→Outlookの宛先に貼り付け'):'共有しました'); if(onDone) onDone(); })
       .catch(function(err){ if(err && err.name==='AbortError') return; fallback(); });
     return;
   }
@@ -4886,27 +4872,13 @@ function mailSelectedToSelf(skipWarn, diffIds){
   else if(Array.isArray(diffIds)){ isDiff=true; selected=cards.filter(function(c){ return diffIds.indexOf(c.id)>=0; }); if(selected.length===0){ toast('対象カードがありません'); return; } }
   else { _diffConfirm('self', isMob?'PC':'スマホ', function(idsToSend){ mailSelectedToSelf(skipWarn, idsToSend); }); return; }
   if(!skipWarn && !_multiMgrOk(selected, function(){ mailSelectedToSelf(true, diffIds); })) return;
-  var data=JSON.stringify(selected,null,2);
-  var blob=new Blob([data],{type:'application/json'});
-  var url=URL.createObjectURL(blob);
-  var now=new Date();
-  var ts=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+'_'+String(now.getHours()).padStart(2,'0')+String(now.getMinutes()).padStart(2,'0');
-  try{localStorage.setItem('aibis_last_export',new Date().toISOString());}catch(_e){}
-  var fn='AIBIS_'+(uName||'staff')+'_'+APP_VERSION+'_'+selected.length+'cards_'+ts+'.json';
-  var a=document.createElement('a'); a.href=url; a.download=fn; a.click();
   _markSent('self', isDiff?true:selected);
-  var subj='AIBIS selected '+ts+' ('+selected.length+' cards)';
-  var body='AIBIS selected cards\nDate: '+ts+'\nCards: '+selected.length+'\nFile: '+fn;
-  setTimeout(function(){
-    URL.revokeObjectURL(url);
-    window.location.href='mailto:'+encodeURIComponent(selfEmail||'')+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
+  _sendCards(selected, selfEmail||'', '', 'AIBIS selected', function(){
     var n=selected.length;
-    var msg=n<=2
-      ?n+'件、送ったね！一歩一歩が大事だよ。<br>次はもう少し増やしてみよう💪'
-      :n+'件！すごいじゃん、よく頑張ったね！<br>コツコツが勝つコツだよ🌟';
-    setTimeout(function(){ aibisAlert(msg); },800);
+    var msg=n<=2?n+'件、送ったね！一歩一歩が大事だよ。<br>次はもう少し増やしてみよう💪':n+'件！すごいじゃん、よく頑張ったね！<br>コツコツが勝つコツだよ🌟';
+    setTimeout(function(){ aibisAlert(msg); },300);
     selectNone();
-  },500);
+  });
 }
 window.mailSelectedToSelf=mailSelectedToSelf;
 window.toggleSelect=toggleSelect; window.selectAll=selectAll; window.selectNone=selectNone;
@@ -4914,7 +4886,7 @@ window.mailSelectedToManager=mailSelectedToManager;
 function sendDiag(){
   var ua=navigator.userAgent||'';
   var isChrome=/Chrome\//.test(ua) && !/EdgA|OPR|SamsungBrowser|FxiOS|CriOS/.test(ua);
-  var f=null; try{ f=new File(['{}'],'t.json',{type:'application/json'}); }catch(_e){}
+  var f=null; try{ f=new File(['{}'],'t.txt',{type:'text/plain'}); }catch(_e){}
   var hasShare=(typeof navigator.share==='function');
   var canFile=!!(f && hasShare && navigator.canShare && navigator.canShare({files:[f]}));
   var verdict=canFile

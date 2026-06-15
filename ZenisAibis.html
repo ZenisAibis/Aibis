@@ -1682,7 +1682,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v6.78";
+var APP_VERSION = "v6.79";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -4845,9 +4845,10 @@ function _sendCards(selected, toEmail, ccEmail, subjPrefix, onDone){
   try{ file=new File([data],shareName,{type:'text/plain'}); }catch(_e){}
   if(file && typeof navigator!=='undefined' && navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
     var shareText=(toEmail?('To: '+toEmail+(ccEmail?'  Cc: '+ccEmail:'')+'\n'):'')+body;
-    try{ if(toEmail && navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(toEmail); } }catch(_e){}
+    var clipAddr=ccEmail?(toEmail+'; '+ccEmail):toEmail;
+    try{ if(clipAddr && navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(clipAddr); } }catch(_e){}
     navigator.share({files:[file], title:subj, text:shareText})
-      .then(function(){ toast(toEmail?('共有OK。宛先「'+toEmail+'」をコピー済→Outlookの宛先で貼り付け'):'共有しました'); if(onDone) onDone(); })
+      .then(function(){ toast(clipAddr?('共有OK。宛先「'+clipAddr+'」をコピー済→Outlookの宛先に貼り付け'):'共有しました'); if(onDone) onDone(); })
       .catch(function(err){ if(err && err.name==='AbortError') return; fallback(); });
     return;
   }
