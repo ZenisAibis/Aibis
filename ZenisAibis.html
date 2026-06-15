@@ -1682,7 +1682,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v6.64";
+var APP_VERSION = "v6.66";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -3441,13 +3441,17 @@ var J9_TWO={
  'houbun+choshin':'法心師','houbun+seian':'法案師','houbun+sakujin':'法策師','houbun+kiroku':'証録師',
  'choshin+enmusubi':'和談師','choshin+seian':'聴案師','choshin+sakujin':'聴策師',
  'enmusubi+tsuibi':'継縁師','enmusubi+seian':'成縁師',
- 'tsuibi+seian':'追案師','sakujin+tsuibi':'追策師','kiroku+sakujin':'分析師'
+ 'tsuibi+seian':'追案師','sakujin+tsuibi':'追策師','kiroku+sakujin':'分析師',
+ // 記録×行動系（v6.65追加）
+ 'choshin+kiroku':'聴録師','seian+kiroku':'立証師','tsuibi+kiroku':'追録師','tsuibi+sokko':'遊撃師','kiroku+sokko':'走録師'
 };
 // 3強（12）
 var J9_THREE={
  'chizu+houbun+choshin':'見聞将','chizu+houbun+seian':'地権将','chizu+choshin+enmusubi':'地縁将','chizu+seian+sakujin':'謀略将',
  'houbun+choshin+enmusubi':'法心将','houbun+seian+sakujin':'法策将','choshin+enmusubi+tsuibi':'継縁将','choshin+seian+sakujin':'聴策将',
- 'enmusubi+tsuibi+seian':'成縁将','tsuibi+sakujin+kiroku':'継策将','seian+sakujin+kiroku':'成策将','chizu+tsuibi+sokko':'機動将'
+ 'enmusubi+tsuibi+seian':'成縁将','tsuibi+sakujin+kiroku':'継策将','seian+sakujin+kiroku':'成策将','chizu+tsuibi+sokko':'機動将',
+ // 記録×行動系（v6.65追加）
+ 'chizu+kiroku+sokko':'踏破将','tsuibi+kiroku+sokko':'遊撃将'
 };
 // 4強（6）
 var J9_FOUR={
@@ -3480,6 +3484,8 @@ function j9JobRank(job, strongCount){
   return Math.max(1,Math.min(5,strongCount||1));
 }
 var J9_KING='天眼王';
+// ジョブ図鑑の総数（1強〜天眼王）。テーブル増減に自動追従
+function j9LadderCount(){return Object.keys(J9_ONE).length+Object.keys(J9_TWO).length+Object.keys(J9_THREE).length+Object.keys(J9_FOUR).length+Object.keys(J9_FIVE).length+1;}
 // 称号（二つ名）：軸キー→眼
 var J9_EYE={chizu:'千里',houbun:'明法',choshin:'心耳',enmusubi:'信望',tsuibi:'継火',seian:'妙案',sakujin:'勝機',kiroku:'克明',sokko:'神速'};
 
@@ -3603,16 +3609,16 @@ function openTypeDex(curName){
    document.body.appendChild(ov);
  }
  ov.innerHTML='<div style="background:#fff;border-radius:14px;max-width:560px;width:100%;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 12px 40px rgba(0,0,0,0.35)">'
-  +'<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #e2e8f0"><div><div style="font-size:15px;font-weight:700;color:#1a365d">📖 ジョブ図鑑（全50職）</div><div style="font-size:10.5px;color:#718096">入力と件数を積むほど上の段位へ。1強→5強→天眼王＝50職。いまのあなたをハイライト。</div></div><button onclick="document.getElementById(\'typeDexOv\').style.display=\'none\'" style="background:#edf2f7;border:none;border-radius:6px;width:30px;height:30px;font-size:14px;cursor:pointer;font-family:inherit">✕</button></div>'
+  +'<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #e2e8f0"><div><div style="font-size:15px;font-weight:700;color:#1a365d">📖 ジョブ図鑑（全'+j9LadderCount()+'職）</div><div style="font-size:10.5px;color:#718096">入力と件数を積むほど上の段位へ。1強→5強→天眼王＝'+j9LadderCount()+'職。いまのあなたをハイライト。</div></div><button onclick="document.getElementById(\'typeDexOv\').style.display=\'none\'" style="background:#edf2f7;border:none;border-radius:6px;width:30px;height:30px;font-size:14px;cursor:pointer;font-family:inherit">✕</button></div>'
   +'<div style="overflow-y:auto;padding:12px 16px">'
-  +sec('🌱 育成帯（3）— まずは枚数を積む','#2f855a',sInit)
-  +sec('① 1強（9）— 突出した1軸','#3182ce',s1)
-  +sec('② 2強（18）— 武器2つ','#3182ce',s2)
-  +sec('③ 3強（12）— 「将」の格','#805ad5',s3)
-  +sec('④ 4強（6）— 四字熟語の核2字','#b7791f',s4)
-  +sec('⑤ 5強（4）— 四字熟語フル','#b7791f',s5)
+  +sec('🌱 育成帯（'+J9_INIT.length+'）— まずは枚数を積む','#2f855a',sInit)
+  +sec('① 1強（'+Object.keys(J9_ONE).length+'）— 突出した1軸','#3182ce',s1)
+  +sec('② 2強（'+Object.keys(J9_TWO).length+'）— 武器2つ','#3182ce',s2)
+  +sec('③ 3強（'+Object.keys(J9_THREE).length+'）— 「将」の格','#805ad5',s3)
+  +sec('④ 4強（'+Object.keys(J9_FOUR).length+'）— 四字熟語の核2字','#b7791f',s4)
+  +sec('⑤ 5強（'+Object.keys(J9_FIVE).length+'）— 四字熟語フル','#b7791f',s5)
   +sec('👑 天眼王（1）— 最高位','#d69e2e',sKing)
-  +sec('⚠ 抱えすぎ警告（3）— 整理サイン','#c53030',sGreed)
+  +sec('⚠ 抱えすぎ警告（'+J9_GREED.length+'）— 整理サイン','#c53030',sGreed)
   +'<div style="font-size:10.5px;color:#a0aec0;padding:6px 0 2px">※ 9軸＝'+JOB9_AXES.map(function(a){return a.n;}).join('・')+'。レーダー下「9軸の内訳」で確認できます。</div></div></div>';
  ov.style.display='flex';
 }
@@ -3736,7 +3742,8 @@ var J9_IMGID={
  // 最上位・初期職・バランス
  '天眼王':'tenganou','芽士':'meshi','初陣士':'uijinshi','見込士':'mikomishi',
  // 強欲（カード抱えすぎ警告）
- '雑欲士':'zatsuyokushi','強欲師':'gouyokushi','大欲無限':'taiyokumugen'
+ '雑欲士':'zatsuyokushi','強欲師':'gouyokushi','大欲無限':'taiyokumugen',
+ '走録師':'sourokushi','遊撃師':'yugekishi','追録師':'tsuirokushi','立証師':'risshoushi','聴録師':'chourokushi','踏破将':'touhashou','遊撃将':'yugekishou'
 };
 function j9ImgId(name){ return J9_IMGID[name]||encodeURIComponent(name); }
 // ジョブ名の読み（ルビ）— 確定版v2
@@ -3747,7 +3754,8 @@ var J9_YOMI={
  '創地':'そうち','明鏡':'めいきょう','重鎮':'じゅうちん','参謀':'さんぼう','威風':'いふう','迅雷':'じんらい',
  '神機妙算':'しんきみょうさん','千客万来':'せんきゃくばんらい','勇往邁進':'ゆうおうまいしん','博覧強記':'はくらんきょうき',
  '天眼王':'てんがんおう','芽士':'めし','初陣士':'ういじんし','見込士':'みこみし',
- '雑欲士':'ざつよくし','強欲師':'ごうよくし','大欲無限':'たいよくむげん'
+ '雑欲士':'ざつよくし','強欲師':'ごうよくし','大欲無限':'たいよくむげん',
+ '走録師':'そうろくし','遊撃師':'ゆうげきし','追録師':'ついろくし','立証師':'りっしょうし','聴録師':'ちょうろくし','踏破将':'とうはしょう','遊撃将':'ゆうげきしょう'
 };
 function j9Yomi(name){ return J9_YOMI[name]||''; }
 // ジョブのアイコン絵文字（ドット絵が無いときのフォールバック）
@@ -3924,7 +3932,7 @@ function jobCardHTML(cards, mode, dispName, popScale){
       +'<div class="job-grow">次に伸ばすとよい力：<b>'+e(grow.join('、'))+'</b></div>'
       +growthHTML
       +'<div class="job-line">'+e(_job9Line(res,mode))+'</div>'
-      +'<div style="margin-top:7px"><a href="javascript:void(0)" onclick="openTypeDex(\''+(res.job||'')+'\')" style="font-size:11px;color:#0c8599;font-weight:700;text-decoration:none">📖 ジョブ図鑑（全50職）を見る</a></div>'
+      +'<div style="margin-top:7px"><a href="javascript:void(0)" onclick="openTypeDex(\''+(res.job||'')+'\')" style="font-size:11px;color:#0c8599;font-weight:700;text-decoration:none">📖 ジョブ図鑑（全'+j9LadderCount()+'職）を見る</a></div>'
     +'</div>'
     +'</div>';
 }
@@ -4276,30 +4284,23 @@ function renderSelfDash(tid){
  window._heavyTop=_szArr.slice(0,5);
  var _szMB=Math.round(_szTot/1048576*100)/100;
  var _szCol=_szTot>3500000?'#ff5d7d':(_szTot>2000000?'#ffb443':'#34e3d0');
- var _hvRv=0,_hvEx=0,_hvJm=0,_hvR={S:0,A:0,B:0,C:0,D:0};
- mine.forEach(function(c){var pj=c.pursuit_judge||'';
-  if(pj==='E'||pj==='X'){_hvEx++;return;}
-  if(_isRevisitPhase(c)){_hvRv++;return;}
-  if(_hvR.hasOwnProperty(pj)){_hvR[pj]++;}else{_hvJm++;}
- });
+ var _hvL=ZWL.load(mine), _hvStat=ZWL.status(_hvL), _hvBt=_hvL.byTempo||{};
+ var _hvEx=(_hvBt.E||0)+(_hvBt.X||0);
  var _hvAct=mine.length-_hvEx;
- var _hvBand={rv:[20,25],S:[0,1],A:[2,3],B:[6,8],C:[8,10],D:[25,30]};
- function _hvSt(nv,b){return nv>b[1]?'\u26a0':(nv<b[0]?'\u25bd':'\u2705');}
- var _hvCol=_hvAct<=75?'#34e3d0':(_hvAct<=80?'#ffb443':'#ff5d7d');
- var _hvPct=Math.min(100,Math.round(_hvAct/80*100));
- var _hvRows=[['再訪',_hvRv,_hvBand.rv],['S',_hvR.S,_hvBand.S],['A',_hvR.A,_hvBand.A],['B',_hvR.B,_hvBand.B],['C',_hvR.C,_hvBand.C],['D',_hvR.D,_hvBand.D]];
- H+='<div class="z-card z-c2"><h3>\ud83d\udce6 保有メーター</h3><div class="z-sub">目標75枚・上限80枚。持ちすぎは足と統計を鈍らせる。Dは将来在庫として厚めでOK。</div>'
-  +'<div style="display:flex;align-items:baseline;gap:10px;margin-top:6px"><b style="font-size:32px;line-height:1">'+_hvAct+'<small style="font-size:12px;font-weight:600"> /75枚</small></b><span class="z-sub">上限80</span></div>'
-  +'<div class="z-xptrack" style="margin-top:4px"><i style="width:'+_hvPct+'%;background:'+_hvCol+'"></i></div>'
+ var _hvRate=_hvL.overrate, _hvPct=Math.min(100,Math.round(_hvRate*100));
+ var _hvCapRows=[['A運用',(_hvBt.A||0),ZWL.CAPS.A],['S運用',(_hvBt.S||0),ZWL.CAPS.S],['追客',(_hvBt.S||0)+(_hvBt.A||0)+(_hvBt.B||0),ZWL.CAPS.pursuit],['月1運用',(_hvBt.C||0)+(_hvBt.D||0),ZWL.CAPS.keep]];
+ H+='<div class="z-card z-c2"><h3>📦 保有メーター</h3><div class="z-sub">温度×テンポの稼働モデル基準。負荷率＝工数÷稼働'+ZWL.CAP.workdays+'日。1.0超は持ちすぎ。</div>'
+  +'<div style="display:flex;align-items:baseline;gap:10px;margin-top:6px;flex-wrap:wrap"><b style="font-size:32px;line-height:1;color:'+_hvStat.color+'">'+_hvRate.toFixed(2)+'</b><span style="font-size:13px;font-weight:700;color:'+_hvStat.color+'">'+_hvStat.label+'</span><span class="z-sub">保有 '+_hvAct+'枚・工数'+_hvL.days+'日</span></div>'
+  +'<div class="z-xptrack" style="margin-top:4px"><i style="width:'+_hvPct+'%;background:'+_hvStat.color+'"></i></div>'
   +'<div style="display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:11.5px">'
-  +_hvRows.map(function(r){return '<span>'+_hvSt(r[1],r[2])+' '+r[0]+' <b>'+r[1]+'</b><span style="color:#8aa">/'+r[2][0]+'\u301c'+r[2][1]+'</span></span>';}).join('')
+  +_hvCapRows.map(function(r){var ov=r[1]>r[2];return '<span>'+(ov?'⚠':'✅')+' '+r[0]+' <b'+(ov?' style="color:#e8920c"':'')+'>'+r[1]+'</b><span style="color:#8aa">/'+r[2]+'</span></span>';}).join('')
   +'</div>'
-  +(_hvEx?'<div class="z-sub" style="margin-top:6px;color:#ff8a8a">\ud83d\uddd1 整理対象（E/X）'+_hvEx+'枚 \u2014 月次棚卸しで削除を</div>':'')
-  +(_hvJm?'<div class="z-sub" style="margin-top:2px;color:#ffb443">\u26a0 ランク未判定 '+_hvJm+'枚（判定は必須）</div>':'')
+  +'<div class="z-sub" style="margin-top:7px"><span style="color:var(--z-cyan);font-weight:700">今すべきこと：</span>'+e(ZWL.advise(_hvL))+'</div>'
+  +(_hvEx?'<div class="z-sub" style="margin-top:6px;color:#ff8a8a">🗑 整理対象（E/X）'+_hvEx+'枚 — 月次棚卸しで削除を</div>':'')
   +'<div onclick="zHeavyList()" style="cursor:pointer;display:flex;align-items:center;gap:8px;margin-top:8px;padding:6px 8px;border:1px solid rgba(255,255,255,.10);border-radius:8px">'
-  +'<span style="font-size:11px;font-weight:700;color:'+_szCol+'">\ud83d\udcbe '+_szMB+'<small style="font-weight:600">MB</small></span>'
+  +'<span style="font-size:11px;font-weight:700;color:'+_szCol+'">💾 '+_szMB+'<small style="font-weight:600">MB</small></span>'
   +'<span style="flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden"><i style="display:block;height:100%;width:'+Math.min(100,Math.round(_szTot/4194304*100))+'%;background:'+_szCol+'"></i></span>'
-  +'<span class="z-sub" style="white-space:nowrap">\ud83c\udfcb 重量級TOP5 \u203a</span>'
+  +'<span class="z-sub" style="white-space:nowrap">🏋 重量級TOP5 ›</span>'
   +'</div>'
   +'</div>';
   var _st=_streakTick()||{};
@@ -7676,14 +7677,18 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
    if(!((c.family||[]).some(function(x){return x.met&&(x.owner||x.kp);}))) return ['決裁者(KP)との面談を設定','「ご決断には、どなたのご意向が大切ですか?」'];
    return ['現状の不安を深掘り','「今のお悩みで、一番大きいのは何ですか?」'];
  };
- var todayCand=t.filter(function(c){var st=+(c.stage||0);return c.pursuit_judge==='S'||c.pursuit_judge==='A'||st>=3;}).map(function(c){
+ var todayCand=t.filter(function(c){var st=+(c.stage||0);
+   if((typeof ZWL!=='undefined')&&ZWL.tempoDiff(c).state==='park') return false;
+   return c.pursuit_judge==='S'||c.pursuit_judge==='A'||st>=3;}).map(function(c){
    var st=+(c.stage||0),rank=c.pursuit_judge||'',rs=[];
    if(calcPaceOverrate(c)>1) rs.push('ペース遅れ');
    var dd=lastContactDays(c); if(dd>=14) rs.push(dd+'日未接触');
-   if(st>=3&&!c.proposal_req) rs.push('提案依頼まだ');
+   var _pg=(typeof ZWL!=='undefined')?ZWL.proposalGate(c):{violated:false,wanted:false,has:false};
+   if(_pg.violated) rs.push('提案依頼必須'); else if(_pg.wanted&&!_pg.has) rs.push('提案依頼まだ');
    if(!c.family_headcount) rs.push('家族未把握');
    if(st>=5&&!c.doukou) rs.push('比較以上で同行未');
-   var urg=(rank==='S'?3:rank==='A'?2:1)*2+st/8*2+rs.length+calcScore(c)/78;
+   var _ahead=((typeof ZWL!=='undefined')&&ZWL.tempoDiff(c).state==='ahead')?1:0;
+   var urg=(rank==='S'?3:rank==='A'?2:1)*2+st/8*2+rs.length+calcScore(c)/78+(_pg.violated?1.5:0)+_ahead;
    return {c:c,rs:rs,urg:urg};
  }).sort(function(a,b){return b.urg-a.urg;}).slice(0,5);
  var todayH=todayCand.length?todayCand.map(function(o,i){var c=o.c,st=+(c.stage||0),mv=_nextMove(c);
@@ -7694,7 +7699,9 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
     +'<div style="margin:6px 0 0 30px;font-size:12px;color:var(--z-ink)"><span style="color:var(--z-cyan);font-weight:700">次の一手：</span>'+mv[0]+'</div>'
     +'<div style="margin:2px 0 0 30px;font-size:12px;color:var(--z-mut)"><span style="color:var(--z-cyan);font-weight:700">次に聞く：</span>'+mv[1]+'</div></div>';
  }).join(''):'<div class="z-empty">今日の優先案件なし。良好です◎</div>';
- var todayCard=_zc('📌','今日の一手','今日、誰に・何を・何を聞くか（上位'+todayCand.length+'件）',todayH,'z-cf');
+ var _tidyArr=(typeof ZWL!=='undefined')?reps.map(function(r){return {r:r,L:ZWL.load(g[r])};}).filter(function(x){return x.L.n>0&&ZWL.status(x.L).key==='over';}).map(function(x){var cp=ZWL.status(x.L).caps;return {r:x.r,msg:(cp&&cp.length?cp[0].msg:ZWL.advise(x.L))};}).slice(0,2):[];
+ var tidyH=_tidyArr.length?'<div style="padding:8px 10px;margin-bottom:8px;border-radius:8px;background:rgba(232,146,12,.12);border:1px solid rgba(232,146,12,.35)"><div style="font-size:11px;font-weight:800;color:#e8920c">🧹 まず整理の一手</div>'+_tidyArr.map(function(o){return '<div style="font-size:12px;color:var(--z-ink);margin-top:3px"><b>'+e(o.r)+'さん</b>：'+e(o.msg)+'</div>';}).join('')+'</div>':'';
+ var todayCard=_zc('📌','今日の一手','今日、誰に・何を・何を聞くか（上位'+todayCand.length+'件）',tidyH+todayH,'z-cf');
  var coachRows=reps.map(function(r){var a=g[r],T=a.length||1;
    var renso=_zPct(a.filter(function(c){return +(c.stage||0)>=3;}).length,T);
    var prr=_zPct(a.filter(function(c){return c.proposal_req;}).length,T);
