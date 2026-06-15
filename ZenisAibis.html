@@ -1682,7 +1682,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v6.62";
+var APP_VERSION = "v6.64";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -3451,8 +3451,8 @@ var J9_THREE={
 };
 // 4強（6）
 var J9_FOUR={
- 'chizu+houbun+choshin+seian':'棟梁','chizu+seian+sakujin+kiroku':'宗匠','choshin+enmusubi+tsuibi+seian':'大家',
- 'houbun+choshin+enmusubi+sakujin':'参謀','tsuibi+seian+sakujin+kiroku':'総帥','chizu+tsuibi+kiroku+sokko':'先鋒'
+ 'chizu+houbun+choshin+seian':'創地','chizu+seian+sakujin+kiroku':'明鏡','choshin+enmusubi+tsuibi+seian':'重鎮',
+ 'houbun+choshin+enmusubi+sakujin':'参謀','tsuibi+seian+sakujin+kiroku':'威風','chizu+tsuibi+kiroku+sokko':'迅雷'
 };
 // 5強（4）
 var J9_FIVE={
@@ -3730,7 +3730,7 @@ var J9_IMGID={
  '法心将':'kahouchousha','法策将':'houangunshi','継縁将':'shinenoishi','聴策将':'shinansakushi',
  '成縁将':'enoiseishi','継策将':'oirokugunshi','成策将':'kiangunshi','機動将':'shitchioisha',
  // 4強
- '棟梁':'chihouseiganshi','宗匠':'chiansakushou','大家':'shinenseishou','参謀':'kahougunshi','総帥':'oiansakushou','先鋒':'shitchirokushou',
+ '創地':'chihouseiganshi','明鏡':'chiansakushou','重鎮':'shinenseishou','参謀':'kahougunshi','威風':'oiansakushou','迅雷':'shitchirokushou',
  // 5強
  '神機妙算':'tensakugunshi','千客万来':'seiendaishou','勇往邁進':'kaitakudaishou','博覧強記':'souzokugunshi',
  // 最上位・初期職・バランス
@@ -3744,7 +3744,7 @@ var J9_YOMI={
  '探地士':'たんちし','法読士':'ほうどくし','傾聴士':'けいちょうし','結縁士':'けつえんし','追客士':'ついきゃくし','成案士':'せいあんし','策士':'さくし','記録士':'きろくし','疾行士':'しっこうし',
  '地権師':'ちけんし','見聞師':'けんぶんし','地縁師':'ちえんし','立案師':'りつあんし','地勢師':'ちせいし','踏査師':'とうさし','法心師':'ほうしんし','法案師':'ほうあんし','法策師':'ほうさくし','証録師':'しょうろくし','和談師':'わだんし','聴案師':'ちょうあんし','聴策師':'ちょうさくし','継縁師':'けいえんし','成縁師':'せいえんし','追案師':'ついあんし','追策師':'ついさくし','分析師':'ぶんせきし',
  '見聞将':'けんぶんしょう','地権将':'ちけんしょう','地縁将':'ちえんしょう','謀略将':'ぼうりゃくしょう','法心将':'ほうしんしょう','法策将':'ほうさくしょう','継縁将':'けいえんしょう','聴策将':'ちょうさくしょう','成縁将':'せいえんしょう','継策将':'けいさくしょう','成策将':'せいさくしょう','機動将':'きどうしょう',
- '棟梁':'とうりょう','宗匠':'そうしょう','大家':'たいか','参謀':'さんぼう','総帥':'そうすい','先鋒':'せんぽう',
+ '創地':'そうち','明鏡':'めいきょう','重鎮':'じゅうちん','参謀':'さんぼう','威風':'いふう','迅雷':'じんらい',
  '神機妙算':'しんきみょうさん','千客万来':'せんきゃくばんらい','勇往邁進':'ゆうおうまいしん','博覧強記':'はくらんきょうき',
  '天眼王':'てんがんおう','芽士':'めし','初陣士':'ういじんし','見込士':'みこみし',
  '雑欲士':'ざつよくし','強欲師':'ごうよくし','大欲無限':'たいよくむげん'
