@@ -1682,7 +1682,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v6.60";
+var APP_VERSION = "v6.62";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -3460,14 +3460,15 @@ var J9_FIVE={
  'chizu+tsuibi+seian+kiroku+sokko':'勇往邁進','houbun+choshin+seian+sakujin+kiroku':'博覧強記'
 };
 var J9_INIT=['芽士','初陣士','見込士']; // 初心者帯（rank0）：芽士→初陣士→見込士
-var J9_CARD_GATE={ meshiMax:25, mikomiCardMin:35, mikomiAvg:55, jobMin:41, tier34:65, tier5:80, trust34:0.70, trust5:0.85, zatsuyokuMin:65, gouyokuMin:81 };
-function j9CardCap(n, trust){
-  if(n<J9_CARD_GATE.jobMin) return 0;
-  if(n<J9_CARD_GATE.tier34) return 2;           // 41〜64：1〜2強
-  if(n<J9_CARD_GATE.tier5){                      // 65〜79：入力率70%以上で3〜4強、未満は2強どまり
+var J9_CARD_GATE={ meshiMax:25, mikomiCardMin:35, mikomiAvg:55, jobMin:41, tier34:65, tier5:80, trust34:0.70, trust5:0.85 };
+function j9CardCap(n, trust, ps){
+  var PS=(ps&&ps>0)?ps:1;
+  if(n<J9_CARD_GATE.jobMin*PS) return 0;
+  if(n<J9_CARD_GATE.tier34*PS) return 2;           // 41〜64/人：1〜2強
+  if(n<J9_CARD_GATE.tier5*PS){                      // 65〜79/人：入力率70%以上で3〜4強、未満は2強どまり
     return (trust>=J9_CARD_GATE.trust34) ? 4 : 2;
   }
-  // 80以上：入力率85%以上で5強・天眼王、未満は4強どまり
+  // 80/人以上：入力率85%以上で5強・天眼王、未満は4強どまり
   return (trust>=J9_CARD_GATE.trust5) ? 9 : 4;
 }
 // ジョブの“格”を数値化（昇格検知用）。初心者帯/強欲0／1強1…5強5／天眼王6。
@@ -3507,12 +3508,12 @@ function j9DetermineJob(cards, repName, popScale){ var PS=(popScale&&popScale>0)
   var res={axes:r.axes, corr:corr, trust:r.trust, coef:coef, n:r.n, job:'', title:'', strong:[], provisional:false};
   if(r.n===0){ res.job='—'; res.provisional=true; return res; }
   // 【初心者帯：芽士】0〜25枚
-  if(r.n<=J9_CARD_GATE.meshiMax){
+  if(r.n<=J9_CARD_GATE.meshiMax*PS){
     res.job='芽士'; res.provisional=true; res.strong=[]; return res;
   }
   // 26枚以上：補正後スコアから強い軸と9軸平均を算出
   if(r.trust<0.30){ res.provisional=true; }
-  var cardCap=j9CardCap(r.n, r.trust);
+  var cardCap=j9CardCap(r.n, r.trust, PS);
   var strong=j9StrongAxes(corr, r.trust, cardCap);
   var ns=strong.length;
   var avg9=Math.round(J9_ORDER.reduce(function(s,k){return s+corr[k];},0)/J9_ORDER.length);
@@ -3520,13 +3521,13 @@ function j9DetermineJob(cards, repName, popScale){ var PS=(popScale&&popScale>0)
   var loadR=(typeof ZWL!=='undefined'&&ZWL.load)?(ZWL.load(cards).overrate/PS):0; // 負荷率(dev:1人換算)
   // 初心者帯の行き先：35枚以上＋平均55以上なら見込士、それ以外は初陣士
   var initJob=(r.n>=J9_CARD_GATE.mikomiCardMin*PS && avg9>=J9_CARD_GATE.mikomiAvg) ? '見込士' : '初陣士';
-  // 【強欲・前段】中身が薄い（強い軸ゼロ）まま zatsuyokuMin 以上抱える → 雑欲士（整理を促す警告）
+  // 【強欲・前段】中身が薄い（強い軸ゼロ）まま負荷率>1.0で抱えすぎ → 雑欲士（整理を促す警告）
   if(ns===0 && loadR>1.0){
     res.job='雑欲士'; res.greed=true; res.strong=[]; return res;
   }
   // 本ジョブ＝41枚以上 かつ 強い軸が1つ以上。満たさなければ初心者帯に留める
   // （枚数を積んでも中身が薄い＝最高軸すら55未満なら1強にもしない）
-  if(r.n<J9_CARD_GATE.jobMin || ns===0){
+  if(r.n<J9_CARD_GATE.jobMin*PS || ns===0){
     res.job=initJob; res.provisional=true; res.strong=[]; return res;
   }
   res.strong=strong;
@@ -3539,7 +3540,7 @@ function j9DetermineJob(cards, repName, popScale){ var PS=(popScale&&popScale>0)
     var stableOK = repName ? (j9KingStable(repName) || hist<=1) : true;
     if(stableOK){ res.job=J9_KING; res.title='天眼'; return res; }
   }
-  // 【強欲・本段】実力はあるが gouyokuMin 以上抱えすぎ → 本来の格でⅡ/Ⅲに振り分け（天眼王は除外）
+  // 【強欲・本段】実力はあるが負荷率>1.0で抱えすぎ → 本来の格でⅡ/Ⅲに振り分け（天眼王は除外）
   if(loadR>1.0){
     res.job=(ns>=3)?'大欲無限':'強欲師'; res.greed=true; return res;
   }
@@ -3566,72 +3567,33 @@ function j9DetermineJob(cards, repName, popScale){ var PS=(popScale&&popScale>0)
   return res;
 }
 
-// ===== 📖 営業タイプ図鑑（全50種） =====
-// 50種 = 基本12（武器6×見習い/一人前）+ 上級職30（達人：武器×サブ武器）+ 特殊8
-var _T50_AX=['発掘量','グリップ','ヒアリング','連想到達','テスクロ','追客ペース'];
-var _T50_ADV=[
- // [main][sub] 上級職の二つ名（main=武器/最高軸, sub=2番目の軸）対角は未使用
- [null,'パイオニア','スカウト','トレイルブレイザー','ストライカー','レンジャー'],
- ['コネクター',null,'カウンセラー','メンター','ネゴシエーター','パートナー'],
- ['インタビュアー','コンシェルジュ',null,'プロファイラー','アナリスト','オブザーバー'],
- ['エクスプローラー','ガイド','プランナー',null,'ストラテジスト','パイロット'],
- ['チャレンジャー','ディールメーカー','スナイパー','フィニッシャー',null,'アタッカー'],
- ['ランナー','キーパー','トラッカー','ペースメーカー','スプリンター',null]
-];
-var _T50_ADV_D=[
- [null,'切り拓いた縁をがっちり握る','新天地で本音を聞き出す','開拓から連想まで一気に導く','攻め込んでそのまま決めにいく','広い戦線を回り続ける'],
- ['出会いを深い縁に変える','','寄り添いながら心を開かせる','信頼を土台に動機を引き上げる','握った信頼で交渉をまとめる','長い付き合いで機を待てる'],
- ['聞く力で新規を切り開く','聞いて尽くして信頼を得る','','聞いた情報から未来を描かせる','聞き切って急所で一発','静かに見て聞いて外さない'],
- ['物語で新しい扉を開く','導きながら絆を深める','設計図を描いてから動く','','描いた未来をそのまま成約へ','航路を保って迷わせない'],
- ['初対面から勝負できる','決めた後も関係が固い','急所を突いて短期決戦','連想の熱が冷める前に決める','','決め続けて足も止めない'],
- ['回り続けて種をまく','通い続けて関係を守る','通うたびに情報が増える','訪問リズムで心理を温める','テンポよく決め切る','']
-];
-var _T50_SPECIAL=[
- {e:'🐣',n:'ルーキー',c:'カード5枚未満',d:'まずは発掘から。データが増えるとタイプが見えてくる'},
- {e:'⚖',n:'ジェネラリスト',c:'全軸が均衡（差12以内）×総合40未満',d:'凹みのない素直な型。これからどの武器も選べる'},
- {e:'🎖',n:'オールラウンダー',c:'全軸が均衡×総合40〜69',d:'穴がないのが武器。チームの安定軸'},
- {e:'🎼',n:'マエストロ',c:'全軸が均衡×総合70以上',d:'全てを高い水準で操る指揮者'},
- {e:'👑',n:'グランドマスター',c:'全軸70以上',d:'死角なし。課の最終兵器にして手本'},
- {e:'⚡',n:'スペシャリスト',c:'1軸90以上かつ最小軸30未満',d:'一点突破の天才肌。尖りこそ才能、弱点は仲間で補完'},
- {e:'⚔',n:'ツインブレード',c:'上位2軸が同値（差2以内）かつ60以上',d:'二刀流。状況で武器を持ち替えられる'},
- {e:'🚀',n:'ライジングスター',c:'総合が段階昇格まで残り5以内',d:'昇格目前。あと一押しで化ける'}
-];
-function _salesType50(axes,nCards){
- var vals=axes.map(function(a){return +(a[1]||0);});
- var idx=vals.map(function(v,i){return i;}).sort(function(a,b){return vals[b]-vals[a];});
- var top=idx[0],sub=idx[1];
- var mx=vals[top],mn=vals[idx[vals.length-1]];
- var avg=Math.round(vals.reduce(function(s,v){return s+v;},0)/vals.length);
- var base=_salesType(axes);
- if(typeof nCards==='number'&&nCards<5) return {e:'🐣',name:'ルーキー',desc:_T50_SPECIAL[0].d,tier:'特殊',base:base};
- if(mn>=70) return {e:'👑',name:'グランドマスター',desc:_T50_SPECIAL[4].d,tier:'特殊',base:base};
- if(mx-mn<=12){ var bn=avg>=70?3:avg>=40?2:1; var sp=_T50_SPECIAL[bn]; return {e:sp.e,name:sp.n,desc:sp.d,tier:'特殊',base:base}; }
- if(mx-vals[sub]<=2&&mx>=60) return {e:'⚔',name:'ツインブレード',desc:_T50_SPECIAL[6].d,tier:'特殊',base:base};
- if(mx>=90&&mn<30) return {e:'⚡',name:'スペシャリスト',desc:_T50_SPECIAL[5].d,tier:'特殊',base:base};
- if((avg>=35&&avg<40)||(avg>=65&&avg<70)) return {e:'🚀',name:'ライジングスター',desc:_T50_SPECIAL[7].d,tier:'特殊',base:base};
- if(avg>=70){ var nm=_T50_ADV[top][sub]||'マエストロ'; return {e:_SALES_ARCHE[top].e,name:nm,desc:(_T50_ADV_D[top][sub]||'')+'（'+_SALES_ARCHE[top].n+'×'+_T50_AX[sub]+'）',tier:'上級職',base:base}; }
- return {e:_SALES_ARCHE[top].e,name:base.stageName+_SALES_ARCHE[top].n,desc:_SALES_ARCHE[top].d,tier:'基本',base:base};
-}
+// ===== 📖 ジョブ図鑑（漢字50職・j9テーブル駆動）=====
 function openTypeDex(curName){
- var sec=function(title,body){return '<div style="margin-bottom:12px"><div style="font-size:13px;font-weight:700;color:#1a365d;background:#f7fafc;border-radius:6px;padding:6px 9px">'+title+'</div>'+body+'</div>';};
- var row=function(e2,n,c,d){
-   var hit=(curName&&n===curName);
-   return '<div style="padding:6px 4px;border-bottom:1px solid #edf2f7;'+(hit?'background:#fffbeb;border-left:3px solid #b7791f;padding-left:7px;border-radius:4px':'')+'"><div style="display:flex;align-items:center;gap:7px"><span style="font-size:16px">'+e2+'</span><b style="font-size:12.5px;color:#2d3748">'+n+'</b>'+(hit?'<span style="font-size:10px;font-weight:700;color:#b7791f">← いまのあなた</span>':'')+'</div><div style="font-size:10.5px;color:#718096;margin-top:1px">条件：'+c+'</div>'+(d?'<div style="font-size:11px;color:#4a5568">'+d+'</div>':'')+'</div>';
+ var ax=function(k){var a=_job9AxKey(k);return a?a.n:k;};
+ var axline=function(key){return key.split('+').map(ax).join('・');};
+ var thumb=function(name){
+   var src='img/jobs/job_'+j9ImgId(name)+'.png';
+   return '<span style="width:34px;height:34px;flex:none;border-radius:7px;background:#0d1526;display:inline-flex;align-items:center;justify-content:center;font-size:18px;overflow:hidden;position:relative">🎖<img src="'+src+'" alt="" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" onerror="this.remove()"></span>';
  };
- var basic='';
- [1,2].forEach(function(st){
-  _SALES_ARCHE.forEach(function(ar){
-    basic+=row(ar.e,_SALES_STAGE[st].n+ar.n,'武器＝'+ar.n+'の軸 × 総合'+(st===1?'40未満':'40〜69'),ar.d);
-  });
- });
- var adv='';
- _T50_ADV.forEach(function(rw,mi){
-  rw.forEach(function(nm,si){
-    if(!nm) return;
-    adv+=row(_SALES_ARCHE[mi].e,nm,'達人（総合70以上）× 武器＝'+_T50_AX[mi]+' × サブ武器＝'+_T50_AX[si],_T50_ADV_D[mi][si]);
-  });
- });
- var spc=_T50_SPECIAL.map(function(s){return row(s.e,s.n,s.c,s.d);}).join('');
+ var row=function(name,sub){
+   var hit=(curName&&name===curName);
+   var ym=j9Yomi(name);
+   return '<div style="display:flex;align-items:center;gap:9px;padding:5px 4px;border-bottom:1px solid #edf2f7;'+(hit?'background:#fffbeb;border-left:3px solid #b7791f;padding-left:7px;border-radius:5px':'')+'">'
+     +thumb(name)
+     +'<div style="flex:1;min-width:0"><div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap"><b style="font-size:13px;color:#2d3748">'+e(name)+'</b>'+(ym?'<span style="font-size:9.5px;color:#a0aec0">'+e(ym)+'</span>':'')+(hit?'<span style="font-size:10px;font-weight:700;color:#b7791f">← いまのあなた</span>':'')+'</div>'+(sub?'<div style="font-size:10.5px;color:#718096">'+sub+'</div>':'')+'</div></div>';
+ };
+ var sec=function(title,tint,body){return '<div style="margin-bottom:12px"><div style="font-size:12.5px;font-weight:700;color:'+tint+';background:#f7fafc;border-radius:6px;padding:6px 9px">'+title+'</div>'+body+'</div>';};
+ var listObj=function(tbl,cond){return Object.keys(tbl).map(function(k){return row(tbl[k],cond+axline(k));}).join('');};
+ var initConds=['〜25枚・育成中','26〜40枚','35枚＋平均55で昇格'];
+ var sInit=J9_INIT.map(function(n,i){return row(n,initConds[i]||'');}).join('');
+ var s1=Object.keys(J9_ONE).map(function(k){return row(J9_ONE[k],'41枚〜・信頼30%〜｜強み '+ax(k));}).join('');
+ var s2=listObj(J9_TWO,'41枚〜・信頼50%〜｜');
+ var s3=listObj(J9_THREE,'65枚〜・信頼70%〜｜');
+ var s4=listObj(J9_FOUR,'65枚〜・信頼85%〜｜');
+ var s5=listObj(J9_FIVE,'80枚〜・信頼85%〜｜');
+ var sKing=row(J9_KING,'80枚〜・全軸85＋信頼90%＋安定');
+ var greedConds=['負荷率>1.0×強み無し','負荷率>1.0×実力1〜2強','負荷率>1.0×実力3強以上'];
+ var sGreed=J9_GREED.map(function(n,i){return row(n,greedConds[i]||'抱えすぎ警告');}).join('');
  var ov=document.getElementById('typeDexOv');
  if(!ov){
    ov=document.createElement('div');
@@ -3641,12 +3603,17 @@ function openTypeDex(curName){
    document.body.appendChild(ov);
  }
  ov.innerHTML='<div style="background:#fff;border-radius:14px;max-width:560px;width:100%;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 12px 40px rgba(0,0,0,0.35)">'
-  +'<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #e2e8f0"><div><div style="font-size:15px;font-weight:700;color:#1a365d">📖 営業タイプ図鑑（全50種）</div><div style="font-size:10.5px;color:#718096">基本12 ＋ 上級職30（達人で分化）＋ 特殊8。判定は特殊→上級職→基本の順。</div></div><button onclick="document.getElementById(\'typeDexOv\').style.display=\'none\'" style="background:#edf2f7;border:none;border-radius:6px;width:30px;height:30px;font-size:14px;cursor:pointer;font-family:inherit">✕</button></div>'
+  +'<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #e2e8f0"><div><div style="font-size:15px;font-weight:700;color:#1a365d">📖 ジョブ図鑑（全50職）</div><div style="font-size:10.5px;color:#718096">入力と件数を積むほど上の段位へ。1強→5強→天眼王＝50職。いまのあなたをハイライト。</div></div><button onclick="document.getElementById(\'typeDexOv\').style.display=\'none\'" style="background:#edf2f7;border:none;border-radius:6px;width:30px;height:30px;font-size:14px;cursor:pointer;font-family:inherit">✕</button></div>'
   +'<div style="overflow-y:auto;padding:12px 16px">'
-  +sec('🌟 特殊（8種）',spc)
-  +sec('🗡 上級職（30種）— 達人は武器×サブ武器で型が分化',adv)
-  +sec('🛡 基本（12種）— 見習い・一人前 × 武器6',basic)
-  +'<div style="font-size:10.5px;color:#a0aec0;padding:6px 0 2px">※ 軸の算出方法はレーダー下の「各軸のフラグ」を参照。凹んだ軸が伸びしろ、尖った軸があなたの武器。</div></div></div>';
+  +sec('🌱 育成帯（3）— まずは枚数を積む','#2f855a',sInit)
+  +sec('① 1強（9）— 突出した1軸','#3182ce',s1)
+  +sec('② 2強（18）— 武器2つ','#3182ce',s2)
+  +sec('③ 3強（12）— 「将」の格','#805ad5',s3)
+  +sec('④ 4強（6）— 四字熟語の核2字','#b7791f',s4)
+  +sec('⑤ 5強（4）— 四字熟語フル','#b7791f',s5)
+  +sec('👑 天眼王（1）— 最高位','#d69e2e',sKing)
+  +sec('⚠ 抱えすぎ警告（3）— 整理サイン','#c53030',sGreed)
+  +'<div style="font-size:10.5px;color:#a0aec0;padding:6px 0 2px">※ 9軸＝'+JOB9_AXES.map(function(a){return a.n;}).join('・')+'。レーダー下「9軸の内訳」で確認できます。</div></div></div>';
  ov.style.display='flex';
 }
 window.openTypeDex=openTypeDex;
@@ -3957,6 +3924,7 @@ function jobCardHTML(cards, mode, dispName, popScale){
       +'<div class="job-grow">次に伸ばすとよい力：<b>'+e(grow.join('、'))+'</b></div>'
       +growthHTML
       +'<div class="job-line">'+e(_job9Line(res,mode))+'</div>'
+      +'<div style="margin-top:7px"><a href="javascript:void(0)" onclick="openTypeDex(\''+(res.job||'')+'\')" style="font-size:11px;color:#0c8599;font-weight:700;text-decoration:none">📖 ジョブ図鑑（全50職）を見る</a></div>'
     +'</div>'
     +'</div>';
 }
@@ -3967,7 +3935,7 @@ function _radarTypePanel(axes){
     +'<div style="display:flex;align-items:center;gap:10px"><div style="font-size:30px">'+ty.arche.e+'</div>'
     +'<div><div style="font-size:9px;color:var(--z-dim);font-weight:700;letter-spacing:1px">あなたの営業タイプ</div>'
     +'<div style="font-size:17px;font-weight:800;color:'+ty.color+'">'+ty.label+'型 <span style="font-size:10px;color:var(--z-dim)">（'+ty.stageName+'／全18タイプ）</span></div></div></div>'
-    +(function(){var t50=_salesType50(axes);return '<div style="margin-top:5px;font-size:12px"><span style="font-size:9px;color:var(--z-dim);font-weight:700;letter-spacing:1px">二つ名</span> <b style="font-size:13px">'+t50.e+' '+t50.name+'</b> <a href="javascript:void(0)" onclick="openTypeDex(\''+t50.name+'\')" style="font-size:10.5px;color:#0c8599;font-weight:700;text-decoration:none">📖 図鑑（全50種）を見る</a></div>';})()
+    +''
     +'<div class="z-sub" style="margin-top:6px">'+ty.arche.d+' 総合力 '+ty.avg+'。<b style="color:#ffb443">伸びしろは「'+ty.weakAxis+'」</b>（'+ty.weakVal+'）。</div>'
     +'<details style="margin-top:6px"><summary style="cursor:pointer;font-size:11px;color:var(--z-mut)">🔍 各軸が何で決まる？／タイプの仕組み</summary>'
     +'<div class="z-sub" style="margin-top:5px;line-height:1.85">発掘量＝新規発掘の件数（30件で満点）／グリップ＝会話レベル4以上の割合／ヒアリング＝基本情報の入力充足度／連想到達＝ステージ3(連想)以上の割合／テスクロ＝連想到達者がステージ4(欲求)以上へ進んだ割合／追客ペース＝ペース遅れでない割合。<br>型＝<b>最も高い軸＝あなたの武器</b>（6種）×<b>総合力の3段階</b>（見習い40未満・一人前40〜69・達人70以上）＝<b>18タイプ</b>。</div></details></div>';
@@ -3996,7 +3964,7 @@ function _radarHero(name,axes,color,rank){
   +'<div class="z-h2-radar">'+_zRadarHero(axes,color)+'<div class="z-h2-emoji">'+ty.arche.e+'</div></div>'
   +'<div class="z-h2-name">'+e(name)+'</div>'
   +'<div class="z-h2-type">'+ty.label+'</div>'
-  +(function(){var t50=_salesType50(axes);return (t50.name!==ty.label)?'<div style="font-size:9.5px;color:var(--z-mut);font-weight:700;cursor:pointer" onclick="openTypeDex(\''+t50.name+'\')">'+t50.e+' '+t50.name+'</div>':'';})()
+  +''
   +'<div class="z-h2-stars">'+stars+' <span>'+ty.stageName+'</span></div>'
   +'<div class="z-h2-bar"><i style="width:'+prog.toFixed(0)+'%"></i></div>'
   +'<div class="z-h2-foot"><span>\u2694 '+e(axes[ty.domIdx][0])+'</span><span>\u{1F331} '+e(ty.weakAxis)+'</span></div>'
