@@ -280,7 +280,7 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 .fam-cell.lv-未確認{background:white}
 .fam-stance-dot{position:absolute;top:3px;right:3px;width:10px;height:10px;border-radius:50%}
 .fam-owner-star{position:absolute;top:2px;left:3px;font-size:9px;color:#c53030;font-weight:700;line-height:1}
-.fam-role-sm{font-size:9px;font-weight:700;color:#2d3748;line-height:1.2;text-align:center;white-space:normal;word-break:break-all;max-width:50px}
+.fam-role-sm{font-size:9px;font-weight:700;color:#2d3748;line-height:1.2;text-align:center;white-space:normal;overflow-wrap:anywhere;max-width:50px}
 .fam-age-sm{font-size:10px;color:#a0aec0;line-height:1}
 .fam-add-btn{background:white;border:1px dashed #cbd5e0;border-radius:6px;width:32px;height:32px;color:#a0aec0;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;align-self:flex-start;margin-top:2px;padding:0}
 .fam-add-btn:hover{border-color:#2c5282;color:#2c5282}
@@ -1682,7 +1682,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v6.81";
+var APP_VERSION = "v6.82";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -3578,7 +3578,7 @@ function j9DetermineJob(cards, repName, popScale){ var PS=(popScale&&popScale>0)
 
 // ===== 📖 ジョブ図鑑（漢字57職・j9テーブル駆動）=====
 function openTypeDex(curName){
- var _full=(typeof isMgrUnlocked==='function'&&isMgrUnlocked());
+ var _full=(typeof selfEmail!=='undefined'&&selfEmail===DEV_EMAIL);
  var _reach={};
  if(!_full){
    if(curName) _reach[curName]=1;
@@ -3733,9 +3733,22 @@ function j9KingStable(repName){
 // ===== 🎖 ジョブ図鑑カード UI（9軸・ドット絵スロット付き） v6.06 =====
 function _job9AxKey(k){ for(var i=0;i<JOB9_AXES.length;i++){ if(JOB9_AXES[i].k===k) return JOB9_AXES[i]; } return {n:k,e:'•'}; }
 // 9軸ミニレーダー（_zRadarHeroを9軸で流用）
+var J9_AXIS_COLORS=['#ff6b6b','#cc5de8','#fab005','#ff922b','#f06595','#4dabf7','#7950f2','#5c7cfa','#20c997'];
 function _job9Radar(corr,color){
-  var axes=JOB9_AXES.map(function(a){return [a.n,corr[a.k]||0];});
-  return _zRadarHero(axes,color||'#4dabf7');
+  var axes=JOB9_AXES.map(function(a,i){return [a.n,corr[a.k]||0,J9_AXIS_COLORS[i%9]];});
+  var cx=70,cy=70,R=44,N=axes.length;
+  function pt(i,r){var a=-Math.PI/2+i*2*Math.PI/N;return [cx+Math.cos(a)*r,cy+Math.sin(a)*r];}
+  var g='';
+  [0.34,0.67,1].forEach(function(s){g+='<polygon points="'+axes.map(function(_x,i){return pt(i,R*s).map(function(z){return z.toFixed(1);}).join(',');}).join(' ')+'" fill="none" stroke="rgba(140,150,170,.30)" stroke-width="1"/>';});
+  axes.forEach(function(a,i){var p=pt(i,R);g+='<line x1="'+cx+'" y1="'+cy+'" x2="'+p[0].toFixed(1)+'" y2="'+p[1].toFixed(1)+'" stroke="'+a[2]+'" stroke-width="1" stroke-opacity=".45"/>';});
+  var jc=(color&&color!=='#868e96')?color:'#4dabf7';
+  var dp=axes.map(function(a,i){return pt(i,R*Math.max(0.05,(+(a[1]||0))/100));});
+  var gid='jr'+Math.floor(Math.random()*1e6);
+  var grad='<defs><linearGradient id="'+gid+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+axes[0][2]+'" stop-opacity=".42"/><stop offset="0.5" stop-color="'+axes[3][2]+'" stop-opacity=".34"/><stop offset="1" stop-color="'+axes[6][2]+'" stop-opacity=".42"/></linearGradient></defs>';
+  g+='<polygon points="'+dp.map(function(p){return p.map(function(z){return z.toFixed(1);}).join(',');}).join(' ')+'" fill="url(#'+gid+')" stroke="'+jc+'" stroke-width="2.2" stroke-linejoin="round"/>';
+  g+=dp.map(function(p,i){return '<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="2.6" fill="'+axes[i][2]+'" stroke="#fff" stroke-width="0.6"/>';}).join('');
+  g+=axes.map(function(a,i){var p=pt(i,R+11);return '<text x="'+p[0].toFixed(1)+'" y="'+(p[1]+3).toFixed(1)+'" font-size="7.5" font-weight="700" fill="'+a[2]+'" text-anchor="middle">'+e(a[0]).slice(0,2)+'</text>';}).join('');
+  return '<svg viewBox="0 0 140 140" class="z-h2-svg">'+grad+g+'</svg>';
 }
 // ジョブ表示名 → 画像ID（ローマ字）。画像は img/jobs/<id>.png を参照（日本語ファイル名を避ける）
 var J9_IMGID={
@@ -7821,7 +7834,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
  var _bodyData=_deepItems.filter(function(it){return it.id!=='treasure'&&it.id!=='jobs9';}).map(function(it){var bd='';try{bd=it.render(_deepCtx)||'';}catch(err){bd='<div class="z-sub">⚠ 「'+(it.id||'?')+'」の描画でエラー（'+String(err&&err.message||err).slice(0,80)+'）</div>';}return _zc(it.e||'📈',it.t||it.id||'分析',it.s||'',bd,it.sp||'z-c2');}).join('');
  var _cardInsights=_zc('🧠','傾向と対策（AIインサイト）','データから打ち手を自動抽出。',ins,'z-cf');
  var _cardMap=_zc('🗺','マップ','町の熱量とお宝客。',bodyArea+_cardTreasure,'z-cf');
- H+=_zsec('today','🎯 課の指示 <span class="z-secsub">今日やること・誰に何を</span>',todayCard+readyCard+zoneCard+bodyContract)+_zsec('state','📊 課の確認 <span class="z-secsub">課の現状</span>',_cardMap+bodyKpi3+bodyProcess+bodyQuality+_bodyData+_teamCourse+_cardInsights)+_zsec('heroes','🏅 営業タイプ図鑑 <span class="z-secsub">型と各タイプNo.1</span>',_axKingCard+_cardHeroes)+_zsec('teamchk','👥 部下の確認 <span class="z-secsub">担当の現状</span>',bodyRank+_cardWork+_cardDiff+bodyTeam)+_zsec('coach','🎓 部下の指導 <span class="z-secsub">コーチング・育成クエスト</span>',coachCard+questCard);
+ H+=_zsec('today','🎯 課の指示 <span class="z-secsub">今日やること・誰に何を</span>',todayCard+readyCard+zoneCard+bodyContract)+_zsec('state','📊 課の確認 <span class="z-secsub">課の現状</span>',_cardMap+bodyKpi3+bodyProcess+bodyQuality+_bodyData+_teamCourse+_cardInsights)+((typeof selfEmail!=='undefined'&&selfEmail===DEV_EMAIL)?(_zsec('heroes','🏅 営業タイプ図鑑 <span class="z-secsub">型と各タイプNo.1</span>',_axKingCard+_cardHeroes)):'')+_zsec('teamchk','👥 部下の確認 <span class="z-secsub">担当の現状</span>',bodyRank+_cardWork+_cardDiff+bodyTeam)+_zsec('coach','🎓 部下の指導 <span class="z-secsub">コーチング・育成クエスト</span>',coachCard+questCard);
  H+='</div>';
  host.innerHTML=H;
  if(window.IS_DEV){var _dw=document.getElementById('devSelfMirrorWrap');if(_dw){_dw.style.display='';if(window.renderSelfDash)renderSelfDash('devSelfMirror');}}
@@ -8350,7 +8363,7 @@ function planUntimedBlockHTML(){
    var uad=_planAddrOf(en);
    return '<div style="border:1px solid #cbd5e0;border-radius:6px;padding:4px 8px 5px;page-break-inside:avoid;background:#fff">'
      +'<div style="display:flex;align-items:center;gap:6px">'+_planBadge(en)+'<b style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+_planDispName(en)+'</b><span style="font-size:10.5px;color:#2c5282;font-weight:800;margin-left:auto;white-space:nowrap">▶ '+e(en.purpose||'')+'</span></div>'
-     +(en.cardId?'<div style="font-size:10px;color:#4a5568;font-weight:600;margin-top:1px;line-height:1.35;word-break:break-all;white-space:normal">'+(uad?e(uad):'<span style="color:#a0aec0">（住所未入力）</span>')+'</div>':'')
+     +(en.cardId?'<div style="font-size:10px;color:#4a5568;font-weight:600;margin-top:1px;line-height:1.35;overflow-wrap:anywhere;white-space:normal">'+(uad?e(uad):'<span style="color:#a0aec0">（住所未入力）</span>')+'</div>':'')
      +'<div style="display:flex;align-items:center;gap:6px;margin-top:2px"><span style="font-size:10px;color:#718096;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+e(en.sub||'')+(en.note?(en.sub?'｜':'')+e(en.note):'')+'</span><span style="font-size:9.5px;color:#4a5568;font-weight:700;white-space:nowrap">確認 '+_planChk()+'</span></div></div>';
  });
  // 予備枠：合計8枠（4行×2列）になるまで手書き用の空カードで埋める（飛び込み・当日追加用）
@@ -8377,7 +8390,7 @@ function _planHalfRows(sl){
     var ad=_planAddrOf(en);
     var line2='';
     if(en.kind!=='ev'){
-      if(en.cardId) line2='<div style="font-size:10px;color:#4a5568;font-weight:600;margin:1px 0 0 39px;line-height:1.35;word-break:break-all;white-space:normal">'+(ad?e(ad):'<span style="color:#a0aec0">（住所未入力）</span>')+'</div>';
+      if(en.cardId) line2='<div style="font-size:10px;color:#4a5568;font-weight:600;margin:1px 0 0 39px;line-height:1.35;overflow-wrap:anywhere;white-space:normal">'+(ad?e(ad):'<span style="color:#a0aec0">（住所未入力）</span>')+'</div>';
       else if(en.sub) line2='<div style="font-size:10px;color:#718096;margin:1px 0 0 39px;line-height:1.35;white-space:normal">'+e(en.sub)+'</div>';
     }
     return '<tr><td class="pti'+(hour?' ph':'')+'">'+s+'</td><td class="ptt"><div style="display:flex;align-items:center;gap:5px;min-width:0">'+_planBadge(en)+'<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+_planDispName(en)+(en.note?'<span style="font-size:9.5px;color:#a0aec0;font-weight:400"> '+e(en.note)+'</span>':'')+'</span></div>'+line2+'</td><td class="pc" style="font-size:11px">'+e(en.purpose)+'</td><td class="pc" style="width:38px">'+(en.kind==='ev'?'':_planChk())+'</td></tr>';
