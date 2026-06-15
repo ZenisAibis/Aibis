@@ -1682,7 +1682,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v6.72";
+var APP_VERSION = "v6.73";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -3496,6 +3496,11 @@ var J9_KING='天眼王';
 function j9LadderCount(){return Object.keys(J9_ONE).length+Object.keys(J9_TWO).length+Object.keys(J9_THREE).length+Object.keys(J9_FOUR).length+Object.keys(J9_FIVE).length+1;}
 // 称号（二つ名）：軸キー→眼
 var J9_EYE={chizu:'千里',houbun:'明法',choshin:'心耳',enmusubi:'信望',tsuibi:'継火',seian:'妙案',sakujin:'勝機',kiroku:'克明',sokko:'神速'};
+// 軸別の「強み」しきい値。入力率や件数で上がる易しい軸は高く、商談の中身が要る難しい軸は低く。
+// 記録(入力率そのもの)は最も高いハードル＝高く表示してよいが“差別化要因”にはしない。
+var J9_STRONG_MIN={kiroku:80,sokko:70,chizu:65,tsuibi:60,houbun:58,choshin:55,enmusubi:52,seian:50,sakujin:50};
+// 難しい軸（上位ジョブ到達のゲートに使用）
+var J9_HARD=['houbun','choshin','enmusubi','seian','sakujin'];
 
 // 強い軸を抽出（しきい値＋信頼度ゲート）
 function j9StrongAxes(corr, trust, cardCap){
@@ -3503,7 +3508,7 @@ function j9StrongAxes(corr, trust, cardCap){
   var tcap; if(trust<0.30)tcap=0; else if(trust<0.50)tcap=1; else if(trust<0.70)tcap=2; else if(trust<0.85)tcap=3; else tcap=9;
   var cap=Math.min(tcap, (cardCap==null?9:cardCap));
   var top=entries[0].v;
-  var strong=entries.filter(function(e){return e.v>=60 && (top-e.v)<=18;}).map(function(e){return e.k;});
+  var strong=entries.filter(function(e){return e.v>=(J9_STRONG_MIN[e.k]||60);}).map(function(e){return e.k;});
   if(strong.length===0 && top>=55) strong=[entries[0].k];
   if(strong.length>cap) strong=strong.slice(0,cap);
   return strong;
@@ -3529,6 +3534,12 @@ function j9DetermineJob(cards, repName, popScale){ var PS=(popScale&&popScale>0)
   if(r.trust<0.30){ res.provisional=true; }
   var cardCap=j9CardCap(r.n, r.trust, PS);
   var strong=j9StrongAxes(corr, r.trust, cardCap);
+  // 上位ジョブの難軸ゲート：3強以上は難軸(権利/傾聴/信頼/提案/作戦)が2つ以上必須。
+  // 記録・行動・現地・追客の「積めば出る軸」だけで上位職へ行くのを防ぐ。
+  if(strong.length>=3){
+    var _hc=strong.filter(function(k){return J9_HARD.indexOf(k)>=0;}).length;
+    if(_hc<2) strong=strong.slice(0,2);
+  }
   var ns=strong.length;
   var avg9=Math.round(J9_ORDER.reduce(function(s,k){return s+corr[k];},0)/J9_ORDER.length);
   res.avg=avg9;
@@ -8640,6 +8651,12 @@ function _devDefaultsData(){
     ['構成キャップ CAPS','A '+ZWL.CAPS.A+' ／ S '+ZWL.CAPS.S+' ／ 追客(S+A+B) '+ZWL.CAPS.pursuit+' ／ 月1運用(C+D) '+ZWL.CAPS.keep+'件','確定','超過は赤でなくⓘ軽い注意'],
     ['テンポ工数(日/月)','S2 ／ A弱1・強1.5 ／ B0.6 ／ C0.1 ／ D0.05 ／ 未設定0.05 ／ X0','確定','負荷率の計算根拠'],
     ['🆘 要フォローA/S','A/Sが推奨ペース超過（A>'+PACE_LIMIT.A+'日・S>'+PACE_LIMIT.S+'日 無接触）で主役級の救出警告','確定','放置A/Sの救出を最優先（v6.71）']
+   ]},
+   {g:'🎖 ジョブ判定（9軸図鑑）',note:'軸別の強みしきい＋上位職の難軸ゲート。記録(入力率)は高く出てよいが型は決めない。',items:[
+    ['強みしきい(易)','記録'+J9_STRONG_MIN.kiroku+' ／ 行動'+J9_STRONG_MIN.sokko+' ／ 現地'+J9_STRONG_MIN.chizu+' ／ 追客'+J9_STRONG_MIN.tsuibi,'確定','積めば出る軸は高ハードル＝差別化要因にしない'],
+    ['強みしきい(難)','権利'+J9_STRONG_MIN.houbun+' ／ 傾聴'+J9_STRONG_MIN.choshin+' ／ 信頼'+J9_STRONG_MIN.enmusubi+' ／ 提案'+J9_STRONG_MIN.seian+' ／ 作戦'+J9_STRONG_MIN.sakujin,'確定','商談の中身が要る軸は低ハードルで強みとして拾う'],
+    ['上位職の難軸ゲート','3強以上は難軸(権利/傾聴/信頼/提案/作戦)が2つ以上必須','確定','記録+行動+枚数だけでは2強どまり'],
+    ['枚数ゲート','41枚〜:1-2強 ／ 65枚〜&入力70%:3-4強 ／ 80枚〜&入力85%:5強・天眼王','確定','j9CardCap（PSで1人換算）']
    ]},
    {g:'⏱ 契約クロック',items:[
     ['45日ルール','A昇格（追撃判定）から45日が契約目安','確定','超過は赤表示']
