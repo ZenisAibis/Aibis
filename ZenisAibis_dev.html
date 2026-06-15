@@ -1464,6 +1464,7 @@ body.is-mob .mob-menu{display:inline-block}
       <div style="display:grid;grid-template-columns:2fr 2fr 1.5fr 1fr;gap:8px;margin-top:10px">
         <div><label>ニックネーム</label><input type="text" id="sNick" placeholder="例: 大東" oninput="autoSaveSetup()"></div>
       </div>
+      <!-- ▼▼ 開発者ツールパネル START（DEV_EMAIL時のみ表示・JSはdev区画と対） ▼▼ -->
       <div id="devHashTool" style="display:none;margin-top:14px;padding:10px;border:1px dashed #cbd5e0;border-radius:8px;background:#faf5ff">
         <div style="font-size:11px;font-weight:700;color:#553c9a;margin-bottom:6px">🔧 開発者用：管理職パスのハッシュ生成</div>
         <div style="display:flex;gap:6px"><input type="text" id="devHashIn" placeholder="新しいパスワード" style="flex:1;margin-bottom:0"><button type="button" onclick="devGenHash()" style="background:#553c9a;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap">生成</button></div>
@@ -1482,6 +1483,7 @@ body.is-mob .mob-menu{display:inline-block}
         <button type="button" onclick="openSelfCheck()" style="background:#553c9a;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:700">🩺 自動セルフ点検を実行</button>
         <p class="ht">描画・印刷・主要関数・ジョブ定義・データ整合を自動チェック。<span style="color:#c53030;font-weight:700">NG</span>があれば壊れた箇所が一目で分かる。読み取り専用（データは変更しません）。</p>
       </div>
+      <!-- ▲▲ 開発者ツールパネル END ▲▲ -->
     </div>
     <div class="sec" id="setupSaveSection">
       <div id="setupSavePC" style="display:none">
@@ -1683,7 +1685,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v6.95";
+var APP_VERSION = "v6.96";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -1695,7 +1697,7 @@ window.zAddAnalysis=function(item){
   if(item.id&&_i>=0) window.Z_DEEP_EXTRAS[_i]=item; else window.Z_DEEP_EXTRAS.push(item);
   return true;
 };
-window.IS_DEV = /_dev/i.test(location.href);
+// IS_DEV はバージョン直下(1か所)に集約。旧・二重定義(緩い /_dev/i 版)をここで除去 (v6.96)
 
 // ===== 稼働モデル: 心理→見込みランク＆工数（Phase① / 将来 js/workload.js）=====
 // 出典: ハンドオフ4-1（暫定値・運用で微調整）。stage(0-7)→温度ランク＋工数(日/月)。
@@ -8784,6 +8786,7 @@ function doClearStrategyField(id){
 window.clearStrategyField=clearStrategyField; window.doClearStrategyField=doClearStrategyField;
 window.toggleMobMenu=toggleMobMenu; window.closeMobMenu=closeMobMenu; window.showSyncGuide=showSyncGuide; window.closeSyncModal=closeSyncModal; window.syncMailToSelf=syncMailToSelf; window.showRestoreGuide=showRestoreGuide; window.showOneDriveSaveGuide=showOneDriveSaveGuide; window.doMobExport=doMobExport;
 window.showList=showList; window.showSetup=showSetup; window.saveSetup=saveSetup; window.showHelp=showHelp;
+// ╔════ 開発者ツール区画 START（将来 js/dev.js 候補 / 本番は DEV_EMAIL・IS_DEV ゲートで非表示）════╗
 // ===== 🔧 開発者設定：規定値ビューア =====
 function _devDefaultsData(){
   return [
@@ -8973,6 +8976,7 @@ function openSelfCheck(){
   ov.style.display='flex';
 }
 window.openSelfCheck=openSelfCheck;
+// ╚════ 開発者ツール区画 END ════╝
 
 
 
