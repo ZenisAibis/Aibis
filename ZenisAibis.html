@@ -1620,7 +1620,7 @@ function calcScoreParts(c){
 function calcScore(c){ return calcScoreParts(c).total; }
 function paintScoreWhy(){
   try{ var el=document.getElementById('scoreWhyVal'); if(!el||!cur) return;
-    var sc=calcScore(cur); el.innerHTML=_tempBand(sc)[0]+' '+sc+'<small style="font-size:10px">/78</small>';
+    var sc=calcScore(cur); el.innerHTML=_tempBand(cur)[0]+' '+sc+'<small style="font-size:10px">/78</small>';
   }catch(_e){}
 }
 function showScoreWhy(){
@@ -1628,7 +1628,7 @@ function showScoreWhy(){
   var d=calcScoreParts(cur);
   var adv={'⭐ 提案依頼':'連想(3)でテストクロージング→提案依頼の取得を','🗣 会話状況':'次の一段（立ち話→玄関内→連れ出し→上り込み）を狙う','👪 KP/所有者面談':'KP・所有者との面談を設定する','🧠 心理ステージ':'動機引上げの投げかけで次のステージへ','💰 資産背景':'保有物量・土地資産規模をヒアリング','🏷 追客ランク':'再訪3回の中で追客判定を','🌍 土地×路線価':'面積・路線価を入力／確認','🚪 連続留守':'時間帯・曜日を変えて訪問','🚉 駅徒歩':'地図で徒歩分数を一度確認'};
   var gaps=d.parts.map(function(p){return {p:p,g:p.mx-p.pt};}).filter(function(o){return o.g>0.5;}).sort(function(a,b){return b.g-a.g;}).slice(0,2);
-  aibisAlert('<b>⭐ スコア内訳：'+_tempBand(d.total)[0]+' '+d.total+'<small>/78</small></b>'
+  aibisAlert('<b>⭐ スコア内訳：'+_tempBand(cur)[0]+' '+d.total+'<small>/78</small></b>'
    +'<div style="text-align:left;margin-top:8px;max-height:46vh;overflow:auto">'
    +d.parts.map(function(p){
      var full=(p.pt>=p.mx);
@@ -1682,10 +1682,18 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v6.66";
+var APP_VERSION = "v6.71";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
+// 課分析に分析カードをJSのみで追加：zAddAnalysis({id,e,t,s,sp,render:function(ctx){...return html;}}) （同一idは置換）
+window.zAddAnalysis=function(item){
+  if(!item||typeof item.render!=='function'){ try{console.warn('zAddAnalysis: render関数が必要です');}catch(_e){} return false; }
+  window.Z_DEEP_EXTRAS=window.Z_DEEP_EXTRAS||[];
+  var _i=window.Z_DEEP_EXTRAS.map(function(x){return x&&x.id;}).indexOf(item.id);
+  if(item.id&&_i>=0) window.Z_DEEP_EXTRAS[_i]=item; else window.Z_DEEP_EXTRAS.push(item);
+  return true;
+};
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 稼働モデル: 心理→見込みランク＆工数（Phase① / 将来 js/workload.js）=====
@@ -1709,7 +1717,7 @@ var ZWL = (function(){
   var DROP = {key:'drop', rank:'打切', abbr:'×',  weight:0.00, visit:'—',  psy:'追客打ち切り'};
 
   // 訪問キャパ＆保有基準（4-2 暫定）
-  var CAP = { workdays:18, floor:35, ample:80, limit:250 };
+  var CAP = { workdays:20, floor:15 }; // ample/limit は保有メーターZWL化(v6.66)で参照消滅のため撤去
 
   function stageOf(c){ var s=+((c&&c.stage)||0); return (s>=0&&s<=7)?s:0; }
 
@@ -1741,12 +1749,12 @@ var ZWL = (function(){
   function _effWeight(c){
     var e=tempoEffective(c), L=e.label;
     if(L==='X') return 0;
-    if(L==='') return 0.2;                 // 初期・再訪サイクル
-    if(L==='S') return 8;
-    if(L==='A') return e.intName==='弱'?4:(e.intName==='強'?8:6);
-    if(L==='B') return 2;
-    if(L==='C') return 0.5;
-    if(L==='D') return 0.25;
+    if(L==='') return 0.05;                 // 初期・再訪サイクル
+    if(L==='S') return 2;
+    if(L==='A') return e.intName==='弱'?1:(e.intName==='強'?1.5:1.25);
+    if(L==='B') return 0.6;
+    if(L==='C') return 0.1;
+    if(L==='D') return 0.05;
     return 0.2;
   }
 
@@ -1780,20 +1788,20 @@ var ZWL = (function(){
   }
   // 過多/枯渇ステータス（固定強歠65の置換）。L = load()結果
   // 構成キャップ（負荷率とは別軸＝ローテーションで回せる物理保有数。A=5は確定、他は暫定）
-  var CAPS = { A:5, S:3, pursuit:15, keep:40 };
+  var CAPS = { A:5, S:3, pursuit:18, keep:45 };
   function caps(L){
     var t=(L&&L.byTempo)||{};
     var a=t.A||0, sN=t.S||0, pursuit=(t.S||0)+(t.A||0)+(t.B||0), keep=(t.C||0)+(t.D||0), w=[];
-    if(a>CAPS.A) w.push({key:'A', n:a, cap:CAPS.A, msg:'A運用'+a+'件＝限界'+CAPS.A+'件超過。山場に集中し同行で契約前倒しを。'});
-    if(sN>CAPS.S) w.push({key:'S', n:sN, cap:CAPS.S, msg:'S運用'+sN+'件＝同時'+CAPS.S+'件超過。最終提案の優先順位を明確に。'});
-    if(pursuit>CAPS.pursuit) w.push({key:'pursuit', n:pursuit, cap:CAPS.pursuit, msg:'追客'+pursuit+'件＝物理上限'+CAPS.pursuit+'件超過。再訪・発掘に手が回らない。見極めで継続/打切を。'});
-    if(keep>CAPS.keep) w.push({key:'keep', n:keep, cap:CAPS.keep, msg:'月１運用(継続/染込)'+keep+'件＝回し切り'+CAPS.keep+'件超過。動かない分は2ヶ月１へ／打ち切りで整理。'});
+    if(a>CAPS.A) w.push({key:'A', n:a, cap:CAPS.A, msg:'A運用'+a+'件（目安'+CAPS.A+'件）。最優先に絞り同行で契約を前倒し。'});
+    if(sN>CAPS.S) w.push({key:'S', n:sN, cap:CAPS.S, msg:'S運用'+sN+'件（目安'+CAPS.S+'件）。最終提案の優先順位を明確に。'});
+    if(pursuit>CAPS.pursuit) w.push({key:'pursuit', n:pursuit, cap:CAPS.pursuit, msg:'追客'+pursuit+'件（目安'+CAPS.pursuit+'件）。再訪・発掘の手が回るよう見極めを。'});
+    if(keep>CAPS.keep) w.push({key:'keep', n:keep, cap:CAPS.keep, msg:'月1運用'+keep+'件（目安'+CAPS.keep+'件）。動かない分は2ヶ月1へ／打切で整理。'});
     return w;
   }
   function status(L){
     if(!L||!L.n) return {key:'none', label:'未保有', color:'#a0aec0', caps:[]};
     var cp=caps(L);
-    if(L.overrate>1.0 || cp.length) return {key:'over', label:(cp.length&&cp[0].key==='keep')?'継続過多':'持ちすぎ', color:'#e8920c', caps:cp};
+    if(L.overrate>1.0) return {key:'over', label:'持ちすぎ', color:'#e8920c', caps:cp}; // キャップ超過は赤に昇格させず軽い注意扱い
     if(L.live<CAP.floor) return {key:'short', label:'枯渇危険', color:'#e03131', caps:cp};
     if(L.overrate>=0.6) return {key:'ok', label:'適正', color:'#2f9e44', caps:cp};
     return {key:'slack', label:'余裕', color:'#4a90d9', caps:cp};
@@ -4146,7 +4154,7 @@ function _repPoints(arr){return arr.reduce(function(s,c){return s+_actPoints(c);
 function _xpRank(pts){var T=[0,500,1000,2000,3500,5000];var NM=['見習い','開拓者','追客職人','見込み育成士','戦略営業','課のエース'];var lv=1;for(var i=0;i<T.length;i++){if(pts>=T[i])lv=i+1;}var lo=T[lv-1],hi=(lv<6)?T[lv]:null;return {lv:lv,name:NM[lv-1],lo:lo,hi:hi,next:(lv<6)?NM[lv]:null,remain:hi!==null?Math.max(0,hi-pts):0,prog:(hi!==null)?Math.max(0,Math.min(100,Math.round((pts-lo)/(hi-lo)*100))):100};}
 function _monthlyGain(arr,ym){var g=0;arr.forEach(function(c){if((c.discovery_date||'').slice(0,7)===ym)g+=10;if(c.proposal_req&&(c.proposal_req_at||'').slice(0,7)===ym)g+=50;if(c.doukou&&(c.doukou_at||'').slice(0,7)===ym)g+=20;if(c.family_headcount&&(c.family_headcount_at||'').slice(0,7)===ym)g+=10;(c.revisits||[]).forEach(function(r){if((r.date||'').slice(0,7)===ym)g+=20;});(c.pursuits||[]).forEach(function(pp){if((pp.date||'').slice(0,7)===ym)g+=15;});});return g;}
 function _ptColor(pct){return pct>=100?'#9BE15D':pct>=90?'#68D391':pct>=70?'#F6AD55':pct>=40?'#63B3ED':'#CBD5E0';}
-function _tempBand(s){return s>=55?['👑','契約接近']:s>=42?['🏆','A候補']:s>=30?['🔥','HOT見込み']:s>=18?['🔍','育成候補']:['🌱','接点づくり'];}
+function _tempBand(c){var st=+((c&&c.stage)||0),pr=!!(c&&c.proposal_req);if(st>=6)return['👑','契約接近'];if(st===5||(st===4&&pr))return['🏆','A候補'];if(st>=3)return['🔥','HOT見込み'];if(st===2)return['🔍','育成候補'];return['🌱','接点づくり'];}
 function _genjoPie(arr){ var cnt={}; _GENJO.forEach(function(x){cnt[x[0]]=0;}); arr.forEach(function(c){var gj=(c.genjo||''); if(!(gj in cnt))gj=''; cnt[gj]++;}); var rows=_GENJO.filter(function(x){return cnt[x[0]]>0;}); var segs=rows.map(function(x){return {value:cnt[x[0]],color:x[2]};}); var tot=arr.length||1; var leg='<div style="display:flex;flex-direction:column;gap:3px;font-size:11px">'+rows.map(function(x){var v=cnt[x[0]];return '<div style="display:flex;align-items:center;gap:6px"><i style="width:9px;height:9px;border-radius:2px;background:'+x[2]+';flex-shrink:0;display:inline-block"></i><span style="color:var(--z-mut)">'+x[1]+'</span><b style="margin-left:auto;color:var(--z-ink)">'+v+'</b><span style="color:var(--z-dim);width:36px;text-align:right">'+Math.round(v/tot*100)+'%</span></div>';}).join('')+'</div>'; return '<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'+_zDonut(segs,arr.length,'件')+'<div style="flex:1;min-width:128px">'+leg+'</div></div>'; }
 function _ryokuchiRing(arr){ var own=arr.filter(function(c){return (parseFloat(c.ryokuchi)||0)>0;}).length; var tot=arr.length||1; var pct=Math.round(own/tot*100); var segs=[{value:own,color:'#2f9e44'},{value:tot-own,color:'rgba(130,150,180,.22)'}]; return '<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'+_zDonut(segs,pct+'%','生産緑地')+'<div style="flex:1;min-width:120px"><div style="font-size:13px;color:var(--z-ink);font-weight:700"><b style="font-size:24px;color:#2f9e44;font-family:Sora,sans-serif">'+own+'</b> / '+arr.length+' 人が保有</div><div class="z-sub" style="margin-top:4px">生産緑地（1枚以上）を持つ見込み客の割合。2022年問題・納税猶予の打ち手対象。</div></div></div>'; }
 
@@ -4256,9 +4264,9 @@ function renderSelfDash(tid){
  var _plan=_planLoad(); var _acts=['再訪','追撃','テスクロ','家族確認','様子見'];
  var _selN=Object.keys(_plan.sel||{}).filter(function(k){return _prio.some(function(o){return String(o.c.id||'').replace(/[^\w-]/g,'')===k;});}).length;
  H+='<div class="z-card z-c2"><h3>\ud83c\udfaf 今日の作戦盤</h3><div class="z-sub">温度の高い順に3件。「今日この方に何をする？」— チップを選んで自分のミッションに（<b>'+_selN+'</b>/'+(_prio.length||0)+'件 選択中）。</div>'
-  +(_prio.length?_prio.map(function(o,i){var c=o.c;var tag=(c.pursuit_judge==='A'||c.pursuit_judge==='S')?'A候補':(lastContactDays(c)>=14?lastContactDays(c)+'日未接触':(!c.family_headcount?'家族構成未確認':_tempBand(o.s)[1]));
+  +(_prio.length?_prio.map(function(o,i){var c=o.c;var tag=(c.pursuit_judge==='A'||c.pursuit_judge==='S')?'A候補':(lastContactDays(c)>=14?lastContactDays(c)+'日未接触':(!c.family_headcount?'家族構成未確認':_tempBand(c)[1]));
     var chips=_acts.map(function(a){var on=_plan.sel&&_plan.sel[c.id]===a;return '<span class="z-chip" onclick="zPlanPick(\''+String(c.id||'').replace(/[^\w-]/g,'')+'\',\''+a+'\')" style="cursor:pointer;margin:2px 4px 0 0;display:inline-block;'+(on?'background:#34e3d0;color:#0b2230;font-weight:700;':'')+'">'+(on?'\u2713 ':'')+a+'</span>';}).join('');
-    return '<div class="z-prow"><span class="z-pno">'+(i+1)+'</span><b class="z-pnm" style="cursor:pointer" onclick="openCard(\''+String(c.id||'').replace(/[^\w-]/g,'')+'\')">'+e(c.name||'無名')+'様 \u203a</b><span class="z-ptemp">'+_tempBand(o.s)[0]+' '+o.s+'<small>/78</small></span><span class="z-ptag">'+tag+'</span></div><div class="z-actrow" style="margin:2px 0 10px 26px">'+chips+'</div>';}).join(''):'<div class="z-sub">カードを追加すると表示されます</div>')
+    return '<div class="z-prow"><span class="z-pno">'+(i+1)+'</span><b class="z-pnm" style="cursor:pointer" onclick="openCard(\''+String(c.id||'').replace(/[^\w-]/g,'')+'\')">'+e(c.name||'無名')+'様 \u203a</b><span class="z-ptemp">'+_tempBand(c)[0]+' '+o.s+'<small>/78</small></span><span class="z-ptag">'+tag+'</span></div><div class="z-actrow" style="margin:2px 0 10px 26px">'+chips+'</div>';}).join(''):'<div class="z-sub">カードを追加すると表示されます</div>')
   +'<div class="z-sub" style="margin-top:6px">\ud83d\udca1 '+e(_mis[0]||'')+'</div></div>'; var _jwL=mine.filter(_judgeMissing);
  if(_jwL.length){
   var _jwMulti=false; try{ var _jwMs={}; mine.forEach(function(c){var m=String(c.manager||'').trim(); if(m)_jwMs[m]=1;}); _jwMulti=Object.keys(_jwMs).length>=2; }catch(_e){}
@@ -4288,12 +4296,14 @@ function renderSelfDash(tid){
  var _hvEx=(_hvBt.E||0)+(_hvBt.X||0);
  var _hvAct=mine.length-_hvEx;
  var _hvRate=_hvL.overrate, _hvPct=Math.min(100,Math.round(_hvRate*100));
+ var _hvFollow=mine.filter(function(c){return (c.pursuit_judge==='A'||c.pursuit_judge==='S')&&calcPaceOverrate(c)>1;}).sort(function(a,b){return lastContactDays(b)-lastContactDays(a);});
  var _hvCapRows=[['A運用',(_hvBt.A||0),ZWL.CAPS.A],['S運用',(_hvBt.S||0),ZWL.CAPS.S],['追客',(_hvBt.S||0)+(_hvBt.A||0)+(_hvBt.B||0),ZWL.CAPS.pursuit],['月1運用',(_hvBt.C||0)+(_hvBt.D||0),ZWL.CAPS.keep]];
- H+='<div class="z-card z-c2"><h3>📦 保有メーター</h3><div class="z-sub">温度×テンポの稼働モデル基準。負荷率＝工数÷稼働'+ZWL.CAP.workdays+'日。1.0超は持ちすぎ。</div>'
+ H+='<div class="z-card z-c2"><h3>📦 保有メーター</h3><div class="z-sub">温度×テンポの稼働モデル基準。負荷率＝工数÷稼働'+ZWL.CAP.workdays+'日。1.0超で持ちすぎ。</div>'
   +'<div style="display:flex;align-items:baseline;gap:10px;margin-top:6px;flex-wrap:wrap"><b style="font-size:32px;line-height:1;color:'+_hvStat.color+'">'+_hvRate.toFixed(2)+'</b><span style="font-size:13px;font-weight:700;color:'+_hvStat.color+'">'+_hvStat.label+'</span><span class="z-sub">保有 '+_hvAct+'枚・工数'+_hvL.days+'日</span></div>'
   +'<div class="z-xptrack" style="margin-top:4px"><i style="width:'+_hvPct+'%;background:'+_hvStat.color+'"></i></div>'
-  +'<div style="display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:11.5px">'
-  +_hvCapRows.map(function(r){var ov=r[1]>r[2];return '<span>'+(ov?'⚠':'✅')+' '+r[0]+' <b'+(ov?' style="color:#e8920c"':'')+'>'+r[1]+'</b><span style="color:#8aa">/'+r[2]+'</span></span>';}).join('')
+  +(_hvFollow.length?'<div style="margin-top:9px;padding:9px 11px;border-radius:10px;background:rgba(224,49,49,.10);border:1px solid rgba(224,49,49,.38)"><div style="font-size:12.5px;font-weight:800;color:#e03131">🆘 要フォローA/S '+_hvFollow.length+'件<span style="font-weight:600;color:var(--z-mut);font-size:11px"> ＝ 推奨ペース超過で放置気味。最優先で救出を</span></div>'+_hvFollow.slice(0,3).map(function(c){var _fid=String(c.id||"").replace(/[^\w-]/g,"");var _dd=lastContactDays(c);return '<div style="font-size:12px;color:var(--z-ink);margin-top:4px;cursor:pointer" onclick="openCard(\''+_fid+'\')">・'+e(c.name||"無名")+'様（'+e(c.pursuit_judge)+'・'+(_dd>=0?_dd+"日無接触":"未接触")+'）→ 今すぐ詰める/同行依頼 ›</div>';}).join('')+(_hvFollow.length>3?'<div style="font-size:11px;color:var(--z-mut);margin-top:3px">ほか '+(_hvFollow.length-3)+'件</div>':'')+'</div>':'')
+  +'<div style="display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:8px;font-size:11.5px">'
+  +_hvCapRows.map(function(r){var ov=r[1]>r[2];return '<span>'+(ov?'ⓘ':'✅')+' '+r[0]+' <b'+(ov?' style="color:#e8920c"':'')+'>'+r[1]+'</b><span style="color:#8aa">/'+r[2]+'</span></span>';}).join('')
   +'</div>'
   +'<div class="z-sub" style="margin-top:7px"><span style="color:var(--z-cyan);font-weight:700">今すべきこと：</span>'+e(ZWL.advise(_hvL))+'</div>'
   +(_hvEx?'<div class="z-sub" style="margin-top:6px;color:#ff8a8a">🗑 整理対象（E/X）'+_hvEx+'枚 — 月次棚卸しで削除を</div>':'')
@@ -4480,7 +4490,7 @@ function updateSortBtns() {
     }
   });
 }
-var PACE_LIMIT={S:2,A:7,B:14,C:30,D:60}; // 暫定値（後日協議で差し替え）
+var PACE_LIMIT={S:7,A:10,B:21,C:40,D:80}; // 確定(v6.69) 推奨訪問ペース。超過で遅れ判定。個人差は一律運用
 var REVISIT_PHASE={span:14,times:3,interval:5}; // 再訪客：発掘から14日以内に3回（約5日間隔）
 function _isRevisitPhase(c){
   if(!c||!c.discovery_date) return false;
@@ -7462,7 +7472,7 @@ function workMeterInner(){
   if(_wkP==='load'){
     var llg='<div class="z-sub">負荷率 ＝ 保有カードの<b>工数合計</b>（日/月）÷ 稼働可能日<b>'+ZWL.CAP.workdays+'</b>。<span style="color:#2f9e44;font-weight:700">適正0.6–1.0</span>／<span style="color:#e8920c;font-weight:700">1.0超は持ちすぎ</span>。工数は心理段階から自動算出（暗定値）。</div>';
     var larr=reps.map(function(r){return {r:r,L:ZWL.load(g[r])};}).filter(function(x){return x.L.n>0;}).sort(function(a,b){return b.L.overrate-a.L.overrate;});
-    var lrows=larr.length?larr.map(function(x,i){var L=x.L,rate=L.overrate,stt=ZWL.status(L),col=stt.color;var _pv=L.propViol,_ng=(g[x.r]||[]).filter(function(c){return isNeglected03(c)||(+(c.stage||0)<=3&&calcPaceOverrate(c)>=1);}).length,_warn=[];if(_pv>0)_warn.push('<span style="color:#B7791F">⭐提案依頼未取得'+_pv+'件</span>');if(_ng>0)_warn.push('<span style="color:#C53030">🚨放置'+_ng+'件</span>');
+    var lrows=larr.length?larr.map(function(x,i){var L=x.L,rate=L.overrate,stt=ZWL.status(L),col=stt.color;var _pv=L.propViol,_ng=(g[x.r]||[]).filter(function(c){return isNeglected03(c)||calcPaceOverrate(c)>=1;}).length,_warn=[];if(_pv>0)_warn.push('<span style="color:#B7791F">⭐提案依頼未取得'+_pv+'件</span>');if(_ng>0)_warn.push('<span style="color:#C53030">🚨放置'+_ng+'件</span>');
       return '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--z-line)">'+rankc(i)+nm(x.r)
         +'<div style="flex:1;min-width:120px">'
           +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px"><span style="font-size:10px;color:var(--z-dim)">負荷率 <span style="color:'+col+';font-weight:700">'+stt.label+'</span></span><span style="font-size:14px;font-weight:800;color:'+col+'">'+Math.round(rate*100)+'%</span></div>'
@@ -7604,9 +7614,9 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
  var miniR=board.map(function(b,_bi){var a=g[b.r];return '<div class="z-jobcell">'+jobCardHTML(a,'mgr',b.r)+'</div>';}).join('');
  // ===== 🔬 深掘り分析：動的生成（レジストリ方式） =====
  // 分析カードは配列1要素＝1カード。JSのみで追加できる。
- // 外部追加用フック：window.Z_DEEP_EXTRAS に {id,e,t,s,sp,render:function(ctx){return html;}} をpush。
- // ctx＝{t:対象カード, g:担当別Map, reps:担当一覧, cards:全カード, calcScore, STG} を渡す。
- var _deepCtx={t:t,g:g,reps:reps,cards:cards,calcScore:calcScore,STG:STG};
+ // 外部追加：window.zAddAnalysis({id,e,t,s,sp,render:function(ctx){return html;}}) （同一idは置換／Z_DEEP_EXTRASへ直接pushも可）。
+ // ctx＝{t,g,reps,cards,calcScore,STG} ＋ チャート群 {card,vbars,line,spark,radar,funnel,pie,ring,pct,avas,months,e}。global非依存でrender内完結。
+ var _deepCtx={t:t,g:g,reps:reps,cards:cards,calcScore:calcScore,STG:STG,e:e,pct:_zPct,card:_zc,vbars:_zVbars,line:_zLine,spark:_zSpark,radar:_zRadar,funnel:_zFunnel,pie:_genjoPie,ring:_ryokuchiRing,avas:_zAVAS,months:_zMonths};
  var _deepItems=[
   {id:'treasure',e:'💎',t:'お宝度マトリクス',s:'熱量×資産規模。右上＝お宝。色＝ランク。泡を長押しで客名、タップでカードへ。',sp:'z-cf',render:function(){return bub;}},
   {id:'ryokuchi',e:'🌳',t:'生産緑地 保有率（データ）',s:'',sp:'z-c2',render:function(cx){return _ryokuchiRing(cx.t);}},
@@ -7616,12 +7626,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
   {id:'jobs9',e:'🎖',t:'営業ジョブ（全員）',s:'担当ごとの「型」と次に伸ばす力。入力と行動＋AI評価から判定（9軸・全50職）。',sp:'z-cf',render:function(){return '<div class="z-jobgrid">'+miniR+'</div>';}}
  ];
  if(Array.isArray(window.Z_DEEP_EXTRAS)) window.Z_DEEP_EXTRAS.forEach(function(it){ if(it&&typeof it.render==='function') _deepItems.push(it); });
- var bodyMulti=_deepItems.map(function(it){
-   var bd='';
-   try{ bd=it.render(_deepCtx)||''; }
-   catch(err){ bd='<div class="z-sub">⚠ 「'+(it.id||'?')+'」の描画でエラー（'+String(err&&err.message||err).slice(0,80)+'）</div>'; }
-   return _zc(it.e||'📈',it.t||it.id||'分析',it.s||'',bd,it.sp||'z-c2');
- }).join('');
+ 
 
 
  // ===== 担当の特性・保有状況（チーム管理） =====
@@ -7784,7 +7789,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
  var _axKingCard=_zc('🏅','タイプ別 No.1（称号）','5つの型それぞれの課トップ。',(_axKing||'<div class="z-sub">集計中</div>'),'z-cf');
  var _cardWork=_zc('🟢','稼働率モニター','達成度','<div id="zWorkCard">'+workMeterInner()+'</div>','z-cf');
  var _cardDiff=_zc('🎚','戦略差分','温度の追従と違う運用。協議の判断ポイント。タップでカードへ','<div class="z-wkscroll"><div class="z-wkmin">'+_strategyDiffInner()+'</div></div>','z-cf');
- var _bodyData=_deepItems.filter(function(it){return it.id!=='treasure'&&it.id!=='jobs9';}).map(function(it){var bd='';try{bd=it.render(_deepCtx)||'';}catch(err){bd='';}return _zc(it.e||'📈',it.t||it.id||'分析',it.s||'',bd,it.sp||'z-c2');}).join('');
+ var _bodyData=_deepItems.filter(function(it){return it.id!=='treasure'&&it.id!=='jobs9';}).map(function(it){var bd='';try{bd=it.render(_deepCtx)||'';}catch(err){bd='<div class="z-sub">⚠ 「'+(it.id||'?')+'」の描画でエラー（'+String(err&&err.message||err).slice(0,80)+'）</div>';}return _zc(it.e||'📈',it.t||it.id||'分析',it.s||'',bd,it.sp||'z-c2');}).join('');
  var _cardInsights=_zc('🧠','傾向と対策（AIインサイト）','データから打ち手を自動抽出。',ins,'z-cf');
  var _cardMap=_zc('🗺','マップ','町の熱量とお宝客。',bodyArea+_cardTreasure,'z-cf');
  H+=_zsec('today','🎯 課の指示 <span class="z-secsub">今日やること・誰に何を</span>',todayCard+readyCard+zoneCard+bodyContract)+_zsec('state','📊 課の確認 <span class="z-secsub">課の現状</span>',_cardMap+bodyKpi3+bodyProcess+bodyQuality+_bodyData+_teamCourse+_cardInsights)+_zsec('heroes','🏅 営業タイプ図鑑 <span class="z-secsub">型と各タイプNo.1</span>',_axKingCard+_cardHeroes)+_zsec('teamchk','👥 部下の確認 <span class="z-secsub">担当の現状</span>',bodyRank+_cardWork+_cardDiff+bodyTeam)+_zsec('coach','🎓 部下の指導 <span class="z-secsub">コーチング・育成クエスト</span>',coachCard+questCard);
@@ -8424,7 +8429,7 @@ function openSakusenban(){
  _sbPaint(); ov.style.display='block';
 }
 function _sbRowHTML(o,isPri,ix){
- var c=o.c, sc=calcScore(c), tb=_tempBand(sc), on=!!window._sbSel[o.sid];
+ var c=o.c, sc=calcScore(c), tb=_tempBand(c), on=!!window._sbSel[o.sid];
  var pl=_planLoad(); var act=(pl.sel||{})[o.sid]||'';
  var tag=isPri?'推奨':(_dTrigSoon(c)?'\u23f3時期接近':(calcPaceOverrate(c)>1?'ペース超過':((+lastContactDays(c)||0)>=14?(+lastContactDays(c))+'日未接触':(((basicInputStat(c)||{}).pct||0)<60?'入力不足':'要再訪'))));
  var chips=['再訪','追撃','テスクロ','家族確認'].map(function(a){
@@ -8614,23 +8619,27 @@ function _devDefaultsData(){
     ['連続留守','4点スタートの減点式 [4,3,2,1,0,0]','確定','留守ゼロで満点'],
     ['駅徒歩','〜10分 +2 / 21分以上 -2','確定','']
    ]},
-   {g:'🏃 訪問ペース（日数上限）',note:'PACE_LIMIT / REVISIT_PHASE（コード内グローバル変数）',items:[
-    ['ランク別ペース','S='+PACE_LIMIT.S+' / A='+PACE_LIMIT.A+' / B='+PACE_LIMIT.B+' / C='+PACE_LIMIT.C+' / D='+PACE_LIMIT.D+'日','暫定','高田さん精査待ち（個人差の扱い含む）'],
-    ['再訪客の別基準','発掘から'+REVISIT_PHASE.span+'日以内に'+REVISIT_PHASE.times+'回（約'+REVISIT_PHASE.interval+'日間隔）','暫定','精査待ち'],
-    ['訪問遅れ判定','ランク別ペース超過で遅れ扱い','暫定','最終調整待ち']
+   {g:'🏃 訪問ペース（日数上限）',note:'PACE_LIMIT / REVISIT_PHASE / NEGLECT_GRACE（コード内グローバル変数）',items:[
+    ['推奨訪問ペース','S='+PACE_LIMIT.S+' / A='+PACE_LIMIT.A+' / B='+PACE_LIMIT.B+' / C='+PACE_LIMIT.C+' / D='+PACE_LIMIT.D+'日','確定','超過で遅れ判定。個人差は一律運用'],
+    ['再訪客の別基準','発掘から'+REVISIT_PHASE.span+'日以内に'+REVISIT_PHASE.times+'回（約'+REVISIT_PHASE.interval+'日間隔）','確定',''],
+    ['訪問遅れ判定','推奨訪問ペース超過で遅れ扱い','確定',''],
+    ['放置検知の猶予(心理0-3)','面識'+NEGLECT_GRACE[0]+' ／ 注意'+NEGLECT_GRACE[1]+' ／ 興味'+NEGLECT_GRACE[2]+' ／ 連想'+NEGLECT_GRACE[3]+'日','確定','超過で🚨放置注意']
    ]},
-   {g:'🌡 温度バンド（スコア帯）',items:[
-    ['境界値','👑契約接近 55+ / 🏆A候補 42+ / 🔥HOT 30+ / 🔍育成 18+ / 🌱接点づくり','暫定','満点78化後の体感調整待ち']
+   {g:'🌡 温度バンド（心理段階基準）',items:[
+    ['区分','👑契約接近=心理6-7 ／ 🏆A候補=心理5(or 心理4＋提案依頼) ／ 🔥HOT見込み=心理3-4 ／ 🔍育成候補=心理2 ／ 🌱接点づくり=心理0-1','確定','v6.70でスコア基準から心理基準へ。スコアは温度内の優先順位に専念']
    ]},
    {g:'🥇 月間バッジ基準（金/銀/銅）',items:[
     ['提案依頼','3 / 2 / 1','確定',''],
     ['同行','20 / 15 / 10','確定',''],
     ['家族構成コンプ','5 / 4 / 3','確定',''],
-    ['新規発掘','45 / 35 / 25','仮','銀35・銅25は仮値（精査待ち）']
+    ['新規発掘','45 / 35 / 25','確定','']
    ]},
-   {g:'📦 保有メーター',items:[
-    ['目標・上限','目標75枚 / 上限80枚','仮','精査待ち'],
-    ['内訳の帯','再訪20-25 / S0-1 / A2-3 / B6-8 / C8-10 / D25-30','仮','精査待ち']
+   {g:'📦 保有メーター（稼働モデル）',note:'温度×テンポの負荷率ベース。値はZWLからライブ取得。普通の保有は緑になる甘め設定。',items:[
+    ['負荷率の見方','適正 0.6–1.0 ／ 1.0超=🟠持ちすぎ ／ 実働<床=🔴枯渇危険','確定','工数合計÷稼働日'],
+    ['稼働キャパ CAP','稼働 '+ZWL.CAP.workdays+'日 ／ 床(枯渇判定) '+ZWL.CAP.floor+'件','確定','v6.71で甘めに再調整'],
+    ['構成キャップ CAPS','A '+ZWL.CAPS.A+' ／ S '+ZWL.CAPS.S+' ／ 追客(S+A+B) '+ZWL.CAPS.pursuit+' ／ 月1運用(C+D) '+ZWL.CAPS.keep+'件','確定','超過は赤でなくⓘ軽い注意'],
+    ['テンポ工数(日/月)','S2 ／ A弱1・強1.5 ／ B0.6 ／ C0.1 ／ D0.05 ／ 未設定0.05 ／ X0','確定','負荷率の計算根拠'],
+    ['🆘 要フォローA/S','A/Sが推奨ペース超過（A>'+PACE_LIMIT.A+'日・S>'+PACE_LIMIT.S+'日 無接触）で主役級の救出警告','確定','放置A/Sの救出を最優先（v6.71）']
    ]},
    {g:'⏱ 契約クロック',items:[
     ['45日ルール','A昇格（追撃判定）から45日が契約目安','確定','超過は赤表示']

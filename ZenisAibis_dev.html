@@ -1620,7 +1620,7 @@ function calcScoreParts(c){
 function calcScore(c){ return calcScoreParts(c).total; }
 function paintScoreWhy(){
   try{ var el=document.getElementById('scoreWhyVal'); if(!el||!cur) return;
-    var sc=calcScore(cur); el.innerHTML=_tempBand(sc)[0]+' '+sc+'<small style="font-size:10px">/78</small>';
+    var sc=calcScore(cur); el.innerHTML=_tempBand(cur)[0]+' '+sc+'<small style="font-size:10px">/78</small>';
   }catch(_e){}
 }
 function showScoreWhy(){
@@ -1628,7 +1628,7 @@ function showScoreWhy(){
   var d=calcScoreParts(cur);
   var adv={'⭐ 提案依頼':'連想(3)でテストクロージング→提案依頼の取得を','🗣 会話状況':'次の一段（立ち話→玄関内→連れ出し→上り込み）を狙う','👪 KP/所有者面談':'KP・所有者との面談を設定する','🧠 心理ステージ':'動機引上げの投げかけで次のステージへ','💰 資産背景':'保有物量・土地資産規模をヒアリング','🏷 追客ランク':'再訪3回の中で追客判定を','🌍 土地×路線価':'面積・路線価を入力／確認','🚪 連続留守':'時間帯・曜日を変えて訪問','🚉 駅徒歩':'地図で徒歩分数を一度確認'};
   var gaps=d.parts.map(function(p){return {p:p,g:p.mx-p.pt};}).filter(function(o){return o.g>0.5;}).sort(function(a,b){return b.g-a.g;}).slice(0,2);
-  aibisAlert('<b>⭐ スコア内訳：'+_tempBand(d.total)[0]+' '+d.total+'<small>/78</small></b>'
+  aibisAlert('<b>⭐ スコア内訳：'+_tempBand(cur)[0]+' '+d.total+'<small>/78</small></b>'
    +'<div style="text-align:left;margin-top:8px;max-height:46vh;overflow:auto">'
    +d.parts.map(function(p){
      var full=(p.pt>=p.mx);
@@ -1682,10 +1682,18 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v6.60";
+var APP_VERSION = "v6.71";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
+// 課分析に分析カードをJSのみで追加：zAddAnalysis({id,e,t,s,sp,render:function(ctx){...return html;}}) （同一idは置換）
+window.zAddAnalysis=function(item){
+  if(!item||typeof item.render!=='function'){ try{console.warn('zAddAnalysis: render関数が必要です');}catch(_e){} return false; }
+  window.Z_DEEP_EXTRAS=window.Z_DEEP_EXTRAS||[];
+  var _i=window.Z_DEEP_EXTRAS.map(function(x){return x&&x.id;}).indexOf(item.id);
+  if(item.id&&_i>=0) window.Z_DEEP_EXTRAS[_i]=item; else window.Z_DEEP_EXTRAS.push(item);
+  return true;
+};
 window.IS_DEV = /_dev/i.test(location.href);
 
 // ===== 稼働モデル: 心理→見込みランク＆工数（Phase① / 将来 js/workload.js）=====
@@ -1709,7 +1717,7 @@ var ZWL = (function(){
   var DROP = {key:'drop', rank:'打切', abbr:'×',  weight:0.00, visit:'—',  psy:'追客打ち切り'};
 
   // 訪問キャパ＆保有基準（4-2 暫定）
-  var CAP = { workdays:18, floor:35, ample:80, limit:250 };
+  var CAP = { workdays:20, floor:15 }; // ample/limit は保有メーターZWL化(v6.66)で参照消滅のため撤去
 
   function stageOf(c){ var s=+((c&&c.stage)||0); return (s>=0&&s<=7)?s:0; }
 
@@ -1741,12 +1749,12 @@ var ZWL = (function(){
   function _effWeight(c){
     var e=tempoEffective(c), L=e.label;
     if(L==='X') return 0;
-    if(L==='') return 0.2;                 // 初期・再訪サイクル
-    if(L==='S') return 8;
-    if(L==='A') return e.intName==='弱'?4:(e.intName==='強'?8:6);
-    if(L==='B') return 2;
-    if(L==='C') return 0.5;
-    if(L==='D') return 0.25;
+    if(L==='') return 0.05;                 // 初期・再訪サイクル
+    if(L==='S') return 2;
+    if(L==='A') return e.intName==='弱'?1:(e.intName==='強'?1.5:1.25);
+    if(L==='B') return 0.6;
+    if(L==='C') return 0.1;
+    if(L==='D') return 0.05;
     return 0.2;
   }
 
@@ -1780,20 +1788,20 @@ var ZWL = (function(){
   }
   // 過多/枯渇ステータス（固定強歠65の置換）。L = load()結果
   // 構成キャップ（負荷率とは別軸＝ローテーションで回せる物理保有数。A=5は確定、他は暫定）
-  var CAPS = { A:5, S:3, pursuit:15, keep:40 };
+  var CAPS = { A:5, S:3, pursuit:18, keep:45 };
   function caps(L){
     var t=(L&&L.byTempo)||{};
     var a=t.A||0, sN=t.S||0, pursuit=(t.S||0)+(t.A||0)+(t.B||0), keep=(t.C||0)+(t.D||0), w=[];
-    if(a>CAPS.A) w.push({key:'A', n:a, cap:CAPS.A, msg:'A運用'+a+'件＝限界'+CAPS.A+'件超過。山場に集中し同行で契約前倒しを。'});
-    if(sN>CAPS.S) w.push({key:'S', n:sN, cap:CAPS.S, msg:'S運用'+sN+'件＝同時'+CAPS.S+'件超過。最終提案の優先順位を明確に。'});
-    if(pursuit>CAPS.pursuit) w.push({key:'pursuit', n:pursuit, cap:CAPS.pursuit, msg:'追客'+pursuit+'件＝物理上限'+CAPS.pursuit+'件超過。再訪・発掘に手が回らない。見極めで継続/打切を。'});
-    if(keep>CAPS.keep) w.push({key:'keep', n:keep, cap:CAPS.keep, msg:'月１運用(継続/染込)'+keep+'件＝回し切り'+CAPS.keep+'件超過。動かない分は2ヶ月１へ／打ち切りで整理。'});
+    if(a>CAPS.A) w.push({key:'A', n:a, cap:CAPS.A, msg:'A運用'+a+'件（目安'+CAPS.A+'件）。最優先に絞り同行で契約を前倒し。'});
+    if(sN>CAPS.S) w.push({key:'S', n:sN, cap:CAPS.S, msg:'S運用'+sN+'件（目安'+CAPS.S+'件）。最終提案の優先順位を明確に。'});
+    if(pursuit>CAPS.pursuit) w.push({key:'pursuit', n:pursuit, cap:CAPS.pursuit, msg:'追客'+pursuit+'件（目安'+CAPS.pursuit+'件）。再訪・発掘の手が回るよう見極めを。'});
+    if(keep>CAPS.keep) w.push({key:'keep', n:keep, cap:CAPS.keep, msg:'月1運用'+keep+'件（目安'+CAPS.keep+'件）。動かない分は2ヶ月1へ／打切で整理。'});
     return w;
   }
   function status(L){
     if(!L||!L.n) return {key:'none', label:'未保有', color:'#a0aec0', caps:[]};
     var cp=caps(L);
-    if(L.overrate>1.0 || cp.length) return {key:'over', label:(cp.length&&cp[0].key==='keep')?'継続過多':'持ちすぎ', color:'#e8920c', caps:cp};
+    if(L.overrate>1.0) return {key:'over', label:'持ちすぎ', color:'#e8920c', caps:cp}; // キャップ超過は赤に昇格させず軽い注意扱い
     if(L.live<CAP.floor) return {key:'short', label:'枯渇危険', color:'#e03131', caps:cp};
     if(L.overrate>=0.6) return {key:'ok', label:'適正', color:'#2f9e44', caps:cp};
     return {key:'slack', label:'余裕', color:'#4a90d9', caps:cp};
@@ -3441,18 +3449,22 @@ var J9_TWO={
  'houbun+choshin':'法心師','houbun+seian':'法案師','houbun+sakujin':'法策師','houbun+kiroku':'証録師',
  'choshin+enmusubi':'和談師','choshin+seian':'聴案師','choshin+sakujin':'聴策師',
  'enmusubi+tsuibi':'継縁師','enmusubi+seian':'成縁師',
- 'tsuibi+seian':'追案師','sakujin+tsuibi':'追策師','kiroku+sakujin':'分析師'
+ 'tsuibi+seian':'追案師','sakujin+tsuibi':'追策師','kiroku+sakujin':'分析師',
+ // 記録×行動系（v6.65追加）
+ 'choshin+kiroku':'聴録師','seian+kiroku':'立証師','tsuibi+kiroku':'追録師','tsuibi+sokko':'遊撃師','kiroku+sokko':'走録師'
 };
 // 3強（12）
 var J9_THREE={
  'chizu+houbun+choshin':'見聞将','chizu+houbun+seian':'地権将','chizu+choshin+enmusubi':'地縁将','chizu+seian+sakujin':'謀略将',
  'houbun+choshin+enmusubi':'法心将','houbun+seian+sakujin':'法策将','choshin+enmusubi+tsuibi':'継縁将','choshin+seian+sakujin':'聴策将',
- 'enmusubi+tsuibi+seian':'成縁将','tsuibi+sakujin+kiroku':'継策将','seian+sakujin+kiroku':'成策将','chizu+tsuibi+sokko':'機動将'
+ 'enmusubi+tsuibi+seian':'成縁将','tsuibi+sakujin+kiroku':'継策将','seian+sakujin+kiroku':'成策将','chizu+tsuibi+sokko':'機動将',
+ // 記録×行動系（v6.65追加）
+ 'chizu+kiroku+sokko':'踏破将','tsuibi+kiroku+sokko':'遊撃将'
 };
 // 4強（6）
 var J9_FOUR={
- 'chizu+houbun+choshin+seian':'棟梁','chizu+seian+sakujin+kiroku':'宗匠','choshin+enmusubi+tsuibi+seian':'大家',
- 'houbun+choshin+enmusubi+sakujin':'参謀','tsuibi+seian+sakujin+kiroku':'総帥','chizu+tsuibi+kiroku+sokko':'先鋒'
+ 'chizu+houbun+choshin+seian':'創地','chizu+seian+sakujin+kiroku':'明鏡','choshin+enmusubi+tsuibi+seian':'重鎮',
+ 'houbun+choshin+enmusubi+sakujin':'参謀','tsuibi+seian+sakujin+kiroku':'威風','chizu+tsuibi+kiroku+sokko':'迅雷'
 };
 // 5強（4）
 var J9_FIVE={
@@ -3460,14 +3472,15 @@ var J9_FIVE={
  'chizu+tsuibi+seian+kiroku+sokko':'勇往邁進','houbun+choshin+seian+sakujin+kiroku':'博覧強記'
 };
 var J9_INIT=['芽士','初陣士','見込士']; // 初心者帯（rank0）：芽士→初陣士→見込士
-var J9_CARD_GATE={ meshiMax:25, mikomiCardMin:35, mikomiAvg:55, jobMin:41, tier34:65, tier5:80, trust34:0.70, trust5:0.85, zatsuyokuMin:65, gouyokuMin:81 };
-function j9CardCap(n, trust){
-  if(n<J9_CARD_GATE.jobMin) return 0;
-  if(n<J9_CARD_GATE.tier34) return 2;           // 41〜64：1〜2強
-  if(n<J9_CARD_GATE.tier5){                      // 65〜79：入力率70%以上で3〜4強、未満は2強どまり
+var J9_CARD_GATE={ meshiMax:25, mikomiCardMin:35, mikomiAvg:55, jobMin:41, tier34:65, tier5:80, trust34:0.70, trust5:0.85 };
+function j9CardCap(n, trust, ps){
+  var PS=(ps&&ps>0)?ps:1;
+  if(n<J9_CARD_GATE.jobMin*PS) return 0;
+  if(n<J9_CARD_GATE.tier34*PS) return 2;           // 41〜64/人：1〜2強
+  if(n<J9_CARD_GATE.tier5*PS){                      // 65〜79/人：入力率70%以上で3〜4強、未満は2強どまり
     return (trust>=J9_CARD_GATE.trust34) ? 4 : 2;
   }
-  // 80以上：入力率85%以上で5強・天眼王、未満は4強どまり
+  // 80/人以上：入力率85%以上で5強・天眼王、未満は4強どまり
   return (trust>=J9_CARD_GATE.trust5) ? 9 : 4;
 }
 // ジョブの“格”を数値化（昇格検知用）。初心者帯/強欲0／1強1…5強5／天眼王6。
@@ -3479,6 +3492,8 @@ function j9JobRank(job, strongCount){
   return Math.max(1,Math.min(5,strongCount||1));
 }
 var J9_KING='天眼王';
+// ジョブ図鑑の総数（1強〜天眼王）。テーブル増減に自動追従
+function j9LadderCount(){return Object.keys(J9_ONE).length+Object.keys(J9_TWO).length+Object.keys(J9_THREE).length+Object.keys(J9_FOUR).length+Object.keys(J9_FIVE).length+1;}
 // 称号（二つ名）：軸キー→眼
 var J9_EYE={chizu:'千里',houbun:'明法',choshin:'心耳',enmusubi:'信望',tsuibi:'継火',seian:'妙案',sakujin:'勝機',kiroku:'克明',sokko:'神速'};
 
@@ -3507,12 +3522,12 @@ function j9DetermineJob(cards, repName, popScale){ var PS=(popScale&&popScale>0)
   var res={axes:r.axes, corr:corr, trust:r.trust, coef:coef, n:r.n, job:'', title:'', strong:[], provisional:false};
   if(r.n===0){ res.job='—'; res.provisional=true; return res; }
   // 【初心者帯：芽士】0〜25枚
-  if(r.n<=J9_CARD_GATE.meshiMax){
+  if(r.n<=J9_CARD_GATE.meshiMax*PS){
     res.job='芽士'; res.provisional=true; res.strong=[]; return res;
   }
   // 26枚以上：補正後スコアから強い軸と9軸平均を算出
   if(r.trust<0.30){ res.provisional=true; }
-  var cardCap=j9CardCap(r.n, r.trust);
+  var cardCap=j9CardCap(r.n, r.trust, PS);
   var strong=j9StrongAxes(corr, r.trust, cardCap);
   var ns=strong.length;
   var avg9=Math.round(J9_ORDER.reduce(function(s,k){return s+corr[k];},0)/J9_ORDER.length);
@@ -3520,13 +3535,13 @@ function j9DetermineJob(cards, repName, popScale){ var PS=(popScale&&popScale>0)
   var loadR=(typeof ZWL!=='undefined'&&ZWL.load)?(ZWL.load(cards).overrate/PS):0; // 負荷率(dev:1人換算)
   // 初心者帯の行き先：35枚以上＋平均55以上なら見込士、それ以外は初陣士
   var initJob=(r.n>=J9_CARD_GATE.mikomiCardMin*PS && avg9>=J9_CARD_GATE.mikomiAvg) ? '見込士' : '初陣士';
-  // 【強欲・前段】中身が薄い（強い軸ゼロ）まま zatsuyokuMin 以上抱える → 雑欲士（整理を促す警告）
+  // 【強欲・前段】中身が薄い（強い軸ゼロ）まま負荷率>1.0で抱えすぎ → 雑欲士（整理を促す警告）
   if(ns===0 && loadR>1.0){
     res.job='雑欲士'; res.greed=true; res.strong=[]; return res;
   }
   // 本ジョブ＝41枚以上 かつ 強い軸が1つ以上。満たさなければ初心者帯に留める
   // （枚数を積んでも中身が薄い＝最高軸すら55未満なら1強にもしない）
-  if(r.n<J9_CARD_GATE.jobMin || ns===0){
+  if(r.n<J9_CARD_GATE.jobMin*PS || ns===0){
     res.job=initJob; res.provisional=true; res.strong=[]; return res;
   }
   res.strong=strong;
@@ -3539,7 +3554,7 @@ function j9DetermineJob(cards, repName, popScale){ var PS=(popScale&&popScale>0)
     var stableOK = repName ? (j9KingStable(repName) || hist<=1) : true;
     if(stableOK){ res.job=J9_KING; res.title='天眼'; return res; }
   }
-  // 【強欲・本段】実力はあるが gouyokuMin 以上抱えすぎ → 本来の格でⅡ/Ⅲに振り分け（天眼王は除外）
+  // 【強欲・本段】実力はあるが負荷率>1.0で抱えすぎ → 本来の格でⅡ/Ⅲに振り分け（天眼王は除外）
   if(loadR>1.0){
     res.job=(ns>=3)?'大欲無限':'強欲師'; res.greed=true; return res;
   }
@@ -3566,72 +3581,33 @@ function j9DetermineJob(cards, repName, popScale){ var PS=(popScale&&popScale>0)
   return res;
 }
 
-// ===== 📖 営業タイプ図鑑（全50種） =====
-// 50種 = 基本12（武器6×見習い/一人前）+ 上級職30（達人：武器×サブ武器）+ 特殊8
-var _T50_AX=['発掘量','グリップ','ヒアリング','連想到達','テスクロ','追客ペース'];
-var _T50_ADV=[
- // [main][sub] 上級職の二つ名（main=武器/最高軸, sub=2番目の軸）対角は未使用
- [null,'パイオニア','スカウト','トレイルブレイザー','ストライカー','レンジャー'],
- ['コネクター',null,'カウンセラー','メンター','ネゴシエーター','パートナー'],
- ['インタビュアー','コンシェルジュ',null,'プロファイラー','アナリスト','オブザーバー'],
- ['エクスプローラー','ガイド','プランナー',null,'ストラテジスト','パイロット'],
- ['チャレンジャー','ディールメーカー','スナイパー','フィニッシャー',null,'アタッカー'],
- ['ランナー','キーパー','トラッカー','ペースメーカー','スプリンター',null]
-];
-var _T50_ADV_D=[
- [null,'切り拓いた縁をがっちり握る','新天地で本音を聞き出す','開拓から連想まで一気に導く','攻め込んでそのまま決めにいく','広い戦線を回り続ける'],
- ['出会いを深い縁に変える','','寄り添いながら心を開かせる','信頼を土台に動機を引き上げる','握った信頼で交渉をまとめる','長い付き合いで機を待てる'],
- ['聞く力で新規を切り開く','聞いて尽くして信頼を得る','','聞いた情報から未来を描かせる','聞き切って急所で一発','静かに見て聞いて外さない'],
- ['物語で新しい扉を開く','導きながら絆を深める','設計図を描いてから動く','','描いた未来をそのまま成約へ','航路を保って迷わせない'],
- ['初対面から勝負できる','決めた後も関係が固い','急所を突いて短期決戦','連想の熱が冷める前に決める','','決め続けて足も止めない'],
- ['回り続けて種をまく','通い続けて関係を守る','通うたびに情報が増える','訪問リズムで心理を温める','テンポよく決め切る','']
-];
-var _T50_SPECIAL=[
- {e:'🐣',n:'ルーキー',c:'カード5枚未満',d:'まずは発掘から。データが増えるとタイプが見えてくる'},
- {e:'⚖',n:'ジェネラリスト',c:'全軸が均衡（差12以内）×総合40未満',d:'凹みのない素直な型。これからどの武器も選べる'},
- {e:'🎖',n:'オールラウンダー',c:'全軸が均衡×総合40〜69',d:'穴がないのが武器。チームの安定軸'},
- {e:'🎼',n:'マエストロ',c:'全軸が均衡×総合70以上',d:'全てを高い水準で操る指揮者'},
- {e:'👑',n:'グランドマスター',c:'全軸70以上',d:'死角なし。課の最終兵器にして手本'},
- {e:'⚡',n:'スペシャリスト',c:'1軸90以上かつ最小軸30未満',d:'一点突破の天才肌。尖りこそ才能、弱点は仲間で補完'},
- {e:'⚔',n:'ツインブレード',c:'上位2軸が同値（差2以内）かつ60以上',d:'二刀流。状況で武器を持ち替えられる'},
- {e:'🚀',n:'ライジングスター',c:'総合が段階昇格まで残り5以内',d:'昇格目前。あと一押しで化ける'}
-];
-function _salesType50(axes,nCards){
- var vals=axes.map(function(a){return +(a[1]||0);});
- var idx=vals.map(function(v,i){return i;}).sort(function(a,b){return vals[b]-vals[a];});
- var top=idx[0],sub=idx[1];
- var mx=vals[top],mn=vals[idx[vals.length-1]];
- var avg=Math.round(vals.reduce(function(s,v){return s+v;},0)/vals.length);
- var base=_salesType(axes);
- if(typeof nCards==='number'&&nCards<5) return {e:'🐣',name:'ルーキー',desc:_T50_SPECIAL[0].d,tier:'特殊',base:base};
- if(mn>=70) return {e:'👑',name:'グランドマスター',desc:_T50_SPECIAL[4].d,tier:'特殊',base:base};
- if(mx-mn<=12){ var bn=avg>=70?3:avg>=40?2:1; var sp=_T50_SPECIAL[bn]; return {e:sp.e,name:sp.n,desc:sp.d,tier:'特殊',base:base}; }
- if(mx-vals[sub]<=2&&mx>=60) return {e:'⚔',name:'ツインブレード',desc:_T50_SPECIAL[6].d,tier:'特殊',base:base};
- if(mx>=90&&mn<30) return {e:'⚡',name:'スペシャリスト',desc:_T50_SPECIAL[5].d,tier:'特殊',base:base};
- if((avg>=35&&avg<40)||(avg>=65&&avg<70)) return {e:'🚀',name:'ライジングスター',desc:_T50_SPECIAL[7].d,tier:'特殊',base:base};
- if(avg>=70){ var nm=_T50_ADV[top][sub]||'マエストロ'; return {e:_SALES_ARCHE[top].e,name:nm,desc:(_T50_ADV_D[top][sub]||'')+'（'+_SALES_ARCHE[top].n+'×'+_T50_AX[sub]+'）',tier:'上級職',base:base}; }
- return {e:_SALES_ARCHE[top].e,name:base.stageName+_SALES_ARCHE[top].n,desc:_SALES_ARCHE[top].d,tier:'基本',base:base};
-}
+// ===== 📖 ジョブ図鑑（漢字50職・j9テーブル駆動）=====
 function openTypeDex(curName){
- var sec=function(title,body){return '<div style="margin-bottom:12px"><div style="font-size:13px;font-weight:700;color:#1a365d;background:#f7fafc;border-radius:6px;padding:6px 9px">'+title+'</div>'+body+'</div>';};
- var row=function(e2,n,c,d){
-   var hit=(curName&&n===curName);
-   return '<div style="padding:6px 4px;border-bottom:1px solid #edf2f7;'+(hit?'background:#fffbeb;border-left:3px solid #b7791f;padding-left:7px;border-radius:4px':'')+'"><div style="display:flex;align-items:center;gap:7px"><span style="font-size:16px">'+e2+'</span><b style="font-size:12.5px;color:#2d3748">'+n+'</b>'+(hit?'<span style="font-size:10px;font-weight:700;color:#b7791f">← いまのあなた</span>':'')+'</div><div style="font-size:10.5px;color:#718096;margin-top:1px">条件：'+c+'</div>'+(d?'<div style="font-size:11px;color:#4a5568">'+d+'</div>':'')+'</div>';
+ var ax=function(k){var a=_job9AxKey(k);return a?a.n:k;};
+ var axline=function(key){return key.split('+').map(ax).join('・');};
+ var thumb=function(name){
+   var src='img/jobs/job_'+j9ImgId(name)+'.png';
+   return '<span style="width:34px;height:34px;flex:none;border-radius:7px;background:#0d1526;display:inline-flex;align-items:center;justify-content:center;font-size:18px;overflow:hidden;position:relative">🎖<img src="'+src+'" alt="" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" onerror="this.remove()"></span>';
  };
- var basic='';
- [1,2].forEach(function(st){
-  _SALES_ARCHE.forEach(function(ar){
-    basic+=row(ar.e,_SALES_STAGE[st].n+ar.n,'武器＝'+ar.n+'の軸 × 総合'+(st===1?'40未満':'40〜69'),ar.d);
-  });
- });
- var adv='';
- _T50_ADV.forEach(function(rw,mi){
-  rw.forEach(function(nm,si){
-    if(!nm) return;
-    adv+=row(_SALES_ARCHE[mi].e,nm,'達人（総合70以上）× 武器＝'+_T50_AX[mi]+' × サブ武器＝'+_T50_AX[si],_T50_ADV_D[mi][si]);
-  });
- });
- var spc=_T50_SPECIAL.map(function(s){return row(s.e,s.n,s.c,s.d);}).join('');
+ var row=function(name,sub){
+   var hit=(curName&&name===curName);
+   var ym=j9Yomi(name);
+   return '<div style="display:flex;align-items:center;gap:9px;padding:5px 4px;border-bottom:1px solid #edf2f7;'+(hit?'background:#fffbeb;border-left:3px solid #b7791f;padding-left:7px;border-radius:5px':'')+'">'
+     +thumb(name)
+     +'<div style="flex:1;min-width:0"><div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap"><b style="font-size:13px;color:#2d3748">'+e(name)+'</b>'+(ym?'<span style="font-size:9.5px;color:#a0aec0">'+e(ym)+'</span>':'')+(hit?'<span style="font-size:10px;font-weight:700;color:#b7791f">← いまのあなた</span>':'')+'</div>'+(sub?'<div style="font-size:10.5px;color:#718096">'+sub+'</div>':'')+'</div></div>';
+ };
+ var sec=function(title,tint,body){return '<div style="margin-bottom:12px"><div style="font-size:12.5px;font-weight:700;color:'+tint+';background:#f7fafc;border-radius:6px;padding:6px 9px">'+title+'</div>'+body+'</div>';};
+ var listObj=function(tbl,cond){return Object.keys(tbl).map(function(k){return row(tbl[k],cond+axline(k));}).join('');};
+ var initConds=['〜25枚・育成中','26〜40枚','35枚＋平均55で昇格'];
+ var sInit=J9_INIT.map(function(n,i){return row(n,initConds[i]||'');}).join('');
+ var s1=Object.keys(J9_ONE).map(function(k){return row(J9_ONE[k],'41枚〜・信頼30%〜｜強み '+ax(k));}).join('');
+ var s2=listObj(J9_TWO,'41枚〜・信頼50%〜｜');
+ var s3=listObj(J9_THREE,'65枚〜・信頼70%〜｜');
+ var s4=listObj(J9_FOUR,'65枚〜・信頼85%〜｜');
+ var s5=listObj(J9_FIVE,'80枚〜・信頼85%〜｜');
+ var sKing=row(J9_KING,'80枚〜・全軸85＋信頼90%＋安定');
+ var greedConds=['負荷率>1.0×強み無し','負荷率>1.0×実力1〜2強','負荷率>1.0×実力3強以上'];
+ var sGreed=J9_GREED.map(function(n,i){return row(n,greedConds[i]||'抱えすぎ警告');}).join('');
  var ov=document.getElementById('typeDexOv');
  if(!ov){
    ov=document.createElement('div');
@@ -3641,12 +3617,17 @@ function openTypeDex(curName){
    document.body.appendChild(ov);
  }
  ov.innerHTML='<div style="background:#fff;border-radius:14px;max-width:560px;width:100%;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 12px 40px rgba(0,0,0,0.35)">'
-  +'<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #e2e8f0"><div><div style="font-size:15px;font-weight:700;color:#1a365d">📖 営業タイプ図鑑（全50種）</div><div style="font-size:10.5px;color:#718096">基本12 ＋ 上級職30（達人で分化）＋ 特殊8。判定は特殊→上級職→基本の順。</div></div><button onclick="document.getElementById(\'typeDexOv\').style.display=\'none\'" style="background:#edf2f7;border:none;border-radius:6px;width:30px;height:30px;font-size:14px;cursor:pointer;font-family:inherit">✕</button></div>'
+  +'<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #e2e8f0"><div><div style="font-size:15px;font-weight:700;color:#1a365d">📖 ジョブ図鑑（全'+j9LadderCount()+'職）</div><div style="font-size:10.5px;color:#718096">入力と件数を積むほど上の段位へ。1強→5強→天眼王＝'+j9LadderCount()+'職。いまのあなたをハイライト。</div></div><button onclick="document.getElementById(\'typeDexOv\').style.display=\'none\'" style="background:#edf2f7;border:none;border-radius:6px;width:30px;height:30px;font-size:14px;cursor:pointer;font-family:inherit">✕</button></div>'
   +'<div style="overflow-y:auto;padding:12px 16px">'
-  +sec('🌟 特殊（8種）',spc)
-  +sec('🗡 上級職（30種）— 達人は武器×サブ武器で型が分化',adv)
-  +sec('🛡 基本（12種）— 見習い・一人前 × 武器6',basic)
-  +'<div style="font-size:10.5px;color:#a0aec0;padding:6px 0 2px">※ 軸の算出方法はレーダー下の「各軸のフラグ」を参照。凹んだ軸が伸びしろ、尖った軸があなたの武器。</div></div></div>';
+  +sec('🌱 育成帯（'+J9_INIT.length+'）— まずは枚数を積む','#2f855a',sInit)
+  +sec('① 1強（'+Object.keys(J9_ONE).length+'）— 突出した1軸','#3182ce',s1)
+  +sec('② 2強（'+Object.keys(J9_TWO).length+'）— 武器2つ','#3182ce',s2)
+  +sec('③ 3強（'+Object.keys(J9_THREE).length+'）— 「将」の格','#805ad5',s3)
+  +sec('④ 4強（'+Object.keys(J9_FOUR).length+'）— 四字熟語の核2字','#b7791f',s4)
+  +sec('⑤ 5強（'+Object.keys(J9_FIVE).length+'）— 四字熟語フル','#b7791f',s5)
+  +sec('👑 天眼王（1）— 最高位','#d69e2e',sKing)
+  +sec('⚠ 抱えすぎ警告（'+J9_GREED.length+'）— 整理サイン','#c53030',sGreed)
+  +'<div style="font-size:10.5px;color:#a0aec0;padding:6px 0 2px">※ 9軸＝'+JOB9_AXES.map(function(a){return a.n;}).join('・')+'。レーダー下「9軸の内訳」で確認できます。</div></div></div>';
  ov.style.display='flex';
 }
 window.openTypeDex=openTypeDex;
@@ -3763,13 +3744,14 @@ var J9_IMGID={
  '法心将':'kahouchousha','法策将':'houangunshi','継縁将':'shinenoishi','聴策将':'shinansakushi',
  '成縁将':'enoiseishi','継策将':'oirokugunshi','成策将':'kiangunshi','機動将':'shitchioisha',
  // 4強
- '棟梁':'chihouseiganshi','宗匠':'chiansakushou','大家':'shinenseishou','参謀':'kahougunshi','総帥':'oiansakushou','先鋒':'shitchirokushou',
+ '創地':'chihouseiganshi','明鏡':'chiansakushou','重鎮':'shinenseishou','参謀':'kahougunshi','威風':'oiansakushou','迅雷':'shitchirokushou',
  // 5強
  '神機妙算':'tensakugunshi','千客万来':'seiendaishou','勇往邁進':'kaitakudaishou','博覧強記':'souzokugunshi',
  // 最上位・初期職・バランス
  '天眼王':'tenganou','芽士':'meshi','初陣士':'uijinshi','見込士':'mikomishi',
  // 強欲（カード抱えすぎ警告）
- '雑欲士':'zatsuyokushi','強欲師':'gouyokushi','大欲無限':'taiyokumugen'
+ '雑欲士':'zatsuyokushi','強欲師':'gouyokushi','大欲無限':'taiyokumugen',
+ '走録師':'sourokushi','遊撃師':'yugekishi','追録師':'tsuirokushi','立証師':'risshoushi','聴録師':'chourokushi','踏破将':'touhashou','遊撃将':'yugekishou'
 };
 function j9ImgId(name){ return J9_IMGID[name]||encodeURIComponent(name); }
 // ジョブ名の読み（ルビ）— 確定版v2
@@ -3777,10 +3759,11 @@ var J9_YOMI={
  '探地士':'たんちし','法読士':'ほうどくし','傾聴士':'けいちょうし','結縁士':'けつえんし','追客士':'ついきゃくし','成案士':'せいあんし','策士':'さくし','記録士':'きろくし','疾行士':'しっこうし',
  '地権師':'ちけんし','見聞師':'けんぶんし','地縁師':'ちえんし','立案師':'りつあんし','地勢師':'ちせいし','踏査師':'とうさし','法心師':'ほうしんし','法案師':'ほうあんし','法策師':'ほうさくし','証録師':'しょうろくし','和談師':'わだんし','聴案師':'ちょうあんし','聴策師':'ちょうさくし','継縁師':'けいえんし','成縁師':'せいえんし','追案師':'ついあんし','追策師':'ついさくし','分析師':'ぶんせきし',
  '見聞将':'けんぶんしょう','地権将':'ちけんしょう','地縁将':'ちえんしょう','謀略将':'ぼうりゃくしょう','法心将':'ほうしんしょう','法策将':'ほうさくしょう','継縁将':'けいえんしょう','聴策将':'ちょうさくしょう','成縁将':'せいえんしょう','継策将':'けいさくしょう','成策将':'せいさくしょう','機動将':'きどうしょう',
- '棟梁':'とうりょう','宗匠':'そうしょう','大家':'たいか','参謀':'さんぼう','総帥':'そうすい','先鋒':'せんぽう',
+ '創地':'そうち','明鏡':'めいきょう','重鎮':'じゅうちん','参謀':'さんぼう','威風':'いふう','迅雷':'じんらい',
  '神機妙算':'しんきみょうさん','千客万来':'せんきゃくばんらい','勇往邁進':'ゆうおうまいしん','博覧強記':'はくらんきょうき',
  '天眼王':'てんがんおう','芽士':'めし','初陣士':'ういじんし','見込士':'みこみし',
- '雑欲士':'ざつよくし','強欲師':'ごうよくし','大欲無限':'たいよくむげん'
+ '雑欲士':'ざつよくし','強欲師':'ごうよくし','大欲無限':'たいよくむげん',
+ '走録師':'そうろくし','遊撃師':'ゆうげきし','追録師':'ついろくし','立証師':'りっしょうし','聴録師':'ちょうろくし','踏破将':'とうはしょう','遊撃将':'ゆうげきしょう'
 };
 function j9Yomi(name){ return J9_YOMI[name]||''; }
 // ジョブのアイコン絵文字（ドット絵が無いときのフォールバック）
@@ -3957,6 +3940,7 @@ function jobCardHTML(cards, mode, dispName, popScale){
       +'<div class="job-grow">次に伸ばすとよい力：<b>'+e(grow.join('、'))+'</b></div>'
       +growthHTML
       +'<div class="job-line">'+e(_job9Line(res,mode))+'</div>'
+      +'<div style="margin-top:7px"><a href="javascript:void(0)" onclick="openTypeDex(\''+(res.job||'')+'\')" style="font-size:11px;color:#0c8599;font-weight:700;text-decoration:none">📖 ジョブ図鑑（全'+j9LadderCount()+'職）を見る</a></div>'
     +'</div>'
     +'</div>';
 }
@@ -3967,7 +3951,7 @@ function _radarTypePanel(axes){
     +'<div style="display:flex;align-items:center;gap:10px"><div style="font-size:30px">'+ty.arche.e+'</div>'
     +'<div><div style="font-size:9px;color:var(--z-dim);font-weight:700;letter-spacing:1px">あなたの営業タイプ</div>'
     +'<div style="font-size:17px;font-weight:800;color:'+ty.color+'">'+ty.label+'型 <span style="font-size:10px;color:var(--z-dim)">（'+ty.stageName+'／全18タイプ）</span></div></div></div>'
-    +(function(){var t50=_salesType50(axes);return '<div style="margin-top:5px;font-size:12px"><span style="font-size:9px;color:var(--z-dim);font-weight:700;letter-spacing:1px">二つ名</span> <b style="font-size:13px">'+t50.e+' '+t50.name+'</b> <a href="javascript:void(0)" onclick="openTypeDex(\''+t50.name+'\')" style="font-size:10.5px;color:#0c8599;font-weight:700;text-decoration:none">📖 図鑑（全50種）を見る</a></div>';})()
+    +''
     +'<div class="z-sub" style="margin-top:6px">'+ty.arche.d+' 総合力 '+ty.avg+'。<b style="color:#ffb443">伸びしろは「'+ty.weakAxis+'」</b>（'+ty.weakVal+'）。</div>'
     +'<details style="margin-top:6px"><summary style="cursor:pointer;font-size:11px;color:var(--z-mut)">🔍 各軸が何で決まる？／タイプの仕組み</summary>'
     +'<div class="z-sub" style="margin-top:5px;line-height:1.85">発掘量＝新規発掘の件数（30件で満点）／グリップ＝会話レベル4以上の割合／ヒアリング＝基本情報の入力充足度／連想到達＝ステージ3(連想)以上の割合／テスクロ＝連想到達者がステージ4(欲求)以上へ進んだ割合／追客ペース＝ペース遅れでない割合。<br>型＝<b>最も高い軸＝あなたの武器</b>（6種）×<b>総合力の3段階</b>（見習い40未満・一人前40〜69・達人70以上）＝<b>18タイプ</b>。</div></details></div>';
@@ -3996,7 +3980,7 @@ function _radarHero(name,axes,color,rank){
   +'<div class="z-h2-radar">'+_zRadarHero(axes,color)+'<div class="z-h2-emoji">'+ty.arche.e+'</div></div>'
   +'<div class="z-h2-name">'+e(name)+'</div>'
   +'<div class="z-h2-type">'+ty.label+'</div>'
-  +(function(){var t50=_salesType50(axes);return (t50.name!==ty.label)?'<div style="font-size:9.5px;color:var(--z-mut);font-weight:700;cursor:pointer" onclick="openTypeDex(\''+t50.name+'\')">'+t50.e+' '+t50.name+'</div>':'';})()
+  +''
   +'<div class="z-h2-stars">'+stars+' <span>'+ty.stageName+'</span></div>'
   +'<div class="z-h2-bar"><i style="width:'+prog.toFixed(0)+'%"></i></div>'
   +'<div class="z-h2-foot"><span>\u2694 '+e(axes[ty.domIdx][0])+'</span><span>\u{1F331} '+e(ty.weakAxis)+'</span></div>'
@@ -4170,7 +4154,7 @@ function _repPoints(arr){return arr.reduce(function(s,c){return s+_actPoints(c);
 function _xpRank(pts){var T=[0,500,1000,2000,3500,5000];var NM=['見習い','開拓者','追客職人','見込み育成士','戦略営業','課のエース'];var lv=1;for(var i=0;i<T.length;i++){if(pts>=T[i])lv=i+1;}var lo=T[lv-1],hi=(lv<6)?T[lv]:null;return {lv:lv,name:NM[lv-1],lo:lo,hi:hi,next:(lv<6)?NM[lv]:null,remain:hi!==null?Math.max(0,hi-pts):0,prog:(hi!==null)?Math.max(0,Math.min(100,Math.round((pts-lo)/(hi-lo)*100))):100};}
 function _monthlyGain(arr,ym){var g=0;arr.forEach(function(c){if((c.discovery_date||'').slice(0,7)===ym)g+=10;if(c.proposal_req&&(c.proposal_req_at||'').slice(0,7)===ym)g+=50;if(c.doukou&&(c.doukou_at||'').slice(0,7)===ym)g+=20;if(c.family_headcount&&(c.family_headcount_at||'').slice(0,7)===ym)g+=10;(c.revisits||[]).forEach(function(r){if((r.date||'').slice(0,7)===ym)g+=20;});(c.pursuits||[]).forEach(function(pp){if((pp.date||'').slice(0,7)===ym)g+=15;});});return g;}
 function _ptColor(pct){return pct>=100?'#9BE15D':pct>=90?'#68D391':pct>=70?'#F6AD55':pct>=40?'#63B3ED':'#CBD5E0';}
-function _tempBand(s){return s>=55?['👑','契約接近']:s>=42?['🏆','A候補']:s>=30?['🔥','HOT見込み']:s>=18?['🔍','育成候補']:['🌱','接点づくり'];}
+function _tempBand(c){var st=+((c&&c.stage)||0),pr=!!(c&&c.proposal_req);if(st>=6)return['👑','契約接近'];if(st===5||(st===4&&pr))return['🏆','A候補'];if(st>=3)return['🔥','HOT見込み'];if(st===2)return['🔍','育成候補'];return['🌱','接点づくり'];}
 function _genjoPie(arr){ var cnt={}; _GENJO.forEach(function(x){cnt[x[0]]=0;}); arr.forEach(function(c){var gj=(c.genjo||''); if(!(gj in cnt))gj=''; cnt[gj]++;}); var rows=_GENJO.filter(function(x){return cnt[x[0]]>0;}); var segs=rows.map(function(x){return {value:cnt[x[0]],color:x[2]};}); var tot=arr.length||1; var leg='<div style="display:flex;flex-direction:column;gap:3px;font-size:11px">'+rows.map(function(x){var v=cnt[x[0]];return '<div style="display:flex;align-items:center;gap:6px"><i style="width:9px;height:9px;border-radius:2px;background:'+x[2]+';flex-shrink:0;display:inline-block"></i><span style="color:var(--z-mut)">'+x[1]+'</span><b style="margin-left:auto;color:var(--z-ink)">'+v+'</b><span style="color:var(--z-dim);width:36px;text-align:right">'+Math.round(v/tot*100)+'%</span></div>';}).join('')+'</div>'; return '<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'+_zDonut(segs,arr.length,'件')+'<div style="flex:1;min-width:128px">'+leg+'</div></div>'; }
 function _ryokuchiRing(arr){ var own=arr.filter(function(c){return (parseFloat(c.ryokuchi)||0)>0;}).length; var tot=arr.length||1; var pct=Math.round(own/tot*100); var segs=[{value:own,color:'#2f9e44'},{value:tot-own,color:'rgba(130,150,180,.22)'}]; return '<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'+_zDonut(segs,pct+'%','生産緑地')+'<div style="flex:1;min-width:120px"><div style="font-size:13px;color:var(--z-ink);font-weight:700"><b style="font-size:24px;color:#2f9e44;font-family:Sora,sans-serif">'+own+'</b> / '+arr.length+' 人が保有</div><div class="z-sub" style="margin-top:4px">生産緑地（1枚以上）を持つ見込み客の割合。2022年問題・納税猶予の打ち手対象。</div></div></div>'; }
 
@@ -4280,9 +4264,9 @@ function renderSelfDash(tid){
  var _plan=_planLoad(); var _acts=['再訪','追撃','テスクロ','家族確認','様子見'];
  var _selN=Object.keys(_plan.sel||{}).filter(function(k){return _prio.some(function(o){return String(o.c.id||'').replace(/[^\w-]/g,'')===k;});}).length;
  H+='<div class="z-card z-c2"><h3>\ud83c\udfaf 今日の作戦盤</h3><div class="z-sub">温度の高い順に3件。「今日この方に何をする？」— チップを選んで自分のミッションに（<b>'+_selN+'</b>/'+(_prio.length||0)+'件 選択中）。</div>'
-  +(_prio.length?_prio.map(function(o,i){var c=o.c;var tag=(c.pursuit_judge==='A'||c.pursuit_judge==='S')?'A候補':(lastContactDays(c)>=14?lastContactDays(c)+'日未接触':(!c.family_headcount?'家族構成未確認':_tempBand(o.s)[1]));
+  +(_prio.length?_prio.map(function(o,i){var c=o.c;var tag=(c.pursuit_judge==='A'||c.pursuit_judge==='S')?'A候補':(lastContactDays(c)>=14?lastContactDays(c)+'日未接触':(!c.family_headcount?'家族構成未確認':_tempBand(c)[1]));
     var chips=_acts.map(function(a){var on=_plan.sel&&_plan.sel[c.id]===a;return '<span class="z-chip" onclick="zPlanPick(\''+String(c.id||'').replace(/[^\w-]/g,'')+'\',\''+a+'\')" style="cursor:pointer;margin:2px 4px 0 0;display:inline-block;'+(on?'background:#34e3d0;color:#0b2230;font-weight:700;':'')+'">'+(on?'\u2713 ':'')+a+'</span>';}).join('');
-    return '<div class="z-prow"><span class="z-pno">'+(i+1)+'</span><b class="z-pnm" style="cursor:pointer" onclick="openCard(\''+String(c.id||'').replace(/[^\w-]/g,'')+'\')">'+e(c.name||'無名')+'様 \u203a</b><span class="z-ptemp">'+_tempBand(o.s)[0]+' '+o.s+'<small>/78</small></span><span class="z-ptag">'+tag+'</span></div><div class="z-actrow" style="margin:2px 0 10px 26px">'+chips+'</div>';}).join(''):'<div class="z-sub">カードを追加すると表示されます</div>')
+    return '<div class="z-prow"><span class="z-pno">'+(i+1)+'</span><b class="z-pnm" style="cursor:pointer" onclick="openCard(\''+String(c.id||'').replace(/[^\w-]/g,'')+'\')">'+e(c.name||'無名')+'様 \u203a</b><span class="z-ptemp">'+_tempBand(c)[0]+' '+o.s+'<small>/78</small></span><span class="z-ptag">'+tag+'</span></div><div class="z-actrow" style="margin:2px 0 10px 26px">'+chips+'</div>';}).join(''):'<div class="z-sub">カードを追加すると表示されます</div>')
   +'<div class="z-sub" style="margin-top:6px">\ud83d\udca1 '+e(_mis[0]||'')+'</div></div>'; var _jwL=mine.filter(_judgeMissing);
  if(_jwL.length){
   var _jwMulti=false; try{ var _jwMs={}; mine.forEach(function(c){var m=String(c.manager||'').trim(); if(m)_jwMs[m]=1;}); _jwMulti=Object.keys(_jwMs).length>=2; }catch(_e){}
@@ -4308,30 +4292,25 @@ function renderSelfDash(tid){
  window._heavyTop=_szArr.slice(0,5);
  var _szMB=Math.round(_szTot/1048576*100)/100;
  var _szCol=_szTot>3500000?'#ff5d7d':(_szTot>2000000?'#ffb443':'#34e3d0');
- var _hvRv=0,_hvEx=0,_hvJm=0,_hvR={S:0,A:0,B:0,C:0,D:0};
- mine.forEach(function(c){var pj=c.pursuit_judge||'';
-  if(pj==='E'||pj==='X'){_hvEx++;return;}
-  if(_isRevisitPhase(c)){_hvRv++;return;}
-  if(_hvR.hasOwnProperty(pj)){_hvR[pj]++;}else{_hvJm++;}
- });
+ var _hvL=ZWL.load(mine), _hvStat=ZWL.status(_hvL), _hvBt=_hvL.byTempo||{};
+ var _hvEx=(_hvBt.E||0)+(_hvBt.X||0);
  var _hvAct=mine.length-_hvEx;
- var _hvBand={rv:[20,25],S:[0,1],A:[2,3],B:[6,8],C:[8,10],D:[25,30]};
- function _hvSt(nv,b){return nv>b[1]?'\u26a0':(nv<b[0]?'\u25bd':'\u2705');}
- var _hvCol=_hvAct<=75?'#34e3d0':(_hvAct<=80?'#ffb443':'#ff5d7d');
- var _hvPct=Math.min(100,Math.round(_hvAct/80*100));
- var _hvRows=[['再訪',_hvRv,_hvBand.rv],['S',_hvR.S,_hvBand.S],['A',_hvR.A,_hvBand.A],['B',_hvR.B,_hvBand.B],['C',_hvR.C,_hvBand.C],['D',_hvR.D,_hvBand.D]];
- H+='<div class="z-card z-c2"><h3>\ud83d\udce6 保有メーター</h3><div class="z-sub">目標75枚・上限80枚。持ちすぎは足と統計を鈍らせる。Dは将来在庫として厚めでOK。</div>'
-  +'<div style="display:flex;align-items:baseline;gap:10px;margin-top:6px"><b style="font-size:32px;line-height:1">'+_hvAct+'<small style="font-size:12px;font-weight:600"> /75枚</small></b><span class="z-sub">上限80</span></div>'
-  +'<div class="z-xptrack" style="margin-top:4px"><i style="width:'+_hvPct+'%;background:'+_hvCol+'"></i></div>'
-  +'<div style="display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:7px;font-size:11.5px">'
-  +_hvRows.map(function(r){return '<span>'+_hvSt(r[1],r[2])+' '+r[0]+' <b>'+r[1]+'</b><span style="color:#8aa">/'+r[2][0]+'\u301c'+r[2][1]+'</span></span>';}).join('')
+ var _hvRate=_hvL.overrate, _hvPct=Math.min(100,Math.round(_hvRate*100));
+ var _hvFollow=mine.filter(function(c){return (c.pursuit_judge==='A'||c.pursuit_judge==='S')&&calcPaceOverrate(c)>1;}).sort(function(a,b){return lastContactDays(b)-lastContactDays(a);});
+ var _hvCapRows=[['A運用',(_hvBt.A||0),ZWL.CAPS.A],['S運用',(_hvBt.S||0),ZWL.CAPS.S],['追客',(_hvBt.S||0)+(_hvBt.A||0)+(_hvBt.B||0),ZWL.CAPS.pursuit],['月1運用',(_hvBt.C||0)+(_hvBt.D||0),ZWL.CAPS.keep]];
+ H+='<div class="z-card z-c2"><h3>📦 保有メーター</h3><div class="z-sub">温度×テンポの稼働モデル基準。負荷率＝工数÷稼働'+ZWL.CAP.workdays+'日。1.0超で持ちすぎ。</div>'
+  +'<div style="display:flex;align-items:baseline;gap:10px;margin-top:6px;flex-wrap:wrap"><b style="font-size:32px;line-height:1;color:'+_hvStat.color+'">'+_hvRate.toFixed(2)+'</b><span style="font-size:13px;font-weight:700;color:'+_hvStat.color+'">'+_hvStat.label+'</span><span class="z-sub">保有 '+_hvAct+'枚・工数'+_hvL.days+'日</span></div>'
+  +'<div class="z-xptrack" style="margin-top:4px"><i style="width:'+_hvPct+'%;background:'+_hvStat.color+'"></i></div>'
+  +(_hvFollow.length?'<div style="margin-top:9px;padding:9px 11px;border-radius:10px;background:rgba(224,49,49,.10);border:1px solid rgba(224,49,49,.38)"><div style="font-size:12.5px;font-weight:800;color:#e03131">🆘 要フォローA/S '+_hvFollow.length+'件<span style="font-weight:600;color:var(--z-mut);font-size:11px"> ＝ 推奨ペース超過で放置気味。最優先で救出を</span></div>'+_hvFollow.slice(0,3).map(function(c){var _fid=String(c.id||"").replace(/[^\w-]/g,"");var _dd=lastContactDays(c);return '<div style="font-size:12px;color:var(--z-ink);margin-top:4px;cursor:pointer" onclick="openCard(\''+_fid+'\')">・'+e(c.name||"無名")+'様（'+e(c.pursuit_judge)+'・'+(_dd>=0?_dd+"日無接触":"未接触")+'）→ 今すぐ詰める/同行依頼 ›</div>';}).join('')+(_hvFollow.length>3?'<div style="font-size:11px;color:var(--z-mut);margin-top:3px">ほか '+(_hvFollow.length-3)+'件</div>':'')+'</div>':'')
+  +'<div style="display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:8px;font-size:11.5px">'
+  +_hvCapRows.map(function(r){var ov=r[1]>r[2];return '<span>'+(ov?'ⓘ':'✅')+' '+r[0]+' <b'+(ov?' style="color:#e8920c"':'')+'>'+r[1]+'</b><span style="color:#8aa">/'+r[2]+'</span></span>';}).join('')
   +'</div>'
-  +(_hvEx?'<div class="z-sub" style="margin-top:6px;color:#ff8a8a">\ud83d\uddd1 整理対象（E/X）'+_hvEx+'枚 \u2014 月次棚卸しで削除を</div>':'')
-  +(_hvJm?'<div class="z-sub" style="margin-top:2px;color:#ffb443">\u26a0 ランク未判定 '+_hvJm+'枚（判定は必須）</div>':'')
+  +'<div class="z-sub" style="margin-top:7px"><span style="color:var(--z-cyan);font-weight:700">今すべきこと：</span>'+e(ZWL.advise(_hvL))+'</div>'
+  +(_hvEx?'<div class="z-sub" style="margin-top:6px;color:#ff8a8a">🗑 整理対象（E/X）'+_hvEx+'枚 — 月次棚卸しで削除を</div>':'')
   +'<div onclick="zHeavyList()" style="cursor:pointer;display:flex;align-items:center;gap:8px;margin-top:8px;padding:6px 8px;border:1px solid rgba(255,255,255,.10);border-radius:8px">'
-  +'<span style="font-size:11px;font-weight:700;color:'+_szCol+'">\ud83d\udcbe '+_szMB+'<small style="font-weight:600">MB</small></span>'
+  +'<span style="font-size:11px;font-weight:700;color:'+_szCol+'">💾 '+_szMB+'<small style="font-weight:600">MB</small></span>'
   +'<span style="flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden"><i style="display:block;height:100%;width:'+Math.min(100,Math.round(_szTot/4194304*100))+'%;background:'+_szCol+'"></i></span>'
-  +'<span class="z-sub" style="white-space:nowrap">\ud83c\udfcb 重量級TOP5 \u203a</span>'
+  +'<span class="z-sub" style="white-space:nowrap">🏋 重量級TOP5 ›</span>'
   +'</div>'
   +'</div>';
   var _st=_streakTick()||{};
@@ -4511,7 +4490,7 @@ function updateSortBtns() {
     }
   });
 }
-var PACE_LIMIT={S:2,A:7,B:14,C:30,D:60}; // 暫定値（後日協議で差し替え）
+var PACE_LIMIT={S:7,A:10,B:21,C:40,D:80}; // 確定(v6.69) 推奨訪問ペース。超過で遅れ判定。個人差は一律運用
 var REVISIT_PHASE={span:14,times:3,interval:5}; // 再訪客：発掘から14日以内に3回（約5日間隔）
 function _isRevisitPhase(c){
   if(!c||!c.discovery_date) return false;
@@ -7493,7 +7472,7 @@ function workMeterInner(){
   if(_wkP==='load'){
     var llg='<div class="z-sub">負荷率 ＝ 保有カードの<b>工数合計</b>（日/月）÷ 稼働可能日<b>'+ZWL.CAP.workdays+'</b>。<span style="color:#2f9e44;font-weight:700">適正0.6–1.0</span>／<span style="color:#e8920c;font-weight:700">1.0超は持ちすぎ</span>。工数は心理段階から自動算出（暗定値）。</div>';
     var larr=reps.map(function(r){return {r:r,L:ZWL.load(g[r])};}).filter(function(x){return x.L.n>0;}).sort(function(a,b){return b.L.overrate-a.L.overrate;});
-    var lrows=larr.length?larr.map(function(x,i){var L=x.L,rate=L.overrate,stt=ZWL.status(L),col=stt.color;var _pv=L.propViol,_ng=(g[x.r]||[]).filter(function(c){return isNeglected03(c)||(+(c.stage||0)<=3&&calcPaceOverrate(c)>=1);}).length,_warn=[];if(_pv>0)_warn.push('<span style="color:#B7791F">⭐提案依頼未取得'+_pv+'件</span>');if(_ng>0)_warn.push('<span style="color:#C53030">🚨放置'+_ng+'件</span>');
+    var lrows=larr.length?larr.map(function(x,i){var L=x.L,rate=L.overrate,stt=ZWL.status(L),col=stt.color;var _pv=L.propViol,_ng=(g[x.r]||[]).filter(function(c){return isNeglected03(c)||calcPaceOverrate(c)>=1;}).length,_warn=[];if(_pv>0)_warn.push('<span style="color:#B7791F">⭐提案依頼未取得'+_pv+'件</span>');if(_ng>0)_warn.push('<span style="color:#C53030">🚨放置'+_ng+'件</span>');
       return '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--z-line)">'+rankc(i)+nm(x.r)
         +'<div style="flex:1;min-width:120px">'
           +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px"><span style="font-size:10px;color:var(--z-dim)">負荷率 <span style="color:'+col+';font-weight:700">'+stt.label+'</span></span><span style="font-size:14px;font-weight:800;color:'+col+'">'+Math.round(rate*100)+'%</span></div>'
@@ -7635,9 +7614,9 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
  var miniR=board.map(function(b,_bi){var a=g[b.r];return '<div class="z-jobcell">'+jobCardHTML(a,'mgr',b.r)+'</div>';}).join('');
  // ===== 🔬 深掘り分析：動的生成（レジストリ方式） =====
  // 分析カードは配列1要素＝1カード。JSのみで追加できる。
- // 外部追加用フック：window.Z_DEEP_EXTRAS に {id,e,t,s,sp,render:function(ctx){return html;}} をpush。
- // ctx＝{t:対象カード, g:担当別Map, reps:担当一覧, cards:全カード, calcScore, STG} を渡す。
- var _deepCtx={t:t,g:g,reps:reps,cards:cards,calcScore:calcScore,STG:STG};
+ // 外部追加：window.zAddAnalysis({id,e,t,s,sp,render:function(ctx){return html;}}) （同一idは置換／Z_DEEP_EXTRASへ直接pushも可）。
+ // ctx＝{t,g,reps,cards,calcScore,STG} ＋ チャート群 {card,vbars,line,spark,radar,funnel,pie,ring,pct,avas,months,e}。global非依存でrender内完結。
+ var _deepCtx={t:t,g:g,reps:reps,cards:cards,calcScore:calcScore,STG:STG,e:e,pct:_zPct,card:_zc,vbars:_zVbars,line:_zLine,spark:_zSpark,radar:_zRadar,funnel:_zFunnel,pie:_genjoPie,ring:_ryokuchiRing,avas:_zAVAS,months:_zMonths};
  var _deepItems=[
   {id:'treasure',e:'💎',t:'お宝度マトリクス',s:'熱量×資産規模。右上＝お宝。色＝ランク。泡を長押しで客名、タップでカードへ。',sp:'z-cf',render:function(){return bub;}},
   {id:'ryokuchi',e:'🌳',t:'生産緑地 保有率（データ）',s:'',sp:'z-c2',render:function(cx){return _ryokuchiRing(cx.t);}},
@@ -7647,12 +7626,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
   {id:'jobs9',e:'🎖',t:'営業ジョブ（全員）',s:'担当ごとの「型」と次に伸ばす力。入力と行動＋AI評価から判定（9軸・全50職）。',sp:'z-cf',render:function(){return '<div class="z-jobgrid">'+miniR+'</div>';}}
  ];
  if(Array.isArray(window.Z_DEEP_EXTRAS)) window.Z_DEEP_EXTRAS.forEach(function(it){ if(it&&typeof it.render==='function') _deepItems.push(it); });
- var bodyMulti=_deepItems.map(function(it){
-   var bd='';
-   try{ bd=it.render(_deepCtx)||''; }
-   catch(err){ bd='<div class="z-sub">⚠ 「'+(it.id||'?')+'」の描画でエラー（'+String(err&&err.message||err).slice(0,80)+'）</div>'; }
-   return _zc(it.e||'📈',it.t||it.id||'分析',it.s||'',bd,it.sp||'z-c2');
- }).join('');
+ 
 
 
  // ===== 担当の特性・保有状況（チーム管理） =====
@@ -7708,14 +7682,18 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
    if(!((c.family||[]).some(function(x){return x.met&&(x.owner||x.kp);}))) return ['決裁者(KP)との面談を設定','「ご決断には、どなたのご意向が大切ですか?」'];
    return ['現状の不安を深掘り','「今のお悩みで、一番大きいのは何ですか?」'];
  };
- var todayCand=t.filter(function(c){var st=+(c.stage||0);return c.pursuit_judge==='S'||c.pursuit_judge==='A'||st>=3;}).map(function(c){
+ var todayCand=t.filter(function(c){var st=+(c.stage||0);
+   if((typeof ZWL!=='undefined')&&ZWL.tempoDiff(c).state==='park') return false;
+   return c.pursuit_judge==='S'||c.pursuit_judge==='A'||st>=3;}).map(function(c){
    var st=+(c.stage||0),rank=c.pursuit_judge||'',rs=[];
    if(calcPaceOverrate(c)>1) rs.push('ペース遅れ');
    var dd=lastContactDays(c); if(dd>=14) rs.push(dd+'日未接触');
-   if(st>=3&&!c.proposal_req) rs.push('提案依頼まだ');
+   var _pg=(typeof ZWL!=='undefined')?ZWL.proposalGate(c):{violated:false,wanted:false,has:false};
+   if(_pg.violated) rs.push('提案依頼必須'); else if(_pg.wanted&&!_pg.has) rs.push('提案依頼まだ');
    if(!c.family_headcount) rs.push('家族未把握');
    if(st>=5&&!c.doukou) rs.push('比較以上で同行未');
-   var urg=(rank==='S'?3:rank==='A'?2:1)*2+st/8*2+rs.length+calcScore(c)/78;
+   var _ahead=((typeof ZWL!=='undefined')&&ZWL.tempoDiff(c).state==='ahead')?1:0;
+   var urg=(rank==='S'?3:rank==='A'?2:1)*2+st/8*2+rs.length+calcScore(c)/78+(_pg.violated?1.5:0)+_ahead;
    return {c:c,rs:rs,urg:urg};
  }).sort(function(a,b){return b.urg-a.urg;}).slice(0,5);
  var todayH=todayCand.length?todayCand.map(function(o,i){var c=o.c,st=+(c.stage||0),mv=_nextMove(c);
@@ -7726,7 +7704,9 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
     +'<div style="margin:6px 0 0 30px;font-size:12px;color:var(--z-ink)"><span style="color:var(--z-cyan);font-weight:700">次の一手：</span>'+mv[0]+'</div>'
     +'<div style="margin:2px 0 0 30px;font-size:12px;color:var(--z-mut)"><span style="color:var(--z-cyan);font-weight:700">次に聞く：</span>'+mv[1]+'</div></div>';
  }).join(''):'<div class="z-empty">今日の優先案件なし。良好です◎</div>';
- var todayCard=_zc('📌','今日の一手','今日、誰に・何を・何を聞くか（上位'+todayCand.length+'件）',todayH,'z-cf');
+ var _tidyArr=(typeof ZWL!=='undefined')?reps.map(function(r){return {r:r,L:ZWL.load(g[r])};}).filter(function(x){return x.L.n>0&&ZWL.status(x.L).key==='over';}).map(function(x){var cp=ZWL.status(x.L).caps;return {r:x.r,msg:(cp&&cp.length?cp[0].msg:ZWL.advise(x.L))};}).slice(0,2):[];
+ var tidyH=_tidyArr.length?'<div style="padding:8px 10px;margin-bottom:8px;border-radius:8px;background:rgba(232,146,12,.12);border:1px solid rgba(232,146,12,.35)"><div style="font-size:11px;font-weight:800;color:#e8920c">🧹 まず整理の一手</div>'+_tidyArr.map(function(o){return '<div style="font-size:12px;color:var(--z-ink);margin-top:3px"><b>'+e(o.r)+'さん</b>：'+e(o.msg)+'</div>';}).join('')+'</div>':'';
+ var todayCard=_zc('📌','今日の一手','今日、誰に・何を・何を聞くか（上位'+todayCand.length+'件）',tidyH+todayH,'z-cf');
  var coachRows=reps.map(function(r){var a=g[r],T=a.length||1;
    var renso=_zPct(a.filter(function(c){return +(c.stage||0)>=3;}).length,T);
    var prr=_zPct(a.filter(function(c){return c.proposal_req;}).length,T);
@@ -7809,7 +7789,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
  var _axKingCard=_zc('🏅','タイプ別 No.1（称号）','5つの型それぞれの課トップ。',(_axKing||'<div class="z-sub">集計中</div>'),'z-cf');
  var _cardWork=_zc('🟢','稼働率モニター','達成度','<div id="zWorkCard">'+workMeterInner()+'</div>','z-cf');
  var _cardDiff=_zc('🎚','戦略差分','温度の追従と違う運用。協議の判断ポイント。タップでカードへ','<div class="z-wkscroll"><div class="z-wkmin">'+_strategyDiffInner()+'</div></div>','z-cf');
- var _bodyData=_deepItems.filter(function(it){return it.id!=='treasure'&&it.id!=='jobs9';}).map(function(it){var bd='';try{bd=it.render(_deepCtx)||'';}catch(err){bd='';}return _zc(it.e||'📈',it.t||it.id||'分析',it.s||'',bd,it.sp||'z-c2');}).join('');
+ var _bodyData=_deepItems.filter(function(it){return it.id!=='treasure'&&it.id!=='jobs9';}).map(function(it){var bd='';try{bd=it.render(_deepCtx)||'';}catch(err){bd='<div class="z-sub">⚠ 「'+(it.id||'?')+'」の描画でエラー（'+String(err&&err.message||err).slice(0,80)+'）</div>';}return _zc(it.e||'📈',it.t||it.id||'分析',it.s||'',bd,it.sp||'z-c2');}).join('');
  var _cardInsights=_zc('🧠','傾向と対策（AIインサイト）','データから打ち手を自動抽出。',ins,'z-cf');
  var _cardMap=_zc('🗺','マップ','町の熱量とお宝客。',bodyArea+_cardTreasure,'z-cf');
  H+=_zsec('today','🎯 課の指示 <span class="z-secsub">今日やること・誰に何を</span>',todayCard+readyCard+zoneCard+bodyContract)+_zsec('state','📊 課の確認 <span class="z-secsub">課の現状</span>',_cardMap+bodyKpi3+bodyProcess+bodyQuality+_bodyData+_teamCourse+_cardInsights)+_zsec('heroes','🏅 営業タイプ図鑑 <span class="z-secsub">型と各タイプNo.1</span>',_axKingCard+_cardHeroes)+_zsec('teamchk','👥 部下の確認 <span class="z-secsub">担当の現状</span>',bodyRank+_cardWork+_cardDiff+bodyTeam)+_zsec('coach','🎓 部下の指導 <span class="z-secsub">コーチング・育成クエスト</span>',coachCard+questCard);
@@ -8449,7 +8429,7 @@ function openSakusenban(){
  _sbPaint(); ov.style.display='block';
 }
 function _sbRowHTML(o,isPri,ix){
- var c=o.c, sc=calcScore(c), tb=_tempBand(sc), on=!!window._sbSel[o.sid];
+ var c=o.c, sc=calcScore(c), tb=_tempBand(c), on=!!window._sbSel[o.sid];
  var pl=_planLoad(); var act=(pl.sel||{})[o.sid]||'';
  var tag=isPri?'推奨':(_dTrigSoon(c)?'\u23f3時期接近':(calcPaceOverrate(c)>1?'ペース超過':((+lastContactDays(c)||0)>=14?(+lastContactDays(c))+'日未接触':(((basicInputStat(c)||{}).pct||0)<60?'入力不足':'要再訪'))));
  var chips=['再訪','追撃','テスクロ','家族確認'].map(function(a){
@@ -8639,23 +8619,27 @@ function _devDefaultsData(){
     ['連続留守','4点スタートの減点式 [4,3,2,1,0,0]','確定','留守ゼロで満点'],
     ['駅徒歩','〜10分 +2 / 21分以上 -2','確定','']
    ]},
-   {g:'🏃 訪問ペース（日数上限）',note:'PACE_LIMIT / REVISIT_PHASE（コード内グローバル変数）',items:[
-    ['ランク別ペース','S='+PACE_LIMIT.S+' / A='+PACE_LIMIT.A+' / B='+PACE_LIMIT.B+' / C='+PACE_LIMIT.C+' / D='+PACE_LIMIT.D+'日','暫定','高田さん精査待ち（個人差の扱い含む）'],
-    ['再訪客の別基準','発掘から'+REVISIT_PHASE.span+'日以内に'+REVISIT_PHASE.times+'回（約'+REVISIT_PHASE.interval+'日間隔）','暫定','精査待ち'],
-    ['訪問遅れ判定','ランク別ペース超過で遅れ扱い','暫定','最終調整待ち']
+   {g:'🏃 訪問ペース（日数上限）',note:'PACE_LIMIT / REVISIT_PHASE / NEGLECT_GRACE（コード内グローバル変数）',items:[
+    ['推奨訪問ペース','S='+PACE_LIMIT.S+' / A='+PACE_LIMIT.A+' / B='+PACE_LIMIT.B+' / C='+PACE_LIMIT.C+' / D='+PACE_LIMIT.D+'日','確定','超過で遅れ判定。個人差は一律運用'],
+    ['再訪客の別基準','発掘から'+REVISIT_PHASE.span+'日以内に'+REVISIT_PHASE.times+'回（約'+REVISIT_PHASE.interval+'日間隔）','確定',''],
+    ['訪問遅れ判定','推奨訪問ペース超過で遅れ扱い','確定',''],
+    ['放置検知の猶予(心理0-3)','面識'+NEGLECT_GRACE[0]+' ／ 注意'+NEGLECT_GRACE[1]+' ／ 興味'+NEGLECT_GRACE[2]+' ／ 連想'+NEGLECT_GRACE[3]+'日','確定','超過で🚨放置注意']
    ]},
-   {g:'🌡 温度バンド（スコア帯）',items:[
-    ['境界値','👑契約接近 55+ / 🏆A候補 42+ / 🔥HOT 30+ / 🔍育成 18+ / 🌱接点づくり','暫定','満点78化後の体感調整待ち']
+   {g:'🌡 温度バンド（心理段階基準）',items:[
+    ['区分','👑契約接近=心理6-7 ／ 🏆A候補=心理5(or 心理4＋提案依頼) ／ 🔥HOT見込み=心理3-4 ／ 🔍育成候補=心理2 ／ 🌱接点づくり=心理0-1','確定','v6.70でスコア基準から心理基準へ。スコアは温度内の優先順位に専念']
    ]},
    {g:'🥇 月間バッジ基準（金/銀/銅）',items:[
     ['提案依頼','3 / 2 / 1','確定',''],
     ['同行','20 / 15 / 10','確定',''],
     ['家族構成コンプ','5 / 4 / 3','確定',''],
-    ['新規発掘','45 / 35 / 25','仮','銀35・銅25は仮値（精査待ち）']
+    ['新規発掘','45 / 35 / 25','確定','']
    ]},
-   {g:'📦 保有メーター',items:[
-    ['目標・上限','目標75枚 / 上限80枚','仮','精査待ち'],
-    ['内訳の帯','再訪20-25 / S0-1 / A2-3 / B6-8 / C8-10 / D25-30','仮','精査待ち']
+   {g:'📦 保有メーター（稼働モデル）',note:'温度×テンポの負荷率ベース。値はZWLからライブ取得。普通の保有は緑になる甘め設定。',items:[
+    ['負荷率の見方','適正 0.6–1.0 ／ 1.0超=🟠持ちすぎ ／ 実働<床=🔴枯渇危険','確定','工数合計÷稼働日'],
+    ['稼働キャパ CAP','稼働 '+ZWL.CAP.workdays+'日 ／ 床(枯渇判定) '+ZWL.CAP.floor+'件','確定','v6.71で甘めに再調整'],
+    ['構成キャップ CAPS','A '+ZWL.CAPS.A+' ／ S '+ZWL.CAPS.S+' ／ 追客(S+A+B) '+ZWL.CAPS.pursuit+' ／ 月1運用(C+D) '+ZWL.CAPS.keep+'件','確定','超過は赤でなくⓘ軽い注意'],
+    ['テンポ工数(日/月)','S2 ／ A弱1・強1.5 ／ B0.6 ／ C0.1 ／ D0.05 ／ 未設定0.05 ／ X0','確定','負荷率の計算根拠'],
+    ['🆘 要フォローA/S','A/Sが推奨ペース超過（A>'+PACE_LIMIT.A+'日・S>'+PACE_LIMIT.S+'日 無接触）で主役級の救出警告','確定','放置A/Sの救出を最優先（v6.71）']
    ]},
    {g:'⏱ 契約クロック',items:[
     ['45日ルール','A昇格（追撃判定）から45日が契約目安','確定','超過は赤表示']
