@@ -970,7 +970,7 @@ body.is-mob .mob-menu{display:inline-block}
   <!-- 選択送信バー（常時表示） -->
   <div id="selectBar" style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
     <div style="font-size:12px;color:#4a5568;font-weight:600"><span id="selectCount">0</span>件選択中</div>
-    <div style="display:flex;gap:4px;flex-wrap:wrap">
+    <div style="display:flex;gap:4px;flex-wrap:wrap;flex:1;justify-content:flex-end">
       <button onclick="selectAll()" class="bc" style="font-size:11px;padding:5px 8px">全選択</button>
       <button onclick="selectNone()" class="bc" style="font-size:11px;padding:5px 8px">全解除</button>
       <button onclick="openPlannerFromSelected()" class="bp pc-only-btn" style="font-size:11px;padding:5px 8px;background:#319795">📅 本日の予定表</button>
@@ -1705,7 +1705,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.13";
+var APP_VERSION = "v7.14";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
