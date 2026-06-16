@@ -401,6 +401,7 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 .job-grow b{color:#ffb443;font-size:13.5px}
 .job-line{font-size:12px;color:var(--z-mut);line-height:1.75;margin-top:9px;border-top:1px solid var(--z-line);padding-top:9px}
 .z-jobgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(330px,100%),1fr));gap:12px}
+.z-jobgrid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.z-jobgrid2>*{min-width:0}.z-jobone{margin-bottom:12px}.z-jobone>*{min-width:0}
 .z-jobcell{min-width:0}
 /* 課分析（明るい背景）用：カード地・バー溝が白に溶けないよう補正（tier枠色は維持） */
 .zdash-rep .job-card,.zdash-mgr .job-card,.zjf-wrap .job-card{background:#fff}
@@ -1686,7 +1687,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.07";
+var APP_VERSION = "v7.08";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -4436,7 +4437,7 @@ function renderSelfDash(tid){
  bodyGrow+='<div class="z-card z-c2"><h3>🌳 生産緑地 保有率</h3>'+_ryokuchiRing(mine)+'</div>';
  bodyGrow+='<div class="z-card z-c2"><h3>🥧 現況の内訳</h3><div class="z-sub">担当先の現状区分の分布。</div>'+_genjoPie(mine)+'</div>';
  bodyGrow+=_zAreaCard(mine,'zSetAreaSelf');
- bodyState=_zc('🚨','放置危険アラート','このままだと流れる見込み。タップでカードへ。',zDangerCardHTML(mine,false),'z-cf')+_zc('✅','契約前進チェックリスト','契約までの不足を1行で。',zContractListHTML(mine,false),'z-cf')+_zc('👪','家族合意マップ','家族の賛否と次に会う人。',zFamilyMapHTML(mine,false),'z-cf')+bodyState; var growthCard=_zc('🌱','成長サマリ','あなたの伸び。ランキングより自分の前進を。',zGrowthCardHTML(axes,_ghost,_sk,_mg),'z-cf'); bodyGrow=growthCard+bodyGrow; H+=_zsec('selfState','📊 自分の状態と詰まりどころ <span class="z-secsub">パイプライン・重要指標・滞留の原因</span>',bodyState)+_zsec('selfGrow','🌱 成長・振り返り <span class="z-secsub">バッジ・スキル・週1で見返す指標</span>',bodyGrow);
+ bodyState=_zc('🚨','放置危険アラート','このままだと流れる見込み。タップでカードへ。',zDangerCardHTML(mine,false),'z-cf')+_zc('✅','契約前進チェックリスト','契約までの不足を1行で。','<div class="z-list2">'+zContractListHTML(mine,false)+'</div>','z-cf')+_zc('👪','家族合意マップ','家族の賛否と次に会う人。','<div class="z-list2">'+zFamilyMapHTML(mine,false)+'</div>','z-cf')+bodyState; var growthCard=_zc('🌱','成長サマリ','あなたの伸び。ランキングより自分の前進を。',zGrowthCardHTML(axes,_ghost,_sk,_mg),'z-cf'); bodyGrow=growthCard+bodyGrow; H+=_zsec('selfState','📊 自分の状態と詰まりどころ <span class="z-secsub">パイプライン・重要指標・滞留の原因</span>',bodyState)+_zsec('selfGrow','🌱 成長・振り返り <span class="z-secsub">バッジ・スキル・週1で見返す指標</span>',bodyGrow);
  H+='</div>';
  host.innerHTML=H;
  if(!isMob && !tid) loadSelfMemo();
@@ -7984,7 +7985,10 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
     +'<div style="font-size:12px;color:var(--z-mut);margin:4px 0 0 28px">今月の成長：'+(grow.length?grow.join(' / '):'記録待ち')+'</div>'
     +'<div style="font-size:12px;color:var(--z-ink);margin:2px 0 0 28px"><span style="color:#ffb443;font-weight:700">次のクエスト：</span>'+QTYPE[lo][2]+'</div></div>';
  }).join('')||'<div class="z-empty">担当データなし</div>';
- var questCard=_zc('🌱','育成クエスト','担当の弱点を「次の課題」に変換。今月の成長と次の一手を提示。',questH,'z-cf');
+ var _teamJob='<div class="z-jobone">'+jobCardHTML(cards,'mgr','課（全体）',reps.length)+'</div>';
+ var _staffJobs='<div class="z-jobgrid2">'+miniR+'</div>';
+ var _questBody='<div class="z-sub" style="margin:2px 0 8px">課を1人とみなしたタイプを全幅で、以下に担当ごとの型を2列で。<span style="color:var(--z-dim)">※全担当のカードを保持しているほど精度UP</span></div>'+_teamJob+_staffJobs+'<div style="border-top:1px solid var(--z-line);margin:12px 0 6px"></div><div style="font-size:12.5px;font-weight:700;color:var(--z-ink);margin-bottom:4px">🌱 今月の成長と次のクエスト</div>'+questH;
+ var questCard=_zc('🌱','育成クエスト','課・担当の「型」と弱点を「次の課題」に変換。今月の成長と次の一手を提示。',_questBody,'z-cf');
  var _treasureLegend='<div class="z-sub" style="display:flex;flex-wrap:wrap;gap:5px 14px;align-items:center;margin-top:4px"><span><b>↑上</b>＝資産規模 大</span><span><b>→右</b>＝熱量(スコア) 高</span><span><b>●大きい</b>＝スコア高</span><span style="display:inline-flex;align-items:center;gap:6px">色＝追客ランク：'+['S','A','B','C','D'].map(function(k){return '<span style="display:inline-flex;align-items:center;gap:3px"><i style="width:9px;height:9px;border-radius:50%;background:'+RC[k]+';display:inline-block"></i>'+k+'</span>';}).join('')+'</span></div>';
  var _cardTreasure=_zc('💎','お宝度マトリクス','熱量×資産規模。右上＝お宝。泡を長押しで客名、タップでカードへ。',bub+_treasureLegend,'z-cf');
  var _cardHeroes=_zc('🎖','営業タイプ図鑑（担当）','担当ごとの「型」と伸ばす力。タップで拡大。','<div class="z-jobgrid">'+miniR+'</div>','z-cf');
@@ -7995,7 +7999,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
  var _bodyData=_deepItems.filter(function(it){return it.id!=='treasure'&&it.id!=='jobs9';}).map(function(it){var bd='';try{bd=it.render(_deepCtx)||'';}catch(err){bd='<div class="z-sub">⚠ 「'+(it.id||'?')+'」の描画でエラー（'+String(err&&err.message||err).slice(0,80)+'）</div>';}return _zc(it.e||'📈',it.t||it.id||'分析',it.s||'',bd,it.sp||'z-c2');}).join('');
  var _cardInsights=_zc('🧠','傾向と対策（AIインサイト）','データから打ち手を自動抽出。',ins,'z-cf');
  var _cardMap=_zc('🗺','マップ','町の熱量とお宝客。',bodyArea+_cardTreasure,'z-cf');
- var dangerCard=_zc('🚨','放置危険アラート','このままだと流れる見込み。至急→要フォロー→注意の順。タップでカードへ。',zDangerCardHTML(t,true),'z-cf'); var contractCard=_zc('✅','契約前進チェックリスト','契約に進むための不足を1行で。不足が少ない順＝契約に近い。','<div class="z-list2">'+zContractListHTML(t,true)+'</div>','z-cf'); var familyCard=_zc('👪','家族合意マップ','賛成●/反対●/未接触○・決裁者・KP・次に会う人。反対や未接触決裁者を優先。','<div class="z-list2">'+zFamilyMapHTML(t,true)+'</div>','z-cf'); H+=_zsec('today','🎯 課の指示 <span class="z-secsub">今日やること・誰に何を</span>',todayCard+dangerCard+contractCard+familyCard+readyCard+zoneCard+bodyContract)+_zsec('coach','🎓 部下の指導 <span class="z-secsub">コーチング・育成クエスト</span>',coachCard+questCard)+_zsec('teamchk','👥 部下の確認 <span class="z-secsub">担当の現状</span>',bodyRank+_cardWork+_cardDiff+bodyTeam)+((typeof selfEmail!=='undefined'&&selfEmail===DEV_EMAIL)?(_zsec('heroes','🏅 営業タイプ図鑑 <span class="z-secsub">型と各タイプNo.1</span>',_axKingCard+_cardHeroes)):'')+_zsec('state','📊 詳細分析 <span class="z-secsub">月次・ヒートマップ・課長会議用</span>',_cardMap+bodyKpi3+bodyProcess+bodyQuality+_bodyData+_teamCourse+_cardInsights);
+ var dangerCard=_zc('🚨','放置危険アラート','このままだと流れる見込み。至急→要フォロー→注意の順。タップでカードへ。',zDangerCardHTML(t,true),'z-cf'); var contractCard=_zc('✅','契約前進チェックリスト','契約に進むための不足を1行で。不足が少ない順＝契約に近い。','<div class="z-list2">'+zContractListHTML(t,true)+'</div>','z-cf'); var familyCard=_zc('👪','家族合意マップ','賛成●/反対●/未接触○・決裁者・KP・次に会う人。反対や未接触決裁者を優先。','<div class="z-list2">'+zFamilyMapHTML(t,true)+'</div>','z-cf'); H+=_zsec('today','🎯 課の指示 <span class="z-secsub">今日やること・誰に何を</span>',todayCard+dangerCard+contractCard+familyCard+readyCard+zoneCard+bodyContract)+_zsec('coach','🎓 部下の指導 <span class="z-secsub">コーチング・育成クエスト</span>',coachCard+questCard)+_zsec('teamchk','👥 部下の確認 <span class="z-secsub">担当の現状</span>',bodyRank+_cardWork+_cardDiff+bodyTeam)+((typeof selfEmail!=='undefined'&&selfEmail===DEV_EMAIL)?(_zsec('heroes','🏅 営業タイプ図鑑 <span class="z-secsub">型と各タイプNo.1</span>',_axKingCard)):'')+_zsec('state','📊 詳細分析 <span class="z-secsub">月次・ヒートマップ・課長会議用</span>',_cardMap+bodyKpi3+bodyProcess+bodyQuality+_bodyData+_teamCourse+_cardInsights);
  H+='</div>';
  host.innerHTML=H;
  if(window.IS_DEV){var _dw=document.getElementById('devSelfMirrorWrap');if(_dw){_dw.style.display='';if(window.renderSelfDash)renderSelfDash('devSelfMirror');}}
