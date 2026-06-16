@@ -1685,7 +1685,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.04";
+var APP_VERSION = "v7.06";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -2544,13 +2544,14 @@ function _sendSelectedToEmail(toEmail, label, skipWarn, diffIds){
   else if(Array.isArray(diffIds)){ isDiff=true; selected=cards.filter(function(c){ return diffIds.indexOf(c.id)>=0; }); if(selected.length===0){ toast('対象カードがありません'); return; } }
   else { aibisAlert('送りたいカードにチェックを入れてね。<br>一緒に頑張ろう！☑'); return; }
   if(!skipWarn && !_multiMgrOk(selected, function(){ _sendSelectedToEmail(toEmail,label,true,diffIds); })) return;
+  var bd=_bd(label?('staff_'+label):'staff', selected);
   if(isDiff && label) _markSent('staff_'+label, true);
   else if(label){
     var allOf=cards.filter(function(c){ return (c.manager||'')===label; });
     var covered=allOf.length>0 && allOf.every(function(c){ return selected.indexOf(c)>=0; });
     if(covered) _markSent('staff_'+label, true);
   }
-  _sendCards(selected, toEmail, selfEmail, 'AIBIS cards', function(){ selectNone(); });
+  _sendCards(selected, toEmail, selfEmail, 'To-Member', function(){ selectNone(); }, undefined, bd);
 }
 function mailSelectedToStaff(){
   var ids=Object.keys(selectedIds);
@@ -4936,6 +4937,15 @@ function _changedSince(kind){
   if(!t0) return [];  // 初回は基準なし＝差分なし扱い。全件は「全選択」で送る。
   return cards.filter(function(c){ var u=new Date(c.updated_at||c.created_at||0).getTime(); return u>t0; });
 }
+function _bd(kind, sel){  // 送信内訳：New=前回送信以降に作成 / Updated=以降に更新 / Forwarded=変更なし再送
+  var t0=_lastSentAt(kind), n=0,u=0,f=0;
+  (sel||[]).forEach(function(c){
+    var cr=new Date(c.created_at||0).getTime();
+    var up=new Date(c.updated_at||c.created_at||0).getTime();
+    if(cr>t0) n++; else if(up>t0) u++; else f++;
+  });
+  return {n:n,u:u,f:f};
+}
 function _markSent(kind,selected){
   // 差分送信時、または全カード送信時のみ基準を更新（部分チェック送信では動かさない＝取りこぼし防止）
   if(selected===true || (Array.isArray(selected)&&selected.length===cards.length)){
@@ -4981,14 +4991,16 @@ function updateSelectCount(){
   if(bar) bar.style.borderColor=n>0?'#2c5282':'#e2e8f0';
 }
 // ===== 送信ヘルパ：Web共有（ファイル添付）優先・mailtoフォールバック v6.75 =====
-function _sendCards(selected, toEmail, ccEmail, subjPrefix, onDone, copyAddr){
+function _sendCards(selected, toEmail, ccEmail, subjPrefix, onDone, copyAddr, bd){
   var data=JSON.stringify(selected,null,2);
   var now=new Date();
   var ts=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+'_'+String(now.getHours()).padStart(2,'0')+String(now.getMinutes()).padStart(2,'0');
   try{localStorage.setItem('aibis_last_export',new Date().toISOString());}catch(_e){}
-  var fn='AIBIS_'+(uName||'staff')+'_'+APP_VERSION+'_'+selected.length+'cards_'+ts+'.json';
-  var subj=(subjPrefix||'AIBIS')+' '+ts+' ('+selected.length+' cards)';
-  var body='AIBIS cards\nDate: '+ts+'\nCards: '+selected.length;
+  var tag=(subjPrefix||'AIBIS').replace(/\s+/g,'-');  // 種別タグ（英数字・ファイル名/件名で文字化けしない）
+  var fn='AIBIS_'+tag+'_'+(uName||'staff')+'_'+APP_VERSION+'_'+selected.length+'cards_'+ts+'.json';
+  var subj='AIBIS '+(subjPrefix||'')+' '+ts+' ('+selected.length+' cards)';
+  var brk=bd?('\nNew:'+bd.n+'  Updated:'+bd.u+'  Forwarded:'+bd.f):'';
+  var body='AIBIS '+(subjPrefix||'')+brk+'\n'+ts;
   var clipAddr=(typeof copyAddr!=='undefined'&&copyAddr!==null&&copyAddr!=='')?copyAddr:(toEmail||'');
   function fallback(){
     // PC：宛先プリフィル＋件名/本文は英数字のみ（文字化け回避）。手動でファイル添付して送信。
@@ -5003,7 +5015,7 @@ function _sendCards(selected, toEmail, ccEmail, subjPrefix, onDone, copyAddr){
   var file=null; var shareName=fn.replace(/\.json$/,'.txt');
   try{ file=new File([data],shareName,{type:'text/plain'}); }catch(_e){}
   if(isMob && file && typeof navigator!=='undefined' && navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
-    var shareText=(toEmail?('To: '+toEmail+(ccEmail?'  Cc: '+ccEmail:'')+'\n'):'')+body;
+    var shareText=body;
     try{ if(clipAddr && navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(clipAddr); } }catch(_e){}
     navigator.share({files:[file], title:subj, text:shareText})
       .then(function(){ toast(clipAddr?('共有OK。宛先「'+clipAddr+'」をコピー済→Outlookの宛先に貼り付け'):'共有しました'); if(onDone) onDone(); })
@@ -5020,8 +5032,9 @@ function mailSelectedToManager(skipWarn, diffIds){
   else if(Array.isArray(diffIds)){ isDiff=true; selected=cards.filter(function(c){ return diffIds.indexOf(c.id)>=0; }); if(selected.length===0){ toast('対象カードがありません'); return; } }
   else { _diffConfirm('mgr','課長',function(idsToSend){ mailSelectedToManager(skipWarn, idsToSend); }); return; }
   if(!skipWarn && !_multiMgrOk(selected, function(){ mailSelectedToManager(true, diffIds); })) return;
+  var bd=_bd('mgr', selected);
   _markSent('mgr', isDiff?true:selected);
-  _sendCards(selected, mgrEmail, selfEmail, 'AIBIS report', function(){ selectNone(); }, mgrEmail+(selfEmail?'; '+selfEmail:''));
+  _sendCards(selected, mgrEmail, selfEmail, 'To-Boss', function(){ selectNone(); }, mgrEmail+(selfEmail?'; '+selfEmail:''), bd);
 }
 function mailSelectedToSelf(skipWarn, diffIds){
   var ids=Object.keys(selectedIds);
@@ -5030,13 +5043,14 @@ function mailSelectedToSelf(skipWarn, diffIds){
   else if(Array.isArray(diffIds)){ isDiff=true; selected=cards.filter(function(c){ return diffIds.indexOf(c.id)>=0; }); if(selected.length===0){ toast('対象カードがありません'); return; } }
   else { _diffConfirm('self', isMob?'PC':'スマホ', function(idsToSend){ mailSelectedToSelf(skipWarn, idsToSend); }); return; }
   if(!skipWarn && !_multiMgrOk(selected, function(){ mailSelectedToSelf(true, diffIds); })) return;
+  var bd=_bd('self', selected);
   _markSent('self', isDiff?true:selected);
-  _sendCards(selected, selfEmail||'', '', 'AIBIS selected', function(){
+  _sendCards(selected, selfEmail||'', '', (isMob?'Phone-to-PC':'PC-to-Phone'), function(){
     var n=selected.length;
     var msg=n<=2?n+'件、送ったね！一歩一歩が大事だよ。<br>次はもう少し増やしてみよう💪':n+'件！すごいじゃん、よく頑張ったね！<br>コツコツが勝つコツだよ🌟';
     setTimeout(function(){ aibisToast(msg); },300);
     selectNone();
-  });
+  }, undefined, bd);
 }
 window.mailSelectedToSelf=mailSelectedToSelf;
 window.toggleSelect=toggleSelect; window.selectAll=selectAll; window.selectNone=selectNone;
@@ -6084,7 +6098,7 @@ function mkJson(){
 }
 function syncMailToSelf(){
   if(cards.length===0){toast('送信するカードがありません');return;}
-  _sendCards(cards, selfEmail||'', '', 'AIBIS sync', null);  // 全カードを自分宛・他の送信ボタンと同一挙動
+  _sendCards(cards, selfEmail||'', '', (isMob?'Phone-to-PC':'PC-to-Phone'), null, undefined, _bd('self',cards));  // 全カードを自分宛・他の送信ボタンと同一挙動
 }
 
 // ===== 地図 =====
@@ -8715,7 +8729,7 @@ function plannerToPhone(){
   var ids=_plan.entries.filter(function(en){return en.cardId;}).map(function(en){return en.cardId;});
   if(!ids.length){ aibisAlert('予定表にお客様カードがありません（イベント・自由入力はカードがないため送れません）。'); return; }
   var sel=cards.filter(function(c){ return ids.indexOf(c.id)>=0; });
-  _sendCards(sel, selfEmail||'', '', 'AIBIS plan', null);  // 他の送信ボタンと同一挙動
+  _sendCards(sel, selfEmail||'', '', 'Schedule-to-Phone', null, undefined, _bd('self',sel));  // 他の送信ボタンと同一挙動
 }
 window.openPlannerFromSelected=openPlannerFromSelected; window.openPlannerToday=openPlannerToday; window.closePlanner=closePlanner; window.plannerTab=plannerTab; window.planSet=planSet; window.planDel=planDel; window.planAddCard=planAddCard; window.planSearch=planSearch; window.planAddEvent=planAddEvent; window.planAddFree=planAddFree; window.printPlanner=printPlanner; window.plannerToPhone=plannerToPhone; window.resetPlanner=resetPlanner; window.doResetPlanner=doResetPlanner; window.planPick=planPick; window.planSort=planSort;
 
@@ -8749,7 +8763,7 @@ function mailCardToSelf(){
   if(!selfEmail){toast('設定で自分のメールアドレスを登録してください');showSetup();return;}
   collectForm();
   var c=cur; if(!c){toast('カードを開いてから送信してください');return;}
-  _sendCards([c], selfEmail||'', '', 'AIBIS card', null);  // 他の送信ボタンと同一挙動
+  _sendCards([c], selfEmail||'', '', (isMob?'Phone-to-PC':'PC-to-Phone'), null, undefined, _bd('self',[c]));  // 他の送信ボタンと同一挙動
 }
 window.mailCardToSelf=mailCardToSelf;
 function clearStrategyField(id){
