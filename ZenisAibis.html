@@ -1685,7 +1685,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.01";
+var APP_VERSION = "v7.03";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -4986,23 +4986,22 @@ function _sendCards(selected, toEmail, ccEmail, subjPrefix, onDone, copyAddr){
   var now=new Date();
   var ts=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+'_'+String(now.getHours()).padStart(2,'0')+String(now.getMinutes()).padStart(2,'0');
   try{localStorage.setItem('aibis_last_export',new Date().toISOString());}catch(_e){}
-  var fn='AIBIS_'+(uName||'staff')+'_'+APP_VERSION+'_'+selected.length+'cards_'+ts+'.txt';
-  var sender=(uName||'(名前未設定)')+(branch?' / '+branch:'')+(section?' '+section:'');
-  var subj=(subjPrefix||'AIBIS')+' '+(uName?'['+uName+'] ':'')+ts+' ('+selected.length+' cards)';
-  var body='AIBIS cards\n送信者: '+sender+'\nDate: '+ts+'\nCards: '+selected.length+'\n添付: '+fn;
+  var fn='AIBIS_'+(uName||'staff')+'_'+APP_VERSION+'_'+selected.length+'cards_'+ts+'.json';
+  var subj=(subjPrefix||'AIBIS')+' '+ts+' ('+selected.length+' cards)';
+  var body='AIBIS cards\nDate: '+ts+'\nCards: '+selected.length;
   var clipAddr=(typeof copyAddr!=='undefined'&&copyAddr!==null&&copyAddr!=='')?copyAddr:(toEmail||'');
   function fallback(){
-    // 仕様：txtをDL（添付用）＋宛先をクリップボードにコピー（貼付用）。mailtoは宛先を入れず白紙で開く。
+    // 仕様：ファイルをDL（添付用）＋宛先をクリップボードにコピー（貼付用）。mailtoは宛先を入れず白紙で開く。件名/本文は文字化け回避のため英数字のみ。
     try{ if(clipAddr && navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(clipAddr); } }catch(_e){}
-    var blob=new Blob([data],{type:'text/plain'});
+    var blob=new Blob([data],{type:'application/json'});
     var url=URL.createObjectURL(blob);
     var a=document.createElement('a'); a.href=url; a.download=fn; a.click();
     _mailtoPrompt('mailto:?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body),
-      '①DLしたtxtを添付　②宛先欄に貼り付け'+(clipAddr?('（「'+clipAddr+'」コピー済）'):'')+'　→送信してね。');
+      '①DLしたファイルを添付　②宛先欄に貼り付け'+(clipAddr?('（「'+clipAddr+'」コピー済）'):'')+'　→送信してね。');
     setTimeout(function(){ URL.revokeObjectURL(url); },1500);
     if(onDone) onDone();
   }
-  var file=null; var shareName=fn;
+  var file=null; var shareName=fn.replace(/\.json$/,'.txt');
   try{ file=new File([data],shareName,{type:'text/plain'}); }catch(_e){}
   if(isMob && file && typeof navigator!=='undefined' && navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
     var shareText=(toEmail?('To: '+toEmail+(ccEmail?'  Cc: '+ccEmail:'')+'\n'):'')+body;
@@ -5036,7 +5035,7 @@ function mailSelectedToSelf(skipWarn, diffIds){
   _sendCards(selected, selfEmail||'', '', 'AIBIS selected', function(){
     var n=selected.length;
     var msg=n<=2?n+'件、送ったね！一歩一歩が大事だよ。<br>次はもう少し増やしてみよう💪':n+'件！すごいじゃん、よく頑張ったね！<br>コツコツが勝つコツだよ🌟';
-    setTimeout(function(){ aibisAlert(msg); },300);
+    setTimeout(function(){ aibisToast(msg); },300);
     selectNone();
   });
 }
