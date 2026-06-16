@@ -1705,7 +1705,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.20";
+var APP_VERSION = "v7.21";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -3360,7 +3360,7 @@ function j9Axes(cards){
   var sum={chizu:0,houbun:0,choshin:0,enmusubi:0,tsuibi:0,seian:0,sakujin:0,kiroku:0,sokko:0};
   var trustSum=0;
   var now=Date.now();
-  var recentNew=0, recentUpd=0, visitTotal=0, revCov=0, purCov=0;
+  var recentNew=0, recentUpd=0, visitTotal=0, revCov=0, purCov=0, cntCov=0;
   cards.forEach(function(c){
     // 現地
     var chizu=0;
@@ -3423,6 +3423,7 @@ function j9Axes(cards){
     // 行動の材料
     visitTotal+=_j9Revisits(c).length;
     if(_j9Revisits(c).length>0)revCov++;
+    if(_j9Filled(c.initial_content)||_j9Revisits(c).length>0||_j9KaiwaLv(c)>0)cntCov++; // 会って話した(訪問内容あり)＝価値の入口。無い=土地見込み
     if(Array.isArray(c.pursuits)&&c.pursuits.length)purCov++;
     var ca=c.created_at?(now-new Date(c.created_at).getTime()):1e18;
     var ua=c.updated_at?(now-new Date(c.updated_at).getTime()):1e18;
@@ -3462,7 +3463,7 @@ function j9Axes(cards){
   sokko+=Math.min(18, visitTotal/Math.max(1,n)/2*18);      // 訪問の総量(件あたり)
   if(aiW.sokko>0){ var aiS=aiSum.sokko/aiW.sokko; var wS=0.7*Math.min(1,aiW.sokko/n); ax.sokko=_clip(aiS*wS + sokko*(1-wS)); }
   else { ax.sokko=_clip(sokko); }
-  return {axes:ax, trust:trustSum/n, n:n, revCov:revCov, purCov:purCov};
+  return {axes:ax, trust:trustSum/n, n:n, revCov:revCov, purCov:purCov, cntCov:cntCov};
 }
 
 // ===== 57職 名称テーブル（漢字統一・ピラミッド型） =====
@@ -3520,8 +3521,10 @@ function j9JobRank(job, strongCount){
   return Math.max(1,Math.min(5,strongCount||1));
 }
 var J9_KING='天眼王';
-// 再訪カバー率(1回でも再訪したカードの割合)のアンカー曲線：20%以下=ほぼ未訪→0、66%(2/3)以上=濃い保有→満点(100%は求めない)。
-var J9_COV_LO=0.20, J9_COV_HI=0.66;
+// 再訪カバー率(1回でも再訪したカードの割合)のアンカー曲線：10%以下=価値ゼロ(十件に一件も未訪)→0、66%(2/3)以上=濃い保有→満点。20%は最低期待ライン(小さな正の値)。
+var J9_COV_LO=0.10, J9_COV_HI=0.66;
+// 会って話した(訪問内容あり)カードの割合の下限。これ未満を大量保有=土地見込みのため込み=雑欲。暫定値。
+var J9_CONTACT_LO=0.40;
 function j9CovScore(rate){ if(rate==null)return 0; var v=(rate-J9_COV_LO)/(J9_COV_HI-J9_COV_LO); return v<0?0:(v>1?1:v); }
 // ジョブ図鑑の総数（1強〜天眼王）。テーブル増減に自動追従
 function j9LadderCount(){return Object.keys(J9_ONE).length+Object.keys(J9_TWO).length+Object.keys(J9_THREE).length+Object.keys(J9_FOUR).length+Object.keys(J9_FIVE).length+1;}
@@ -3571,6 +3574,7 @@ function j9DetermineJob(cards, repName, popScale){ var PS=(popScale&&popScale>0)
   var cardCap=j9CardCap(r.n, r.trust, PS);
   // 記録(入力率)は“褒め”として表示・信頼度は高いまま温存。ただし再訪が回り中身が濃くなるほど【型の決定】での記録の価値は逓減させる。
   var _revCovR=(r.n&&r.revCov!=null)?(r.revCov/r.n):0; // 再訪着手率
+  var _contactCovR=(r.n&&r.cntCov!=null)?(r.cntCov/r.n):0; // 会って話した(訪問内容あり)率＝価値の入口
   var corrJob={}; J9_ORDER.forEach(function(k){ corrJob[k]=corr[k]; });
   corrJob.kiroku=_clip(corr.kiroku*(1-0.4*j9CovScore(_revCovR))); // 再訪が濃いほど記録の型寄与を最大4割ディスカウント(30%以下は割引なし)
   var strong=j9StrongAxes(corrJob, r.trust, cardCap);
@@ -3586,8 +3590,8 @@ function j9DetermineJob(cards, repName, popScale){ var PS=(popScale&&popScale>0)
   var loadR=(typeof ZWL!=='undefined'&&ZWL.load)?(ZWL.load(cards).overrate/PS):0; // 負荷率(dev:1人換算)
   // 初心者帯の行き先：35枚以上＋平均55以上なら見込士、それ以外は初陣士
   var initJob=(r.n>=J9_CARD_GATE.mikomiCardMin*PS && avg9>=J9_CARD_GATE.mikomiAvg) ? '見込士' : '初陣士';
-  // 【強欲・前段】抱えすぎ(負荷>1.0)＋ほぼ未再訪(<25%)＋入力も薄い → 雑欲士（整理を促す警告）
-  if(loadR>1.0 && _revCovR<J9_COV_LO && ns===0 && corr.kiroku<55){
+  // 【雑欲・前段】抱えすぎ(負荷>1.0)＋会って話したカードが少ない(訪問内容なし＝土地見込みのため込み) → 雑欲士（整理を促す警告）
+  if(loadR>1.0 && _contactCovR<J9_CONTACT_LO){
     res.job='雑欲士'; res.greed=true; res.strong=[]; return res;
   }
   // 本ジョブ＝41枚以上 かつ 強い軸が1つ以上。満たさなければ初心者帯に留める
