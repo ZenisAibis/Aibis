@@ -1705,7 +1705,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.14";
+var APP_VERSION = "v7.19";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -3353,14 +3353,14 @@ function j9AiAxis(c, axisKey){
 }
 // 担当（カード配列）→ 9軸スコア（0-100, 信頼度補正前）と入力信頼度
 function j9Axes(cards){
-  cards=cards||[];
+  cards=(cards||[]).filter(function(c){return c&&c.pursuit_judge!=='X';}); // ×(打ち切り)=削除予定。保有枚数にも軸計算にも数えない
   var n=cards.length;
   var ax={chizu:0,houbun:0,choshin:0,enmusubi:0,tsuibi:0,seian:0,sakujin:0,kiroku:0,sokko:0};
   if(!n) return {axes:ax, trust:0, n:0};
   var sum={chizu:0,houbun:0,choshin:0,enmusubi:0,tsuibi:0,seian:0,sakujin:0,kiroku:0,sokko:0};
   var trustSum=0;
   var now=Date.now();
-  var recentNew=0, recentUpd=0, visitTotal=0;
+  var recentNew=0, recentUpd=0, visitTotal=0, revCov=0, purCov=0;
   cards.forEach(function(c){
     // 現地
     var chizu=0;
@@ -3375,12 +3375,13 @@ function j9Axes(cards){
     if(_j9Filled(c.ryokuchi))hb+=10; if(_j9Filled(c.jitaku)||_j9Filled(c.old_rent))hb+=5;
     sum.houbun+=Math.min(100,hb);
     // 傾聴
+    // 傾聴：文章の長さではなく“中身”重視（AIランクが主7割）。構造点は会話の深さ・家族の本音・想定(不安/悩み)の把握を主に、文字数は最小限。
     var ch=0;
-    var icl=String(c.initial_content||'').length; ch+=Math.min(25,icl/4);
-    var rvc=_j9Revisits(c).reduce(function(s,r){return s+String(r.content||'').length;},0); ch+=Math.min(25,rvc/8);
-    if(_j9KaiwaLv(c)>=2)ch+=15;
-    var stc=_j9Fam(c).filter(function(m){return m.stance&&m.stance!=='unk';}).length; ch+=Math.min(20,stc*10);
-    if(_j9Filled(c.souteim))ch+=15;
+    var icl=String(c.initial_content||'').length; ch+=Math.min(10,icl/12);
+    var rvc=_j9Revisits(c).reduce(function(s,r){return s+String(r.content||'').length;},0); ch+=Math.min(10,rvc/24);
+    var _kl=_j9KaiwaLv(c); if(_kl>=2)ch+=Math.min(30,(_kl-1)*15);
+    var stc=_j9Fam(c).filter(function(m){return m.stance&&m.stance!=='unk';}).length; ch+=Math.min(30,stc*15);
+    if(_j9Filled(c.souteim))ch+=20;
     sum.choshin+=Math.min(100,ch);
     // 信頼
     var en=0;
@@ -3390,12 +3391,14 @@ function j9Axes(cards){
     if(_j9KpMet(c))en+=15; if(c.mgr_involve&&c.mgr_involve!=='単独')en+=10;
     sum.enmusubi+=Math.min(100,en);
     // 追客
+    var _rc=_j9Revisits(c).length;
+    var _rv=_rc>=3?40:(_rc===2?26:(_rc===1?12:0)); // 再訪1<2<3 逓増（3回到達＝フェーズ完了）
     var tb=0;
-    tb+=Math.min(30,_j9Revisits(c).length*12);
-    tb+=Math.min(20,(Array.isArray(c.pursuits)?c.pursuits.length:0)*10);
+    tb+=_rv;
+    tb+=Math.min(18,(Array.isArray(c.pursuits)?c.pursuits.length:0)*9);
     if(_j9Filled(c.pursuit_judge_date)||_j9Revisits(c).some(function(r){return r.appo;}))tb+=15;
-    if(typeof calcPaceOverrate==='function'){ if(calcPaceOverrate(c)<=1)tb+=20; } else { tb+=10; }
-    if(_j9Stage(c)>=3)tb+=15;
+    if(typeof calcPaceOverrate==='function'){ if(calcPaceOverrate(c)<=1)tb+=15; } else { tb+=8; }
+    if(_j9Stage(c)>=3)tb+=12;
     sum.tsuibi+=Math.min(100,tb);
     // 提案
     var se=0;
@@ -3406,11 +3409,12 @@ function j9Axes(cards){
     sum.seian+=Math.min(100,se);
     // 作戦
     var sa=0;
-    if(_j9Revisits(c).some(function(r){return r.instruction||r.appo;}))sa+=25;
-    if(Array.isArray(c.pursuits)&&c.pursuits.length)sa+=20;
-    if(_j9Filled(c.ai_memo)||_j9Filled(c.ai_summary))sa+=30;
-    if(c.mgr_involve&&c.mgr_involve!=='単独')sa+=15;
-    if(_j9Filled(c.pursuit_judge)||_j9Filled(c.revisit_judge))sa+=10;
+    if(_j9Filled(c.ai_memo)||_j9Filled(c.ai_summary))sa+=30; // 自己分析の記録
+    var _consult=(c.mgr_involve&&c.mgr_involve!=='単独');
+    var _judged=(_j9Filled(c.pursuit_judge)||_j9Filled(c.pursuit_judge_date)||_j9Filled(c.revisit_judge));
+    if(_consult&&_judged)sa+=30; else if(_consult)sa+=12; else if(_judged)sa+=10; // 協議して判定まで＝戦略行動の核
+    if(_j9Revisits(c).some(function(r){return r.instruction||r.appo;}))sa+=20;
+    if(Array.isArray(c.pursuits)&&c.pursuits.length)sa+=10;
     sum.sakujin+=Math.min(100,sa);
     // 記録（期待項目充足率×100）
     sum.kiroku+=Math.round(j9CardTrust(c)*100);
@@ -3418,6 +3422,8 @@ function j9Axes(cards){
     trustSum+=j9CardTrust(c);
     // 行動の材料
     visitTotal+=_j9Revisits(c).length;
+    if(_j9Revisits(c).length>0)revCov++;
+    if(Array.isArray(c.pursuits)&&c.pursuits.length)purCov++;
     var ca=c.created_at?(now-new Date(c.created_at).getTime()):1e18;
     var ua=c.updated_at?(now-new Date(c.updated_at).getTime()):1e18;
     if(ca<30*864e5)recentNew++;
@@ -3447,13 +3453,16 @@ function j9Axes(cards){
     }
   });
   // 行動：担当レベル（発掘量30件で満点・直近更新率・訪問量）
+  // 行動：枚数(発掘量)は最低条件＝ゲート(j9CardCap)で効くので“価値”には入れない。
+  // ここでは「実際に動いた率」＝再訪着手率・追撃着手率・直近の動き・訪問総量で評価。
   var sokko=0;
-  sokko+=Math.min(40,n/30*40);
-  sokko+=Math.min(30,recentUpd/Math.max(1,n)*30);
-  sokko+=Math.min(30,visitTotal/Math.max(1,n)/2*30);
+  sokko+=38*j9CovScore(revCov/Math.max(1,n));              // 再訪カバー率（30%以下=0／66%で満点）
+  sokko+=Math.min(22, purCov/Math.max(1,n)*22);            // 追撃に着手した割合
+  sokko+=Math.min(22, recentUpd/Math.max(1,n)*22);         // 直近30日の動き
+  sokko+=Math.min(18, visitTotal/Math.max(1,n)/2*18);      // 訪問の総量(件あたり)
   if(aiW.sokko>0){ var aiS=aiSum.sokko/aiW.sokko; var wS=0.7*Math.min(1,aiW.sokko/n); ax.sokko=_clip(aiS*wS + sokko*(1-wS)); }
   else { ax.sokko=_clip(sokko); }
-  return {axes:ax, trust:trustSum/n, n:n};
+  return {axes:ax, trust:trustSum/n, n:n, revCov:revCov, purCov:purCov};
 }
 
 // ===== 57職 名称テーブル（漢字統一・ピラミッド型） =====
@@ -3511,13 +3520,16 @@ function j9JobRank(job, strongCount){
   return Math.max(1,Math.min(5,strongCount||1));
 }
 var J9_KING='天眼王';
+// 再訪カバー率(1回でも再訪したカードの割合)のアンカー曲線：30%以下=ほぼ未訪→0、66%(2/3)以上=濃い保有→満点(100%は求めない)。
+var J9_COV_LO=0.30, J9_COV_HI=0.66;
+function j9CovScore(rate){ if(rate==null)return 0; var v=(rate-J9_COV_LO)/(J9_COV_HI-J9_COV_LO); return v<0?0:(v>1?1:v); }
 // ジョブ図鑑の総数（1強〜天眼王）。テーブル増減に自動追従
 function j9LadderCount(){return Object.keys(J9_ONE).length+Object.keys(J9_TWO).length+Object.keys(J9_THREE).length+Object.keys(J9_FOUR).length+Object.keys(J9_FIVE).length+1;}
 // 称号（二つ名）：軸キー→眼
 var J9_EYE={chizu:'千里',houbun:'明法',choshin:'心耳',enmusubi:'信望',tsuibi:'継火',seian:'妙案',sakujin:'勝機',kiroku:'克明',sokko:'神速'};
-// 軸別の「強み」しきい値。入力率や件数で上がる易しい軸は高く、商談の中身が要る難しい軸は低く。
-// 記録(入力率そのもの)は最も高いハードル＝高く表示してよいが“差別化要因”にはしない。
-var J9_STRONG_MIN={kiroku:80,sokko:70,chizu:65,tsuibi:60,houbun:58,choshin:55,enmusubi:52,seian:50,sakujin:50};
+// 軸別の「強み」しきい値（v7.15 再調整）。記録(入力率)・行動(件数)は“誰でも積めば高い”ので大幅に高く＝差別化要因にしない。
+// 商談の中身が要る難軸(権利/傾聴/信頼/提案/作戦)は低く＝型を分ける主役にする。
+var J9_STRONG_MIN={kiroku:90,sokko:80,chizu:70,tsuibi:64,houbun:54,choshin:50,enmusubi:48,seian:46,sakujin:46};
 // 難しい軸（上位ジョブ到達のゲートに使用）
 var J9_HARD=['houbun','choshin','enmusubi','seian','sakujin'];
 
@@ -3528,7 +3540,12 @@ function j9StrongAxes(corr, trust, cardCap){
   var cap=Math.min(tcap, (cardCap==null?9:cardCap));
   var top=entries[0].v;
   var strong=entries.filter(function(e){return e.v>=(J9_STRONG_MIN[e.k]||60);}).map(function(e){return e.k;});
-  if(strong.length===0 && top>=55) strong=[entries[0].k];
+  if(strong.length===0){
+    // 記録は“差別化要因にしない”ので、該当ゼロ時は記録以外の最高軸を優先（全員が記録士/走録師に収束するのを防ぐ）
+    var _nz=entries.filter(function(e){return e.k!=='kiroku' && e.v>=55;});
+    if(_nz.length) strong=[_nz[0].k];
+    else if(top>=55) strong=[entries[0].k]; // 記録しか無い純・記録型のみ記録士へ
+  }
   if(strong.length>cap) strong=strong.slice(0,cap);
   return strong;
 }
@@ -3552,7 +3569,11 @@ function j9DetermineJob(cards, repName, popScale){ var PS=(popScale&&popScale>0)
   // 26枚以上：補正後スコアから強い軸と9軸平均を算出
   if(r.trust<0.30){ res.provisional=true; }
   var cardCap=j9CardCap(r.n, r.trust, PS);
-  var strong=j9StrongAxes(corr, r.trust, cardCap);
+  // 記録(入力率)は“褒め”として表示・信頼度は高いまま温存。ただし再訪が回り中身が濃くなるほど【型の決定】での記録の価値は逓減させる。
+  var _revCovR=(r.n&&r.revCov!=null)?(r.revCov/r.n):0; // 再訪着手率
+  var corrJob={}; J9_ORDER.forEach(function(k){ corrJob[k]=corr[k]; });
+  corrJob.kiroku=_clip(corr.kiroku*(1-0.4*j9CovScore(_revCovR))); // 再訪が濃いほど記録の型寄与を最大4割ディスカウント(30%以下は割引なし)
+  var strong=j9StrongAxes(corrJob, r.trust, cardCap);
   // 上位ジョブの難軸ゲート：3強以上は難軸(権利/傾聴/信頼/提案/作戦)が2つ以上必須。
   // 記録・行動・現地・追客の「積めば出る軸」だけで上位職へ行くのを防ぐ。
   if(strong.length>=3){
@@ -3565,8 +3586,8 @@ function j9DetermineJob(cards, repName, popScale){ var PS=(popScale&&popScale>0)
   var loadR=(typeof ZWL!=='undefined'&&ZWL.load)?(ZWL.load(cards).overrate/PS):0; // 負荷率(dev:1人換算)
   // 初心者帯の行き先：35枚以上＋平均55以上なら見込士、それ以外は初陣士
   var initJob=(r.n>=J9_CARD_GATE.mikomiCardMin*PS && avg9>=J9_CARD_GATE.mikomiAvg) ? '見込士' : '初陣士';
-  // 【強欲・前段】中身が薄い（強い軸ゼロ）まま負荷率>1.0で抱えすぎ → 雑欲士（整理を促す警告）
-  if(ns===0 && loadR>1.0){
+  // 【強欲・前段】抱えすぎ(負荷>1.0)＋ほぼ未再訪(<25%)＋入力も薄い → 雑欲士（整理を促す警告）
+  if(loadR>1.0 && _revCovR<0.30 && ns===0 && corr.kiroku<55){
     res.job='雑欲士'; res.greed=true; res.strong=[]; return res;
   }
   // 本ジョブ＝41枚以上 かつ 強い軸が1つ以上。満たさなければ初心者帯に留める
@@ -3584,8 +3605,8 @@ function j9DetermineJob(cards, repName, popScale){ var PS=(popScale&&popScale>0)
     var stableOK = repName ? (j9KingStable(repName) || hist<=1) : true;
     if(stableOK){ res.job=J9_KING; res.title='天眼'; return res; }
   }
-  // 【強欲・本段】実力はあるが負荷率>1.0で抱えすぎ → 本来の格でⅡ/Ⅲに振り分け（天眼王は除外）
-  if(loadR>1.0){
+  // 【強欲・本段】抱えすぎ＋再訪カバー率が30%以下(ほぼ未訪) → 強欲系。30%超で回していれば強欲にしない。
+  if(loadR>1.0 && _revCovR<0.30){
     res.job=(ns>=3)?'大欲無限':'強欲師'; res.greed=true; return res;
   }
   var job=null;
