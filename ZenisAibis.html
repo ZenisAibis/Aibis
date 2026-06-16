@@ -989,6 +989,7 @@ body.is-mob .mob-menu{display:inline-block}
     <span style="font-size:12px;color:#4a5568;font-weight:600;white-space:nowrap">並替：</span>
     <button class="sbtn active" id="sb_lv" onclick="toggleSort('lv')">🚶 最新</button>
     <button class="sbtn" id="sb_rv" onclick="toggleSort('rv')">🔁 再訪</button>
+    <button class="sbtn" id="sb_jw" onclick="toggleSort('jw')">⚖ 判定待ち</button>
     <button class="sbtn" id="sb_ad" onclick="toggleSort('ad')">🏠 住所</button>
     <button class="sbtn" id="sb_sc" onclick="toggleSort('sc')">⭐ スコア</button>
     <button class="sbtn" id="sb_st" onclick="toggleSort('st')">📊 心理</button>
@@ -1704,7 +1705,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.11";
+var APP_VERSION = "v7.12";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -1888,7 +1889,7 @@ var staffMails = [];
 var uNick = '';
 var fHandle = null;
 var sortKey = 'lv'; // lv=最新, ad=住所, st=段階, dt=初訪
-var sortDir = { lv:'desc', ad:'asc', st:'desc', dt:'desc' };
+var sortDir = { lv:'asc', ad:'asc', st:'desc', dt:'desc' };
 
 var isMob = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -3219,7 +3220,7 @@ function devGenHash(){
   sha256hex(v).then(function(h){ oe.innerHTML='MGR_HASH = <b style="color:#553c9a">'+h+'</b>'; }).catch(function(){ oe.textContent='生成失敗（https環境で開いてください）'; });
 }
 window.onRoleChange=onRoleChange; window.devGenHash=devGenHash; window.isMgrUnlocked=isMgrUnlocked;
-function openSelfDash(){ var p=document.getElementById('selfDashPanel'); if(!p) return; p.style.display='block'; if(window.renderSelfDash) renderSelfDash(); p.scrollTop=0; }
+function openSelfDash(){ var p=document.getElementById('selfDashPanel'); if(!p) return; if(typeof _zOpen!=='undefined') _zOpen={selfState:true}; p.style.display='block'; if(window.renderSelfDash) renderSelfDash(); var sc=document.getElementById('selfDashContent'); if(sc) sc.scrollTop=0; }
 function closeSelfDash(){ var p=document.getElementById('selfDashPanel'); if(p) p.style.display='none'; }
 function dashOverlayClick(ev){ var id=(ev&&ev.target)?ev.target.id:''; if(id==='selfDashPanel'){ closeSelfDash(); } else if(id==='analysisPanel'){ if(window.closeAnalysis) closeAnalysis(); } }
 window.dashOverlayClick=dashOverlayClick;
@@ -4522,7 +4523,7 @@ function toggleSort(key) {
 }
 function updateSortBtns() {
   // 非アクティブ時の基本ラベル
-  var base = {lv:'🚶 最新', ad:'🏠 住所', st:'📊 心理', sc:'⭐ スコア', pj:'🎯 ランク', dt:'📅 初訪', kw:'💬 会話', pace:'⏰ 遅れ', rv:'🔁 再訪'};
+  var base = {lv:'🚶 最新', ad:'🏠 住所', st:'📊 心理', sc:'⭐ スコア', pj:'🎯 ランク', dt:'📅 初訪', kw:'💬 会話', pace:'⏰ 遅れ', rv:'🔁 再訪', jw:'⚖ 判定待ち'};
   // アクティブ時：その状態で「実際に先頭に来る方」を表示（＝現在の表示順）
   var act = {
     lv:   {desc:'🚶 古い→',     asc:'🚶 最新→'},
@@ -4533,7 +4534,8 @@ function updateSortBtns() {
     dt:   {desc:'📅 初訪 古→',  asc:'📅 初訪 新→'},
     kw:   {desc:'💬 会話 浅→',  asc:'💬 会話 深→'},
     pace: {desc:'⏰ 遅れ 小→',  asc:'⏰ 遅れ 大→'},
-    rv:   {desc:'🔁 再訪 0→',   asc:'🔁 再訪 3→'}
+    rv:   {desc:'🔁 再訪 0→',   asc:'🔁 再訪 3→'},
+    jw:   {desc:'⚖ 判定待ち（更新新→）', asc:'⚖ 判定待ち（更新新→）'}
   };
   Object.keys(base).forEach(function(k){
     var btn = document.getElementById('sb_'+k); if(!btn) return;
@@ -4774,6 +4776,9 @@ function getSorted() {
   } else if (sortKey==='rv') {
     arr = arr.filter(function(c){ return !_hasPursuitActivity(c); });
     arr.sort(function(a,b){ return dir * (_revisitCount(b) - _revisitCount(a)); });
+  } else if (sortKey==='jw') {
+    arr = arr.filter(_judgeMissing);  // 再訪を進めた（=フェーズ終了）のにランク未判定
+    arr.sort(function(a,b){ return getLastVD(b).localeCompare(getLastVD(a)); }); // 更新の最新順
   } else if (sortKey==='pace') {
     arr.sort(function(a,b){
       var ra=calcPaceOverrate(a), rb=calcPaceOverrate(b);
@@ -7626,7 +7631,7 @@ window.togglePcMenu=togglePcMenu; window.closePcMenu=closePcMenu;
 
 // ===== 課分析 =====
 function _zc(emoji,title,sub,body,sp){return '<div class="z-card '+(sp||'z-cf')+'"><h3>'+emoji+' '+title+'</h3>'+(sub?'<div class="z-sub">'+sub+'</div>':'')+body+'</div>';}
-var _zOpen={today:true,selfState:true};
+var _zOpen={};
 function _zsec(k,title,body){var op=!!_zOpen[k];return '<div class="z-sec'+(op?'':' z-collapsed')+'" data-k="'+k+'"><div class="z-sec-h" onclick="zToggleSec(this)">'+title+'<span class="z-ar">'+(op?'▼':'▶')+'</span></div><div class="z-sec-body"><div class="z-bento">'+body+'</div>'+_zSecFoot()+'</div></div>';}
 function _zsecPlain(k,title,body){var op=!!_zOpen[k];return '<div class="z-sec'+(op?'':' z-collapsed')+'" data-k="'+k+'"><div class="z-sec-h" onclick="zToggleSec(this)">'+title+'<span class="z-ar">'+(op?'▼':'▶')+'</span></div><div class="z-sec-body">'+body+_zSecFoot()+'</div></div>';}
 function _zSecFoot(){return '<div class="z-secfoot"><button type="button" class="z-secfoot-btn" onclick="zSecClose(this)">▲ このセクションを閉じる</button></div>';}
@@ -8280,7 +8285,7 @@ function printSelfReport(){ var ta=document.getElementById('selfAnalysisMemo'); 
 function clearSelfMemo(){ var ta=document.getElementById('selfAnalysisMemo'); if(!ta)return; if(!ta.value){toast('すでに空です');return;} aibisAlert('この分析結果を削除するよ。よろしい？<br><br><div style="display:flex;gap:8px;margin-top:8px"><button onclick="closeAibisAlert();doClearSelfMemo()" style="flex:1;padding:8px;background:#c53030;color:white;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit">削除する</button><button onclick="closeAibisAlert()" style="flex:1;padding:8px;background:#e2e8f0;color:#2d3748;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit">やめる</button></div>'); }
 function doClearSelfMemo(){ var ta=document.getElementById('selfAnalysisMemo'); if(ta)ta.value=''; try{localStorage.removeItem('analysis_memo_self_v1');localStorage.removeItem('analysis_memo_self_at_v1');}catch(ex){} var l=document.getElementById('selfMemoAt'); if(l)l.textContent=''; toast('削除しました'); }
 window.copySelfPrompt=copySelfPrompt; window.saveSelfMemo=saveSelfMemo; window.loadSelfMemo=loadSelfMemo; window.printSelfReport=printSelfReport; window.clearSelfMemo=clearSelfMemo; window.doClearSelfMemo=doClearSelfMemo;
-function openAnalysis(){ var p=document.getElementById('analysisPanel'); if(!p) return; p.style.display='block'; renderAnalysis(); loadAnalysisMemo(); p.scrollTop=0; }
+function openAnalysis(){ var p=document.getElementById('analysisPanel'); if(!p) return; _zOpen={}; p.style.display='block'; renderAnalysis(); loadAnalysisMemo(); var sc=document.getElementById('analysisContent'); if(sc) sc.scrollTop=0; }
 function closeAnalysis(){ var p=document.getElementById('analysisPanel'); if(p) p.style.display='none'; }
 function toggleAnalysis(){ openAnalysis(); }
 window.toggleAnalysis=toggleAnalysis; window.openAnalysis=openAnalysis; window.closeAnalysis=closeAnalysis;
