@@ -1705,7 +1705,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.12";
+var APP_VERSION = "v7.13";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -8010,9 +8010,8 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
     +'<div style="font-size:12px;color:var(--z-mut);margin:4px 0 0 28px">今月の成長：'+(grow.length?grow.join(' / '):'記録待ち')+'</div>'
     +'<div style="font-size:12px;color:var(--z-ink);margin:2px 0 0 28px"><span style="color:#ffb443;font-weight:700">次のクエスト：</span>'+QTYPE[lo][2]+'</div></div>';
  }).join('')||'<div class="z-empty">担当データなし</div>';
- var _teamJob='<div class="z-jobone">'+jobCardHTML(cards,'mgr','課（全体）',reps.length)+'</div>';
- var _staffJobs='<div class="z-jobgrid2">'+miniR+'</div>';
- var _questBody='<div class="z-sub" style="margin:2px 0 8px">課を1人とみなしたタイプを全幅で、以下に担当ごとの型を2列で。<span style="color:var(--z-dim)">※全担当のカードを保持しているほど精度UP</span></div>'+_teamJob+_staffJobs+'<div style="border-top:1px solid var(--z-line);margin:12px 0 6px"></div><div style="font-size:12.5px;font-weight:700;color:var(--z-ink);margin-bottom:4px">🌱 今月の成長と次のクエスト</div>'+questH;
+ var _allJobs='<div class="z-jobgrid2"><div class="z-jobcell">'+jobCardHTML(cards,'mgr','課（全体）',reps.length)+'</div>'+miniR+'</div>';
+ var _questBody='<div class="z-sub" style="margin:2px 0 8px">先頭が「課を1人とみなしたタイプ」、続けて担当ごとの型。<span style="color:var(--z-dim)">※全担当のカードを保持しているほど精度UP</span></div>'+_allJobs+'<div style="border-top:1px solid var(--z-line);margin:12px 0 6px"></div><div style="font-size:12.5px;font-weight:700;color:var(--z-ink);margin-bottom:4px">🌱 今月の成長と次のクエスト</div>'+questH;
  var questCard=_zc('🌱','育成クエスト','課・担当の「型」と弱点を「次の課題」に変換。今月の成長と次の一手を提示。',_questBody,'z-cf');
  var _treasureLegend='<div class="z-sub" style="display:flex;flex-wrap:wrap;gap:5px 14px;align-items:center;margin-top:4px"><span><b>↑上</b>＝資産規模 大</span><span><b>→右</b>＝熱量(スコア) 高</span><span><b>●大きい</b>＝スコア高</span><span style="display:inline-flex;align-items:center;gap:6px">色＝追客ランク：'+['S','A','B','C','D'].map(function(k){return '<span style="display:inline-flex;align-items:center;gap:3px"><i style="width:9px;height:9px;border-radius:50%;background:'+RC[k]+';display:inline-block"></i>'+k+'</span>';}).join('')+'</span></div>';
  var _cardTreasure=_zc('💎','お宝度マトリクス','熱量×資産規模。右上＝お宝。泡を長押しで客名、タップでカードへ。',bub+_treasureLegend,'z-cf');
