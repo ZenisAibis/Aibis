@@ -1705,7 +1705,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.21";
+var APP_VERSION = "v7.22";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -3274,7 +3274,7 @@ var JOB9_AXES=[
  {k:'tsuibi', n:'追客', e:'🔥', d:'見込みを冷まさず追い続ける力'},
  {k:'seian',  n:'提案', e:'📐', d:'課題を提案の形にする力'},
  {k:'sakujin',n:'作戦', e:'🪖', d:'次回アクション・段取り・勝ち筋を組む力'},
- {k:'kiroku', n:'記録', e:'🗂', d:'入力・整備・カード管理の正確さ'},
+ {k:'kiroku', n:'記録', e:'🗂', d:'記録運用力：判定・協議・自己分析まで抜けなく記録運用する力（入力率は土台＝ゲート）'},
  {k:'sokko',  n:'行動', e:'⚡', d:'行動量・即応性'}
 ];
 // ステージ別の「期待項目」判定関数（未入力も母数に含めるため）
@@ -3416,9 +3416,15 @@ function j9Axes(cards){
     if(_j9Revisits(c).some(function(r){return r.instruction||r.appo;}))sa+=20;
     if(Array.isArray(c.pursuits)&&c.pursuits.length)sa+=10;
     sum.sakujin+=Math.min(100,sa);
-    // 記録（期待項目充足率×100）
-    sum.kiroku+=Math.round(j9CardTrust(c)*100);
-    // 信頼度
+    // 記録運用力：入力率を土台(35%)に、訪問内容・再訪ジャッジ・課長協議・判定・自己分析の“記録運用”の充足で差化（単なる入力率はゲート＝土台のみ）
+    var kr=Math.round(j9CardTrust(c)*35);
+    if(_j9Filled(c.initial_content))kr+=13;
+    if(_j9Filled(c.revisit_judge))kr+=13;
+    if(c.mgr_involve&&c.mgr_involve!=='単独')kr+=13;
+    if(_j9Filled(c.pursuit_judge))kr+=13;
+    if(_j9Filled(c.ai_memo)||_j9Filled(c.ai_summary))kr+=13;
+    sum.kiroku+=Math.min(100,kr);
+    // 信頼度（入力率そのもの＝ゲート／係数／%表示として温存）
     trustSum+=j9CardTrust(c);
     // 行動の材料
     visitTotal+=_j9Revisits(c).length;
@@ -3862,7 +3868,7 @@ var J9_STATS=[
  {k:'kansatsu', n:'観察力', e:'👁', col:'#9be15d', axes:['chizu','houbun'], d:'土地と権利・背景を見抜く力'},
  {k:'taiwa', n:'対話力', e:'💬', col:'#4dabf7', axes:['choshin','enmusubi'], d:'聞く力と、関係をつくる力'},
  {k:'senryaku', n:'戦略力', e:'♟', col:'#9775fa', axes:['seian','sakujin'], d:'提案に変え、勝ち筋を組む力'},
- {k:'kanri', n:'管理力', e:'📚', col:'#20c997', axes:['kiroku'], d:'カードを整え、抜けなく回す力'}
+ {k:'kanri', n:'管理力', e:'📚', col:'#20c997', axes:['kiroku'], d:'記録運用力：訪問内容・判定・協議・自己分析まで抜けなく記録し回す力（単なる入力率はゲート）'}
 ];
 // 集約：強い方をやや重く見る加重平均（単純平均だと弱軸に引っ張られて全員平凡に見えるため）
 function j9StatVal(corr, axes){
