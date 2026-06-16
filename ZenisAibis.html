@@ -711,6 +711,7 @@ body.is-mob .mob-menu{display:inline-block}
 .zdash .z-c1{grid-column:span 1}
 .zdash .z-c2{grid-column:1 / -1}.zdash .z-cf{grid-column:1 / -1}
 @media(min-width:760px){.zdash .z-c2{grid-column:span 2}.zdash .z-c3{grid-column:span 3}.zdash .z-cf{grid-column:1 / -1}}
+.zdash .z-list2{display:block}@media(min-width:760px){.zdash .z-list2{display:grid;grid-template-columns:1fr 1fr;gap:0 22px;align-items:start}.zdash .z-list2>*{min-width:0}}
 /* sections */
 .zdash .z-secsub{font-size:11px;font-weight:500;color:var(--z-mut);margin-left:7px}.zdash .z-sec{margin:16px 0}.zdash .z-sec-h{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;padding:11px 14px;background:linear-gradient(90deg,rgba(255,255,255,.05),transparent);border:1px solid var(--z-line);border-radius:12px;margin:0;font-weight:800;font-size:14px;color:var(--z-ink);transition:background .15s}.zdash .z-sec:not(.z-collapsed) .z-sec-h{background:linear-gradient(90deg,rgba(52,227,208,.16),rgba(139,124,255,.10));border-bottom-left-radius:0;border-bottom-right-radius:0;border-bottom:none}
 .zdash .z-sec-h .z-ar{margin-left:auto;color:var(--z-dim);font-size:11px;transition:color .15s}.zdash .z-sec:not(.z-collapsed) .z-sec-h .z-ar{color:#34e3d0}
@@ -765,7 +766,7 @@ body.is-mob .mob-menu{display:inline-block}
 .z-reveal-pop{position:fixed;z-index:99999;min-width:148px;max-width:260px;background:linear-gradient(160deg,rgba(22,32,52,.97),rgba(13,21,37,.98));border:1px solid rgba(120,150,200,.35);border-radius:13px;padding:10px 12px;box-shadow:0 16px 44px rgba(0,0,0,.55);color:#eaf0fb;opacity:0;transform:translateY(8px) scale(.96);transition:opacity .16s ease,transform .18s ease;pointer-events:none}
 .z-reveal-pop.on{opacity:1;transform:translateY(0) scale(1)}
 .z-reveal-pop.z-rev-live{pointer-events:auto;max-width:300px}
-.z-reveal-pop .z-rev-list{max-height:46vh;overflow-y:auto;margin:0 -4px;padding:0 4px}
+.z-reveal-pop .z-rev-list{max-height:46vh;overflow-y:auto;overflow-x:hidden;margin:0 -4px;padding:0 4px}
 .z-rev-live .z-rev-row.z-rev-go{cursor:pointer;border-radius:8px;padding:5px 6px;margin:0 -6px;transition:background .12s}
 .z-rev-live .z-rev-row.z-rev-go:hover,.z-rev-live .z-rev-row.z-rev-go:active{background:rgba(255,255,255,.10)}
 .z-reveal-pop .z-rev-h{font-size:11px;font-weight:800;color:#9fb3d6;letter-spacing:.4px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;gap:8px}
@@ -773,7 +774,7 @@ body.is-mob .mob-menu{display:inline-block}
 .z-reveal-pop .z-rev-row{display:flex;align-items:center;gap:7px;padding:4px 0;border-bottom:1px solid rgba(120,150,200,.12)}
 .z-reveal-pop .z-rev-row:last-child{border-bottom:none}
 .z-reveal-pop .z-rev-rk{width:16px;height:16px;border-radius:50%;background:rgba(120,150,200,.28);font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.z-reveal-pop .z-rev-nm{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.z-reveal-pop .z-rev-nm{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
 .z-reveal-pop .z-rev-sub{font-size:9px;color:#8aa0c4;flex-shrink:0}
 .z-reveal-pop .z-rev-sc{font-size:11px;font-weight:800;color:#ffd479;margin-left:auto;flex-shrink:0}
 .z-reveal-pop .z-rev-more{font-size:9px;color:#6b7d9e;text-align:center;margin-top:6px}
@@ -1685,7 +1686,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.06";
+var APP_VERSION = "v7.07";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -4093,10 +4094,12 @@ window.zRevShow=function(el,k){ window._zRevLastEl=el; var d=_zRev[k]; if(!d||!d
 window.zRevHide=function(){ var p=document.getElementById('zRevPop'); if(p&&!p.classList.contains('z-rev-live')) p.classList.remove('on'); };
 window.zRevPopClose=function(){ var p=document.getElementById('zRevPop'); if(p){ p.classList.remove('on'); p.classList.remove('z-rev-live'); } };
 window.zJumpCard=function(id){
-  try{ zRevPopClose(); }catch(_e){}
-  try{ if(typeof closeAnalysis==='function') closeAnalysis(); }catch(_e){}
-  try{ if(typeof closeSelfDash==='function') closeSelfDash(); }catch(_e){}
-  openCard(id);
+  aibisConfirm('このお客様のカードを開きますか？', function(){
+    try{ zRevPopClose(); }catch(_e){}
+    try{ if(typeof closeAnalysis==='function') closeAnalysis(); }catch(_e){}
+    try{ if(typeof closeSelfDash==='function') closeSelfDash(); }catch(_e){}
+    openCard(id);
+  }, '開く', 'やめる');
 };
 if(!window._zRevLiveBound){
   window._zRevLiveBound=true;
@@ -4707,7 +4710,7 @@ function zDangerCardHTML(list, showMgr){
   if(!risks.length) return tiles+'<div class="z-empty">放置危険なし。よく追えています◎</div>';
   var rows=risks.slice(0,6).map(function(o){var c=o.c,lv=LV[o.r.level],st=+(c.stage||0),id=String(c.id||'').replace(/[^\w-]/g,'');
     return '<div style="padding:9px 0;border-bottom:1px solid var(--z-line);cursor:pointer" onclick="zJumpCard(\''+id+'\')"><div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap"><span style="font-size:10px;font-weight:800;color:#fff;background:'+lv.c+';border-radius:8px;padding:1px 7px">'+lv.t+'</span><b style="font-size:13px;color:var(--z-ink)">'+e(c.name||'無名')+'様 \u203a</b><span style="font-size:11px;color:var(--z-mut)">'+STGL[st]+(showMgr?'・'+e(c.manager||''):'')+'</span></div><div style="font-size:12px;color:#c53030;margin-top:3px">\u26a0 '+e(o.r.primary)+'</div><div style="font-size:12px;color:var(--z-ink);margin-top:1px"><span style="color:var(--z-cyan);font-weight:700">今日：</span>'+e(zRiskTodo(c))+'</div></div>';}).join('');
-  return tiles+'<div style="margin-top:6px">'+rows+'</div>'+(risks.length>6?'<div class="z-sub" style="margin-top:6px">ほか '+(risks.length-6)+' 件</div>':'');
+  return tiles+'<div class="z-list2" style="margin-top:6px">'+rows+'</div>'+(risks.length>6?'<div class="z-sub" style="margin-top:6px">ほか '+(risks.length-6)+' 件</div>':'');
 }
 
 var KAIWA_ORDER=['ピンポン','立ち話','玄関内','連れ出し','上り込み'];
@@ -7696,11 +7699,13 @@ function workMeterInner(){
 }
 function _sdBlock(title,col,arr){
   if(!arr.length) return '';
-  var rows=arr.sort(function(a,b){return lastContactDays(b)-lastContactDays(a);}).map(function(c){
+  var sorted=arr.sort(function(a,b){return lastContactDays(b)-lastContactDays(a);});
+  var shown=sorted.slice(0,6), more=sorted.length-shown.length;
+  var rows=shown.map(function(c){
     var prof=ZWL.profile(c), eff=ZWL.tempoEffective(c).label||'—', sid=String(c.id||'').replace(/[^\w-]/g,''), dd=lastContactDays(c);
-    return '<div class="z-mrow" style="cursor:pointer" onclick="openCard(\''+sid+'\')"><b class="z-pnm" style="flex:1">'+e(c.name||'無名')+'様'+(c.manager?' <span style="font-weight:600;opacity:.55;font-size:11px">'+e(c.manager)+'</span>':'')+'</b><span style="font-size:11px;font-weight:800;color:#4a5568;white-space:nowrap">'+prof.abbr+'<span style="opacity:.45">→</span>'+eff+'</span><span class="z-sub" style="width:50px;text-align:right;flex-shrink:0">'+(dd>=0?dd+'日前':'')+'</span></div>';
+    return '<div class="z-mrow" style="cursor:pointer" onclick="zJumpCard(\''+sid+'\')"><b class="z-pnm" style="flex:1">'+e(c.name||'無名')+'様'+(c.manager?' <span style="font-weight:600;opacity:.55;font-size:11px">'+e(c.manager)+'</span>':'')+'</b><span style="font-size:11px;font-weight:800;color:#4a5568;white-space:nowrap">'+prof.abbr+'<span style="opacity:.45">→</span>'+eff+'</span><span class="z-sub" style="width:50px;text-align:right;flex-shrink:0">'+(dd>=0?dd+'日前':'')+'</span></div>';
   }).join('');
-  return '<div style="margin-top:6px"><div style="font-size:11.5px;font-weight:800;color:'+col+';margin-bottom:2px">'+title+' '+arr.length+'件</div>'+rows+'</div>';
+  return '<div style="margin-top:6px"><div style="font-size:11.5px;font-weight:800;color:'+col+';margin-bottom:2px">'+title+' '+arr.length+'件</div><div class="z-list2">'+rows+'</div>'+(more>0?'<div class="z-sub" style="margin-top:4px">ほか '+more+' 件（多い順に上位6件を表示）</div>':'')+'</div>';
 }
 function _strategyDiffInner(){
   if(typeof ZWL==='undefined'||!ZWL.tempoDiff) return '<div class="z-sub">—</div>';
@@ -7784,7 +7789,7 @@ function renderAnalysis(){
   +_zc('⏱','45日契約クロック','A昇格(追撃判定)→45日。赤は超過。',clockH,'z-c2')
   +_zc('🏎','パイプライン・ベロシティ','各段の平均滞留日数。長い段が失速＝<b style="color:#ff5d7d">'+STG[slow]+'</b>。',_zVbars(dwAvg,STG.map(function(s){return s.slice(0,2);}),dwAvg.map(function(v){return v>=50?'#ff5d7d':v>=30?'#ffb443':'#38a169';})),'z-c2')
   +_zc('🔮','着地予測（今月見込み）','現パイプライン×転換率の概算。','<div class="z-tiles"><div class="z-tile"><b>'+proj+'</b><span>契約見込</span></div><div class="z-tile"><b>'+Math.round(conn*0.35)+'</b><span>提案依頼見込</span></div><div class="z-tile"><b>'+fc5+'</b><span>比較以上</span></div></div><div class="z-sub" style="margin-top:8px">※過去転換率の蓄積で精度UP</div>','z-c2')
-  +_zc('⚠','要フォロー（最優先）','至急アクションすべき高価値の客。課長から指示を。',prioH,'z-c2'));
+  +_zc('⚠','要フォロー（最優先）','至急アクションすべき高価値の客。課長から指示を。','<div class="z-list2">'+prioH+'</div>','z-cf'));
  // rank & game (team)
  var board=reps.map(function(r){var a=g[r];return {r:r,av:a.length?Math.round(a.reduce(function(s,c){return s+calcScore(c);},0)/a.length*10)/10:0,n:a.length};}).sort(function(a,b){return b.av-a.av;});
  var mxAv=Math.max.apply(null,board.map(function(b){return b.av;}))||1;
@@ -7817,8 +7822,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
  var _deepCtx={t:t,g:g,reps:reps,cards:cards,calcScore:calcScore,STG:STG,e:e,pct:_zPct,card:_zc,vbars:_zVbars,line:_zLine,spark:_zSpark,radar:_zRadar,funnel:_zFunnel,pie:_genjoPie,ring:_ryokuchiRing,avas:_zAVAS,months:_zMonths};
  var _deepItems=[
   {id:'treasure',e:'💎',t:'お宝度マトリクス',s:'熱量×資産規模。右上＝お宝。色＝ランク。泡を長押しで客名、タップでカードへ。',sp:'z-cf',render:function(){return bub;}},
-  {id:'ryokuchi',e:'🌳',t:'生産緑地 保有率（データ）',s:'',sp:'z-c2',render:function(cx){return _ryokuchiRing(cx.t);}},
-  {id:'genjo',e:'🥧',t:'現況（現状）の内訳（データ）',s:'現状区分の分布。',sp:'z-c2',render:function(cx){return _genjoPie(cx.t);}},
+  {id:'genjo',e:'🥧',t:'現況の内訳 ／ 生産緑地（データ）',s:'現状区分の分布と、生産緑地の保有率。',sp:'z-c2',render:function(cx){return _genjoPie(cx.t)+'<div style="border-top:1px solid var(--z-line);margin:12px 0 8px"></div><div style="font-size:12.5px;font-weight:700;color:var(--z-ink);margin-bottom:4px">🌳 生産緑地 保有率</div>'+_ryokuchiRing(cx.t);}},
   {id:'souzoku',e:'🏯',t:'相続緊急度 × 進捗',s:'高齢×低ステージは要対応。',sp:'z-c2',render:function(){return '<div class="z-tiles">'+agH+'</div>'+(noAge?'<div class="z-sub" style="margin-top:6px">所有者年齢 未入力 '+noAge+'件</div>':'');}},
   {id:'potential',e:'💰',t:'課の総ポテンシャル金額',s:'A・S案件の路線価×面積の概算。',sp:'z-c2',render:function(){return '<div style="text-align:center;padding:10px"><div class="z-num" style="font-size:38px;font-weight:800;color:#ffb443">約'+pot+'<span style="font-size:17px">億円</span></div><div class="z-sub">規模感の目安（概算）</div></div>';}},
   {id:'jobs9',e:'🎖',t:'営業ジョブ（全員）',s:'担当ごとの「型」と次に伸ばす力。入力と行動＋AI評価から判定（9軸・全'+j9LadderCount()+'職）。',sp:'z-cf',render:function(){return '<div class="z-jobgrid">'+miniR+'</div>';}}
@@ -7858,7 +7862,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
   +_zc('⭕','提案依頼の取得状況','顧客の意思表示＝契約への最短サイン。','<div style="text-align:center;margin-bottom:8px"><span style="font-family:Sora,sans-serif;font-size:30px;font-weight:800;color:#2f9e44">'+prGot+'</span><span style="font-size:12px;color:var(--z-dim)"> 件取得／'+cards.length+'件中（'+_zPct(prGot,cards.length)+'%）</span></div>'+_zVbars(prBars,reps.map(function(r){return r.slice(0,1);}),reps.map(function(){return '#2f9e44';})),'z-c2')
   +_zc('📝','入力充実度（担当別）','カードの作り込み度。低い担当は質のフォローを。',_zVbars(inpBars,reps.map(function(r){return r.slice(0,1);}),inpBars.map(function(v){return v>=70?'#2f9e44':v>=50?'#ffb443':'#ff5d7d';})),'z-c2')
   +_zc('🕳','未入力の傾向（課全体）','どの項目が抜けやすいか。高い＝チームの弱点。',_zVbars(blankRates,FCHK.map(function(f){return f[0];}),blankRates.map(function(){return '#ff8aa0';})),'z-c2')
-  +_zc('🧬','担当の特性（自動所見）','カード全体から見た各担当のタイプ。',traitRows||'<div class="z-sub">担当データなし</div>','z-cf'));
+  +_zc('🧬','担当の特性（自動所見）','カード全体から見た各担当のタイプ。','<div class="z-list2">'+(traitRows||'<div class="z-sub">担当データなし</div>')+'</div>','z-cf'));
  // insights
  var pingStat=reps.map(function(r){var a=g[r],T=a.length||1;return {r:r,v:_zPct(a.filter(function(c){return getKaiwaLevel(c)===0;}).length,T),n:a.length};}).filter(function(o){return o.n>=3;}).sort(function(a,b){return b.v-a.v;});
  var saLate=cards.filter(function(c){return (c.pursuit_judge==='A'||c.pursuit_judge==='S')&&calcPaceOverrate(c)>1;}).length;
@@ -7904,7 +7908,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
  }).join(''):'<div class="z-empty">今日の優先案件なし。良好です◎</div>';
  var _tidyArr=(typeof ZWL!=='undefined')?reps.map(function(r){return {r:r,L:ZWL.load(g[r])};}).filter(function(x){return x.L.n>0&&ZWL.status(x.L).key==='over';}).map(function(x){var cp=ZWL.status(x.L).caps;return {r:x.r,msg:(cp&&cp.length?cp[0].msg:ZWL.advise(x.L))};}).slice(0,2):[];
  var tidyH=_tidyArr.length?'<div style="padding:8px 10px;margin-bottom:8px;border-radius:8px;background:rgba(232,146,12,.12);border:1px solid rgba(232,146,12,.35)"><div style="font-size:11px;font-weight:800;color:#e8920c">🧹 まず整理の一手</div>'+_tidyArr.map(function(o){return '<div style="font-size:12px;color:var(--z-ink);margin-top:3px"><b>'+e(o.r)+'さん</b>：'+e(o.msg)+'</div>';}).join('')+'</div>':'';
- var todayCard=_zc('📌','今日の一手','今日、誰に・何を・何を聞くか（上位'+todayCand.length+'件）',tidyH+todayH,'z-cf');
+ var todayCard=_zc('📌','今日の一手','今日、誰に・何を・何を聞くか（上位'+todayCand.length+'件）',tidyH+'<div class="z-list2">'+todayH+'</div>','z-cf');
  var coachRows=reps.map(function(r){var a=g[r],T=a.length||1;
    var renso=_zPct(a.filter(function(c){return +(c.stage||0)>=3;}).length,T);
    var prr=_zPct(a.filter(function(c){return c.proposal_req;}).length,T);
@@ -7956,7 +7960,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
  var rdAvg=t.length?Math.round(_rdScores.reduce(function(s,v){return s+v;},0)/t.length):0;
  var rdList=t.filter(function(c){var st=+(c.stage||0);return (c.pursuit_judge==='S'||c.pursuit_judge==='A'||st>=3)&&_readyScore(c)<70;}).map(function(c){return {c:c,sc:_readyScore(c)};}).sort(function(a,b){return a.sc-b.sc;}).slice(0,6);
  var rdListH=rdList.length?rdList.map(function(o){var c=o.c;var _rsid=String(c.id||'').replace(/[^\w-]/g,'');return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--z-line);cursor:pointer" onclick="zJumpCard(\''+_rsid+'\')"><b style="font-size:13px;color:var(--z-ink);min-width:72px;flex-shrink:0">'+e(c.name||'無名')+'様 \u203a</b><span style="font-size:11px;color:var(--z-mut);flex:1">'+_readyGap(c)+'</span><span style="font-size:11px;color:var(--z-dim);flex-shrink:0">'+e(c.manager||'')+'</span></div>';}).join(''):'<div class="z-empty">有望案件はすべて次の一手が準備済み◎</div>';
- var readyH='<div class="z-tiles"><div class="z-tile"><b style="color:#34e3d0">'+rdHi+'</b><span>準備OK（70+）</span></div><div class="z-tile"><b style="color:#ffb443">'+rdMid+'</b><span>要準備（30〜69）</span></div><div class="z-tile"><b style="color:#ff5d7d">'+rdLo+'</b><span>未設定（〜29）</span></div></div><div class="z-sub" style="margin:8px 0 4px"><span style="color:var(--z-cyan);font-weight:700">平均準備度：'+rdAvg+'%</span>　次の接点が未設定の有望案件↓</div>'+rdListH;
+ var readyH='<div class="z-tiles"><div class="z-tile"><b style="color:#34e3d0">'+rdHi+'</b><span>準備OK（70+）</span></div><div class="z-tile"><b style="color:#ffb443">'+rdMid+'</b><span>要準備（30〜69）</span></div><div class="z-tile"><b style="color:#ff5d7d">'+rdLo+'</b><span>未設定（〜29）</span></div></div><div class="z-sub" style="margin:8px 0 4px"><span style="color:var(--z-cyan);font-weight:700">平均準備度：'+rdAvg+'%</span>　次の接点が未設定の有望案件↓</div>'+'<div class="z-list2">'+rdListH+'</div>';
  var readyCard=_zc('🎯','次の一手 準備度','次回アポ・家族・KP・提案依頼・連想到達から自動算出（入力欄は増やしていません）',readyH,'z-cf');
  // ===== P2: 育成クエスト =====
  var QTYPE=[['発掘力','発掘開拓型','今週、新規発掘を3件'],['継続接触力','継続接触型','ご無沙汰カードに再訪アポを2本'],['家族ヒアリング力','相続ヒアリング型','家族構成を3件ヒアリング'],['提案依頼獲得力','提案依頼獲得型','連想到達カードで提案依頼を1件'],['クロージング前進力','クロージング推進型','A案件1件の同行依頼を取る']];
@@ -7981,16 +7985,17 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
     +'<div style="font-size:12px;color:var(--z-ink);margin:2px 0 0 28px"><span style="color:#ffb443;font-weight:700">次のクエスト：</span>'+QTYPE[lo][2]+'</div></div>';
  }).join('')||'<div class="z-empty">担当データなし</div>';
  var questCard=_zc('🌱','育成クエスト','担当の弱点を「次の課題」に変換。今月の成長と次の一手を提示。',questH,'z-cf');
- var _cardTreasure=_zc('💎','お宝度マトリクス','熱量×資産規模。右上＝お宝。泡を長押しで客名、タップでカードへ。',bub,'z-cf');
+ var _treasureLegend='<div class="z-sub" style="display:flex;flex-wrap:wrap;gap:5px 14px;align-items:center;margin-top:4px"><span><b>↑上</b>＝資産規模 大</span><span><b>→右</b>＝熱量(スコア) 高</span><span><b>●大きい</b>＝スコア高</span><span style="display:inline-flex;align-items:center;gap:6px">色＝追客ランク：'+['S','A','B','C','D'].map(function(k){return '<span style="display:inline-flex;align-items:center;gap:3px"><i style="width:9px;height:9px;border-radius:50%;background:'+RC[k]+';display:inline-block"></i>'+k+'</span>';}).join('')+'</span></div>';
+ var _cardTreasure=_zc('💎','お宝度マトリクス','熱量×資産規模。右上＝お宝。泡を長押しで客名、タップでカードへ。',bub+_treasureLegend,'z-cf');
  var _cardHeroes=_zc('🎖','営業タイプ図鑑（担当）','担当ごとの「型」と伸ばす力。タップで拡大。','<div class="z-jobgrid">'+miniR+'</div>','z-cf');
  var _axKing=J9_STATS.map(function(st){var best=null,bv=-1;reps.forEach(function(r){var a=g[r];if(!a||!a.length)return;var corr=(j9DetermineJob(a)||{}).corr||{};var v=st.axes.reduce(function(s,k){return s+(corr[k]||0);},0)/st.axes.length;if(v>bv){bv=v;best=r;}});if(!best||bv<=0)return '';var _tt={kodo:'韋駄天',kansatsu:'千里眼',taiwa:'弁舌家',senryaku:'軍師',kanri:'記録王'};return '<div class="z-axking"><span class="z-axk-st"><span class="z-axk-ic">'+st.e+'</span>'+st.n+'</span><span class="z-axk-t">'+(_tt[st.k]||'')+'</span><span class="z-axk-nm">'+e(best)+'</span><span class="z-axk-v">'+Math.round(bv)+'</span></div>';}).join('');
  var _axKingCard=_zc('🏅','タイプ別 No.1（称号）','5つの型それぞれの課トップ。',(_axKing||'<div class="z-sub">集計中</div>'),'z-cf');
  var _cardWork=_zc('🟢','稼働率モニター','達成度','<div class="zWorkCard">'+workMeterInner()+'</div>','z-cf');
- var _cardDiff=_zc('🎚','戦略差分','温度の追従と違う運用。協議の判断ポイント。タップでカードへ','<div class="z-wkscroll"><div class="z-wkmin">'+_strategyDiffInner()+'</div></div>','z-cf');
+ var _cardDiff=_zc('🎚','戦略差分','温度の追従と違う運用。協議の判断ポイント。タップでカードへ',_strategyDiffInner(),'z-cf');
  var _bodyData=_deepItems.filter(function(it){return it.id!=='treasure'&&it.id!=='jobs9';}).map(function(it){var bd='';try{bd=it.render(_deepCtx)||'';}catch(err){bd='<div class="z-sub">⚠ 「'+(it.id||'?')+'」の描画でエラー（'+String(err&&err.message||err).slice(0,80)+'）</div>';}return _zc(it.e||'📈',it.t||it.id||'分析',it.s||'',bd,it.sp||'z-c2');}).join('');
  var _cardInsights=_zc('🧠','傾向と対策（AIインサイト）','データから打ち手を自動抽出。',ins,'z-cf');
  var _cardMap=_zc('🗺','マップ','町の熱量とお宝客。',bodyArea+_cardTreasure,'z-cf');
- var dangerCard=_zc('🚨','放置危険アラート','このままだと流れる見込み。至急→要フォロー→注意の順。タップでカードへ。',zDangerCardHTML(t,true),'z-cf'); var contractCard=_zc('✅','契約前進チェックリスト','契約に進むための不足を1行で。不足が少ない順＝契約に近い。',zContractListHTML(t,true),'z-cf'); var familyCard=_zc('👪','家族合意マップ','賛成●/反対●/未接触○・決裁者・KP・次に会う人。反対や未接触決裁者を優先。',zFamilyMapHTML(t,true),'z-cf'); H+=_zsec('today','🎯 課の指示 <span class="z-secsub">今日やること・誰に何を</span>',todayCard+dangerCard+contractCard+familyCard+readyCard+zoneCard+bodyContract)+_zsec('coach','🎓 部下の指導 <span class="z-secsub">コーチング・育成クエスト</span>',coachCard+questCard)+_zsec('teamchk','👥 部下の確認 <span class="z-secsub">担当の現状</span>',bodyRank+_cardWork+_cardDiff+bodyTeam)+((typeof selfEmail!=='undefined'&&selfEmail===DEV_EMAIL)?(_zsec('heroes','🏅 営業タイプ図鑑 <span class="z-secsub">型と各タイプNo.1</span>',_axKingCard+_cardHeroes)):'')+_zsec('state','📊 詳細分析 <span class="z-secsub">月次・ヒートマップ・課長会議用</span>',_cardMap+bodyKpi3+bodyProcess+bodyQuality+_bodyData+_teamCourse+_cardInsights);
+ var dangerCard=_zc('🚨','放置危険アラート','このままだと流れる見込み。至急→要フォロー→注意の順。タップでカードへ。',zDangerCardHTML(t,true),'z-cf'); var contractCard=_zc('✅','契約前進チェックリスト','契約に進むための不足を1行で。不足が少ない順＝契約に近い。','<div class="z-list2">'+zContractListHTML(t,true)+'</div>','z-cf'); var familyCard=_zc('👪','家族合意マップ','賛成●/反対●/未接触○・決裁者・KP・次に会う人。反対や未接触決裁者を優先。','<div class="z-list2">'+zFamilyMapHTML(t,true)+'</div>','z-cf'); H+=_zsec('today','🎯 課の指示 <span class="z-secsub">今日やること・誰に何を</span>',todayCard+dangerCard+contractCard+familyCard+readyCard+zoneCard+bodyContract)+_zsec('coach','🎓 部下の指導 <span class="z-secsub">コーチング・育成クエスト</span>',coachCard+questCard)+_zsec('teamchk','👥 部下の確認 <span class="z-secsub">担当の現状</span>',bodyRank+_cardWork+_cardDiff+bodyTeam)+((typeof selfEmail!=='undefined'&&selfEmail===DEV_EMAIL)?(_zsec('heroes','🏅 営業タイプ図鑑 <span class="z-secsub">型と各タイプNo.1</span>',_axKingCard+_cardHeroes)):'')+_zsec('state','📊 詳細分析 <span class="z-secsub">月次・ヒートマップ・課長会議用</span>',_cardMap+bodyKpi3+bodyProcess+bodyQuality+_bodyData+_teamCourse+_cardInsights);
  H+='</div>';
  host.innerHTML=H;
  if(window.IS_DEV){var _dw=document.getElementById('devSelfMirrorWrap');if(_dw){_dw.style.display='';if(window.renderSelfDash)renderSelfDash('devSelfMirror');}}
