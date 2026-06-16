@@ -1685,7 +1685,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.03";
+var APP_VERSION = "v7.04";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -4991,13 +4991,12 @@ function _sendCards(selected, toEmail, ccEmail, subjPrefix, onDone, copyAddr){
   var body='AIBIS cards\nDate: '+ts+'\nCards: '+selected.length;
   var clipAddr=(typeof copyAddr!=='undefined'&&copyAddr!==null&&copyAddr!=='')?copyAddr:(toEmail||'');
   function fallback(){
-    // 仕様：ファイルをDL（添付用）＋宛先をクリップボードにコピー（貼付用）。mailtoは宛先を入れず白紙で開く。件名/本文は文字化け回避のため英数字のみ。
-    try{ if(clipAddr && navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(clipAddr); } }catch(_e){}
+    // PC：宛先プリフィル＋件名/本文は英数字のみ（文字化け回避）。手動でファイル添付して送信。
     var blob=new Blob([data],{type:'application/json'});
     var url=URL.createObjectURL(blob);
     var a=document.createElement('a'); a.href=url; a.download=fn; a.click();
-    _mailtoPrompt('mailto:?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body),
-      '①DLしたファイルを添付　②宛先欄に貼り付け'+(clipAddr?('（「'+clipAddr+'」コピー済）'):'')+'　→送信してね。');
+    var q=(ccEmail?'?cc='+ccEmail+'&subject=':'?subject=')+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
+    _mailtoPrompt('mailto:'+(toEmail||'')+q, '宛先は入力済み。①DLしたファイルを添付　②送信してね。');
     setTimeout(function(){ URL.revokeObjectURL(url); },1500);
     if(onDone) onDone();
   }
@@ -6085,15 +6084,7 @@ function mkJson(){
 }
 function syncMailToSelf(){
   if(cards.length===0){toast('送信するカードがありません');return;}
-  var j=mkJson();
-  try{localStorage.setItem('aibis_last_export',new Date().toISOString());}catch(_e){}
-  var fn='AIBIS_'+(uName||'staff')+'_'+APP_VERSION+'_'+j.ts+'.json';
-  var a=document.createElement('a'); a.href=j.url; a.download=fn; a.click();
-  var subj='AIBIS Phone to PC '+j.ts+' ('+cards.length+' cards)';
-  var body='AIBIS sync Phone->PC\nFrom: '+(uName||'')+(branch?' / '+branch:'')+'\nDate: '+j.ts+'\nCards: '+cards.length+'\nFile: '+fn+'\n\nLoad: AIBIS > Read > select this file.';
-  var m='mailto:'+(selfEmail||'')+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
-  _mailtoPrompt(m, 'スマホ→PC同期：メールを開き、DLしたJSONを添付して送ってね。');
-  setTimeout(function(){ URL.revokeObjectURL(j.url); },1500);
+  _sendCards(cards, selfEmail||'', '', 'AIBIS sync', null);  // 全カードを自分宛・他の送信ボタンと同一挙動
 }
 
 // ===== 地図 =====
@@ -8724,16 +8715,7 @@ function plannerToPhone(){
   var ids=_plan.entries.filter(function(en){return en.cardId;}).map(function(en){return en.cardId;});
   if(!ids.length){ aibisAlert('予定表にお客様カードがありません（イベント・自由入力はカードがないため送れません）。'); return; }
   var sel=cards.filter(function(c){ return ids.indexOf(c.id)>=0; });
-  var data=JSON.stringify(sel,null,2);
-  var blob=new Blob([data],{type:'application/json'}); var url=URL.createObjectURL(blob);
-  var now=new Date(); var ts=now.getFullYear()+'-'+_p2(now.getMonth()+1)+'-'+_p2(now.getDate());
-  var fn='AIBIS_plan_'+(uName||'staff')+'_'+sel.length+'cards_'+ts+'.json';
-  var a=document.createElement('a'); a.href=url; a.download=fn; a.click();
-  var subj='AIBIS 本日の予定 '+ts+' ('+sel.length+'件)';
-  var body='本日の予定のカード\n日付:'+ts+'\n件数:'+sel.length+'\nファイル:'+fn;
-  var m='mailto:'+(selfEmail||'')+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
-  _mailtoPrompt(m, '予定表のカード'+sel.length+'件をDLしました。メールを開いて添付→スマホ宛に送ってね。');
-  setTimeout(function(){ URL.revokeObjectURL(url); },1500);
+  _sendCards(sel, selfEmail||'', '', 'AIBIS plan', null);  // 他の送信ボタンと同一挙動
 }
 window.openPlannerFromSelected=openPlannerFromSelected; window.openPlannerToday=openPlannerToday; window.closePlanner=closePlanner; window.plannerTab=plannerTab; window.planSet=planSet; window.planDel=planDel; window.planAddCard=planAddCard; window.planSearch=planSearch; window.planAddEvent=planAddEvent; window.planAddFree=planAddFree; window.printPlanner=printPlanner; window.plannerToPhone=plannerToPhone; window.resetPlanner=resetPlanner; window.doResetPlanner=doResetPlanner; window.planPick=planPick; window.planSort=planSort;
 
@@ -8767,18 +8749,7 @@ function mailCardToSelf(){
   if(!selfEmail){toast('設定で自分のメールアドレスを登録してください');showSetup();return;}
   collectForm();
   var c=cur; if(!c){toast('カードを開いてから送信してください');return;}
-  var data=JSON.stringify([c],null,2);
-  var blob=new Blob([data],{type:'application/json'});
-  var url=URL.createObjectURL(blob);
-  var now=new Date();
-  var ts=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+'_'+String(now.getHours()).padStart(2,'0')+String(now.getMinutes()).padStart(2,'0');
-  var fn='AIBIS_'+(uName||'staff')+'_'+APP_VERSION+'_'+ts+'.json';
-  var a=document.createElement('a'); a.href=url; a.download=fn; a.click();
-  var subj='AIBIS card '+ts;
-  var body='AIBIS card\nDate: '+ts+'\nFile: '+fn;
-  var m='mailto:'+(selfEmail||'')+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
-  _mailtoPrompt(m);
-  setTimeout(function(){ URL.revokeObjectURL(url); },1500);
+  _sendCards([c], selfEmail||'', '', 'AIBIS card', null);  // 他の送信ボタンと同一挙動
 }
 window.mailCardToSelf=mailCardToSelf;
 function clearStrategyField(id){
