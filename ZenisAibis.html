@@ -134,6 +134,7 @@ button:active{opacity:0.8}
   .tabs{position:fixed;top:auto;bottom:0;left:0;right:0;background:white;box-shadow:0 -2px 8px rgba(0,0,0,0.1);z-index:100;border-bottom:none;border-top:2px solid #e2e8f0}
   .tab{padding:10px 4px;font-size:11px;border-bottom:none;border-top:3px solid transparent;min-height:64px}
   .tab.active{border-top-color:#2c5282;border-bottom:none}
+  #editView{padding-bottom:calc(104px + env(safe-area-inset-bottom,0px))}
 }
 .panel{background:white;padding:16px;border-radius:0 0 8px 8px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
 .panel h2{font-size:16px;color:var(--za-navy);font-weight:800;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #CBD5E0}
@@ -218,6 +219,7 @@ textarea{resize:vertical;min-height:80px}
 .jbtn.active.jsoak{background:#718096;color:white;border-color:#718096}
 .jbtn.rj-locked{opacity:.45}
 .addbtn.pursuit-locked{opacity:.5}
+.jbtn.pj-locked{opacity:.45}
 .xa-sec{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
 .xa-h{font-size:12px;font-weight:700;color:#2c5282;margin-bottom:10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #edf2f7;padding-bottom:6px}
 .xa-grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -1705,7 +1707,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.25";
+var APP_VERSION = "v7.30";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -2701,45 +2703,48 @@ function switchStrategyTab(key){
 window.switchStrategyTab=switchStrategyTab;
 var RANK_COLOR={S:'#c53030',A:'#e53e3e',B:'#dd6b20',C:'#d69e2e',D:'#38a169',E:'#718096',X:'#4a5568'};
 var RANK_DESC={S:'S：積極提案',A:'A：積極追客',B:'B：継続追客',C:'C：染み込み',D:'D：状況確認',E:'E：初期除外',X:'X：追客打切'};
-function updateAiRankDisp(rank){
-  var disp=document.getElementById('aiRankDisp');
-  var label=document.getElementById('aiRankLabel');
-  var pace=document.getElementById('aiPaceDisp');
+// 協議ランク＝Judgmentボタン由来（A/B/C/X）。全解除なら空。
+function _coRank(){
+  if(!cur) return '';
+  var mp={'A見込み':'A','追撃継続':'B','変化待ち':'C','打ち切り':'X'};
+  var mr={'追客開始':'B','打ち切り':'X'};
+  if(cur.pursuit_judge_sel&&mp[cur.pursuit_judge_sel]) return mp[cur.pursuit_judge_sel];
+  if(cur.revisit_judge&&mr[cur.revisit_judge]) return mr[cur.revisit_judge];
+  return '';
+}
+function _setRankBox(dispId,lblId,rank,emptyLbl){
+  var disp=document.getElementById(dispId), label=document.getElementById(lblId);
   if(!disp) return;
-  if(!rank||rank===''){
-    disp.textContent='—'; disp.style.color='#cbd5e0';
-    if(label){label.textContent='未判定'; label.style.color='#718096';}
-    if(pace) pace.style.display='none';
-    return;
-  }
-  var r=rank.toUpperCase();
-  disp.textContent=r;
-  disp.style.color=RANK_COLOR[r]||'#2d3748';
-  if(label){label.textContent=RANK_DESC[r]||r; label.style.color=RANK_COLOR[r]||'#718096';}
-  // ペース判定
-  if(pace&&cur){
-    var allDates=[];
-    if(cur.discovery_date) allDates.push(cur.discovery_date);
-    (cur.revisits||[]).forEach(function(v){if(v.date)allDates.push(v.date);});
-    (cur.pursuits||[]).forEach(function(v){if(v.date)allDates.push(v.date);});
-    if(_judgeMissing(cur)){ pace.style.display='block'; pace.textContent='\u26a0 ランク判定必須（再訪フェーズ終了）'; pace.style.color='#c53030'; }
-    else if(allDates.length&&(_isRevisitPhase(cur)||(r!=='E'&&r!=='X'))){
-      allDates.sort();
-      var last=allDates[allDates.length-1];
-      var days=Math.floor((new Date()-new Date(last))/(1000*60*60*24));
-      var lim=_isRevisitPhase(cur)?REVISIT_PHASE.interval:PACE_LIMIT[r];
-      if(lim){
-        pace.style.display='block';
-        if(days>lim){
-          pace.textContent='⚠ '+days+'日経過';
-          pace.style.background='#fff5f5'; pace.style.color='#c53030'; pace.style.border='1px solid #fc8181';
-        } else {
-          pace.textContent='✅ '+days+'日経過';
-          pace.style.background='#f0fff4'; pace.style.color='#276749'; pace.style.border='1px solid #9ae6b4';
-        }
-      } else { pace.style.display='none'; }
+  if(!rank){ disp.textContent='—'; disp.style.color='#cbd5e0'; if(label){label.textContent=emptyLbl;label.style.color='#718096';} return; }
+  var r=String(rank).toUpperCase();
+  disp.textContent=r; disp.style.color=RANK_COLOR[r]||'#2d3748';
+  if(label){ label.textContent=RANK_DESC[r]||r; label.style.color=RANK_COLOR[r]||'#718096'; }
+}
+function updateAiRankDisp(){
+  // 🤖 AI分析ランク：貼り付けで検出した値。Judgmentを押しても上書きしない
+  _setRankBox('aiRankDisp','aiRankLabel',(cur&&cur.pursuit_judge_ai)||'','未検出');
+  // 🤝 協議ランク：Judgmentボタン由来。全解除なら空
+  _setRankBox('coRankDisp','coRankLabel',_coRank(),'未判定');
+  // ペース判定（公式の追客ランク＝pursuit_judge 基準）
+  var pace=document.getElementById('aiPaceDisp'); if(!pace) return;
+  var r=(cur&&cur.pursuit_judge)?String(cur.pursuit_judge).toUpperCase():'';
+  if(!cur||!r){ pace.style.display='none'; return; }
+  var allDates=[];
+  if(cur.discovery_date) allDates.push(cur.discovery_date);
+  (cur.revisits||[]).forEach(function(v){if(v.date)allDates.push(v.date);});
+  (cur.pursuits||[]).forEach(function(v){if(v.date)allDates.push(v.date);});
+  if(_judgeMissing(cur)){ pace.style.display='block'; pace.textContent='\u26a0 ランク判定必須（再訪フェーズ終了）'; pace.style.color='#c53030'; pace.style.background='transparent'; pace.style.border='none'; return; }
+  if(allDates.length&&(_isRevisitPhase(cur)||(r!=='E'&&r!=='X'))){
+    allDates.sort();
+    var last=allDates[allDates.length-1];
+    var days=Math.floor((new Date()-new Date(last))/(1000*60*60*24));
+    var lim=_isRevisitPhase(cur)?REVISIT_PHASE.interval:PACE_LIMIT[r];
+    if(lim){
+      pace.style.display='block';
+      if(days>lim){ pace.textContent='⚠ '+days+'日経過'; pace.style.background='#fff5f5'; pace.style.color='#c53030'; pace.style.border='1px solid #fc8181'; }
+      else { pace.textContent='✅ '+days+'日経過'; pace.style.background='#f0fff4'; pace.style.color='#276749'; pace.style.border='1px solid #9ae6b4'; }
     } else { pace.style.display='none'; }
-  }
+  } else { pace.style.display='none'; }
 }
 function autoDetectJudge(text){
   if(!cur) return;
@@ -3180,7 +3185,6 @@ function applyRoleUI(){
   var sdBar=document.getElementById('selfDashBar');
   if(sdBar) sdBar.style.display=(!isManager)?'flex':'none';
   var stb=document.getElementById('btnSendStaff'); if(stb) stb.style.display=isManager?'inline-block':'none';
-  var mjr=document.getElementById('mgrJudgeRow'); if(mjr) mjr.style.display=isManager?'block':'none';
   var _sms=document.getElementById('staffMailSection'); if(_sms) _sms.style.display=isManager?'block':'none';
   if(isManager) renderAnalysis();
   // カードの印刷ボタンはPC版のみ
@@ -4451,21 +4455,6 @@ function renderSelfDash(tid){
    +(_meIdx>=0?'<div class="z-sub" style="margin-top:6px">あなたは <b>'+(_meIdx+1)+'位</b>（'+_rkArr[_meIdx].p+'pt）／'+_rkArr.length+'人中</div>':'')
    +'</div>';
  }
- if(_rkNames.length>=2){
-  var _syRows=[];
-  _rkNames.forEach(function(m){
-   var cs=_rkMap[m].filter(function(c){return c.mgr_judge&&c.pursuit_judge;});
-   if(!cs.length) return;
-   var hit=cs.filter(function(c){return c.mgr_judge===c.pursuit_judge;}).length;
-   _syRows.push({m:m,n:cs.length,h:hit,r:Math.round(hit/cs.length*100)});
-  });
-  if(_syRows.length){
-   _syRows.sort(function(a,b){return b.r-a.r;});
-   H+='<div class="z-card z-c2"><h3>\ud83d\udc54 判定シンクロ率</h3><div class="z-sub">担当判定と課長判定の一致率＝基準の浸透度。80%以上\u00d75件以上は\ud83c\udf93判定卒業候補。</div>'
-    +_syRows.map(function(o){return '<div class="z-mrow"><b style="flex:1">'+e(o.m)+'</b><span class="z-sub">'+o.h+'/'+o.n+'件</span><b style="margin-left:10px">'+o.r+'%</b>'+((o.r>=80&&o.n>=5)?' <span title="判定卒業候補">\ud83c\udf93</span>':'')+'</div>';}).join('')
-    +'</div>';
-  }
- }
 
  var bodyState='',bodyGrow='';
  H+='</div>';
@@ -5373,7 +5362,6 @@ function fillForm(c) {
   if(c.pursuit_judge_ai==null||c.pursuit_judge_ai==='') c.pursuit_judge_ai=c.pursuit_judge||'';
   _rankFanfare='';
   setRJ(c.revisit_judge||''); setPJ(c.pursuit_judge_sel||'');
-  paintMgrJudge();
   paintScoreWhy();
   if(window.applyRevisitLock) applyRevisitLock();
   if(window.applyPursuitLock) applyPursuitLock();
@@ -5839,39 +5827,10 @@ function isRevisitJudgeLocked(){ if(!cur) return true; var r=((cur.revisits)||[]
 function applyRevisitLock(){ var locked=isRevisitJudgeLocked(); document.querySelectorAll('[data-rj]').forEach(function(b){ b.classList.toggle('rj-locked',locked); }); }
 window.isRevisitJudgeLocked=isRevisitJudgeLocked; window.applyRevisitLock=applyRevisitLock;
 function isRevisitJudgeDone(){ return !!(cur && (cur.revisit_judge || cur.revisit_judge_date || (cur.revisit_4eyes && String(cur.revisit_4eyes).trim()))); }
-function applyPursuitLock(){ var b=document.getElementById('addPursuitBtn'); if(b) b.classList.toggle('pursuit-locked', !isRevisitJudgeDone()); }
+function applyPursuitLock(){ var locked=!isRevisitJudgeDone(); var b=document.getElementById('addPursuitBtn'); if(b) b.classList.toggle('pursuit-locked', locked); document.querySelectorAll('[data-pj]').forEach(function(x){ x.classList.toggle('pj-locked', locked); }); }
 window.isRevisitJudgeDone=isRevisitJudgeDone; window.applyPursuitLock=applyPursuitLock;
-function setRJ(v,user){ if(user){ if(typeof collectForm==='function') collectForm(); if(isRevisitJudgeLocked()){ applyRevisitLock(); aibisAlert('再訪Judgmentはまだロック中だよ🔒<br><br>ヒアリングは足りてる？課長と協議した？<br><br>再訪3回目の「訪問日・訪問内容・録音要約」のどれかを記録するとJudgmentできるよ。'); return; } if(cur.revisit_judge===v) v=''; } cur.revisit_judge=v; document.querySelectorAll('[data-rj]').forEach(function(b){b.classList.toggle('active',b.dataset.rj===v);}); if(user){ recomputeRank(); if(typeof setDirty==='function') setDirty(true); } if(window.updateTabProgress) updateTabProgress(); }
-function setMgrJudge(r){
- if(!cur) return;
- if(cur.mgr_judge===r){ delete cur.mgr_judge; delete cur.mgr_judge_at; delete cur.mgr_judge_by; }
- else{
-  cur.mgr_judge=r; cur.mgr_judge_at=new Date().toISOString(); cur.mgr_judge_by=uName||'';
-  if(r==='E'||r==='X'){
-   aibisConfirm('課長判定【'+r+'】を担当ランクにも即時反映しますか？<br><span style="font-size:11px;color:#718096">（無駄追客の早期停止。理由はフォーアイズ欄に一言残すのを推奨）</span>',
-    function(){ cur.pursuit_judge_ai=r; recomputeRank(); paintMgrJudge(); if(typeof setDirty==='function') setDirty(true); toast('担当ランクにも【'+r+'】を反映しました'); },'反映する','所見のみ');
-  }
- }
- paintMgrJudge(); if(typeof setDirty==='function') setDirty(true);
-}
-function paintMgrJudge(){
- try{
-  document.querySelectorAll('[data-mj]').forEach(function(b){ b.classList.toggle('active',!!(cur&&cur.mgr_judge===b.dataset.mj)); });
-  var d=document.getElementById('mgrJudgeDisp'); if(!d) return;
-  if(cur&&cur.mgr_judge){
-   var mine=cur.pursuit_judge||'未判定';
-   if(cur.mgr_judge===cur.pursuit_judge){
-    d.style.display='block'; d.style.background='#f0fff4'; d.style.color='#22543d';
-    d.innerHTML='👔 課長判定：'+e(cur.mgr_judge)+'（あなたの判定と一致 ✓）';
-   }else{
-    d.style.display='block'; d.style.background='#fffbeb'; d.style.color='#92400e';
-    d.innerHTML='👔 課長判定：'+e(cur.mgr_judge)+'（あなたの判定：'+e(mine)+'）— なぜ違うか、次の協議で話そう';
-   }
-  }else{ d.style.display='none'; d.innerHTML=''; }
- }catch(_e){}
-}
-window.setMgrJudge=setMgrJudge; window.paintMgrJudge=paintMgrJudge;
-function setPJ(v,user){ if(user&&cur.pursuit_judge_sel===v) v=''; cur.pursuit_judge_sel=v; document.querySelectorAll('[data-pj]').forEach(function(b){b.classList.toggle('active',b.dataset.pj===v);}); if(user){ recomputeRank(); if(typeof setDirty==='function') setDirty(true); } if(window.updateTabProgress) updateTabProgress(); }
+function setRJ(v,user){ if(user){ if(typeof collectForm==='function') collectForm(); if(isRevisitJudgeLocked()){ applyRevisitLock(); aibisAlert('再訪Judgmentはまだロック中だよ🔒<br><br>ヒアリングは足りてる？課長と協議した？<br><br>再訪3回目の「訪問日・訪問内容・録音要約」のどれかを記録するとJudgmentできるよ。'); return; } if(cur.revisit_judge===v) v=''; } cur.revisit_judge=v; document.querySelectorAll('[data-rj]').forEach(function(b){b.classList.toggle('active',b.dataset.rj===v);}); if(user){ recomputeRank(); if(window.applyPursuitLock) applyPursuitLock(); if(typeof setDirty==='function') setDirty(true); } if(window.updateTabProgress) updateTabProgress(); }
+function setPJ(v,user){ if(user){ if(typeof collectForm==='function') collectForm(); if(!isRevisitJudgeDone()){ if(window.applyPursuitLock) applyPursuitLock(); aibisAlert('先に再訪Judgmentを行ってね🔒<br><br>追撃Judgmentは、再訪Judgment（判定日・フォーアイズ・判定ボタンのどれか）を入れてからだよ。<br><br>課長と協議した？'); return; } if(cur.pursuit_judge_sel===v) v=''; } cur.pursuit_judge_sel=v; document.querySelectorAll('[data-pj]').forEach(function(b){b.classList.toggle('active',b.dataset.pj===v);}); if(user){ recomputeRank(); if(typeof setDirty==='function') setDirty(true); } if(window.updateTabProgress) updateTabProgress(); }
 
 // ===== 保存 =====
 // ===== 下書き自動保存＆画面離脱時の自動確定（保存忘れ対策） =====
@@ -10188,12 +10147,11 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
     <div id="revisitList"></div>
     <div class="jsec">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:10px">
-        <h3 style="margin:0">♦ 再訪 Judgment</h3>
+        <h3 style="margin:0">♦ 再訪 Judgment <span style="font-size:11px;font-weight:700;color:#2c5282;background:#ebf4ff;border:1px solid #bee3f8;border-radius:999px;padding:2px 9px;letter-spacing:.05em;vertical-align:middle">フォーアイズジャッジ</span></h3>
         <div style="background:#fff5f5;border:1px solid #fc8181;border-radius:6px;padding:6px 10px;font-size:11px;color:#c53030;font-weight:700">⚠ 判定は必ず課長と協議の上で選択してください！</div>
       </div>
       <div style="margin-bottom:10px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:6px;flex-wrap:wrap">
-          <label style="font-weight:600;color:#2c5282;margin:0">フォーアイズジャッジ</label>
           <span style="display:inline-flex;align-items:center;gap:6px;margin-left:auto">
             <label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">判定日</label><input type="date" id="f_rjdate" style="width:150px;min-height:32px;padding:4px 6px">
             <button type="button" class="mic-btn" onclick="micStart('f_r4eyes',this)" style="margin-top:0">🎤</button>
@@ -10221,12 +10179,11 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
     <button class="addbtn" id="addPursuitBtn" onclick="addPursuit()">＋ 追撃訪問を追加（14回超はJudgment記入後）</button>
     <div class="jsec">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:10px">
-        <h3 style="margin:0">♦ 追撃 Judgment</h3>
+        <h3 style="margin:0">♦ 追撃 Judgment <span style="font-size:11px;font-weight:700;color:#553c9a;background:#f3effc;border:1px solid #d6bcfa;border-radius:999px;padding:2px 9px;letter-spacing:.05em;vertical-align:middle">シックスアイズジャッジ</span></h3>
         <div style="background:#fff5f5;border:1px solid #fc8181;border-radius:6px;padding:6px 10px;font-size:11px;color:#c53030;font-weight:700">⚠ 判定は必ず課長と協議の上で選択してください！</div>
       </div>
       <div style="margin-bottom:10px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:6px;flex-wrap:wrap">
-          <label style="font-weight:600;color:#2c5282;margin:0">フォーアイズジャッジ</label>
           <span style="display:inline-flex;align-items:center;gap:6px;margin-left:auto">
             <label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">判定日</label><input type="date" id="f_pjdate" style="width:150px;min-height:32px;padding:4px 6px">
             <button type="button" class="mic-btn" onclick="micStart('f_p4eyes',this)" style="margin-top:0">🎤</button>
@@ -10237,27 +10194,14 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <div class="jbtns">
         <button type="button" class="jbtn jp" data-pj="A見込み" onclick="setPJ('A見込み',true)">A見込み</button>
         <button type="button" class="jbtn jc" data-pj="追撃継続" onclick="setPJ('追撃継続',true)">追撃継続</button>
-        <button type="button" class="jbtn jsoak" data-pj="変化待ち" onclick="setPJ('変化待ち',true)">変化待ち<br><small style="font-weight:600;opacity:.8">長期継続</small></button>
+        <button type="button" class="jbtn jsoak" data-pj="変化待ち" onclick="setPJ('変化待ち',true)">変化待ち</button>
         <button type="button" class="jbtn js" data-pj="打ち切り" onclick="setPJ('打ち切り',true)">打ち切り</button>
       </div>
-      <div id="mgrJudgeDisp" style="display:none;margin-top:8px;padding:6px 8px;border-radius:4px;font-size:12px;font-weight:600"></div>
-      <div id="mgrJudgeRow" style="display:none;margin-top:8px;padding:8px;background:#fff;border:1px dashed #b7791f;border-radius:6px">
-        <div style="font-size:11.5px;font-weight:700;color:#b7791f;margin-bottom:5px">👔 課長判定（担当のランクは変えない・所見として記録）</div>
-        <div style="display:flex;gap:5px;flex-wrap:wrap">
-          <button type="button" data-mj="S" onclick="setMgrJudge('S')" class="jbtn">S</button>
-          <button type="button" data-mj="A" onclick="setMgrJudge('A')" class="jbtn">A</button>
-          <button type="button" data-mj="B" onclick="setMgrJudge('B')" class="jbtn">B</button>
-          <button type="button" data-mj="C" onclick="setMgrJudge('C')" class="jbtn">C</button>
-          <button type="button" data-mj="D" onclick="setMgrJudge('D')" class="jbtn">D</button>
-          <button type="button" data-mj="E" onclick="setMgrJudge('E')" class="jbtn">E</button>
-          <button type="button" data-mj="X" onclick="setMgrJudge('X')" class="jbtn">X</button>
-        </div>
-      </div>
       <div style="margin-top:8px;padding:6px;background:#fff;border-radius:4px;font-size:11px;color:#c53030;font-weight:600">
-        ★ A見込みに引き上げたら目指せ毎日訪問！45日以内の契約を目指そう！
+        ★ A見込みは毎日訪問・45日以内に契約！
       </div>
       <div style="margin-top:8px;padding:8px;background:#fff;border:1px dashed #4a5568;border-radius:6px">
-        <div style="font-size:11.5px;font-weight:700;color:#4a5568;margin-bottom:5px">⏳ 待ちトリガー（D判定なら必須）— 何を待っているか</div>
+        <div style="font-size:11.5px;font-weight:700;color:#4a5568;margin-bottom:5px">⏳ 待ちトリガー（C判定なら必須）— 何を待っているか</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
           <select id="f_dtrigger" style="flex:2;min-width:150px;min-height:32px">
             <option value="">（なし／未設定）</option>
@@ -10292,12 +10236,22 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <option value="inheritance">相続シナリオ</option>
         </select>
       </div>
-      <!-- 追客ランク（右） -->
-      <div style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:6px;padding:8px;text-align:center;min-width:90px;display:flex;flex-direction:column;align-items:center;justify-content:center">
-        <div style="font-size:10px;color:#718096;font-weight:600;margin-bottom:4px">追客ランク</div>
-        <div id="aiRankDisp" style="font-size:36px;font-weight:900;line-height:1;letter-spacing:-1px">—</div>
-        <div id="aiRankLabel" style="font-size:9px;margin-top:2px;color:#718096">未判定</div>
-        <div id="aiPaceDisp" style="font-size:10px;font-weight:700;margin-top:5px;padding:3px 8px;border-radius:10px;display:none"></div>
+      <!-- 追客ランク（右：AI分析＋協議を併記） -->
+      <div style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:6px;padding:8px;min-width:130px;display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <div style="display:flex;gap:8px;align-items:stretch;justify-content:center;width:100%">
+          <div style="flex:1;text-align:center">
+            <div style="font-size:9px;color:#718096;font-weight:600;margin-bottom:2px">🤖 AI分析</div>
+            <div id="aiRankDisp" style="font-size:30px;font-weight:900;line-height:1;letter-spacing:-1px">—</div>
+            <div id="aiRankLabel" style="font-size:8px;margin-top:1px;color:#718096">未検出</div>
+          </div>
+          <div style="width:1px;background:#e2e8f0"></div>
+          <div style="flex:1;text-align:center">
+            <div style="font-size:9px;color:#718096;font-weight:600;margin-bottom:2px">🤝 協議</div>
+            <div id="coRankDisp" style="font-size:30px;font-weight:900;line-height:1;letter-spacing:-1px">—</div>
+            <div id="coRankLabel" style="font-size:8px;margin-top:1px;color:#718096">未判定</div>
+          </div>
+        </div>
+        <div id="aiPaceDisp" style="font-size:10px;font-weight:700;margin-top:6px;padding:3px 8px;border-radius:10px;display:none"></div>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
