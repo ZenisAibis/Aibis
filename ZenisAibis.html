@@ -1722,7 +1722,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.45";
+var APP_VERSION = "v7.46";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -7859,10 +7859,10 @@ function renderAnalysis(){
  // team活動（フル稼働）
  var g=_zByMgr(cards), reps=Object.keys(g).sort(), curMonth=_zMonths()[11];
  var active=reps.filter(function(r){return g[r].some(function(c){return (c.discovery_date||'').slice(0,7)===curMonth||_zVisitDates(c).some(function(d){return d.slice(0,7)===curMonth;});});});
- var H='<div class="zdash zdash-mgr"><div class="z-cockpit"><div class="z-cmdhead">⌘ COMMAND CENTER <span>/ 課分析</span></div>';
+ var H='<div class="zdash zdash-mgr"><div class="z-cockpit"><div class="z-cmdhead">⌘ COMMAND CENTER <span>/ '+(scope==='all'?'課分析':e(scope))+'</span></div>';
  // KPI + gauge
  H+='<div class="z-bento"><div class="z-card z-kpi z-c1"><span class="z-klab">今月発掘</span>'+(thisM||lastM?'<span class="z-delta '+(dd>=0?'up':'dn')+'">'+(dd>=0?'▲':'▼')+' '+Math.abs(dd)+'</span>':'')+'<div class="z-kval z-num">'+thisM+'<small>件</small></div>'+_zSpark(mDisc,'#34e3d0')+'</div>'
-  +'<div class="z-card z-kpi z-c1"><span class="z-klab">課スコア平均</span><div class="z-kval z-num" style="color:#8b7cff">'+avg+'<small>/78</small></div><div class="z-ksub">対象 '+n+'件</div></div>'
+  +'<div class="z-card z-kpi z-c1"><span class="z-klab">スコア平均</span><div class="z-kval z-num" style="color:#8b7cff">'+avg+'<small>/78</small></div><div class="z-ksub">対象 '+n+'件</div></div>'
   +'<div class="z-card z-kpi z-c1"><span class="z-klab">連想率</span><div class="z-kval z-num" style="color:#9be15d">'+_zPct(conn,n)+'<small>%</small></div><div class="z-ksub">'+conn+'件</div></div>'
   +'<div class="z-card z-kpi z-c1"><span class="z-klab">ペース遅れ</span><div class="z-kval z-num" style="color:#ff5d7d">'+late+'<small>件</small></div><div class="z-ksub">'+_zPct(late,n)+'%</div></div></div>';
  H+='</div>';
