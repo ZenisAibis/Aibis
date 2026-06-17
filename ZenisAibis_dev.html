@@ -122,6 +122,10 @@ button:active{opacity:0.8}
   header h1{text-align:center}
   .ha{justify-content:center}
   .ha button{flex:1 1 auto;font-size:11px;padding:8px 4px}
+  #selectBar{flex-wrap:nowrap;padding:8px 8px}
+  #selectBar>div:first-child{flex-shrink:0;font-size:11px}
+  #selectBar>div:last-child{flex-wrap:nowrap;gap:3px}
+  #selectBar>div:last-child button{font-size:10px;padding:4px 6px;white-space:nowrap}
 }
 .tabs{display:flex;background:#fff;border-bottom:2px solid #e2e8f0;position:sticky;top:var(--tabsTop,66px);z-index:49;box-shadow:0 3px 8px rgba(0,0,0,0.05)}
 .tab{padding:12px 8px;cursor:pointer;font-weight:500;color:#4a5568;border-bottom:3px solid transparent;font-size:13px;flex:1;text-align:center;min-height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
@@ -1718,7 +1722,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.42";
+var APP_VERSION = "v7.44";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -2005,6 +2009,7 @@ function readLS() {
   try { cards = JSON.parse(localStorage.getItem(SK)||'[]'); } catch(ex){ cards=[]; }
   lastSaveSnapshot=JSON.stringify(cards);
   migrateRosenka();
+  migratePursuitLock();
 }
 var BACKUP_KEY='prospect_backup_v1';
 var BACKUP_META='prospect_backup_meta_v1';
@@ -9262,6 +9267,24 @@ function updateRosenkaDisp(val){
   disp.textContent='約'+man+'万円/㎡'+rateStr;
 }
 // 既存データの路線価を千円/㎡に変換（1000以上の値を自動変換）
+// 再訪Judgment未済なのに追撃Judgment（ロック導入前に押された残り）があるカードを一括リセット。冪等。
+function migratePursuitLock(){
+  var n=0;
+  cards.forEach(function(c){
+    var revDone=!!(c.revisit_judge || c.revisit_judge_date || (c.revisit_4eyes && String(c.revisit_4eyes).trim()));
+    if(!revDone && (c.pursuit_judge_sel || c.pursuit_judge_date)){
+      c.pursuit_judge_sel=''; c.pursuit_judge_date='';
+      var mp={'A見込み':'A','追撃継続':'B','変化待ち':'C','打ち切り':'X','訪問継続':'B','C染み込み':'C','S積極提案':'A'};
+      var mr={'追客開始':'B','打ち切り':'X'};
+      var rk='';
+      if(c.revisit_judge&&mr[c.revisit_judge]) rk=mr[c.revisit_judge];
+      if(!rk) rk=c.pursuit_judge_ai||'';
+      c.pursuit_judge=rk;
+      n++;
+    }
+  });
+  if(n>0){ try{saveLS();}catch(e){} if(typeof toast==='function') toast('🔓 再訪Judgment未済の追撃判定 '+n+'件をリセットしました'); }
+}
 function migrateRosenka(){
   var changed=false;
   cards.forEach(function(c){
