@@ -79,7 +79,10 @@ body{font-family:-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-seri
 #listHeaderMob{display:none}
 body.is-mob #listHeaderPC{display:none!important}
 body.is-mob #listHeaderMob{display:block!important}
-body.is-mob #doukouBtn{min-width:60px!important;padding:8px 5px!important;font-size:11px!important}
+body.is-mob #doukouBtn{min-width:42px!important;padding:7px 3px!important;font-size:10px!important}
+body.is-mob #actCols{grid-template-columns:1fr!important}
+body.is-mob #houbunPills{flex-wrap:nowrap!important}
+body.is-mob #houbunPills .pbtn{flex:1 1 0;min-width:0;padding:6px 1px;font-size:10px;white-space:nowrap}
 body.is-mob #analysisSummary{grid-template-columns:repeat(2,1fr)!important}
 body.is-mob #analysisStats2{grid-template-columns:repeat(2,1fr)!important}
 body.is-mob #analysisChartsGrid{grid-template-columns:1fr!important}
@@ -1052,7 +1055,7 @@ body.is-mob .mob-menu{display:inline-block}
         <div>
           <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">現状</label>
           <select id="qaGenjo" style="width:100%;box-sizing:border-box;padding:10px 6px;border:1px solid #cbd5e0;border-radius:8px;font-size:13px;font-family:inherit;background:#fff">
-            <option value="">-</option><option value="P">P（駐車場）</option>
+            <option value="">-</option><option value="P">駐車場</option>
             <option value="老朽">老朽</option><option value="店舗">店舗</option><option value="自宅">自宅</option><option value="雑種地">雑種地</option><option value="都外">都外</option>
           </select>
         </div>
@@ -1722,7 +1725,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.45";
+var APP_VERSION = "v7.47";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -4322,7 +4325,7 @@ function _kpiCnt(arr,fn,ym){return arr.filter(function(c){var dd=fn(c);return dd
 function _kpiHalf(arr,fn){var h=_halfRange();return arr.filter(function(c){var dd=fn(c);if(!dd)return false;var mk=String(dd).slice(0,7);return mk>=h.s&&mk<=h.e;}).length;}
 function _kpi3Cards(arr){var n0=_ymOff(0),p1=_ymOff(1),h=_halfRange();return _KPI3.map(function(k){var fn=k[2],col=k[1],lab=k[0];var now=_kpiCnt(arr,fn,n0),prev=_kpiCnt(arr,fn,p1),half=_kpiHalf(arr,fn),d=now-prev;var spark=_zMonthly(arr,fn).slice(6);return '<div class="z-card z-kpi z-c1 z-k3card" style="--mc:'+col+'"><span class="z-klab" style="color:'+col+'">'+lab+'</span>'+((now||prev)?'<span class="z-delta '+(d>=0?'up':'dn')+'">'+(d>=0?'\u25b2':'\u25bc')+' '+Math.abs(d)+'</span>':'')+'<div class="z-kval z-num" style="color:'+col+'">'+now+'<small>\u4ef6</small></div><div class="z-ksub">\u524d\u6708 '+prev+' \u30fb \u534a\u671f('+h.label+') <b style="color:'+col+'">'+half+'</b></div>'+_zSpark(spark,col)+_kpi3Hint(lab,now,prev,d)+'</div>';}).join('');}
 
-var _GENJO=[['P','P(駐車場)','#4aa8ff'],['老朽','老朽','#ff5d7d'],['店舗','店舗','#8b7cff'],['自宅','自宅','#34e3d0'],['雑種地','雑種地','#ffb443'],['都外','都外','#9be15d'],['','未設定','#6b7894']];
+var _GENJO=[['P','駐車場','#4aa8ff'],['老朽','老朽','#ff5d7d'],['店舗','店舗','#8b7cff'],['自宅','自宅','#34e3d0'],['雑種地','雑種地','#ffb443'],['都外','都外','#9be15d'],['','未設定','#6b7894']];
 function _kpi3Hint(lab,now,prev,d){var st=(now===0&&prev===0)?'none':(now===0)?'zero':(d>0)?'up':(d<0)?'down':'flat';var ic={up:'🔥',flat:'➡️',down:'⚠️',zero:'⏳',none:'🎯'}[st];var cls=(st==='up')?'up':(st==='down'||st==='zero')?'warn':'mut';var M={'提案依頼':{up:'連想到達のカードに続けてテスクロを',flat:'連想のカードにもう一押し',down:'連想カードのテスクロ機会を逃さず',zero:'連想到達のカードに提案依頼の一言を',none:'連想(3)まで来たカードにテスクロを'},'同行':{up:'山場のカードに同行で後押しを',flat:'決め所のカードに同行を1本',down:'ここぞのカードに同行依頼を',zero:'山場のカードに同行を1件',none:'同行は強い後押し。1件設定を'},'家族構成':{up:'相続人の数が提案の起点',flat:'次回訪問で1件深掘りを',down:'初回で家族構成を聞く習慣に',zero:'次の訪問で家族構成を1つ',none:'家族構成は提案の土台。まず1件'}};var t=(M[lab]||{})[st]||'';return t?'<div class="z-khint '+cls+'"><span class="ic">'+ic+'</span><span>'+t+'</span></div>':'';}
 function _reactivated(c){var ds=[];if(c.discovery_date)ds.push(c.discovery_date);(c.revisits||[]).forEach(function(r){if(r.date)ds.push(r.date);});(c.pursuits||[]).forEach(function(pp){if(pp.date)ds.push(pp.date);});ds=ds.map(function(d){return +new Date(d);}).filter(function(t){return !isNaN(t);}).sort(function(a,b){return a-b;});if(ds.length<2)return false;var recent=(Date.now()-ds[ds.length-1])/864e5<=30;var mg=0;for(var i=1;i<ds.length;i++){var gp=(ds[i]-ds[i-1])/864e5;if(gp>mg)mg=gp;}return recent&&mg>=45;}
 function _actPoints(c){var p=10,st=+(c.stage||0);if((c.initial_content&&String(c.initial_content).trim())||(c.analog_memo&&String(c.analog_memo).trim()))p+=20;if((c.revisits||[]).length)p+=20;if((c.pursuits||[]).length)p+=15;if(st>=3)p+=30;if(c.proposal_req)p+=50;if(c.doukou)p+=20;if(st>=6)p+=100;if(c.pursuit_judge==='A'||c.pursuit_judge==='S')p+=100;if(c.family_headcount)p+=10;if((c.family||[]).some(function(x){return x.met&&(x.owner||x.kp);}))p+=10;if(_reactivated(c))p+=50;return p;}
@@ -7859,10 +7862,10 @@ function renderAnalysis(){
  // team活動（フル稼働）
  var g=_zByMgr(cards), reps=Object.keys(g).sort(), curMonth=_zMonths()[11];
  var active=reps.filter(function(r){return g[r].some(function(c){return (c.discovery_date||'').slice(0,7)===curMonth||_zVisitDates(c).some(function(d){return d.slice(0,7)===curMonth;});});});
- var H='<div class="zdash zdash-mgr"><div class="z-cockpit"><div class="z-cmdhead">⌘ COMMAND CENTER <span>/ 課分析</span></div>';
+ var H='<div class="zdash zdash-mgr"><div class="z-cockpit"><div class="z-cmdhead">⌘ COMMAND CENTER <span>/ '+(scope==='all'?'課分析':e(scope))+'</span></div>';
  // KPI + gauge
  H+='<div class="z-bento"><div class="z-card z-kpi z-c1"><span class="z-klab">今月発掘</span>'+(thisM||lastM?'<span class="z-delta '+(dd>=0?'up':'dn')+'">'+(dd>=0?'▲':'▼')+' '+Math.abs(dd)+'</span>':'')+'<div class="z-kval z-num">'+thisM+'<small>件</small></div>'+_zSpark(mDisc,'#34e3d0')+'</div>'
-  +'<div class="z-card z-kpi z-c1"><span class="z-klab">課スコア平均</span><div class="z-kval z-num" style="color:#8b7cff">'+avg+'<small>/78</small></div><div class="z-ksub">対象 '+n+'件</div></div>'
+  +'<div class="z-card z-kpi z-c1"><span class="z-klab">スコア平均</span><div class="z-kval z-num" style="color:#8b7cff">'+avg+'<small>/78</small></div><div class="z-ksub">対象 '+n+'件</div></div>'
   +'<div class="z-card z-kpi z-c1"><span class="z-klab">連想率</span><div class="z-kval z-num" style="color:#9be15d">'+_zPct(conn,n)+'<small>%</small></div><div class="z-ksub">'+conn+'件</div></div>'
   +'<div class="z-card z-kpi z-c1"><span class="z-klab">ペース遅れ</span><div class="z-kval z-num" style="color:#ff5d7d">'+late+'<small>件</small></div><div class="z-ksub">'+_zPct(late,n)+'%</div></div></div>';
  H+='</div>';
@@ -9854,7 +9857,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <div>
           <label>現状</label>
           <select id="f_genjo">
-            <option value="">-</option><option value="P">P（駐車場）</option>
+            <option value="">-</option><option value="P">駐車場</option>
             <option value="老朽">老朽</option><option value="店舗">店舗</option><option value="自宅">自宅</option><option value="雑種地">雑種地</option><option value="都外">都外</option>
           </select>
         </div>
@@ -10017,7 +10020,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         </div>
         <div style="font-size:9px;color:#a0aec0;text-align:center;margin-top:2px">ピンポン ➤ 立ち話 ➤ 玄関内 ➤ 連れ出し ➤ 上り込み</div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+      <div id="actCols" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
         <div>
           <label style="font-size:11px">提示資料</label>
           <div class="cg" id="materials" style="gap:3px;margin-top:2px">
@@ -10047,6 +10050,13 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
     <div class="sec" id="secTochi">
       <div class="stitle" style="display:flex;align-items:center;gap:8px">土地情報（優先計画地）<button type="button" id="assetBtn" onclick="toggleAssetType()">アセット系</button></div>
       <div class="asset-note">🏢 アセット系：土地情報は封印中（入力不可・各判定では対象外）</div>
+      <div style="margin-bottom:8px">
+        <label>計画地備考</label>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input type="text" id="f_kuubi" placeholder="P空き多い・退去予定あり など" style="flex:1">
+          <button type="button" class="mic-btn" onclick="micStart('f_kuubi',this)" style="flex-shrink:0;margin-top:0">🎤</button>
+        </div>
+      </div>
       <!-- 路線価・面積・間口 -->
       <div style="display:grid;grid-template-columns:1fr 1fr 0.5fr;gap:8px;margin-bottom:8px">
         <div>
@@ -10084,26 +10094,26 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
             <button type="button" class="pbtn" data-pill="setsudo" data-multi="1" data-val="北">北</button>
             <button type="button" class="pbtn" data-pill="setsudo" data-multi="1" data-val="南">南</button>
             <button type="button" class="pbtn" data-pill="setsudo" data-multi="1" data-val="西">西</button>
-            <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:#4a5568;white-space:nowrap"><input type="checkbox" id="f_hatazao" style="width:auto">旗竿</label>
+            <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#4a5568;white-space:nowrap"><input type="checkbox" id="f_hatazao" style="width:19px;height:19px;flex-shrink:0">旗竿</label>
           </div>
         </div>
         <div>
           <label>用途地域</label>
           <select id="f_youto" style="font-size:12px">
             <option value="">-</option>
-            <option value="第一種低層住居専用地域">一低層</option>
-            <option value="第二種低層住居専用地域">二低層</option>
-            <option value="田園住居地域">田園住居</option>
-            <option value="第一種中高層住居専用地域">一中高層</option>
-            <option value="第二種中高層住居専用地域">二中高層</option>
-            <option value="第一種住居地域">一住居</option>
-            <option value="第二種住居地域">二住居</option>
-            <option value="準住居地域">準住居</option>
-            <option value="近隣商業地域">近隣商業</option>
-            <option value="商業地域">商業</option>
-            <option value="準工業地域">準工業</option>
-            <option value="工業地域">工業</option>
-            <option value="工業専用地域">工業専用</option>
+            <option value="第一種低層住居専用地域">第一種低層住居専用地域</option>
+            <option value="第二種低層住居専用地域">第二種低層住居専用地域</option>
+            <option value="田園住居地域">田園住居地域</option>
+            <option value="第一種中高層住居専用地域">第一種中高層住居専用地域</option>
+            <option value="第二種中高層住居専用地域">第二種中高層住居専用地域</option>
+            <option value="第一種住居地域">第一種住居地域</option>
+            <option value="第二種住居地域">第二種住居地域</option>
+            <option value="準住居地域">準住居地域</option>
+            <option value="近隣商業地域">近隣商業地域</option>
+            <option value="商業地域">商業地域</option>
+            <option value="準工業地域">準工業地域</option>
+            <option value="工業地域">工業地域</option>
+            <option value="工業専用地域">工業専用地域</option>
             <option value="無指定">無指定</option>
           </select>
         </div>
@@ -10111,7 +10121,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <!-- 権利関係チェック -->
       <div style="margin-bottom:8px">
         <label>権利関係チェック</label>
-        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:2px">
+        <div id="houbunPills" style="display:flex;gap:4px;flex-wrap:wrap;margin-top:2px">
           <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="共有名義">共有名義</button>
           <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="借地">借地</button>
           <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="底地">底地</button>
@@ -10169,17 +10179,10 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           </div>
         </div>
       </div>
-      <!-- 満室・空き・備考 -->
+      <!-- 満室・空き -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
         <div><label>満室数（戸）</label><input type="number" id="f_kuushitsu" placeholder="例: 10" inputmode="numeric" pattern="[0-9]*"></div>
         <div><label>空き数（戸）</label><input type="number" id="f_kuushitsu_aki" placeholder="例: 2" inputmode="numeric" pattern="[0-9]*"></div>
-      </div>
-      <div>
-        <label>計画地備考</label>
-        <div style="display:flex;gap:6px;align-items:center">
-          <input type="text" id="f_kuubi" placeholder="P空き多い・退去予定あり など" style="flex:1">
-          <button type="button" class="mic-btn" onclick="micStart('f_kuubi',this)" style="flex-shrink:0;margin-top:0">🎤</button>
-        </div>
       </div>
     </div>
     <div class="sec" id="secKeikaku">
