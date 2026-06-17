@@ -1722,7 +1722,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.44";
+var APP_VERSION = "v7.45";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -6343,48 +6343,48 @@ function closePrintModal(){
   document.getElementById('printModal').classList.remove('show');
 }
 function buildPrintCSS(){
-  return '@page{size:A4;margin:8mm 12mm}'
+  return '@page{size:A4;margin:12mm 15mm}'
     +'*{box-sizing:border-box}'
-    +'body{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;font-size:9.5pt;color:#1a202c;margin:0;padding:0;background:white}'
-    +'.prhdr{display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#1e3a5f 0%,#2c5282 60%,#553c9a 100%);color:white;padding:3mm 4mm;margin-bottom:4mm;border-radius:2mm}'
-    +'.prhdr-left{font-size:11pt;font-weight:900;letter-spacing:1px}'
-    +'.prhdr-right{font-size:8pt;opacity:0.85;text-align:right;line-height:1.6}'
-    +'.h2{font-size:11pt;font-weight:900;padding:2mm 3mm;margin:3mm 0 2mm;border-radius:1.5mm;color:white;display:flex;align-items:center;gap:2mm;page-break-after:avoid;break-after:avoid}'
+    +'body{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;font-size:10.5pt;color:#1a202c;margin:0;padding:0;background:white}'
+    +'.prhdr{display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#1e3a5f 0%,#2c5282 60%,#553c9a 100%);color:white;padding:3.5mm 4.5mm;margin-bottom:5mm;border-radius:2mm}'
+    +'.prhdr-left{font-size:12.5pt;font-weight:900;letter-spacing:1px}'
+    +'.prhdr-right{font-size:8.5pt;opacity:0.85;text-align:right;line-height:1.6}'
+    +'.h2{font-size:12pt;font-weight:900;padding:2.3mm 3mm;margin:3mm 0 2mm;border-radius:1.5mm;color:white;display:flex;align-items:center;gap:2mm;page-break-after:avoid;break-after:avoid}'
     +'.h2.init{background:linear-gradient(90deg,#2c5282,#3182ce)}'
     +'.h2.revis{background:linear-gradient(90deg,#276749,#38a169)}'
     +'.h2.pursuit{background:linear-gradient(90deg,#9b2c2c,#c53030)}'
     +'.h2.fam{background:linear-gradient(90deg,#744210,#d69e2e)}'
     +'.h2.strat{background:linear-gradient(90deg,#44337a,#6b46c1)}'
-    +'.sec{border:0.5pt solid #cbd5e0;border-left:3pt solid #3182ce;padding:2mm 3mm;margin-bottom:2mm;page-break-inside:avoid;background:#f8fafc;border-radius:0 1.5mm 1.5mm 0}'
+    +'.sec{border:0.5pt solid #cbd5e0;border-left:3pt solid #3182ce;padding:2.5mm 3mm;margin-bottom:2.5mm;page-break-inside:avoid;background:#f8fafc;border-radius:0 1.5mm 1.5mm 0}'
     +'.sec.green{border-left-color:#38a169;background:#f0fff4}'
     +'.sec.red{border-left-color:#c53030;background:#fff5f5}'
     +'.sec.yellow{border-left-color:#d69e2e;background:#fffff0}'
     +'.sec.purple{border-left-color:#6b46c1;background:#faf5ff}'
-    +'.stitle{font-size:9pt;font-weight:700;color:#2c5282;margin-bottom:1.5mm}'
+    +'.stitle{font-size:10pt;font-weight:700;color:#2c5282;margin-bottom:1.5mm}'
     +'.row2{display:grid;grid-template-columns:1fr 1fr;gap:5pt}'
     +'.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5pt}'
     +'.field{margin-bottom:1.5mm}'
-    +'.label{font-size:7.5pt;color:#718096;display:block;margin-bottom:0.5mm}'
-    +'.val{font-size:9.5pt;font-weight:700;border-bottom:1pt solid #e2e8f0;padding-bottom:1pt;min-height:4.5mm;display:block;color:#1a202c}'
-    +'.vcard{border:0.5pt solid #e2e8f0;border-left:3pt solid #38a169;padding:2mm 3mm;margin-bottom:2mm;page-break-inside:avoid;background:white;border-radius:0 1.5mm 1.5mm 0}'
+    +'.label{font-size:8.5pt;color:#718096;display:block;margin-bottom:0.5mm}'
+    +'.val{font-size:10.5pt;font-weight:700;border-bottom:1pt solid #e2e8f0;padding-bottom:1pt;min-height:5mm;display:block;color:#1a202c}'
+    +'.vcard{border:0.5pt solid #e2e8f0;border-left:3pt solid #38a169;padding:2.5mm 3mm;margin-bottom:2.5mm;page-break-inside:avoid;background:white;border-radius:0 1.5mm 1.5mm 0}'
     +'.vcard.red{border-left-color:#c53030}'
-    +'.vhdr{font-size:9.5pt;font-weight:800;color:#2d3748;margin-bottom:1.5mm}'
+    +'.vhdr{font-size:10.5pt;font-weight:800;color:#2d3748;margin-bottom:1.5mm}'
     +'.stage-bar{display:flex;gap:2pt;margin:1.5mm 0}'
     +'.stage-pip{flex:1;height:5pt;border-radius:2pt;background:#e2e8f0}'
     +'.stage-pip.active{background:linear-gradient(90deg,#3182ce,#553c9a)}'
     +'.jgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2pt;margin-bottom:2mm}'
-    +'.jitem{font-size:8pt;padding:1.5pt 2pt;display:flex;align-items:center;gap:3pt}'
-    +'.chk{display:inline-flex;width:10pt;height:10pt;border:1pt solid #cbd5e0;border-radius:2pt;align-items:center;justify-content:center;font-size:7pt;flex-shrink:0}'
+    +'.jitem{font-size:9pt;padding:1.5pt 2pt;display:flex;align-items:center;gap:3pt}'
+    +'.chk{display:inline-flex;width:11pt;height:11pt;border:1pt solid #cbd5e0;border-radius:2pt;align-items:center;justify-content:center;font-size:8pt;flex-shrink:0}'
     +'.chk.on{background:#2c5282;border-color:#2c5282;color:white}'
     +'.stsel{display:flex;gap:3pt;flex-wrap:wrap;margin-bottom:1.5mm}'
-    +'.stbtn{padding:2pt 6pt;border:0.5pt solid #cbd5e0;border-radius:10pt;font-size:8pt;background:#f7fafc;color:#718096}'
+    +'.stbtn{padding:2pt 6pt;border:0.5pt solid #cbd5e0;border-radius:10pt;font-size:8.5pt;background:#f7fafc;color:#718096}'
     +'.stbtn.active{background:#2c5282;color:white;border-color:#2c5282;font-weight:700}'
-    +'.pbtn{padding:2pt 6pt;border:0.5pt solid #cbd5e0;border-radius:10pt;font-size:8pt;background:#f7fafc;color:#718096}'
+    +'.pbtn{padding:2pt 6pt;border:0.5pt solid #cbd5e0;border-radius:10pt;font-size:8.5pt;background:#f7fafc;color:#718096}'
     +'.pbtn.active{background:#276749;color:white;border-color:#276749;font-weight:700}'
     +'.pgbrk{page-break-before:always}'
-    +'.hint{font-size:7.5pt;color:#a0aec0;text-align:right;margin-top:1mm}'
+    +'.hint{font-size:8pt;color:#a0aec0;text-align:right;margin-top:1mm}'
     +'.jsec{border:1pt solid #553c9a;border-radius:2mm;padding:2mm 3mm;background:#faf5ff}'
-    +'.jsec-title{font-size:9pt;font-weight:800;color:#553c9a;margin-bottom:1.5mm}';
+    +'.jsec-title{font-size:10pt;font-weight:800;color:#553c9a;margin-bottom:1.5mm}';
 }
 function execPrint(){
   var printCard=document.getElementById('printCard').checked;
@@ -6552,7 +6552,7 @@ function buildInitVisitHTML(c){
     html+='<div class="hint">※詳細は家族構成印刷を参照</div></div>';
   }
   html+='<div class="sec"><div class="stitle">✍ 初訪内容（見込み候補だと判断した理由）</div>'
-    +'<div style="min-height:20mm;border:0.5pt solid #e2e8f0;padding:2mm;font-size:9pt;border-radius:1.5mm;background:white">'+e(c.initial_content||'').replace(/\n/g,'<br>')+'</div>'
+    +'<div style="min-height:22mm;border:0.5pt solid #e2e8f0;padding:2mm;font-size:10.5pt;line-height:1.55;border-radius:1.5mm;background:white">'+e(c.initial_content||'').replace(/\n/g,'<br>')+'</div>'
     +'</div>';
   return html;
 }
@@ -6588,7 +6588,7 @@ function buildRevisitHTML(c){
       +'<span style="font-size:8pt;color:#333">日付：<span style="font-weight:600;border-bottom:0.5pt solid #aaa;display:inline-block;min-width:25mm">'+e(r.date||'')+'</span></span>'
       +'<span style="font-size:8pt;color:#333">アポ：<span style="font-weight:600;border-bottom:0.5pt solid #aaa;display:inline-block;min-width:16mm">'+e(r.appo||'')+'</span></span>'
       +'</div>'
-      +'<div style="min-height:22mm;border:0.5pt solid #aaa;padding:2mm;font-size:8pt">'+e(r.content||'').replace(/\n/g,'<br>')+'</div>'
+      +'<div style="min-height:22mm;border:0.5pt solid #aaa;padding:2mm;font-size:9.5pt;line-height:1.5">'+e(r.content||'').replace(/\n/g,'<br>')+'</div>'
       +'</div>';
   }
   // Judgment（未入力でも枠を表示）
@@ -6599,7 +6599,7 @@ function buildRevisitHTML(c){
     +'<div class="field"><span class="label">フォーアイズ</span><span class="val">'+e(c.revisit_4eyes||'')+'</span></div>'
     +'</div>'
     +'<div class="field" style="margin-top:1.5mm"><span class="label">課長協議内容・判断理由</span>'
-    +'<div style="min-height:10mm;border:0.5pt solid #aaa;padding:2mm;font-size:8pt">'+e(c.revisit_judge_reason||'').replace(/\n/g,'<br>')+'</div>'
+    +'<div style="min-height:10mm;border:0.5pt solid #aaa;padding:2mm;font-size:9.5pt;line-height:1.5">'+e(c.revisit_judge_reason||'').replace(/\n/g,'<br>')+'</div>'
     +'</div></div>';
   return html;
 }
@@ -6628,7 +6628,7 @@ function buildPursuitHTML(c){
       +(p.interviewer?'<span style="font-size:8pt;color:#333">面談者：<span style="font-weight:600">'+e(p.interviewer)+'</span></span>':'')
       +(p.next_appo_date?'<span style="font-size:8pt;color:#333">次回アポ：<span style="font-weight:600">'+e(p.next_appo_date)+'</span></span>':'')
       +'</div>'
-      +'<div style="min-height:18mm;border:0.5pt solid #aaa;padding:2mm;font-size:8pt;margin-bottom:1mm">'+e(p.content||'').replace(/\n/g,'<br>')+'</div>'
+      +'<div style="min-height:18mm;border:0.5pt solid #aaa;padding:2mm;font-size:9.5pt;line-height:1.5;margin-bottom:1mm">'+e(p.content||'').replace(/\n/g,'<br>')+'</div>'
       +(p.instruction?'<div style="font-size:8pt;border-left:2pt solid #c53030;padding-left:2mm;color:#c53030">指示：'+e(p.instruction)+'</div>':'')
       +'</div>';
   });
@@ -6882,7 +6882,7 @@ function buildFamilyHTML(c){
       var mc='';
       if(DEEP.indexOf(m.role)>=0){if(m.marriage&&m.marriage!=='不明')mc+=m.marriage;if(m.children)mc+=(mc?'・':'')+'子'+m.children+'人';}
       var sep='<span style="color:#cbd5e0;padding:0 1mm">|</span>';
-      html+='<div style="display:flex;align-items:baseline;gap:1.5mm;padding:1.2mm 0;border-bottom:0.3pt solid #edf2f7;font-size:8.5pt;flex-wrap:wrap">'
+      html+='<div style="display:flex;align-items:baseline;gap:1.5mm;padding:1.2mm 0;border-bottom:0.3pt solid #edf2f7;font-size:9.5pt;flex-wrap:wrap">'
         +'<span style="font-weight:700;min-width:17mm;color:#2d3748">'+(m.owner?'★':'')+e(m.role)+'</span>'
         +(m.name?'<span style="font-weight:600">'+e(m.name)+'</span>':'')
         +(m.age?'<span style="color:#718096">'+e(m.age)+'歳</span>':'')
@@ -6914,7 +6914,7 @@ function buildStrategyHTML(c){
     hasContent=true;
     html+='<div class="sec" style="margin-bottom:3mm;page-break-inside:auto;break-inside:auto">'
       +'<div class="stitle">'+THEMES[key]+'</div>'
-      +'<div style="font-size:8.5pt;white-space:pre-wrap;line-height:1.7">'+e(val)+'</div>'
+      +'<div style="font-size:9.5pt;white-space:pre-wrap;line-height:1.7">'+e(val)+'</div>'
       +'</div>';
   });
   if(!hasContent){
