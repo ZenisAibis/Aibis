@@ -52,13 +52,13 @@
 <title>ZenisAibis</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html{-webkit-text-size-adjust:100%}
+html{-webkit-text-size-adjust:100%;height:100%}
 :root{
   --za-navy:#1A365D; --za-navy2:#2C5282; --za-bg:#F3F6FA; --za-card-soft:#F8FAFC;
   --za-line:#E2E8F0; --za-ink:#2D3748; --za-sub:#718096; --za-red:#C53030;
   --za-green:#2F855A; --za-gold:#B7791F; --za-cyan:#34E3D0; --za-violet:#6B46C1; --za-champion:#D4AF37;
 }
-body{font-family:-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;background:#f0f2f5;color:#1a1a1a;line-height:1.5;padding:12px;font-size:14px;padding-bottom:80px}
+body{font-family:-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;background:#f0f2f5;color:#1a1a1a;line-height:1.5;padding:12px;font-size:14px;padding-bottom:80px;height:100%;overflow:hidden;margin:0}
 .container{max-width:900px;margin:0 auto}
 /* PC版：各ビューの背景クリック領域を活用してA4幅に制限 */
 @media(min-width:769px){
@@ -125,10 +125,10 @@ button:active{opacity:0.8}
   header h1{text-align:center}
   .ha{justify-content:center}
   .ha button{flex:1 1 auto;font-size:11px;padding:8px 4px}
-  #selectBar{flex-wrap:nowrap;padding:8px 8px}
-  #selectBar>div:first-child{flex-shrink:0;font-size:11px}
-  #selectBar>div:last-child{flex-wrap:nowrap;gap:3px}
-  #selectBar>div:last-child button{font-size:10px;padding:4px 6px;white-space:nowrap}
+  #selectBar{flex-wrap:nowrap!important;padding:8px 6px}
+  #selectBar>div:first-child{flex-shrink:0;font-size:10px}
+  #selectBar>div:last-child{flex-wrap:nowrap!important;gap:3px;flex-shrink:1;min-width:0}
+  #selectBar>div:last-child button{font-size:9.5px;padding:4px 4px;white-space:nowrap;flex-shrink:0}
 }
 .tabs{display:flex;background:#fff;border-bottom:2px solid #e2e8f0;position:sticky;top:var(--tabsTop,66px);z-index:49;box-shadow:0 3px 8px rgba(0,0,0,0.05)}
 .tab{padding:12px 8px;cursor:pointer;font-weight:500;color:#4a5568;border-bottom:3px solid transparent;font-size:13px;flex:1;text-align:center;min-height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
@@ -1725,7 +1725,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.52";
+var APP_VERSION = "v7.53";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
