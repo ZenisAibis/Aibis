@@ -82,7 +82,7 @@ body.is-mob #listHeaderMob{display:block!important}
 body.is-mob #doukouBtn{min-width:42px!important;padding:7px 3px!important;font-size:10px!important}
 body.is-mob #actCols{grid-template-columns:1fr!important}
 body.is-mob #houbunPills{flex-wrap:nowrap!important}
-body.is-mob #houbunPills .pbtn{flex:1 1 0;min-width:0;padding:6px 1px;font-size:10px;white-space:nowrap}
+body.is-mob #houbunPills .pbtn{flex:1 1 0;min-width:0;padding:8px 2px;font-size:12.5px;white-space:nowrap}
 body.is-mob #analysisSummary{grid-template-columns:repeat(2,1fr)!important}
 body.is-mob #analysisStats2{grid-template-columns:repeat(2,1fr)!important}
 body.is-mob #analysisChartsGrid{grid-template-columns:1fr!important}
@@ -140,7 +140,7 @@ button:active{opacity:0.8}
 .tab[data-tab="ta"].active{border-top-color:#fff;border-bottom-color:#fff}
 .tab.done.active{border-top-color:#fff;border-bottom-color:#fff}
 @media(max-width:768px){
-  .tabs{position:fixed;top:auto;bottom:0;left:0;right:0;background:white;box-shadow:0 -2px 8px rgba(0,0,0,0.1);z-index:100;border-bottom:none;border-top:2px solid #e2e8f0}
+  .tabs{position:fixed;top:auto;bottom:0;left:0;right:0;background:white;box-shadow:0 -2px 8px rgba(0,0,0,0.1);z-index:100;border-bottom:none;border-top:2px solid #e2e8f0;transform:translateZ(0);backface-visibility:hidden}
   .tab{padding:10px 4px;font-size:11px;border-bottom:none;border-top:3px solid transparent;min-height:64px}
   .tab.active{border-top-color:#2c5282;border-bottom:none}
   #editView{padding-bottom:calc(104px + env(safe-area-inset-bottom,0px))}
@@ -1725,7 +1725,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.47";
+var APP_VERSION = "v7.50";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -5303,6 +5303,26 @@ function openCard(id){
   if(typeof updateCardNav==='function') updateCardNav();
 }
 function fitTabsTop(){ var h=document.querySelector('#editView header'); var hh=(h&&h.offsetHeight)||66; document.documentElement.style.setProperty('--hdrTop', hh+'px'); if(isMob) return; var nav=document.getElementById('cardNav'); var nh=(nav && nav.style.display!=='none' && nav.offsetHeight)?nav.offsetHeight:0; document.documentElement.style.setProperty('--tabsTop', (hh+nh)+'px'); }
+/* ⑨ Android Chrome対策：アドレスバー開閉(visualViewport変化)後に、固定タブ/吸着ヘッダの当たり判定がズレる問題への再同期 */
+(function(){
+  if(!window.visualViewport) return;
+  var vv=window.visualViewport, queued=false;
+  function resync(){
+    queued=false;
+    var ev=document.getElementById('editView');
+    if(!ev || ev.style.display==='none') return;
+    [ev.querySelector('header'), document.getElementById('cardNav'), ev.querySelector('.tabs')].forEach(function(el){
+      if(!el) return;
+      var t=el.style.transform;
+      el.style.transform='translateZ(0)';
+      void el.offsetHeight;            /* 強制リフローで当たり判定を再計算させる */
+      el.style.transform=t;
+    });
+  }
+  function sched(){ if(!queued){ queued=true; requestAnimationFrame(resync); } }
+  vv.addEventListener('resize', sched, {passive:true});
+  vv.addEventListener('scroll', sched, {passive:true});
+})();
 window.fitTabsTop=fitTabsTop;
 function navCard(dir){
   if(!Array.isArray(lastVisible)||!lastVisible.length||!curId) return;
@@ -5623,13 +5643,17 @@ function famRenderSummary(){
   else if(pos>neg) ov='<span style="color:#2c5282;font-weight:700">👍 概ねポジティブ</span>';
   else ov='<span style="color:#744210;font-weight:700">🔍 確認中</span>';
   el.style.display='flex';
-  el.innerHTML='<span style="font-size:11px;color:#718096;font-weight:600">家族全体：</span>'
+  el.style.flexDirection='column';
+  el.style.alignItems='flex-start';
+  el.innerHTML='<div style="display:flex;align-items:center;gap:5px;flex-wrap:nowrap;white-space:nowrap">'
+    +'<span style="font-size:11px;color:#718096;font-weight:600">家族全体：</span>'
     +'<span style="display:flex;align-items:center;gap:2px"><span style="width:10px;height:10px;border-radius:50%;background:#38a169;display:inline-block"></span>'+pos+'人</span>'
     +'<span style="color:#ddd">|</span>'
     +'<span style="display:flex;align-items:center;gap:2px"><span style="width:10px;height:10px;border-radius:50%;background:#e53e3e;display:inline-block"></span>'+neg+'人</span>'
     +'<span style="color:#ddd">|</span>'
     +'<span style="display:flex;align-items:center;gap:2px"><span style="width:10px;height:10px;border-radius:50%;background:white;border:1px solid #aaa;display:inline-block"></span>'+unk+'人</span>'
-    +'<span style="margin-left:8px">'+ov+'</span>';
+    +'</div>'
+    +'<div style="margin-top:3px">'+ov+'</div>';
 }
 function famSetStance(s){
   famCurStance=s;
@@ -10122,11 +10146,10 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <div style="margin-bottom:8px">
         <label>権利関係チェック</label>
         <div id="houbunPills" style="display:flex;gap:4px;flex-wrap:wrap;margin-top:2px">
-          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="共有名義">共有名義</button>
+          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="単独名義">単独</button>
+          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="法人名義">法人</button>
+          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="共有名義">共有</button>
           <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="借地">借地</button>
-          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="底地">底地</button>
-          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="農地">農地</button>
-          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="相続課題">相続課題</button>
         </div>
       </div>
       <!-- 建蔽容積・築年数 -->
