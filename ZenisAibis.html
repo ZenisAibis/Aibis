@@ -1223,7 +1223,7 @@ body.is-mob .mob-menu{display:inline-block}
         ※ <b>チェックなしで押すと、前回送信から更新・新規のカードだけ</b>を自動で選んで送るよ（確認あり）。全部送るなら「全選択」<br><br>
         <b style="color:#718096">【共通】</b><br>
         検索 … 氏名・住所・地名で絞り込み（スペース区切りで複数）<br>
-        並び替え … 最新・再訪・住所・スコア・心理・ランク・遅れ・初訪から選択<br>
+        並び替え … 最新・再訪・判定待ち・住所・スコア・心理・ランク・遅れ・初訪から選択<br>
         一覧の各カードには「追客ランク」「心理ステージ」が表示されます
       </div>
     </div>
@@ -1705,7 +1705,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.22";
+var APP_VERSION = "v7.25";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -2271,7 +2271,7 @@ var AIBIS_FAQ=[
   {q:'自動保存先って何？',a:'PC版でOneDriveに設定する主ファイルのことだよ！保存するたびに自動で書き込まれるよ。<br><br>初期設定の「💾 自動保存先を設定」から設定できるよ。ファイル名はz-aibis_氏名.jsonで自動入力されるから変更不要！<br><br>⚠ このファイルを削除すると全データが消えるから絶対に削除しないでね！'},
   {q:'データが消えた！',a:'落ち着いて！まず確認してみてね😊<br><br>【まず試す】⋮その他→⏪1つ前に戻す　で直前の保存状態に復元できるよ！<br><br>【PC版】OneDriveのz-aibis_氏名.jsonが残っていないか確認。コピー保存先も確認してみて。<br>【スマホ版】PCにバックアップ（📧 PCへ）が残っていないか確認。<br><br>これからはPC版でコピー保存先も設定しておくと二重に守れるよ！'},
   {q:'1つ前に戻すって何？',a:'⏪1つ前に戻すは、直前の保存状態に復元する機能だよ！<br><br>保存するたびに、その直前のデータが自動でバックアップされてるよ。<br><br>誤ってカードを消した・上書きしてしまった・読み込みミスをした、そんなときに⋮その他→⏪1つ前に戻すで復活できるよ😊<br><br>※もう一度押すと、戻す前の状態に戻せるよ（行ったり来たり）。ただし2つ前より前には戻れないから注意してね！'},
-  {q:'検索ってどう使うの？',a:'名前や住所を入れるだけ！スペース区切りで複数キーワードも使えるよ🔍<br>並び替えは最新・再訪・住所・スコア・心理・ランク・遅れ・初訪から選べるよ！'},
+  {q:'検索ってどう使うの？',a:'名前や住所を入れるだけ！スペース区切りで複数キーワードも使えるよ🔍<br>並び替えは最新・再訪・判定待ち・住所・スコア・心理・ランク・遅れ・初訪から選べるよ！'},
   {q:'バージョンアップするには？',a:function(){ return isMgrUnlocked()?'Claudeに修正を頼んで、GitHubに上書きするだけ！みんな次回アクセスで自動的に最新版になるよ👏':'アップデートは課長が管理しているよ😊 アプリを開き直すだけで、いつでも自動的に最新版が使えるから安心してね！'; }},
   {q:'マニュアルはどこ？',a:function(){return isMob?'⋮その他→📖マニュアルから見れるよ！タイトルをタップすると詳細が開くよ。':'⋮その他→📖マニュアルから見れるよ！各セクションをクリックすると詳細が開くよ。';}},
   {q:'戦略協議ってどう使うの？',a:'戦略協議は、お客様の情報をAI（会社のCopilot）に分析してもらう機能だよ！<br><br>①「💭 戦略協議」タブを開く<br>②分析テーマを選ぶ（8種）<br>③「🤖 分析用に抽出」でコピー、または「📎 ファイルで抽出」でtxt保存（Copilotに添付→「添付の指示に従って分析して」とだけ送ればOK）<br>④「🤖 AI分析」でCopilotが開く<br>⑤貼り付けて送信→回答を貼り付け欄にペースト<br><br>総合分析では追客ランク（S〜E）が自動で検出されるよ🧚'},
@@ -2308,7 +2308,7 @@ var AIBIS_FAQ=[
     +'連れ出しの例：ショールーム・バスツアー・物件見学会・各種セミナー・スポーツ観戦など<br><br>'
     +'上り込みでお茶・雑談・お菓子。この関係を大切にしてね！'},
   {q:'ソーシャル',a:'ソーシャルスタイルは4タイプだよ！<br><b>ドライバー</b>…決断が早く結果重視。手短に要点を。<br><b>エクスプレッシブ</b>…感情豊か。共感を示して。<br><b>アナリティカル</b>…データ・論理重視。根拠をしっかり。<br><b>エミアブル</b>…協調性が高い。急がせず丁寧に。'},
-  {q:'Judgmentって何？',a:'Judgmentはお客様の現状を課長と協議して判定するもの。<br><br>【再訪Judgment】追客開始 / 継続訪問 / 打ち切り の3択<br>【追撃Judgment】A見込み / 訪問継続 / 打ち切り の3択<br><br>🔒 再訪Judgmentは再訪3回目（日付・訪問内容・録音要約のいずれか）を記録すると押せるよ。追撃カードの発行には先に再訪Judgmentが必要。15回超の追撃追加には追撃Judgmentが必要。<br>ボタンはもう一度押すと選択解除（未選択ならAIの判定を優先）。A見込み=A・訪問継続=B・打ち切り=X。<br><br>必ず課長との協議のうえで選択してね！'},
+  {q:'Judgmentって何？',a:'Judgmentはお客様の現状を課長と協議して判定するもの。<br><br>【再訪Judgment】追客開始 / 継続訪問 / 打ち切り の3択<br>【追撃Judgment】A見込み / 追撃継続 / 変化待ち（長期継続）/ 打ち切り の4択<br><br>🔒 再訪Judgmentは再訪3回目（日付・訪問内容・録音要約のいずれか）を記録すると押せるよ。追撃カードの発行には先に再訪Judgmentが必要。15回目以降の追撃追加には追撃Judgmentが必要。<br>ボタンはもう一度押すと選択解除（未選択ならAIの判定を優先）。A見込み=A・追撃継続=B・変化待ち=C・打ち切り=X。<br><br>必ず課長との協議のうえで選択してね！'},
   {q:'スコアってどう計算するの？',a:function(){return isMgrUnlocked()?'提案依頼15点＋ステージ13点＋会話状況12点＋資産背景10点＋追客ランク8点＋連続留守4点（留守ゼロで満点・減点式）＋土地面積×路線価 約7.5点＋KP面談6点＋最寄駅±2点の合計で約78点満点！提案依頼の取得・連想到達・上り込み・資産背景が大きいお客様ほど高得点になるよ。スコア順の並び替えで今週誰に行くべきかが一目でわかるよ📊':'スコアは「今週どのお客様を優先するか」を見やすくする並び替え用の目安だよ📊 細かい配点は内部設定なので、まずはスコア順の上位から動いてみてね！';}},
   {q:'提案依頼ボタンって何？',a:'再訪タブの「連続留守カウント」の右にあるボタン！タップで ❌提案依頼未取得 ⇔ ⭕提案依頼取得 を切替。提案依頼の取得はお客様の意思表示なのでスコアが大きく上がるよ(+15)😊 ベストは「3:連想」でテストクロージングし、動機を引き上げながら取得すること💡 取得すると10客・40客リストにも⭕提案依頼が出るよ。'},
   {q:'駅徒歩フラグって何？',a:'計画地の最寄り駅からの徒歩区分だよ🚉 計画地の「🚉最寄り駅 徒歩」ボタンをタップで 未確認→〜10分→〜20分→21分以上 と切り替わるよ（同行ボタンと同じ要領）。〜10分は加点(+2)、21分以上は減点(-2)＆赤フラグ（一覧・課分析にも表示）。分数は地図で一度確認して印を付けるだけでOK😊'},
@@ -3650,6 +3650,9 @@ function openTypeDex(curName){
    if(curName) _reach[curName]=1;
    try{
      var _meK=(typeof uName!=='undefined'&&uName)?uName:'自分';
+     var _rch=j9LoadReached()[_meK]||null;
+     if(_rch) Object.keys(_rch).forEach(function(_j){ if(_j) _reach[_j]=1; });
+     // 後方互換：既存の月次スナップからも取り込み（永久ログ移行前のデータ救済）
      var _sn=j9LoadSnaps(); var _b=_sn[_meK]||null;
      if(_b) Object.keys(_b).forEach(function(_y){ var _j=_b[_y]&&_b[_y].job; if(_j) _reach[_j]=1; });
    }catch(_e){}
@@ -3709,6 +3712,11 @@ var J9_SNAP='prospect_job9_snap_v1';
 function _ymKey(d){ d=d||new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2); }
 function j9LoadSnaps(){ try{ var o=JSON.parse(localStorage.getItem(J9_SNAP)||'{}'); return (o&&typeof o==='object')?o:{}; }catch(_e){ return {}; } }
 function j9SaveSnaps(o){ try{ localStorage.setItem(J9_SNAP,JSON.stringify(o)); }catch(_e){} }
+// ===== 🏅 永久到達ログ（一度なったジョブは消さない・期間/件数制限なし） =====
+// 担当名→{ジョブ名:初到達ISO}。図鑑の解放はこれを正とする（月次スナップは成長比較用）。
+var J9_REACHED='prospect_job9_reached_v1';
+function j9LoadReached(){ try{ var o=JSON.parse(localStorage.getItem(J9_REACHED)||'{}'); return (o&&typeof o==='object')?o:{}; }catch(_e){ return {}; } }
+function j9SaveReached(o){ try{ localStorage.setItem(J9_REACHED,JSON.stringify(o)); }catch(_e){} }
 // 当月のスナップショットを記録（担当名→月→要約）。1日数回呼ばれても上書きで軽量
 function j9Snapshot(repName, cardsArr){
   if(!repName) return;
@@ -3735,8 +3743,14 @@ function j9Snapshot(repName, cardsArr){
     var months=Object.keys(snaps[rp]).sort();
     while(months.length>12){ delete snaps[rp][months.shift()]; }
   });
+  // 永久到達ログへ追記（現ジョブ＋既存スナップ履歴を取り込み。一度入れたら消さない）
+  try{
+    var _rch=j9LoadReached(); if(!_rch[repName]) _rch[repName]={}; var _chg=false;
+    if(res.job && !_rch[repName][res.job]){ _rch[repName][res.job]=new Date().toISOString(); _chg=true; }
+    Object.keys(snaps[repName]).forEach(function(_y){ var _j=snaps[repName][_y]&&snaps[repName][_y].job; if(_j&&!_rch[repName][_j]){ _rch[repName][_j]=new Date().toISOString(); _chg=true; } });
+    if(_chg) j9SaveReached(_rch);
+  }catch(_e){}
   j9SaveSnaps(snaps);
-  return snaps[repName][ym];
 }
 // 前月スナップショット取得
 function j9PrevSnap(repName){
@@ -5755,7 +5769,7 @@ function renderRevisits(){
         +_doukouBtnHTML(v.visit_type)
         +'<button type="button" class="mic-btn" onclick="micStart(\''+rid+'_c\',this)" style="margin-top:0">🎤</button>'
       +'</div>'
-      +'<textarea id="'+rid+'_c" data-f="content" rows="3" placeholder="自分がした事より「投げかけ→相手の反応」を書く。例：固定資産税の話→身を乗り出した／奥様は渋い顔。断り・他社・税理士/税額・時期の発言は「」でそのまま必ず">'+e(v.content||'')+'</textarea>'
+      +'<textarea id="'+rid+'_c" data-f="content" rows="3" placeholder="投げかけ→相手の反応を書く。例：税金の話→身を乗り出した。断り・他社・税額・時期の発言は「」でそのまま">'+e(v.content||'')+'</textarea>'
       +'<div style="margin-top:6px;padding:7px 10px;background:#f0fff4;border:1px solid #c6f6d5;border-radius:6px">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px"><label style="margin:0;font-size:12px;font-weight:600;color:#276749">🎙 録音要約・メール等貼り付け</label><button type="button" onclick="clearStrategyField(\''+rid+'_rec\')" style="background:none;border:none;color:#c53030;font-size:15px;padding:0 2px;cursor:pointer;font-family:inherit;flex-shrink:0;line-height:1">🗑</button></div>'
       +'<textarea id="'+rid+'_rec" data-f="rec" rows="2" placeholder="録音要約・メールなどを貼り付け" style="font-size:13px;background:transparent;border-color:#c6f6d5">'+e(v.rec||'')+'</textarea>'
@@ -5789,7 +5803,7 @@ function renderPursuits(){
         +'<span style="display:inline-flex;align-items:center;gap:3px;margin-left:auto"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">次回</label><input type="date" data-f="nad" value="'+e(v.next_appo_date||'')+'" style="width:auto;min-height:32px;padding:3px 4px;font-size:13px"></span>'
         +'<button type="button" class="mic-btn" onclick="micStart(\''+pid+'_c\',this)" style="margin-top:0">🎤</button>'
       +'</div>'
-      +'<textarea id="'+pid+'_c" data-f="content" rows="3" placeholder="提案やテストクロージングへの「相手の反応」を書く。例：プラン見せた→「息子に相談する」と前向き／金額で表情が曇った。断り・他社・税理士/税額・時期の発言は「」でそのまま">'+e(v.content||'')+'</textarea>'
+      +'<textarea id="'+pid+'_c" data-f="content" rows="3" placeholder="提案への相手の反応を書く。例：プラン提示→「息子に相談」と前向き。断り・他社・税額・時期の発言は「」でそのまま">'+e(v.content||'')+'</textarea>'
       +'<div style="margin-top:6px;padding:7px 10px;background:#f0fff4;border:1px solid #c6f6d5;border-radius:6px">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px"><label style="margin:0;font-size:12px;font-weight:600;color:#276749">🎙 録音要約・メール等貼り付け</label><button type="button" onclick="clearStrategyField(\''+pid+'_rec\')" style="background:none;border:none;color:#c53030;font-size:15px;padding:0 2px;cursor:pointer;font-family:inherit;flex-shrink:0;line-height:1">🗑</button></div>'
       +'<textarea id="'+pid+'_rec" data-f="rec" rows="2" placeholder="録音要約・メールなどを貼り付け" style="font-size:13px;background:transparent;border-color:#c6f6d5">'+e(v.rec||'')+'</textarea>'
@@ -7001,6 +7015,12 @@ function genPrompt(anon){
   var lines=[];
   lines.push('あなたは大東建託の土地活用営業のトップ営業マンであり、相続コンサルタント課長です。');
   lines.push('以下の見込み客カードを読み、部下が明日すぐ動ける営業戦略のアドバイスをしてください。');
+  lines.push('');
+  lines.push('【出力ルール｜最優先・例外なし】');
+  lines.push('・前置き・あいさつ・お礼・「了解しました」等の確認文は書かない。いきなり本編から始める。');
+  lines.push('・依頼が長くても、分割提案や「一括で作成しますか？」等の確認質問は一切しない。質問せず、そのまま最後まで一気に出力する。');
+  lines.push('・添付ファイルがある場合も同様に、確認せずファイル内の指示どおり即座に実行する。');
+  lines.push('・総合分析のときは、回答の1行目を必ず「判定：X」（Xは半角の S/A/B/C/D/E/X のいずれか1文字）から書き始める。その前に何も置かない。');
   lines.push('');
   lines.push('【この営業組織の哲学・判断軸】');
   lines.push('◆【営業アイデンティティ＝最重要前提】私たちは「建てましょう」と迫る建築営業ではない。相続・承継の相談相手として、お客様の潜在的な不安や悩みに寄り添うコンサルタントである。ゴールは契約そのものではなく、ご本人とご家族それぞれのネガティブをポジティブに変え、「なるほどね」という納得を積み重ね、ご家族みんなが「建築に進んでよかった」「大東建託に託してよかった」と思える合意形成。したがって：焦らせる表現・期限やキャンペーンで煽るトーク・ステージを飛ばしたクロージングは一切提案しないこと。すべての提案はこの前提に沿って行う');
@@ -10117,7 +10137,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <div class="stitle" style="margin-bottom:0">初訪内容（見込み候補だと判断した理由）<span class="req">*</span></div>
         <button type="button" class="mic-btn" onclick="micStart('f_content',this)">🎤</button>
       </div>
-      <textarea id="f_content" rows="5" placeholder="なぜ見込み候補か＝相手の反応で書く。例：相続の話を振った→「税理士に聞かないとな」と真顔になった。発言は「」でそのまま。表情・家族の様子・土地の悩みも"></textarea>
+      <textarea id="f_content" rows="5" placeholder="相手の反応を書く。例：相続の話→「税理士に聞かないと」と真顔。発言は「」でそのまま"></textarea>
       <div class="no-print" style="margin-top:8px;padding:8px 10px;background:#f0fff4;border:1px solid #c6f6d5;border-radius:6px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><label style="margin:0;font-size:12px;font-weight:600;color:#276749">🎙 録音要約・メール等貼り付け</label><button type="button" onclick="clearStrategyField('f_content_rec')" style="background:none;border:none;color:#c53030;font-size:15px;padding:0 2px;cursor:pointer;font-family:inherit;flex-shrink:0;line-height:1">🗑</button></div>
         <textarea id="f_content_rec" rows="3" placeholder="録音要約・メールなどを貼り付け" style="font-size:13px;background:transparent;border-color:#c6f6d5"></textarea>
