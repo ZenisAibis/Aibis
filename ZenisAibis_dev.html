@@ -1716,7 +1716,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.34";
+var APP_VERSION = "v7.35";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -5295,7 +5295,7 @@ var TF = ['f_disc','f_name','f_social','f_genjo','f_tel','f_addr','f_plan',
   'f_sreason','f_soutei','f_oldrent','f_parking','f_jitaku','f_ryokuchi','f_landasset','f_rosenka','f_chishaku','f_m2','f_maguchi','f_youto',
   'f_kb','f_ky','f_chiku','f_kuushitsu','f_kuushitsu_aki','f_kuubi','f_fambiko','f_kouzou','f_kosu','f_kai','f_prate','f_m2tanka','f_chusharyo',
   'f_content','f_rjdate','f_pjdate','f_r4eyes','f_p4eyes','f_analog','f_content_rec','f_dtrigger','f_dtrigger_when',
-  'f_am_fund','f_am_nouki_when','f_tk_goal','f_tk_goal_when',
+  'f_am_fund','f_am_nouki_when','f_tk_key',
   'f_ai_summary','f_ai_memo'];
 var TFmap = {
   f_disc:'discovery_date', f_name:'name', f_social:'social', f_genjo:'genjo',
@@ -5309,7 +5309,7 @@ var TFmap = {
   f_m2tanka:'m2tanka', f_chusharyo:'chusharyo',
   f_content:'initial_content', f_dtrigger:'d_trigger', f_dtrigger_when:'d_trigger_when',
   f_am_fund:'am_fund', f_am_nouki_when:'am_nouki_when',
-  f_tk_goal:'tk_goal', f_tk_goal_when:'tk_goal_when',
+  f_tk_key:'tk_key',
   f_rjdate:'revisit_judge_date', f_pjdate:'pursuit_judge_date',
   f_r4eyes:'revisit_4eyes', f_p4eyes:'pursuit_4eyes',
   f_analog:'analog_memo',
@@ -10252,26 +10252,29 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <label style="display:flex;align-items:center;gap:6px;font-size:12px;margin:0"><input type="checkbox" data-tk="kazoku_apo"><span>家族同席アポ ★最重要</span></label>
         </div>
         <div style="margin-top:8px;padding-top:8px;border-top:1px dashed #f0c9a8">
-          <div style="font-size:11px;font-weight:700;color:#c05621;margin-bottom:4px">🎯 決断の着地点（こちら側の目標時期）</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-            <select id="f_tk_goal" style="flex:2;min-width:150px;min-height:32px">
-              <option value="">（目安を選択）</option>
-              <option>今月中</option><option>1〜2ヶ月</option><option>3ヶ月以内</option><option>半年以内</option><option>年内</option><option>その他</option>
-            </select>
-            <label style="margin:0;font-size:11px;color:#718096">目標時期</label>
-            <input type="month" id="f_tk_goal_when" style="flex:1;min-width:130px;min-height:32px">
-          </div>
+          <div style="font-size:11px;font-weight:700;color:#c05621;margin-bottom:4px">🎯 決断の決め手は？（これさえクリアすれば見込みに上がる、最優先の1つ）</div>
+          <select id="f_tk_key" style="width:100%;min-height:34px">
+            <option value="">（最優先の決め手を選択）</option>
+            <option>収支・採算（利回り）</option>
+            <option>家族同意</option>
+            <option>借入・返済の不安</option>
+            <option>自己資金</option>
+            <option>相続税・節税効果</option>
+            <option>建築費・初期費用</option>
+            <option>既存建物の解体・立退き</option>
+            <option>土地への愛着</option>
+            <option>業者・プランへの信頼</option>
+            <option>その他</option>
+          </select>
         </div>
       </div>
       <div id="jdWait" style="display:none;margin-top:8px;padding:8px;background:#fff;border:1px dashed #4a5568;border-radius:6px">
         <div style="font-size:11.5px;font-weight:700;color:#4a5568;margin-bottom:5px">⏳ 変化待ちトリガー — 何を待っているか</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-          <select id="f_dtrigger" style="flex:2;min-width:150px;min-height:32px">
+          <select id="f_dtrigger" style="flex:1;min-width:150px;min-height:32px">
             <option value="">（なし／未設定）</option>
             <option>相続発生待ち</option><option>代替わり待ち</option><option>契約満了・退去待ち</option><option>資金時期待ち</option><option>家族合意待ち</option><option>農地・期限待ち</option><option>その他</option>
           </select>
-          <label style="margin:0;font-size:11px;color:#718096">目安時期</label>
-          <input type="month" id="f_dtrigger_when" style="flex:1;min-width:130px;min-height:32px">
         </div>
       </div>
       <div id="scoreWhyRow" onclick="showScoreWhy()" style="margin-top:8px;padding:8px 10px;background:#fff;border:1px solid #cbd5e0;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:8px">
