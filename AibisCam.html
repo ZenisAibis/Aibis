@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0f1b2d">
+<title>z.Aibis カメラ</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgcng9IjM2IiBmaWxsPSIjMGYxYjJkIi8+PGNpcmNsZSBjeD0iOTYiIGN5PSIxMDgiIHI9IjM0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmNTllMGIiIHN0cm9rZS13aWR0aD0iOCIvPjxyZWN0IHg9IjU2IiB5PSI2NCIgd2lkdGg9IjgwIiBoZWlnaHQ9IjE2IiByeD0iNiIgZmlsbD0iIzM0ZTNkMCIvPjx0ZXh0IHg9Ijk2IiB5PSIxMTYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNiIgZm9udC13ZWlnaHQ9IjkwMCIgZmlsbD0iI2Y1OWUwYiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+ei48L3RleHQ+PC9zdmc+">
+<style>
+  :root{
+    --bg:#0f1b2d; --panel:#16263d; --panel2:#1d3251;
+    --line:#27405f; --navy:#2c5282; --gold:#f59e0b; --gold2:#d97706;
+    --teal:#34e3d0; --txt:#e8eef6; --dim:#8aa0bd; --danger:#ff5d7d; --ok:#34e3d0;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",system-ui,sans-serif;
+    overscroll-behavior:none;}
+  body{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
+  button{font-family:inherit;color:inherit;cursor:pointer;border:none;background:none}
+  .hide{display:none!important}
+  .scr{flex:1;min-height:0;display:flex;flex-direction:column}
+
+  /* ---- 共通ヘッダ ---- */
+  .top{display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + 8px) 12px 8px;
+    background:linear-gradient(180deg,rgba(15,27,45,.96),rgba(15,27,45,.7));backdrop-filter:blur(6px);z-index:10}
+  .top .ttl{font-size:13px;font-weight:800;letter-spacing:.5px;color:var(--gold)}
+  .top .sub{font-size:11px;color:var(--dim);font-weight:600}
+  .tbtn{padding:7px 11px;border-radius:9px;background:var(--panel2);font-size:12.5px;font-weight:700;white-space:nowrap}
+  .tbtn:active{background:#264168}
+  .grow{flex:1;min-width:0}
+  .cardchip{display:flex;flex-direction:column;min-width:0}
+  .cardchip b{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  /* ---- カメラ画面 ---- */
+  #camWrap{position:relative;flex:1;min-height:0;background:#000;overflow:hidden}
+  #video{width:100%;height:100%;object-fit:cover;display:block;background:#000}
+  #flashfx{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
+  #flashfx.go{animation:flash .28s ease-out}
+  @keyframes flash{0%{opacity:.0}15%{opacity:.85}100%{opacity:0}}
+  /* ガイドオーバーレイ */
+  #guide{position:absolute;inset:0;pointer-events:none}
+  #guide .grid line{stroke:rgba(255,255,255,.28);stroke-width:1}
+  #guide .horizon{stroke:var(--teal);stroke-width:1.5;stroke-dasharray:6 6;opacity:.85}
+  #guide .vcenter{stroke:var(--gold);stroke-width:1.5;stroke-dasharray:6 6;opacity:.85}
+  #guide .frame{fill:none;stroke:rgba(245,158,11,.55);stroke-width:2;rx:10}
+  .hintbar{position:absolute;left:0;right:0;top:0;display:flex;justify-content:center;pointer-events:none}
+  .hintbar span{margin-top:10px;background:rgba(15,27,45,.78);border:1px solid var(--line);
+    padding:6px 13px;border-radius:20px;font-size:12.5px;font-weight:700;color:var(--teal);max-width:90%;text-align:center}
+  .errcard{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:14px;padding:28px;text-align:center}
+  .errcard .em{font-size:13px;color:var(--dim);line-height:1.7}
+
+  /* ショット種別チップ */
+  .shotbar{display:flex;gap:7px;overflow-x:auto;padding:9px 12px;background:var(--panel);
+    border-top:1px solid var(--line);scrollbar-width:none}
+  .shotbar::-webkit-scrollbar{display:none}
+  .chip{flex:0 0 auto;padding:7px 13px;border-radius:18px;background:var(--panel2);
+    font-size:13px;font-weight:700;color:var(--dim);border:1.5px solid transparent}
+  .chip.on{background:rgba(245,158,11,.15);color:var(--gold);border-color:var(--gold)}
+
+  /* 撮影バー */
+  .shootbar{display:flex;align-items:center;justify-content:space-between;
+    padding:14px 26px calc(env(safe-area-inset-bottom) + 16px);background:var(--bg)}
+  .iconbtn{width:52px;height:52px;border-radius:50%;background:var(--panel2);display:flex;
+    align-items:center;justify-content:center;font-size:22px}
+  .iconbtn:active{background:#264168}
+  .iconbtn.on{background:rgba(245,158,11,.2);color:var(--gold)}
+  .shutter{width:78px;height:78px;border-radius:50%;background:#fff;border:5px solid rgba(255,255,255,.35);
+    box-shadow:0 0 0 3px var(--gold);position:relative}
+  .shutter:active{transform:scale(.92)}
+  .shutter[disabled]{opacity:.4}
+  .lastthumb{width:52px;height:52px;border-radius:11px;background:var(--panel2);overflow:hidden;
+    position:relative;border:1.5px solid var(--line)}
+  .lastthumb img{width:100%;height:100%;object-fit:cover}
+  .lastthumb .badge{position:absolute;right:-4px;top:-6px;background:var(--gold);color:#1a1300;
+    font-size:11px;font-weight:900;min-width:18px;height:18px;border-radius:9px;display:flex;
+    align-items:center;justify-content:center;padding:0 4px}
+
+  /* ---- ピッカー / ギャラリー ---- */
+  .pad{padding:12px 14px;overflow-y:auto;flex:1;min-height:0}
+  .search{width:100%;padding:12px 14px;border-radius:12px;background:var(--panel);border:1px solid var(--line);
+    color:var(--txt);font-size:15px;margin-bottom:10px}
+  .search::placeholder{color:var(--dim)}
+  .crow{display:flex;align-items:center;gap:10px;padding:13px 14px;border-radius:13px;background:var(--panel);
+    border:1px solid var(--line);margin-bottom:9px}
+  .crow:active{background:var(--panel2)}
+  .crow .nm{font-size:15px;font-weight:800}
+  .crow .mt{font-size:11.5px;color:var(--dim);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .crow .pc{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:1px;
+    background:var(--panel2);border-radius:10px;padding:6px 9px;min-width:48px}
+  .crow .pc b{font-size:16px;font-weight:900;color:var(--teal);line-height:1}
+  .crow .pc s{font-size:9.5px;color:var(--dim);text-decoration:none}
+  .emptyst{text-align:center;color:var(--dim);padding:40px 20px;line-height:1.8;font-size:13.5px}
+
+  .galgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .gcell{position:relative;aspect-ratio:1;border-radius:9px;overflow:hidden;background:var(--panel2)}
+  .gcell img{width:100%;height:100%;object-fit:cover;display:block}
+  .gcell .tag{position:absolute;left:4px;bottom:4px;background:rgba(15,27,45,.82);color:var(--teal);
+    font-size:10px;font-weight:800;padding:2px 6px;border-radius:6px}
+  .galsec{font-size:12px;font-weight:800;color:var(--gold);margin:14px 2px 7px}
+  .storeline{font-size:11px;color:var(--dim);text-align:center;padding:14px 0 6px}
+
+  /* ---- 全画面ビューア ---- */
+  #viewer{position:fixed;inset:0;background:rgba(7,12,20,.97);z-index:50;display:flex;flex-direction:column}
+  #viewer img{flex:1;min-height:0;object-fit:contain;width:100%}
+  .vtop{display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + 10px) 14px 10px}
+  .vmeta{padding:10px 16px}
+  .vmeta input{width:100%;padding:11px 13px;border-radius:11px;background:var(--panel);border:1px solid var(--line);
+    color:var(--txt);font-size:14px}
+  .vacts{display:flex;gap:8px;padding:6px 14px calc(env(safe-area-inset-bottom) + 16px)}
+  .vbtn{flex:1;padding:13px;border-radius:12px;background:var(--panel2);font-size:14px;font-weight:800;text-align:center}
+  .vbtn.danger{background:rgba(255,93,125,.16);color:var(--danger)}
+  .vbtn:active{filter:brightness(1.2)}
+
+  /* トースト */
+  #toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 110px);transform:translateX(-50%) translateY(20px);
+    background:var(--panel2);color:var(--txt);padding:11px 18px;border-radius:22px;font-size:13.5px;font-weight:700;
+    opacity:0;transition:.25s;z-index:60;border:1px solid var(--line);pointer-events:none;max-width:86%}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- ===== カメラ画面 ===== -->
+<div id="scrCam" class="scr hide">
+  <div class="top">
+    <button class="tbtn" id="backBtn">←</button>
+    <div class="cardchip grow">
+      <b id="camCardName">—</b>
+      <span class="sub" id="camCardMeta"></span>
+    </div>
+    <button class="tbtn" id="galBtn">🖼 <span id="galCount">0</span></button>
+  </div>
+
+  <div id="camWrap">
+    <video id="video" playsinline autoplay muted></video>
+    <svg id="guide" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+    <div class="hintbar"><span id="hintTxt"></span></div>
+    <div id="flashfx"></div>
+    <div class="errcard hide" id="camErr">
+      <div style="font-size:40px">📷</div>
+      <div class="em" id="camErrMsg"></div>
+      <button class="tbtn" style="background:var(--gold);color:#1a1300" id="fallbackBtn">標準カメラで撮る</button>
+    </div>
+  </div>
+
+  <div class="shotbar" id="shotbar"></div>
+
+  <div class="shootbar">
+    <button class="iconbtn" id="torchBtn" title="ライト">🔦</button>
+    <button class="shutter" id="shutter" aria-label="撮影"></button>
+    <button class="lastthumb" id="lastThumb"><span class="badge hide" id="sessBadge">0</span></button>
+  </div>
+  <input type="file" id="nativeCam" accept="image/*" capture="environment" class="hide">
+</div>
+
+<!-- ===== カード選択（単体起動） ===== -->
+<div id="scrPick" class="scr hide">
+  <div class="top">
+    <div class="cardchip grow"><b class="ttl">⌘ z.Aibis カメラ</b><span class="sub">カードを選んで撮影</span></div>
+  </div>
+  <div class="pad">
+    <input class="search" id="pickSearch" placeholder="名前・担当・住所で検索">
+    <div id="pickList"></div>
+  </div>
+</div>
+
+<!-- ===== ギャラリー（カード別） ===== -->
+<div id="scrGal" class="scr hide">
+  <div class="top">
+    <button class="tbtn" id="galBack">←</button>
+    <div class="cardchip grow"><b id="galCardName">—</b><span class="sub" id="galCardMeta"></span></div>
+    <button class="tbtn" style="background:var(--gold);color:#1a1300" id="galShoot">📷 撮る</button>
+  </div>
+  <div class="pad">
+    <div id="galBody"></div>
+    <div class="storeline" id="storeLine"></div>
+  </div>
+</div>
+
+<!-- ===== 全画面ビューア ===== -->
+<div id="viewer" class="hide">
+  <div class="vtop">
+    <button class="tbtn" id="vClose">✕</button>
+    <div class="cardchip grow"><b id="vTag" style="font-size:13px;color:var(--gold)"></b><span class="sub" id="vWhen"></span></div>
+  </div>
+  <img id="vImg" alt="">
+  <div class="vmeta"><input id="vNote" placeholder="メモ（任意：境界標の位置、撮影方向など）"></div>
+  <div class="vacts">
+    <button class="vbtn" id="vShot">種別変更</button>
+    <button class="vbtn" id="vDl">⬇ 画像を保存</button>
+    <button class="vbtn danger" id="vDel">🗑 削除</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+"use strict";
+/* =========================================================
+   z.Aibis カメラ v1  ── 現地写真をアイビスの見込みカードに紐付け
+   連携契約:
+   - カード一覧: localStorage['prospect_cards_v1'] を読み取り専用で参照
+   - 写真: IndexedDB 'aibis_media_v1' / store 'photos'(keyPath id, index by_card)
+   - 件数索引: localStorage['aibis_media_index_v1'] = {cardId:{n,last}}
+   ※ アイビスのデータ(prospect_cards_v1)には一切書き込まない
+   ========================================================= */
+const APP_VERSION = "cam-v1.0";
+const SK_CARDS = "prospect_cards_v1";
+const IDX_KEY  = "aibis_media_index_v1";
+const DB_NAME  = "aibis_media_v1";
+const STORE    = "photos";
+const MAX_EDGE = 1600;   // 長辺上限(px)
+const JPEG_Q   = 0.82;
+const THUMB_EDGE = 260;
+
+const SHOTS = [
+  {k:"zenkei",   label:"全景",      hint:"土地全体が入る引きで・水平を意識", guide:"horizon"},
+  {k:"tatemono", label:"建物外観",  hint:"正面が分かる構図・高さを入れる",   guide:"frame"},
+  {k:"doro",     label:"前面道路",  hint:"間口と道路幅が分かるように",        guide:"horizon"},
+  {k:"kyoukai",  label:"接道・境界",hint:"境界標・ブロック塀を明確に",        guide:"vcenter"},
+  {k:"maguchi",  label:"間口",      hint:"道路に対する間口の広がりを正面から",guide:"vcenter"},
+  {k:"shitsunai",label:"室内",      hint:"",                                 guide:"grid"},
+  {k:"shorui",   label:"書類",      hint:"公図・謄本は真上から水平に",        guide:"frame"},
+  {k:"other",    label:"その他",    hint:"",                                 guide:"grid"}
+];
+const shotLabel = k => (SHOTS.find(s=>s.k===k)||{label:"その他"}).label;
+
+/* ---------- 状態 ---------- */
+let DB=null, stream=null, track=null;
+let curCardId=null, fromAibis=false, curShot=SHOTS[0].k, facing="environment", torchOn=false;
+let sessCount=0, viewerId=null;
+
+/* ---------- DOM ---------- */
+const $ = id => document.getElementById(id);
+const screens = {cam:$("scrCam"), pick:$("scrPick"), gal:$("scrGal")};
+function show(name){ for(const k in screens) screens[k].classList.toggle("hide", k!==name); }
+function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("show"),1900); }
+
+/* ---------- IndexedDB ---------- */
+function openDB(){
+  return new Promise((res,rej)=>{
+    const r=indexedDB.open(DB_NAME,1);
+    r.onupgradeneeded=()=>{
+      const db=r.result;
+      if(!db.objectStoreNames.contains(STORE)){
+        const os=db.createObjectStore(STORE,{keyPath:"id"});
+        os.createIndex("by_card","cardId",{unique:false});
+        os.createIndex("by_ts","ts",{unique:false});
+      }
+    };
+    r.onsuccess=()=>res(r.result);
+    r.onerror=()=>rej(r.error);
+  });
+}
+function tx(mode){ return DB.transaction(STORE,mode).objectStore(STORE); }
+function idbPut(rec){ return new Promise((res,rej)=>{ const q=tx("readwrite").put(rec); q.onsuccess=()=>res(); q.onerror=()=>rej(q.error); }); }
+function idbDel(id){ return new Promise((res,rej)=>{ const q=tx("readwrite").delete(id); q.onsuccess=()=>res(); q.onerror=()=>rej(q.error); }); }
+function idbGet(id){ return new Promise((res,rej)=>{ const q=tx("readonly").get(id); q.onsuccess=()=>res(q.result); q.onerror=()=>rej(q.error); }); }
+function idbByCard(cardId){
+  return new Promise((res,rej)=>{
+    const out=[], idx=tx("readonly").index("by_card"), q=idx.openCursor(IDBKeyRange.only(cardId));
+    q.onsuccess=()=>{ const c=q.result; if(c){ out.push(c.value); c.continue(); } else { out.sort((a,b)=>a.ts-b.ts); res(out); } };
+    q.onerror=()=>rej(q.error);
+  });
+}
+function idbCountByCard(cardId){
+  return new Promise((res)=>{ const idx=tx("readonly").index("by_card"); const q=idx.count(IDBKeyRange.only(cardId));
+    q.onsuccess=()=>res(q.result||0); q.onerror=()=>res(0); });
+}
+
+/* ---------- 件数索引(localStorage) ---------- */
+function readIndex(){ try{ return JSON.parse(localStorage.getItem(IDX_KEY)||"{}"); }catch(e){ return {}; } }
+async function refreshIndex(cardId){
+  const n=await idbCountByCard(cardId), idx=readIndex();
+  if(n>0) idx[cardId]={n, last:Date.now()}; else delete idx[cardId];
+  try{ localStorage.setItem(IDX_KEY, JSON.stringify(idx)); }catch(e){}
+}
+
+/* ---------- カード読込(read-only) ---------- */
+function loadCards(){ try{ const a=JSON.parse(localStorage.getItem(SK_CARDS)||"[]"); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+function findCard(id){ return loadCards().find(c=>c.id===id)||null; }
+
+/* ---------- 起動 ---------- */
+async function boot(){
+  try{ DB=await openDB(); }catch(e){ toast("保存領域を開けませんでした"); }
+  // 永続化要求（端末の容量逼迫時に消えにくく）
+  if(navigator.storage&&navigator.storage.persist){ try{ await navigator.storage.persist(); }catch(e){} }
+  buildShotBar();
+  const p=new URLSearchParams(location.search);
+  const cid=p.get("cardId");
+  if(cid){ fromAibis=true; enterCamera(cid); }
+  else { renderPicker(); show("pick"); }
+}
+
+/* ---------- カード選択画面 ---------- */
+function renderPicker(filter){
+  const idx=readIndex();
+  let cards=loadCards();
+  const f=(filter||"").trim();
+  if(f){ const lc=f.toLowerCase();
+    cards=cards.filter(c=>((c.name||"")+(c.manager||"")+(c.address||"")+(c.plan_address||"")).toLowerCase().includes(lc)); }
+  // 写真ありを上に、その後 発掘日新しい順
+  cards.sort((a,b)=>{ const na=(idx[a.id]||{}).n||0, nb=(idx[b.id]||{}).n||0;
+    if(nb!==na) return nb-na; return (b.discovery_date||"").localeCompare(a.discovery_date||""); });
+  const host=$("pickList");
+  if(!loadCards().length){
+    host.innerHTML='<div class="emptyst">アイビスのカードが見つかりません。<br>同じ端末・同じサイトでアイビスを一度開いてカードを作成してから、もう一度開いてください。</div>';
+    return;
+  }
+  if(!cards.length){ host.innerHTML='<div class="emptyst">該当するカードがありません。</div>'; return; }
+  host.innerHTML=cards.slice(0,200).map(c=>{
+    const n=(idx[c.id]||{}).n||0;
+    const meta=[c.manager,c.address||c.plan_address].filter(Boolean).join("・");
+    return `<div class="crow" data-id="${esc(c.id)}">
+      <div class="grow" style="min-width:0">
+        <div class="nm">${esc(c.name||"無名")}様</div>
+        <div class="mt">${esc(meta||"—")}</div>
+      </div>
+      <div class="pc"><b>${n}</b><s>枚</s></div>
+    </div>`;
+  }).join("");
+  host.querySelectorAll(".crow").forEach(el=>el.addEventListener("click",()=>{ fromAibis=false; enterCamera(el.dataset.id); }));
+}
+$("pickSearch").addEventListener("input",e=>renderPicker(e.target.value));
+
+/* ---------- カメラ画面 ---------- */
+async function enterCamera(cardId){
+  curCardId=cardId; sessCount=0;
+  const c=findCard(cardId);
+  $("camCardName").textContent=(c?(c.name||"無名")+"様":"カード "+cardId.slice(0,10)+"…");
+  $("camCardMeta").textContent=c?[c.manager,c.address||c.plan_address].filter(Boolean).join("・"):"（アイビス未登録のカードID）";
+  $("backBtn").textContent= fromAibis ? "← アイビス" : "← 一覧";
+  $("sessBadge").classList.add("hide"); $("sessBadge").textContent="0";
+  $("lastThumb").querySelector("img")&&$("lastThumb").querySelector("img").remove();
+  show("cam");
+  await updateGalCount();
+  await startCamera();
+  setShot(curShot);
+}
+$("backBtn").addEventListener("click",()=>{
+  stopCamera();
+  if(fromAibis){ if(history.length>1) history.back(); else toast("アイビスのタブに戻ってください"); }
+  else { renderPicker($("pickSearch").value); show("pick"); }
+});
+$("galBtn").addEventListener("click",()=>openGallery(curCardId,true));
+
+async function startCamera(){
+  $("camErr").classList.add("hide");
+  stopCamera();
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ showCamErr("このブラウザはカメラに対応していません。"); return; }
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({
+      audio:false,
+      video:{ facingMode:{ideal:facing}, width:{ideal:2560}, height:{ideal:1440} }
+    });
+    const v=$("video"); v.srcObject=stream; await v.play().catch(()=>{});
+    track=stream.getVideoTracks()[0];
+    // トーチ対応判定
+    const caps=track.getCapabilities?track.getCapabilities():{};
+    $("torchBtn").style.display = caps.torch ? "flex":"none";
+    torchOn=false; $("torchBtn").classList.remove("on");
+    $("shutter").disabled=false;
+  }catch(e){
+    let m="カメラを起動できませんでした。";
+    if(e&&e.name==="NotAllowedError") m="カメラの使用が許可されていません。ブラウザの権限設定でこのサイトのカメラを許可してください。";
+    else if(e&&e.name==="NotFoundError") m="カメラが見つかりませんでした。";
+    showCamErr(m);
+  }
+}
+function stopCamera(){ if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; track=null; } }
+function showCamErr(msg){ $("camErrMsg").textContent=msg; $("camErr").classList.remove("hide"); $("shutter").disabled=true; }
+
+/* カメラ切替・トーチ */
+$("torchBtn").addEventListener("click",async()=>{
+  if(!track) return; torchOn=!torchOn;
+  try{ await track.applyConstraints({advanced:[{torch:torchOn}]}); $("torchBtn").classList.toggle("on",torchOn); }
+  catch(e){ toast("ライト非対応の端末です"); torchOn=false; }
+});
+
+/* ショット種別バー */
+function buildShotBar(){
+  $("shotbar").innerHTML=SHOTS.map(s=>`<button class="chip" data-k="${s.k}">${s.label}</button>`).join("");
+  $("shotbar").querySelectorAll(".chip").forEach(el=>el.addEventListener("click",()=>setShot(el.dataset.k)));
+}
+function setShot(k){
+  curShot=k;
+  $("shotbar").querySelectorAll(".chip").forEach(el=>el.classList.toggle("on",el.dataset.k===k));
+  const s=SHOTS.find(x=>x.k===k)||SHOTS[0];
+  $("hintTxt").textContent=s.hint||""; $("hintTxt").style.display=s.hint?"":"none";
+  drawGuide(s.guide);
+}
+function drawGuide(type){
+  let svg="";
+  if(type==="grid"||type==="horizon"||type==="vcenter"||type==="frame"){
+    svg+='<g class="grid"><line x1="33.3" y1="0" x2="33.3" y2="100"/><line x1="66.6" y1="0" x2="66.6" y2="100"/>'
+       +'<line x1="0" y1="33.3" x2="100" y2="33.3"/><line x1="0" y1="66.6" x2="100" y2="66.6"/></g>';
+  }
+  if(type==="horizon") svg+='<line class="horizon" x1="0" y1="50" x2="100" y2="50"/>';
+  if(type==="vcenter") svg+='<line class="vcenter" x1="50" y1="0" x2="50" y2="100"/>';
+  if(type==="frame") svg+='<rect class="frame" x="8" y="10" width="84" height="80" rx="3"/>';
+  $("guide").innerHTML=svg;
+}
+
+/* ---------- 撮影 ---------- */
+$("shutter").addEventListener("click",capture);
+async function capture(){
+  if(!track){ toast("カメラ未起動"); return; }
+  const v=$("video");
+  const vw=v.videoWidth, vh=v.videoHeight;
+  if(!vw||!vh){ toast("準備中…もう一度"); return; }
+  // フラッシュ演出
+  const fx=$("flashfx"); fx.classList.remove("go"); void fx.offsetWidth; fx.classList.add("go");
+
+  // 縮小
+  const scale=Math.min(1, MAX_EDGE/Math.max(vw,vh));
+  const w=Math.round(vw*scale), h=Math.round(vh*scale);
+  const cv=document.createElement("canvas"); cv.width=w; cv.height=h;
+  cv.getContext("2d").drawImage(v,0,0,w,h);
+  const full=await new Promise(r=>cv.toBlob(r,"image/jpeg",JPEG_Q));
+  const thumb=makeThumb(cv,w,h);
+
+  const rec={ id:"p_"+Date.now()+"_"+Math.random().toString(36).slice(2,7),
+    cardId:curCardId, ts:Date.now(), shot:curShot, note:"", w, h,
+    size:(full?full.size:0), full, thumb };
+  try{
+    await idbPut(rec); await refreshIndex(curCardId);
+    sessCount++; const b=$("sessBadge"); b.textContent=sessCount; b.classList.remove("hide");
+    setLastThumb(thumb); await updateGalCount();
+    if(navigator.vibrate) navigator.vibrate(15);
+  }catch(e){ toast("保存に失敗（容量不足の可能性）"); }
+}
+function makeThumb(srcCv,w,h){
+  const sc=Math.min(1, THUMB_EDGE/Math.max(w,h));
+  const tw=Math.round(w*sc), th=Math.round(h*sc);
+  const t=document.createElement("canvas"); t.width=tw; t.height=th;
+  t.getContext("2d").drawImage(srcCv,0,0,tw,th);
+  return t.toDataURL("image/jpeg",0.65);
+}
+function setLastThumb(dataUrl){
+  const host=$("lastThumb"); let img=host.querySelector("img");
+  if(!img){ img=document.createElement("img"); host.insertBefore(img,host.firstChild); }
+  img.src=dataUrl;
+}
+$("lastThumb").addEventListener("click",()=>openGallery(curCardId,true));
+async function updateGalCount(){ const n=await idbCountByCard(curCardId); $("galCount").textContent=n; }
+
+/* 標準カメラ フォールバック */
+$("fallbackBtn").addEventListener("click",()=>$("nativeCam").click());
+$("nativeCam").addEventListener("change",async e=>{
+  const file=e.target.files&&e.target.files[0]; if(!file) return;
+  const img=await blobToImage(file);
+  const scale=Math.min(1,MAX_EDGE/Math.max(img.width,img.height));
+  const w=Math.round(img.width*scale), h=Math.round(img.height*scale);
+  const cv=document.createElement("canvas"); cv.width=w; cv.height=h; cv.getContext("2d").drawImage(img,0,0,w,h);
+  const full=await new Promise(r=>cv.toBlob(r,"image/jpeg",JPEG_Q));
+  const rec={ id:"p_"+Date.now()+"_"+Math.random().toString(36).slice(2,7), cardId:curCardId, ts:Date.now(),
+    shot:curShot, note:"", w, h, size:full?full.size:0, full, thumb:makeThumb(cv,w,h) };
+  await idbPut(rec); await refreshIndex(curCardId); await updateGalCount();
+  toast("保存しました"); e.target.value="";
+});
+function blobToImage(blob){ return new Promise((res,rej)=>{ const u=URL.createObjectURL(blob); const im=new Image();
+  im.onload=()=>{ URL.revokeObjectURL(u); res(im); }; im.onerror=rej; im.src=u; }); }
+
+/* ---------- ギャラリー ---------- */
+let _objUrls=[];
+function clearObjUrls(){ _objUrls.forEach(u=>URL.revokeObjectURL(u)); _objUrls=[]; }
+async function openGallery(cardId,cameFromCam){
+  curCardId=cardId; openGallery._fromCam=!!cameFromCam;
+  const c=findCard(cardId);
+  $("galCardName").textContent=c?(c.name||"無名")+"様":"カード "+cardId.slice(0,10)+"…";
+  $("galCardMeta").textContent=c?[c.manager,c.address||c.plan_address].filter(Boolean).join("・"):"";
+  show("gal"); stopCamera();
+  await renderGallery();
+  showStorage();
+}
+async function renderGallery(){
+  clearObjUrls();
+  const list=await idbByCard(curCardId);
+  const host=$("galBody");
+  if(!list.length){ host.innerHTML='<div class="emptyst">まだ写真がありません。<br>「📷 撮る」から撮影してください。</div>'; return; }
+  // 種別ごとに区切る（SHOTSの順）
+  const byShot={}; list.forEach(p=>{ (byShot[p.shot]=byShot[p.shot]||[]).push(p); });
+  let html="";
+  SHOTS.forEach(s=>{
+    const arr=byShot[s.k]; if(!arr||!arr.length) return;
+    html+=`<div class="galsec">${s.label}（${arr.length}）</div><div class="galgrid">`;
+    html+=arr.map(p=>`<div class="gcell" data-id="${esc(p.id)}"><img src="${p.thumb}"><span class="tag">${shotLabel(p.shot)}</span></div>`).join("");
+    html+=`</div>`;
+  });
+  host.innerHTML=html;
+  host.querySelectorAll(".gcell").forEach(el=>el.addEventListener("click",()=>openViewer(el.dataset.id)));
+}
+$("galBack").addEventListener("click",()=>{
+  if(openGallery._fromCam){ show("cam"); startCamera(); setShot(curShot); }
+  else { renderPicker($("pickSearch").value); show("pick"); }
+});
+$("galShoot").addEventListener("click",()=>{ openGallery._fromCam=true; enterCamera(curCardId); });
+
+async function showStorage(){
+  let line="";
+  if(navigator.storage&&navigator.storage.estimate){
+    try{ const {usage,quota}=await navigator.storage.estimate();
+      line="使用容量 "+fmtMB(usage)+" / 上限目安 "+fmtMB(quota); }catch(e){}
+  }
+  $("storeLine").textContent=line;
+}
+const fmtMB = b => b? (b>1073741824? (b/1073741824).toFixed(1)+"GB" : Math.round(b/1048576)+"MB") : "—";
+
+/* ---------- 全画面ビューア ---------- */
+async function openViewer(id){
+  const p=await idbGet(id); if(!p) return; viewerId=id;
+  const u=URL.createObjectURL(p.full); _objUrls.push(u);
+  $("vImg").src=u; $("vTag").textContent=shotLabel(p.shot);
+  $("vWhen").textContent=fmtWhen(p.ts)+"・"+(p.w+"×"+p.h)+"・"+fmtMB(p.size);
+  $("vNote").value=p.note||"";
+  $("viewer").classList.remove("hide");
+}
+$("vClose").addEventListener("click",()=>{ $("viewer").classList.add("hide"); viewerId=null; });
+$("vNote").addEventListener("blur",async()=>{
+  if(!viewerId) return; const p=await idbGet(viewerId); if(!p) return;
+  if((p.note||"")!==$("vNote").value){ p.note=$("vNote").value; await idbPut(p); toast("メモを保存しました"); }
+});
+$("vShot").addEventListener("click",async()=>{
+  const p=await idbGet(viewerId); if(!p) return;
+  const i=SHOTS.findIndex(s=>s.k===p.shot); const next=SHOTS[(i+1)%SHOTS.length];
+  p.shot=next.k; await idbPut(p); $("vTag").textContent=next.label; toast("種別→"+next.label);
+});
+$("vDl").addEventListener("click",async()=>{
+  const p=await idbGet(viewerId); if(!p||!p.full) return;
+  const c=findCard(p.cardId); const nm=(c&&c.name?c.name:"card").replace(/[^\w一-龠ぁ-んァ-ヶー]/g,"");
+  const d=new Date(p.ts), pad=n=>String(n).padStart(2,"0");
+  const fn=nm+"_"+shotLabel(p.shot)+"_"+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+"_"+pad(d.getHours())+pad(d.getMinutes())+".jpg";
+  const u=URL.createObjectURL(p.full); const a=document.createElement("a"); a.href=u; a.download=fn;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),4000); toast("画像を保存しました");
+});
+$("vDel").addEventListener("click",async()=>{
+  if(!viewerId) return;
+  if(!confirm("この写真を削除しますか？")) return;
+  await idbDel(viewerId); await refreshIndex(curCardId);
+  $("viewer").classList.add("hide"); viewerId=null;
+  await renderGallery(); await updateGalCount(); showStorage(); toast("削除しました");
+});
+/* ---------- util ---------- */
+function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function fmtWhen(ts){ const d=new Date(ts); const p=n=>String(n).padStart(2,"0");
+  return d.getFullYear()+"/"+p(d.getMonth()+1)+"/"+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes()); }
+
+/* 画面復帰でカメラ再開 / 離脱で停止 */
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden){ stopCamera(); }
+  else if(!screens.cam.classList.contains("hide")){ startCamera().then(()=>setShot(curShot)); }
+});
+window.addEventListener("pagehide",stopCamera);
+
+boot();
+</script>
+</body>
+</html>
