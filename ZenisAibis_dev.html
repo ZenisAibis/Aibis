@@ -110,6 +110,8 @@ button{cursor:pointer;border:none;border-radius:6px;padding:8px 10px;font-size:1
 button:active{opacity:0.8}
 .bp{background:#2c5282;color:white}
 .bs{background:#38a169;color:white}
+@keyframes saveBlink{0%,100%{background:#38a169;box-shadow:0 0 0 0 rgba(237,137,54,.55)}50%{background:#ed8936;box-shadow:0 0 0 5px rgba(237,137,54,0)}}
+.bs.needsave{animation:saveBlink 1s ease-in-out infinite}
 .bw{background:#d69e2e;color:white}
 .bc{background:#fff;color:#2c5282;border:1px solid #2c5282}
 .bg{background:transparent;color:white;border:1px solid rgba(255,255,255,0.4)}
@@ -1716,7 +1718,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.35";
+var APP_VERSION = "v7.42";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -3077,6 +3079,8 @@ function setDirty(v){
   isDirty=v;
   var d=document.getElementById('dirtyDot');
   if(d) d.style.display=v?'inline-block':'none';
+  var sb=document.getElementById('saveCardBtn');
+  if(sb) sb.classList.toggle('needsave', !!v && !!isMob);
 }
 document.addEventListener('input',function(ev){
   if(ev.target&&ev.target.closest('#editView')){ setDirty(true); if(typeof scheduleDraftSave==='function') scheduleDraftSave(); }
@@ -3506,7 +3510,7 @@ var J9_TWO={
  'houbun+choshin':'法心師','houbun+seian':'法案師','houbun+sakujin':'法策師','houbun+kiroku':'証録師',
  'choshin+enmusubi':'和談師','choshin+seian':'聴案師','choshin+sakujin':'聴策師',
  'enmusubi+tsuibi':'継縁師','enmusubi+seian':'成縁師',
- 'tsuibi+seian':'追案師','sakujin+tsuibi':'追策師','kiroku+sakujin':'分析師',
+ 'tsuibi+seian':'追案師','tsuibi+sakujin':'追策師','sakujin+kiroku':'分析師',
  // 記録×行動系（v6.65追加）
  'choshin+kiroku':'聴録師','seian+kiroku':'立証師','tsuibi+kiroku':'追録師','tsuibi+sokko':'遊撃師','kiroku+sokko':'走録師'
 };
@@ -3530,6 +3534,11 @@ var J9_FIVE={
 };
 var J9_INIT=['芽士','初陣士','見込士']; // 初心者帯（rank0）：芽士→初陣士→見込士
 var J9_CARD_GATE={ meshiMax:25, mikomiCardMin:35, mikomiAvg:55, jobMin:41, tier34:65, tier5:80, trust34:0.70, trust5:0.85 };
+// 基礎職判定で使う「行動ゲート」しきい値（行動軸がこれ以上でゲート通過）。記録ゲートは入力率(trust)≧trust34。
+var J9_GATE_ACT=55;
+// ゲート富化（スキル＋ゲートで上位職）の段位別しきい：段位が上がるほど厳しく。記録=入力率trust、行動=行動軸値。
+var J9_GATE_REC={2:0.70,3:0.80,4:0.85,5:0.90};
+var J9_GATE_ACTT={2:55,3:65,4:72,5:80};
 function j9CardCap(n, trust, ps){
   var PS=(ps&&ps>0)?ps:1;
   if(n<J9_CARD_GATE.jobMin*PS) return 0;
@@ -3586,6 +3595,26 @@ function _j9lookup(table, keys){
   if(table[k]) return table[k];
   return null;
 }
+// ゲート富化：スキル突出軸(skillUp・値降順)に、段位別しきいを満たすゲート軸(記録/行動)を足して
+// 定義済みの上位組み合わせ職（2〜5強）に到達させる。段位が上がるほどゲートのしきいは厳しい。
+function j9GateEnrich(skillUp, corr, trust, cap){
+  var maxT=Math.min(5, cap||0);
+  for(var T=maxT; T>=2; T--){
+    var need=T-skillUp.length;
+    if(need<=0 || need>2) continue;            // ゲートを1〜2本足してT軸（純スキルは別処理）
+    var gates=[];
+    if(corr.sokko>=J9_GATE_ACTT[T]) gates.push({k:'sokko',v:corr.sokko});
+    if(trust>=J9_GATE_REC[T])       gates.push({k:'kiroku',v:corr.kiroku});
+    if(gates.length<need) continue;
+    gates.sort(function(a,b){return b.v-a.v;});
+    var useG=gates.slice(0,need).map(function(g){return g.k;});
+    var axes=skillUp.slice(0,T-need).concat(useG);
+    var table=(T===2?J9_TWO:T===3?J9_THREE:T===4?J9_FOUR:J9_FIVE);
+    var job=_j9lookup(table, axes);
+    if(job) return {job:job, strong:axes, tier:T};
+  }
+  return null;
+}
 // メイン：カード配列→ジョブ判定
 function j9DetermineJob(cards, repName, popScale){ var PS=(popScale&&popScale>0)?popScale:1;
   var r=j9Axes(cards);
@@ -3622,10 +3651,27 @@ function j9DetermineJob(cards, repName, popScale){ var PS=(popScale&&popScale>0)
   if(loadR>1.0 && _contactCovR<J9_CONTACT_LO){
     res.job='雑欲士'; res.greed=true; res.strong=[]; return res;
   }
-  // 本ジョブ＝41枚以上 かつ 強い軸が1つ以上。満たさなければ初心者帯に留める
-  // （枚数を積んでも中身が薄い＝最高軸すら55未満なら1強にもしない）
-  if(r.n<J9_CARD_GATE.jobMin*PS || ns===0){
+  // スキル突出軸（閾値超え。無ければ≥55の軽い突出を1つ）。ゲート軸(記録/行動)は別扱い。
+  var _skillAx=['chizu','houbun','choshin','enmusubi','tsuibi','seian','sakujin'];
+  var skillUp=_skillAx.filter(function(k){return corrJob[k]>=(J9_STRONG_MIN[k]||60);}).sort(function(a,b){return corr[b]-corr[a];});
+  if(skillUp.length===0){ var _bs=_skillAx.slice().sort(function(a,b){return corr[b]-corr[a];})[0]; if(corr[_bs]>=55) skillUp=[_bs]; }
+  // スキル突出なし → ゲート(入力率＝記録／行動)基準の基礎職（2ゲート=走録師／記録のみ=記録士／行動のみ=疾行士／未達=初心者帯）
+  if(r.n<J9_CARD_GATE.jobMin*PS || skillUp.length===0){
+    if(r.n>=J9_CARD_GATE.jobMin*PS){
+      var _rg=(r.trust>=J9_CARD_GATE.trust34), _ag=(corr.sokko>=J9_GATE_ACT);
+      if(_rg&&_ag){ res.job='走録師'; res.strong=['kiroku','sokko']; return res; }
+      if(_rg){ res.job='記録士'; res.strong=['kiroku']; return res; }
+      if(_ag){ res.job='疾行士'; res.strong=['sokko']; return res; }
+    }
     res.job=initJob; res.provisional=true; res.strong=[]; return res;
+  }
+  // ゲート富化：スキル突出にクリア済みゲートを足して上位の組み合わせ職へ（段位が上がるほどゲートのしきいは厳しい）
+  var _eff=Math.min(cardCap, (r.trust<0.50?1:(r.trust<0.70?2:(r.trust<0.85?3:9))));
+  var _ge=j9GateEnrich(skillUp, corr, r.trust, _eff);
+  if(_ge){
+    res.strong=_ge.strong; res.job=_ge.job;
+    if(r.trust>=0.85 && corr[skillUp[0]]>=90) res.title=J9_EYE[skillUp[0]];
+    return res;
   }
   res.strong=strong;
   // 全軸高水準＋高信頼→天眼王
@@ -9725,7 +9771,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <svg class="ehdr-logo" onclick="history.back()" title="タップで一覧に戻る" width="130" height="40" viewBox="0 0 130 40" xmlns="http://www.w3.org/2000/svg" style="position:absolute;left:50%;transform:translateX(-50%);flex-shrink:0;cursor:pointer"><defs><linearGradient id="tg3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#ffffff"/><stop offset="60%" style="stop-color:#e0e7ff"/><stop offset="100%" style="stop-color:#c7d2fe"/></linearGradient></defs><text x="4" y="32" font-family="'Dancing Script','Brush Script MT','Comic Sans MS',cursive" font-size="30" font-weight="700" fill="url(#tg3)" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.4))">z.Aibis</text></svg>
       <div style="display:flex;gap:4px;flex-shrink:0;align-items:center">
         <span id="dirtyDot" style="display:none;width:8px;height:8px;background:#ed8936;border-radius:50%;margin-right:2px" title="未保存"></span>
-        <button class="bs" onclick="saveCard()" style="font-size:11px;padding:6px 10px">💾 保存</button>
+        <button id="saveCardBtn" class="bs" onclick="saveCard()" style="font-size:11px;padding:6px 10px">💾 保存</button>
         <div class="mob-menu" style="position:relative">
           <button onclick="toggleCardMenu(event)" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:6px;font-size:16px;padding:4px 8px;cursor:pointer;font-family:inherit;line-height:1.6;min-height:36px;width:36px">⋮</button>
           <div class="mob-dropdown" id="cardDropdown" style="right:0;left:auto;min-width:150px">
