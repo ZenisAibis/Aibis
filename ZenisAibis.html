@@ -1565,6 +1565,10 @@ if(Z_ALLOW.indexOf(location.hostname)<0){
 'use strict';
 
 // ===== スコア計算（優先順位） =====
+// 案件化 必須5項目の加重充足度（家族合意=2/自己資金=1/確定申告=1/名寄帳=0.5/納期=0.5・満点5）
+function _amScore(c){ var m=(c&&c.am_checks)||{}; var s=0; if(m.kazoku)s+=2; if(m.jikoshikin)s+=1; if(m.kakutei)s+=1; if(m.nayose)s+=0.5; if(m.nouki)s+=0.5; return s; }
+// 充足A見込み＝A見込みかつ家族合意済かつ充足度3以上（“見かけA”を除外）
+function _amFulfilledA(c){ if(!c)return false; var m=c.am_checks||{}; var isA=(c.pursuit_judge==='A'||c.pursuit_judge==='S'||c.pursuit_judge_sel==='A見込み'); return isA && !!m.kazoku && _amScore(c)>=3; }
 // スコア計算
 function calcScoreParts(c){
   // ① ステージ（最大13点）3:連想を強調
@@ -1627,6 +1631,10 @@ function calcScoreParts(c){
   var rusuMap=[4,3,2,1,0,0];
   var rusuN=Math.max(0,Math.min(5,parseInt(c.rusu,10)||0));
   var rusuScore=rusuMap[rusuN];
+  // ⑪ 案件化充足（A見込みのみ・必須項目の取得状況／見かけAは上がらない・最大6点）
+  var _isA=(c.pursuit_judge==='A'||c.pursuit_judge==='S'||c.pursuit_judge_sel==='A見込み');
+  var _amSc=_amScore(c);
+  var amCardPt=_isA?Math.round(_amSc/5*6):0;
   var stgNm=(typeof STG!=='undefined'&&STG[si])?STG[si]:String(si);
   var parts=[
    {lb:'⭐ 提案依頼',pt:proposalScore,mx:15,why:c.proposal_req?'取得済み（顧客の意思表示）':'未取得。連想(3)到達でテストクロージングを'},
@@ -1636,10 +1644,11 @@ function calcScoreParts(c){
    {lb:'🏷 追客ランク',pt:r,mx:8,why:c.pursuit_judge||'未判定'},
    {lb:'🌍 土地×路線価',pt:landFinal,mx:7.5,why:c.asset_type?'アセット系のため対象外':(tsubo>0?(Math.round(tsubo)+'坪 × 係数'+rosenCoef):'面積未入力')},
    {lb:'👪 KP/所有者面談',pt:famScore,mx:6,why:'所有者'+(hasOwnerMet?'✓':'未')+'・KP'+(hasKpMet?'✓':'未')},
+   {lb:'✅ 案件化充足',pt:amCardPt,mx:6,why:_isA?(_amSc>=3?'必須項目を取得（家族合意ほか）':(_amSc>0?'A見込みだが取得不足':'A見込みだが未取得＝見かけA')):'A見込み確定で対象'},
    {lb:'🚪 連続留守',pt:rusuScore,mx:4,why:'留守'+rusuN+'回（減点式・留守ゼロで満点）'},
    {lb:'🚉 駅徒歩',pt:ekiScore,mx:2,why:c.ekitoho||'未確認（±2点）'}
   ];
-  var total=Math.max(0, Math.round(s+r+k+landFinal+famScore+assetScore+ekiScore+proposalScore+rusuScore));
+  var total=Math.max(0, Math.round(s+r+k+landFinal+famScore+assetScore+ekiScore+proposalScore+rusuScore+amCardPt));
   return {total:total,parts:parts};
 }
 function calcScore(c){ return calcScoreParts(c).total; }
@@ -1707,7 +1716,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.30";
+var APP_VERSION = "v7.33";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -3463,6 +3472,15 @@ function j9Axes(cards){
       ax[k]=_clip(struct);
     }
   });
+  // 案件化充足（A見込みの必須項目取得）→ 提案軸を主に加点。1枚だけで突出しないよう3件で大きく効くゲート。
+  var amN=0; cards.forEach(function(c){ if(_amFulfilledA(c)) amN++; });
+  if(amN>0){
+    var seB, enB;
+    if(amN>=3){ seB=Math.min(22, 10+(amN-3)*3); enB=Math.min(10, 4+(amN-3)*1.5); }
+    else { seB=amN*2.5; enB=amN*1; }   // N=1〜2は控えめ
+    ax.seian=_clip(ax.seian+seB);
+    ax.enmusubi=_clip(ax.enmusubi+enB);
+  }
   // 行動：担当レベル（発掘量30件で満点・直近更新率・訪問量）
   // 行動：枚数(発掘量)は最低条件＝ゲート(j9CardCap)で効くので“価値”には入れない。
   // ここでは「実際に動いた率」＝再訪着手率・追撃着手率・直近の動き・訪問総量で評価。
@@ -5193,7 +5211,7 @@ function mkBlank() {
     kouzou:'', kosu:'', kaisuu:'', prate:'',
     kaiwa:'', materials:[], maefuri:[],
     initial_content:'', manager_instruction_initial:'',
-    jchecks:{}, rusu:'0', rusu_date:'',
+    jchecks:{}, am_checks:{}, tk_checks:{}, rusu:'0', rusu_date:'',
     revisits:[{num:1,date:'',appo:'',content:'',instruction:''},{num:2,date:'',appo:'',content:'',instruction:''},{num:3,date:'',appo:'',content:'',instruction:''}],
     revisit_judge_date:'', revisit_judge:'',
     pursuits:[], pursuit_judge_date:'', pursuit_judge:'', pursuit_judge_sel:'', pursuit_judge_ai:'',
@@ -5277,6 +5295,7 @@ var TF = ['f_disc','f_name','f_social','f_genjo','f_tel','f_addr','f_plan',
   'f_sreason','f_soutei','f_oldrent','f_parking','f_jitaku','f_ryokuchi','f_landasset','f_rosenka','f_chishaku','f_m2','f_maguchi','f_youto',
   'f_kb','f_ky','f_chiku','f_kuushitsu','f_kuushitsu_aki','f_kuubi','f_fambiko','f_kouzou','f_kosu','f_kai','f_prate','f_m2tanka','f_chusharyo',
   'f_content','f_rjdate','f_pjdate','f_r4eyes','f_p4eyes','f_analog','f_content_rec','f_dtrigger','f_dtrigger_when',
+  'f_am_fund','f_am_nouki_when','f_tk_goal','f_tk_goal_when',
   'f_ai_summary','f_ai_memo'];
 var TFmap = {
   f_disc:'discovery_date', f_name:'name', f_social:'social', f_genjo:'genjo',
@@ -5289,6 +5308,8 @@ var TFmap = {
   f_kouzou:'kouzou', f_kosu:'kosu', f_kai:'kaisuu', f_prate:'prate',
   f_m2tanka:'m2tanka', f_chusharyo:'chusharyo',
   f_content:'initial_content', f_dtrigger:'d_trigger', f_dtrigger_when:'d_trigger_when',
+  f_am_fund:'am_fund', f_am_nouki_when:'am_nouki_when',
+  f_tk_goal:'tk_goal', f_tk_goal_when:'tk_goal_when',
   f_rjdate:'revisit_judge_date', f_pjdate:'pursuit_judge_date',
   f_r4eyes:'revisit_4eyes', f_p4eyes:'pursuit_4eyes',
   f_analog:'analog_memo',
@@ -5353,6 +5374,8 @@ function fillForm(c) {
   document.querySelectorAll('#materials input').forEach(function(cb){ cb.checked=(c.materials||[]).indexOf(cb.value)>=0; });
   document.querySelectorAll('#maefuri input').forEach(function(cb){ cb.checked=(c.maefuri||[]).indexOf(cb.value)>=0; });
   document.querySelectorAll('#jChecklist input').forEach(function(cb){ cb.checked=!!(c.jchecks&&c.jchecks[cb.dataset.ck]); });
+  document.querySelectorAll('#amChecks input[type="checkbox"]').forEach(function(cb){ cb.checked=!!(c.am_checks&&c.am_checks[cb.dataset.am]); });
+  document.querySelectorAll('#tkChecks input[type="checkbox"]').forEach(function(cb){ cb.checked=!!(c.tk_checks&&c.tk_checks[cb.dataset.tk]); });
   _rusuReset(c);
   document.querySelectorAll('input[name="rusu"]').forEach(function(r){ r.checked=String(r.value)===String(c.rusu||'0'); });
   renderFam(); renderRevisits(); renderPursuits();
@@ -5417,6 +5440,8 @@ function collectForm() {
   c.maefuri=Array.from(document.querySelectorAll('#maefuri input:checked')).map(function(cb){return cb.value;});
   c.jchecks={};
   document.querySelectorAll('#jChecklist input').forEach(function(cb){ c.jchecks[cb.dataset.ck]=cb.checked; });
+  c.am_checks={}; document.querySelectorAll('#amChecks input[type="checkbox"]').forEach(function(cb){ c.am_checks[cb.dataset.am]=cb.checked; });
+  c.tk_checks={}; document.querySelectorAll('#tkChecks input[type="checkbox"]').forEach(function(cb){ c.tk_checks[cb.dataset.tk]=cb.checked; });
   var rv=document.querySelector('input[name="rusu"]:checked'); c.rusu=rv?rv.value:'';
   c.revisits=Array.from(document.querySelectorAll('.ri')).map(function(el,i){
     return {num:i+1,date:el.querySelector('[data-f="date"]').value,appo:el.querySelector('[data-f="appo"]').value,visit_type:el.querySelector('[data-f="vtype"]')?.value||'',content:el.querySelector('[data-f="content"]').value,rec:el.querySelector('[data-f="rec"]')?.value||'',instruction:el.querySelector('[data-f="inst"]').value};
@@ -5830,7 +5855,17 @@ function isRevisitJudgeDone(){ return !!(cur && (cur.revisit_judge || cur.revisi
 function applyPursuitLock(){ var locked=!isRevisitJudgeDone(); var b=document.getElementById('addPursuitBtn'); if(b) b.classList.toggle('pursuit-locked', locked); document.querySelectorAll('[data-pj]').forEach(function(x){ x.classList.toggle('pj-locked', locked); }); }
 window.isRevisitJudgeDone=isRevisitJudgeDone; window.applyPursuitLock=applyPursuitLock;
 function setRJ(v,user){ if(user){ if(typeof collectForm==='function') collectForm(); if(isRevisitJudgeLocked()){ applyRevisitLock(); aibisAlert('再訪Judgmentはまだロック中だよ🔒<br><br>ヒアリングは足りてる？課長と協議した？<br><br>再訪3回目の「訪問日・訪問内容・録音要約」のどれかを記録するとJudgmentできるよ。'); return; } if(cur.revisit_judge===v) v=''; } cur.revisit_judge=v; document.querySelectorAll('[data-rj]').forEach(function(b){b.classList.toggle('active',b.dataset.rj===v);}); if(user){ recomputeRank(); if(window.applyPursuitLock) applyPursuitLock(); if(typeof setDirty==='function') setDirty(true); } if(window.updateTabProgress) updateTabProgress(); }
-function setPJ(v,user){ if(user){ if(typeof collectForm==='function') collectForm(); if(!isRevisitJudgeDone()){ if(window.applyPursuitLock) applyPursuitLock(); aibisAlert('先に再訪Judgmentを行ってね🔒<br><br>追撃Judgmentは、再訪Judgment（判定日・フォーアイズ・判定ボタンのどれか）を入れてからだよ。<br><br>課長と協議した？'); return; } if(cur.pursuit_judge_sel===v) v=''; } cur.pursuit_judge_sel=v; document.querySelectorAll('[data-pj]').forEach(function(b){b.classList.toggle('active',b.dataset.pj===v);}); if(user){ recomputeRank(); if(typeof setDirty==='function') setDirty(true); } if(window.updateTabProgress) updateTabProgress(); }
+function setPJ(v,user){ if(user){ if(typeof collectForm==='function') collectForm(); if(!isRevisitJudgeDone()){ if(window.applyPursuitLock) applyPursuitLock(); aibisAlert('先に再訪Judgmentを行ってね🔒<br><br>追撃Judgmentは、再訪Judgment（判定日・フォーアイズ・判定ボタンのどれか）を入れてからだよ。<br><br>課長と協議した？'); return; } if(cur.pursuit_judge_sel===v) v=''; } cur.pursuit_judge_sel=v; document.querySelectorAll('[data-pj]').forEach(function(b){b.classList.toggle('active',b.dataset.pj===v);}); if(window.renderJudgeDetail) renderJudgeDetail(); if(user){ recomputeRank(); if(typeof setDirty==='function') setDirty(true); } if(window.updateTabProgress) updateTabProgress(); }
+// 追撃Judgmentの選択に応じて重点ボックス（A見込み/追撃継続/変化待ち）を1つだけ表示
+function renderJudgeDetail(){
+  var sel=(cur&&cur.pursuit_judge_sel)||'';
+  var common=(sel==='A見込み'||sel==='追撃継続'||sel==='変化待ち');
+  var set=function(id,show){ var el=document.getElementById(id); if(el) el.style.display=show?'block':'none'; };
+  set('jdCommon',common);
+  set('jdK',sel==='追撃継続');
+  set('jdWait',sel==='変化待ち');
+}
+window.renderJudgeDetail=renderJudgeDetail;
 
 // ===== 保存 =====
 // ===== 下書き自動保存＆画面離脱時の自動確定（保存忘れ対策） =====
@@ -10200,8 +10235,36 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <div style="margin-top:8px;padding:6px;background:#fff;border-radius:4px;font-size:11px;color:#c53030;font-weight:600">
         ★ A見込みは毎日訪問・45日以内に契約！
       </div>
-      <div style="margin-top:8px;padding:8px;background:#fff;border:1px dashed #4a5568;border-radius:6px">
-        <div style="font-size:11.5px;font-weight:700;color:#4a5568;margin-bottom:5px">⏳ 待ちトリガー（C判定なら必須）— 何を待っているか</div>
+      <!-- 判定別の重点ボックス：選んだJudgmentに応じて1つだけ表示 -->
+      <div id="jdCommon" style="display:none;margin-top:8px;padding:9px;background:#fff;border:1px dashed #c53030;border-radius:6px">
+        <div style="font-size:11.5px;font-weight:700;color:#c53030;margin-bottom:6px">✅ 案件化 必須確認（A見込み・追撃継続・変化待ち 共通／取得状況が期待度に直結）</div>
+        <div id="amChecks" style="display:flex;flex-direction:column;gap:6px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;margin:0"><input type="checkbox" data-am="jikoshikin"><span>自己資金の確認</span><select id="f_am_fund" style="margin-left:auto;width:auto;min-height:30px;font-size:12px;padding:3px 6px"><option value="">方法 -</option><option value="現金">現金</option><option value="融資">融資</option><option value="併用">併用</option></select></label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;margin:0"><input type="checkbox" data-am="kakutei"><span>確定申告・決算書の確認</span></label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;margin:0"><input type="checkbox" data-am="nayose"><span>名寄帳の確認</span></label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;margin:0"><input type="checkbox" data-am="kazoku"><span>家族合意の確認 ★最重要</span></label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;margin:0"><input type="checkbox" data-am="nouki"><span>決断までの納期設定</span><input type="month" id="f_am_nouki_when" style="margin-left:auto;width:auto;min-height:30px;font-size:12px;padding:3px 6px"></label>
+        </div>
+      </div>
+      <div id="jdK" style="display:none;margin-top:8px;padding:9px;background:#fff;border:1px dashed #dd6b20;border-radius:6px">
+        <div style="font-size:11.5px;font-weight:700;color:#c05621;margin-bottom:6px">🤝 追撃継続 重点確認</div>
+        <div id="tkChecks" style="display:flex;flex-direction:column;gap:6px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;margin:0"><input type="checkbox" data-tk="kazoku_apo"><span>家族同席アポ ★最重要</span></label>
+        </div>
+        <div style="margin-top:8px;padding-top:8px;border-top:1px dashed #f0c9a8">
+          <div style="font-size:11px;font-weight:700;color:#c05621;margin-bottom:4px">🎯 決断の着地点（こちら側の目標時期）</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <select id="f_tk_goal" style="flex:2;min-width:150px;min-height:32px">
+              <option value="">（目安を選択）</option>
+              <option>今月中</option><option>1〜2ヶ月</option><option>3ヶ月以内</option><option>半年以内</option><option>年内</option><option>その他</option>
+            </select>
+            <label style="margin:0;font-size:11px;color:#718096">目標時期</label>
+            <input type="month" id="f_tk_goal_when" style="flex:1;min-width:130px;min-height:32px">
+          </div>
+        </div>
+      </div>
+      <div id="jdWait" style="display:none;margin-top:8px;padding:8px;background:#fff;border:1px dashed #4a5568;border-radius:6px">
+        <div style="font-size:11.5px;font-weight:700;color:#4a5568;margin-bottom:5px">⏳ 変化待ちトリガー — 何を待っているか</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
           <select id="f_dtrigger" style="flex:2;min-width:150px;min-height:32px">
             <option value="">（なし／未設定）</option>
