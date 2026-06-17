@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="AIBIS">
 <meta name="application-name" content="AIBIS">
-<meta name="theme-color" content="#c53030">
+<meta name="theme-color" content="#1e3a5f">
 <style>
 /* Google Fontsが読み込めない環境用のフォールバック */
 @font-face {
@@ -1725,7 +1725,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.50";
+var APP_VERSION = "v7.51";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -5570,7 +5570,7 @@ document.addEventListener('change',function(ev){
 // ===== ステージ・ピルボタン =====
 document.addEventListener('click',function(ev){
   var sb=ev.target.closest('.stbtn');
-  if(sb){document.querySelectorAll('.stbtn').forEach(function(b){b.classList.remove('active');}); sb.classList.add('active'); return;}
+  if(sb){var wasOn=sb.classList.contains('active'); document.querySelectorAll('.stbtn').forEach(function(b){b.classList.remove('active');}); if(!wasOn) sb.classList.add('active'); return;}
   var pb=ev.target.closest('.pbtn');
   if(pb){
     if(pb.dataset.multi==='1'){pb.classList.toggle('active');}
