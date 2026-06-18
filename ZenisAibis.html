@@ -1757,7 +1757,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.73";
+var APP_VERSION = "v7.74";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -5184,15 +5184,20 @@ function _sendCards(selected, toEmail, ccEmail, subjPrefix, onDone, copyAddr, bd
     setTimeout(function(){ URL.revokeObjectURL(url); },1500);
     if(onDone) onDone();
   }
-  var file=null; var shareName=fn.replace(/\.json$/,'.txt');
-  try{ file=new File([data],shareName,{type:'text/plain'}); }catch(_e){}
-  if(isMob && file && typeof navigator!=='undefined' && navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+  function doShare(f){
     var shareText=body;
     try{ if(clipAddr && navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(clipAddr); } }catch(_e){}
-    navigator.share({files:[file], title:subj, text:shareText})
+    navigator.share({files:[f], title:subj, text:shareText})
       .then(function(){ toast(clipAddr?('共有OK。宛先「'+clipAddr+'」をコピー済→Outlookの宛先に貼り付け'):'共有しました'); if(onDone) onDone(); })
       .catch(function(err){ if(err && err.name==='AbortError') return; fallback(); });
-    return;
+  }
+  var canShareFiles=(typeof navigator!=='undefined' && navigator.share && navigator.canShare);
+  if(isMob && canShareFiles){
+    // ①JSONファイルで添付（カメラと同方式）。②不可な端末のみ.txtで添付。③それも不可ならmailto。
+    var jf=null; try{ jf=new File([data],fn,{type:'application/json'}); }catch(_e){}
+    if(jf && navigator.canShare({files:[jf]})){ doShare(jf); return; }
+    var tf=null; try{ tf=new File([data],fn.replace(/\.json$/,'.txt'),{type:'text/plain'}); }catch(_e){}
+    if(tf && navigator.canShare({files:[tf]})){ doShare(tf); return; }
   }
   fallback();
 }
