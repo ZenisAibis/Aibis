@@ -40,8 +40,11 @@
   #flashfx{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
   #flashfx.go{animation:flash .28s ease-out}
   @keyframes flash{0%{opacity:.0}15%{opacity:.85}100%{opacity:0}}
-  #guide{position:absolute;inset:0;pointer-events:none}
-  #guide .grid line{stroke:rgba(255,255,255,.28);stroke-width:1}
+  #guide{position:absolute;inset:0;pointer-events:none;z-index:3}
+  #guide .grid line{stroke:rgba(255,255,255,.32);stroke-width:1;vector-effect:non-scaling-stroke}
+  #level{position:absolute;left:0;right:0;top:50%;height:0;display:flex;justify-content:center;align-items:center;pointer-events:none;z-index:4}
+  #level i{display:block;width:56%;height:2px;border-radius:2px;background:rgba(255,255,255,.55);box-shadow:0 0 2px rgba(0,0,0,.5);transform-origin:center center;transition:background .12s,box-shadow .12s}
+  #level.ok i{background:#39e08a;box-shadow:0 0 8px rgba(57,224,138,.9)}
   .gpschip{position:absolute;left:0;right:0;bottom:8px;display:flex;justify-content:center;pointer-events:none}
   .gpschip span{background:rgba(15,27,45,.8);border:1px solid var(--line);padding:5px 12px;border-radius:18px;
     font-size:11.5px;font-weight:700;color:var(--dim);max-width:92%;text-align:center}
@@ -196,6 +199,7 @@
   <div id="camWrap">
     <video id="video" playsinline autoplay muted></video>
     <svg id="guide" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+    <div id="level"><i></i></div>
     <div class="gpschip" id="gpsChip"><span id="gpsTxt">📍 位置情報を取得中…</span></div>
     <button id="camToggle" class="hide">⤢</button>
     <div id="flashfx"></div>
@@ -335,7 +339,7 @@
    ※ prospect_cards_v1 には書き込まない（新規カード作成・PC連携は本体側）
    データ(set): {id,cardId,ts,addrType:'plan',lat,lng,acc,addr,addrPending,banchi,note,sent,photos:[{pid,full(Blob),thumb,w,h,size}]}
    ========================================================= */
-const APP_VERSION = "cam-v1.20";
+const APP_VERSION = "cam-v1.21";
 const SK_CARDS = "prospect_cards_v1";
 const IDX_KEY  = "aibis_media_index_v1";
 const DB_NAME  = "aibis_media_v1";
@@ -483,7 +487,7 @@ async function startCamera(){
     $("torchBtn").style.display = caps.torch ? "flex":"none";
     torchOn=false; $("torchBtn").classList.remove("on");
     $("shutter").disabled=false;
-    drawGuide(); startGeo();
+    drawGuide(); initLevel(); startGeo();
   }catch(e){
     let m="カメラを起動できませんでした。";
     if(e&&e.name==="NotAllowedError") m="カメラの使用が許可されていません。ブラウザの権限設定でこのサイトのカメラを許可してください。";
@@ -494,6 +498,19 @@ async function startCamera(){
 function stopCamera(){ if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; track=null; } stopGeo(); }
 function showCamErr(msg){ $("camErrMsg").textContent=msg; $("camErr").classList.remove("hide"); $("shutter").disabled=true; }
 function drawGuide(){ $("guide").innerHTML='<g class="grid"><line x1="33.3" y1="0" x2="33.3" y2="100"/><line x1="66.6" y1="0" x2="66.6" y2="100"/><line x1="0" y1="33.3" x2="100" y2="33.3"/><line x1="0" y1="66.6" x2="100" y2="66.6"/></g>'; }
+let _levelOn=false;
+function initLevel(){
+  if(_levelOn) return; _levelOn=true;
+  window.addEventListener("deviceorientation",e=>{
+    if(e.gamma==null) return;
+    if(!screens.cam || screens.cam.classList.contains("hide")) return;
+    const bar=$("level"); if(!bar) return;
+    const g=e.gamma;                       // 左右の傾き(-90〜90)
+    const show=Math.max(-25,Math.min(25,g));
+    const i=bar.querySelector("i"); if(i) i.style.transform="rotate("+(-show)+"deg)";
+    bar.classList.toggle("ok", Math.abs(g)<1.2);
+  },true);
+}
 $("torchBtn").addEventListener("click",async()=>{
   if(!track) return; torchOn=!torchOn;
   try{ await track.applyConstraints({advanced:[{torch:torchOn}]}); $("torchBtn").classList.toggle("on",torchOn); }
