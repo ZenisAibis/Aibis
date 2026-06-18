@@ -28,6 +28,7 @@
   .top .sub{font-size:11px;color:var(--dim);font-weight:600}
   .tbtn{padding:7px 11px;border-radius:9px;background:var(--panel2);font-size:12.5px;font-weight:700;white-space:nowrap}
   .tbtn:active{background:#264168}
+  .tbtn .cnt{color:var(--teal);font-weight:900;margin-left:2px}
   .grow{flex:1;min-width:0}
   .cardchip{display:flex;flex-direction:column;min-width:0}
   .cardchip b{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -38,7 +39,6 @@
   #flashfx{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
   #flashfx.go{animation:flash .28s ease-out}
   @keyframes flash{0%{opacity:.0}15%{opacity:.85}100%{opacity:0}}
-  /* ガイドオーバーレイ */
   #guide{position:absolute;inset:0;pointer-events:none}
   #guide .grid line{stroke:rgba(255,255,255,.28);stroke-width:1}
   #guide .horizon{stroke:var(--teal);stroke-width:1.5;stroke-dasharray:6 6;opacity:.85}
@@ -47,11 +47,14 @@
   .hintbar{position:absolute;left:0;right:0;top:0;display:flex;justify-content:center;pointer-events:none}
   .hintbar span{margin-top:10px;background:rgba(15,27,45,.78);border:1px solid var(--line);
     padding:6px 13px;border-radius:20px;font-size:12.5px;font-weight:700;color:var(--teal);max-width:90%;text-align:center}
+  .gpschip{position:absolute;left:0;right:0;bottom:8px;display:flex;justify-content:center;pointer-events:none}
+  .gpschip span{background:rgba(15,27,45,.8);border:1px solid var(--line);padding:5px 12px;border-radius:18px;
+    font-size:11.5px;font-weight:700;color:var(--dim);max-width:92%;text-align:center}
+  .gpschip span b{color:var(--teal)}
   .errcard{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
     gap:14px;padding:28px;text-align:center}
   .errcard .em{font-size:13px;color:var(--dim);line-height:1.7}
 
-  /* ショット種別チップ */
   .shotbar{display:flex;gap:7px;overflow-x:auto;padding:9px 12px;background:var(--panel);
     border-top:1px solid var(--line);scrollbar-width:none}
   .shotbar::-webkit-scrollbar{display:none}
@@ -59,7 +62,6 @@
     font-size:13px;font-weight:700;color:var(--dim);border:1.5px solid transparent}
   .chip.on{background:rgba(245,158,11,.15);color:var(--gold);border-color:var(--gold)}
 
-  /* 撮影バー */
   .shootbar{display:flex;align-items:center;justify-content:space-between;
     padding:14px 26px calc(env(safe-area-inset-bottom) + 16px);background:var(--bg)}
   .iconbtn{width:52px;height:52px;border-radius:50%;background:var(--panel2);display:flex;
@@ -77,7 +79,7 @@
     font-size:11px;font-weight:900;min-width:18px;height:18px;border-radius:9px;display:flex;
     align-items:center;justify-content:center;padding:0 4px}
 
-  /* ---- ピッカー / ギャラリー ---- */
+  /* ---- リスト / ギャラリー ---- */
   .pad{padding:12px 14px;overflow-y:auto;flex:1;min-height:0}
   .search{width:100%;padding:12px 14px;border-radius:12px;background:var(--panel);border:1px solid var(--line);
     color:var(--txt);font-size:15px;margin-bottom:10px}
@@ -91,7 +93,20 @@
     background:var(--panel2);border-radius:10px;padding:6px 9px;min-width:48px}
   .crow .pc b{font-size:16px;font-weight:900;color:var(--teal);line-height:1}
   .crow .pc s{font-size:9.5px;color:var(--dim);text-decoration:none}
-  .emptyst{text-align:center;color:var(--dim);padding:40px 20px;line-height:1.8;font-size:13.5px}
+  .emptyst{text-align:center;color:var(--dim);padding:40px 20px;line-height:1.9;font-size:13.5px}
+
+  /* インボックス行 */
+  .ibrow{display:flex;gap:11px;padding:10px;border-radius:13px;background:var(--panel);
+    border:1px solid var(--line);margin-bottom:9px}
+  .ibrow .th{flex:0 0 auto;width:64px;height:64px;border-radius:10px;overflow:hidden;background:var(--panel2)}
+  .ibrow .th img{width:100%;height:100%;object-fit:cover;display:block}
+  .ibrow .bd{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;justify-content:center}
+  .ibrow .ad{font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ibrow .ad.pend{color:var(--dim);font-weight:600}
+  .ibrow .wn{font-size:11px;color:var(--dim)}
+  .typechip{display:inline-block;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:8px}
+  .typechip.plan{background:rgba(245,158,11,.16);color:var(--gold)}
+  .typechip.home{background:rgba(52,227,208,.16);color:var(--teal)}
 
   .galgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
   .gcell{position:relative;aspect-ratio:1;border-radius:9px;overflow:hidden;background:var(--panel2)}
@@ -103,17 +118,30 @@
 
   /* ---- 全画面ビューア ---- */
   #viewer{position:fixed;inset:0;background:rgba(7,12,20,.97);z-index:50;display:flex;flex-direction:column}
-  #viewer img{flex:1;min-height:0;object-fit:contain;width:100%}
+  #viewer img#vImg{flex:1;min-height:0;object-fit:contain;width:100%}
   .vtop{display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + 10px) 14px 10px}
-  .vmeta{padding:10px 16px}
-  .vmeta input{width:100%;padding:11px 13px;border-radius:11px;background:var(--panel);border:1px solid var(--line);
+  .vmeta{padding:6px 16px 0;display:flex;flex-direction:column;gap:8px}
+  .vtoggle{display:flex;gap:8px;align-items:center}
+  .seg{display:flex;border:1px solid var(--line);border-radius:11px;overflow:hidden}
+  .seg button{padding:9px 16px;font-size:13.5px;font-weight:800;color:var(--dim);background:var(--panel)}
+  .seg button.on.plan{background:rgba(245,158,11,.18);color:var(--gold)}
+  .seg button.on.home{background:rgba(52,227,208,.18);color:var(--teal)}
+  .linkbtn{margin-left:auto;padding:9px 13px;border-radius:11px;background:var(--panel2);font-size:13px;font-weight:800;
+    max-width:55%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .addrline{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--txt)}
+  .addrline .mini{padding:6px 10px;border-radius:9px;background:var(--panel2);font-size:12px;font-weight:700;flex:0 0 auto}
+  .addrline .at{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .addrline .at.pend{color:var(--dim)}
+  .notewrap{display:flex;gap:8px}
+  .notewrap input{flex:1;padding:11px 13px;border-radius:11px;background:var(--panel);border:1px solid var(--line);
     color:var(--txt);font-size:14px}
-  .vacts{display:flex;gap:8px;padding:6px 14px calc(env(safe-area-inset-bottom) + 16px)}
+  .micbtn{flex:0 0 auto;width:46px;border-radius:11px;background:var(--panel2);font-size:19px}
+  .micbtn.rec{background:rgba(255,93,125,.2);color:var(--danger)}
+  .vacts{display:flex;gap:8px;padding:10px 14px calc(env(safe-area-inset-bottom) + 16px)}
   .vbtn{flex:1;padding:13px;border-radius:12px;background:var(--panel2);font-size:14px;font-weight:800;text-align:center}
   .vbtn.danger{background:rgba(255,93,125,.16);color:var(--danger)}
   .vbtn:active{filter:brightness(1.2)}
 
-  /* トースト */
   #toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 110px);transform:translateX(-50%) translateY(20px);
     background:var(--panel2);color:var(--txt);padding:11px 18px;border-radius:22px;font-size:13.5px;font-weight:700;
     opacity:0;transition:.25s;z-index:60;border:1px solid var(--line);pointer-events:none;max-width:86%}
@@ -122,21 +150,22 @@
 </head>
 <body>
 
-<!-- ===== カメラ画面 ===== -->
+<!-- ===== カメラ画面（クイック / カード共用） ===== -->
 <div id="scrCam" class="scr hide">
   <div class="top">
-    <button class="tbtn" id="backBtn">←</button>
+    <button class="tbtn" id="leftBtn">🗂 一覧</button>
     <div class="cardchip grow">
-      <b id="camCardName">—</b>
-      <span class="sub" id="camCardMeta"></span>
+      <b id="camTitle">クイック撮影</b>
+      <span class="sub" id="camSub">→ インボックス（あとで仕分け）</span>
     </div>
-    <button class="tbtn" id="galBtn">🖼 <span id="galCount">0</span></button>
+    <button class="tbtn" id="rightBtn">📥 <span class="cnt" id="rightCount">0</span></button>
   </div>
 
   <div id="camWrap">
     <video id="video" playsinline autoplay muted></video>
     <svg id="guide" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
     <div class="hintbar"><span id="hintTxt"></span></div>
+    <div class="gpschip" id="gpsChip"><span id="gpsTxt">📍 位置情報を取得中…</span></div>
     <div id="flashfx"></div>
     <div class="errcard hide" id="camErr">
       <div style="font-size:40px">📷</div>
@@ -145,7 +174,7 @@
     </div>
   </div>
 
-  <div class="shotbar" id="shotbar"></div>
+  <div class="shotbar hide" id="shotbar"></div>
 
   <div class="shootbar">
     <button class="iconbtn" id="torchBtn" title="ライト">🔦</button>
@@ -155,14 +184,27 @@
   <input type="file" id="nativeCam" accept="image/*" capture="environment" class="hide">
 </div>
 
-<!-- ===== カード選択（単体起動） ===== -->
+<!-- ===== カード一覧（読み取り専用 / 紐付けピッカー兼用） ===== -->
 <div id="scrPick" class="scr hide">
   <div class="top">
-    <div class="cardchip grow"><b class="ttl">⌘ z.Aibis カメラ</b><span class="sub">カードを選んで撮影</span></div>
+    <button class="tbtn hide" id="pickBack">←</button>
+    <div class="cardchip grow"><b class="ttl" id="pickTitle">⌘ カード一覧</b><span class="sub" id="pickSub">カードを選んで撮影・閲覧</span></div>
   </div>
   <div class="pad">
     <input class="search" id="pickSearch" placeholder="名前・担当・住所で検索">
     <div id="pickList"></div>
+  </div>
+</div>
+
+<!-- ===== インボックス（未仕分け） ===== -->
+<div id="scrInbox" class="scr hide">
+  <div class="top">
+    <button class="tbtn" id="inbBack">← 撮影</button>
+    <div class="cardchip grow"><b id="inbTitle">📥 インボックス</b><span class="sub">未仕分けの写真。タップで仕分け</span></div>
+  </div>
+  <div class="pad">
+    <div id="inbBody"></div>
+    <div class="storeline" id="inbStore"></div>
   </div>
 </div>
 
@@ -179,17 +221,34 @@
   </div>
 </div>
 
-<!-- ===== 全画面ビューア ===== -->
+<!-- ===== 全画面ビューア（仕分け・閲覧 共用） ===== -->
 <div id="viewer" class="hide">
   <div class="vtop">
     <button class="tbtn" id="vClose">✕</button>
-    <div class="cardchip grow"><b id="vTag" style="font-size:13px;color:var(--gold)"></b><span class="sub" id="vWhen"></span></div>
+    <div class="cardchip grow"><b id="vTitle" style="font-size:13px;color:var(--gold)">写真</b><span class="sub" id="vWhen"></span></div>
   </div>
   <img id="vImg" alt="">
-  <div class="vmeta"><input id="vNote" placeholder="メモ（任意：境界標の位置、撮影方向など）"></div>
+  <div class="vmeta">
+    <div class="vtoggle">
+      <div class="seg" id="vTypeSeg">
+        <button data-t="plan" class="plan">計画地</button>
+        <button data-t="home" class="home">自宅</button>
+      </div>
+      <button class="linkbtn" id="vLink">🔗 カードに紐付け</button>
+    </div>
+    <div class="addrline">
+      <button class="mini" id="vMap">🗺 地図</button>
+      <span class="at pend" id="vAddr">住所未取得</span>
+      <button class="mini" id="vGeo">🔄 取得</button>
+    </div>
+    <div class="notewrap">
+      <input id="vNote" placeholder="備考（任意：撮影方向・特徴など）">
+      <button class="micbtn" id="vMic" title="音声入力">🎤</button>
+    </div>
+  </div>
   <div class="vacts">
-    <button class="vbtn" id="vShot">種別変更</button>
-    <button class="vbtn" id="vDl">⬇ 画像を保存</button>
+    <button class="vbtn" id="vShot">種別</button>
+    <button class="vbtn" id="vDl">⬇ 保存</button>
     <button class="vbtn danger" id="vDel">🗑 削除</button>
   </div>
 </div>
@@ -199,21 +258,24 @@
 <script>
 "use strict";
 /* =========================================================
-   z.Aibis カメラ v1  ── 現地写真をアイビスの見込みカードに紐付け
+   z.Aibis カメラ v1.1
    連携契約:
    - カード一覧: localStorage['prospect_cards_v1'] を読み取り専用で参照
-   - 写真: IndexedDB 'aibis_media_v1' / store 'photos'(keyPath id, index by_card)
-   - 件数索引: localStorage['aibis_media_index_v1'] = {cardId:{n,last}}
-   ※ アイビスのデータ(prospect_cards_v1)には一切書き込まない
+   - 写真: IndexedDB 'aibis_media_v1' / store 'photos'(keyPath id, index by_card,by_ts)
+   - 件数索引: localStorage['aibis_media_index_v1'] = {cardId:{n,last}}（実カードのみ。__inbox__は含めない）
+   ※ prospect_cards_v1 には一切書き込まない（新規カード作成・PC連携は本体側で実施）
+   レコード: {id,cardId,ts,shot,addrType('plan'|'home'),lat,lng,acc,addr,addrPending,note,w,h,size,full(Blob),thumb(dataURL)}
    ========================================================= */
-const APP_VERSION = "cam-v1.0";
+const APP_VERSION = "cam-v1.1";
 const SK_CARDS = "prospect_cards_v1";
 const IDX_KEY  = "aibis_media_index_v1";
 const DB_NAME  = "aibis_media_v1";
 const STORE    = "photos";
-const MAX_EDGE = 1600;   // 長辺上限(px)
-const JPEG_Q   = 0.82;
+const INBOX    = "__inbox__";
+const MAX_EDGE = 1280;   // 長辺上限(px) ← 軽量化
+const JPEG_Q   = 0.72;   // 圧縮品質 ← 軽量化
 const THUMB_EDGE = 260;
+const GSI_URL = "https://mreversegeocoder.gsi.go.jp/reverse-geocoder/LonLatToAddress";
 
 const SHOTS = [
   {k:"zenkei",   label:"全景",      hint:"土地全体が入る引きで・水平を意識", guide:"horizon"},
@@ -226,15 +288,15 @@ const SHOTS = [
   {k:"other",    label:"その他",    hint:"",                                 guide:"grid"}
 ];
 const shotLabel = k => (SHOTS.find(s=>s.k===k)||{label:"その他"}).label;
+const TYPE_LABEL = {plan:"計画地", home:"自宅"};
 
 /* ---------- 状態 ---------- */
-let DB=null, stream=null, track=null;
-let curCardId=null, fromAibis=false, curShot=SHOTS[0].k, facing="environment", torchOn=false;
-let sessCount=0, viewerId=null;
+let DB=null, stream=null, track=null, geoWatch=null, lastPos=null;
+let mode="quick", curCardId=INBOX, fromAibis=false, curShot=SHOTS[0].k, facing="environment", torchOn=false;
+let sessCount=0, viewerId=null, viewerFrom="inbox", pickMode="open", linkTargetId=null;
 
-/* ---------- DOM ---------- */
 const $ = id => document.getElementById(id);
-const screens = {cam:$("scrCam"), pick:$("scrPick"), gal:$("scrGal")};
+const screens = {cam:$("scrCam"), pick:$("scrPick"), inbox:$("scrInbox"), gal:$("scrGal")};
 function show(name){ for(const k in screens) screens[k].classList.toggle("hide", k!==name); }
 function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show");
   clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("show"),1900); }
@@ -255,7 +317,7 @@ function openDB(){
     r.onerror=()=>rej(r.error);
   });
 }
-function tx(mode){ return DB.transaction(STORE,mode).objectStore(STORE); }
+function tx(m){ return DB.transaction(STORE,m).objectStore(STORE); }
 function idbPut(rec){ return new Promise((res,rej)=>{ const q=tx("readwrite").put(rec); q.onsuccess=()=>res(); q.onerror=()=>rej(q.error); }); }
 function idbDel(id){ return new Promise((res,rej)=>{ const q=tx("readwrite").delete(id); q.onsuccess=()=>res(); q.onerror=()=>rej(q.error); }); }
 function idbGet(id){ return new Promise((res,rej)=>{ const q=tx("readonly").get(id); q.onsuccess=()=>res(q.result); q.onerror=()=>rej(q.error); }); }
@@ -274,6 +336,7 @@ function idbCountByCard(cardId){
 /* ---------- 件数索引(localStorage) ---------- */
 function readIndex(){ try{ return JSON.parse(localStorage.getItem(IDX_KEY)||"{}"); }catch(e){ return {}; } }
 async function refreshIndex(cardId){
+  if(!cardId||cardId===INBOX) return; // インボックスは索引に載せない
   const n=await idbCountByCard(cardId), idx=readIndex();
   if(n>0) idx[cardId]={n, last:Date.now()}; else delete idx[cardId];
   try{ localStorage.setItem(IDX_KEY, JSON.stringify(idx)); }catch(e){}
@@ -282,87 +345,89 @@ async function refreshIndex(cardId){
 /* ---------- カード読込(read-only) ---------- */
 function loadCards(){ try{ const a=JSON.parse(localStorage.getItem(SK_CARDS)||"[]"); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
 function findCard(id){ return loadCards().find(c=>c.id===id)||null; }
+function cardLabel(id){ const c=findCard(id); return c?(c.name||"無名")+"様":"カード "+String(id).slice(0,8)+"…"; }
+function cardMeta(id){ const c=findCard(id); return c?[c.manager,c.address||c.plan_address].filter(Boolean).join("・"):""; }
 
 /* ---------- 起動 ---------- */
 async function boot(){
   try{ DB=await openDB(); }catch(e){ toast("保存領域を開けませんでした"); }
-  // 永続化要求（端末の容量逼迫時に消えにくく）
   if(navigator.storage&&navigator.storage.persist){ try{ await navigator.storage.persist(); }catch(e){} }
   buildShotBar();
   const p=new URLSearchParams(location.search);
   const cid=p.get("cardId");
-  if(cid){ fromAibis=true; enterCamera(cid); }
-  else { renderPicker(); show("pick"); }
+  if(cid){ fromAibis=true; enterCamera(cid); }      // 本体カードから起動
+  else { enterQuick(); }                            // 既定＝クイック撮影（ホーム）
 }
 
-/* ---------- カード選択画面 ---------- */
-function renderPicker(filter){
-  const idx=readIndex();
-  let cards=loadCards();
-  const f=(filter||"").trim();
-  if(f){ const lc=f.toLowerCase();
-    cards=cards.filter(c=>((c.name||"")+(c.manager||"")+(c.address||"")+(c.plan_address||"")).toLowerCase().includes(lc)); }
-  // 写真ありを上に、その後 発掘日新しい順
-  cards.sort((a,b)=>{ const na=(idx[a.id]||{}).n||0, nb=(idx[b.id]||{}).n||0;
-    if(nb!==na) return nb-na; return (b.discovery_date||"").localeCompare(a.discovery_date||""); });
-  const host=$("pickList");
-  if(!loadCards().length){
-    host.innerHTML='<div class="emptyst">アイビスのカードが見つかりません。<br>同じ端末・同じサイトでアイビスを一度開いてカードを作成してから、もう一度開いてください。</div>';
-    return;
-  }
-  if(!cards.length){ host.innerHTML='<div class="emptyst">該当するカードがありません。</div>'; return; }
-  host.innerHTML=cards.slice(0,200).map(c=>{
-    const n=(idx[c.id]||{}).n||0;
-    const meta=[c.manager,c.address||c.plan_address].filter(Boolean).join("・");
-    return `<div class="crow" data-id="${esc(c.id)}">
-      <div class="grow" style="min-width:0">
-        <div class="nm">${esc(c.name||"無名")}様</div>
-        <div class="mt">${esc(meta||"—")}</div>
-      </div>
-      <div class="pc"><b>${n}</b><s>枚</s></div>
-    </div>`;
-  }).join("");
-  host.querySelectorAll(".crow").forEach(el=>el.addEventListener("click",()=>{ fromAibis=false; enterCamera(el.dataset.id); }));
-}
-$("pickSearch").addEventListener("input",e=>renderPicker(e.target.value));
-
-/* ---------- カメラ画面 ---------- */
-async function enterCamera(cardId){
-  curCardId=cardId; sessCount=0;
-  const c=findCard(cardId);
-  $("camCardName").textContent=(c?(c.name||"無名")+"様":"カード "+cardId.slice(0,10)+"…");
-  $("camCardMeta").textContent=c?[c.manager,c.address||c.plan_address].filter(Boolean).join("・"):"（アイビス未登録のカードID）";
-  $("backBtn").textContent= fromAibis ? "← アイビス" : "← 一覧";
-  $("sessBadge").classList.add("hide"); $("sessBadge").textContent="0";
-  $("lastThumb").querySelector("img")&&$("lastThumb").querySelector("img").remove();
+/* ---------- クイック撮影（ホーム） ---------- */
+async function enterQuick(){
+  mode="quick"; curCardId=INBOX; sessCount=0; curShot="other";
+  $("camTitle").textContent="クイック撮影";
+  $("camSub").textContent="→ インボックス（あとで仕分け）";
+  $("leftBtn").textContent="🗂 一覧";
+  $("rightBtn").innerHTML='📥 <span class="cnt" id="rightCount">0</span>';
+  $("shotbar").classList.add("hide");
+  $("gpsChip").style.display="";
+  resetSession();
   show("cam");
-  await updateGalCount();
+  await updateRightCount();
   await startCamera();
-  setShot(curShot);
+  setShot("other");
 }
-$("backBtn").addEventListener("click",()=>{
-  stopCamera();
-  if(fromAibis){ if(history.length>1) history.back(); else toast("アイビスのタブに戻ってください"); }
-  else { renderPicker($("pickSearch").value); show("pick"); }
-});
-$("galBtn").addEventListener("click",()=>openGallery(curCardId,true));
 
+/* ---------- カード撮影モード ---------- */
+async function enterCamera(cardId){
+  mode="card"; curCardId=cardId; sessCount=0;
+  $("camTitle").textContent=cardLabel(cardId);
+  $("camSub").textContent=cardMeta(cardId)||"（本体に未登録のカードID）";
+  $("leftBtn").textContent= fromAibis ? "← アイビス" : "← 一覧";
+  $("rightBtn").innerHTML='🖼 <span class="cnt" id="rightCount">0</span>';
+  $("shotbar").classList.remove("hide");
+  $("gpsChip").style.display="none";
+  resetSession();
+  show("cam");
+  await updateRightCount();
+  await startCamera();
+  setShot(curShot==="other"?SHOTS[0].k:curShot);
+}
+function resetSession(){
+  $("sessBadge").classList.add("hide"); $("sessBadge").textContent="0";
+  const img=$("lastThumb").querySelector("img"); if(img) img.remove();
+}
+
+/* ヘッダ左右ボタン */
+$("leftBtn").addEventListener("click",()=>{
+  stopCamera();
+  if(mode==="card" && fromAibis){ if(history.length>1) history.back(); else toast("アイビスのタブに戻ってください"); }
+  else { openPick("open"); }
+});
+$("rightBtn").addEventListener("click",()=>{
+  if(mode==="quick"){ openInbox(); } else { openGallery(curCardId,true); }
+});
+$("lastThumb").addEventListener("click",()=>{
+  if(mode==="quick"){ openInbox(); } else { openGallery(curCardId,true); }
+});
+async function updateRightCount(){
+  const n=await idbCountByCard(curCardId);
+  const el=$("rightCount"); if(el) el.textContent=n;
+}
+
+/* ---------- カメラ制御 ---------- */
 async function startCamera(){
   $("camErr").classList.add("hide");
   stopCamera();
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ showCamErr("このブラウザはカメラに対応していません。"); return; }
   try{
     stream=await navigator.mediaDevices.getUserMedia({
-      audio:false,
-      video:{ facingMode:{ideal:facing}, width:{ideal:2560}, height:{ideal:1440} }
+      audio:false, video:{ facingMode:{ideal:facing}, width:{ideal:2560}, height:{ideal:1440} }
     });
     const v=$("video"); v.srcObject=stream; await v.play().catch(()=>{});
     track=stream.getVideoTracks()[0];
-    // トーチ対応判定
     const caps=track.getCapabilities?track.getCapabilities():{};
     $("torchBtn").style.display = caps.torch ? "flex":"none";
     torchOn=false; $("torchBtn").classList.remove("on");
     $("shutter").disabled=false;
+    if(mode==="quick") startGeo();
   }catch(e){
     let m="カメラを起動できませんでした。";
     if(e&&e.name==="NotAllowedError") m="カメラの使用が許可されていません。ブラウザの権限設定でこのサイトのカメラを許可してください。";
@@ -370,27 +435,61 @@ async function startCamera(){
     showCamErr(m);
   }
 }
-function stopCamera(){ if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; track=null; } }
+function stopCamera(){ if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; track=null; } stopGeo(); }
 function showCamErr(msg){ $("camErrMsg").textContent=msg; $("camErr").classList.remove("hide"); $("shutter").disabled=true; }
 
-/* カメラ切替・トーチ */
+/* ---------- 位置情報（撮影前から取得開始・キャッシュ） ---------- */
+function startGeo(){
+  if(!navigator.geolocation){ $("gpsTxt").innerHTML="📍 位置情報に未対応の端末"; return; }
+  if(geoWatch!=null) return;
+  $("gpsTxt").innerHTML="📍 位置情報を取得中…";
+  geoWatch=navigator.geolocation.watchPosition(
+    pos=>{ lastPos={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:pos.coords.accuracy};
+      $("gpsTxt").innerHTML="📍 位置OK <b>計画地</b>として保存・住所は後で自動付与"; },
+    err=>{ $("gpsTxt").innerHTML="📍 位置を取得できません（後で仕分け可）"; },
+    {enableHighAccuracy:true, maximumAge:15000, timeout:12000}
+  );
+}
+function stopGeo(){ if(geoWatch!=null){ navigator.geolocation.clearWatch(geoWatch); geoWatch=null; } }
+
+/* ---------- 地理院リバースジオコーダ ---------- */
+async function gsiReverse(lat,lng){
+  const r=await fetch(GSI_URL+"?lat="+lat+"&lon="+lng,{mode:"cors"});
+  const j=await r.json();
+  const res=j&&j.results;
+  let s=res&&res.lv01Nm?String(res.lv01Nm):"";
+  if(s==="－"||s==="−") s="";
+  return s; // 町丁目（市区町村名は本体側 or 将来付与）
+}
+async function resolveAddr(id){
+  const p=await idbGet(id); if(!p||p.lat==null) return;
+  try{
+    const a=await gsiReverse(p.lat,p.lng);
+    const cur=await idbGet(id); if(!cur) return;
+    cur.addr=a||""; cur.addrPending=false; await idbPut(cur);
+  }catch(e){
+    const cur=await idbGet(id); if(cur){ cur.addrPending=false; await idbPut(cur); }
+  }
+  if(!screens.inbox.classList.contains("hide")) renderInbox();
+  if(viewerId===id && !$("viewer").classList.contains("hide")) fillViewerAddr(await idbGet(id));
+}
+
+/* ---------- トーチ / ショット種別 ---------- */
 $("torchBtn").addEventListener("click",async()=>{
   if(!track) return; torchOn=!torchOn;
   try{ await track.applyConstraints({advanced:[{torch:torchOn}]}); $("torchBtn").classList.toggle("on",torchOn); }
   catch(e){ toast("ライト非対応の端末です"); torchOn=false; }
 });
-
-/* ショット種別バー */
 function buildShotBar(){
-  $("shotbar").innerHTML=SHOTS.map(s=>`<button class="chip" data-k="${s.k}">${s.label}</button>`).join("");
+  $("shotbar").innerHTML=SHOTS.map(s=>'<button class="chip" data-k="'+s.k+'">'+s.label+'</button>').join("");
   $("shotbar").querySelectorAll(".chip").forEach(el=>el.addEventListener("click",()=>setShot(el.dataset.k)));
 }
 function setShot(k){
   curShot=k;
   $("shotbar").querySelectorAll(".chip").forEach(el=>el.classList.toggle("on",el.dataset.k===k));
   const s=SHOTS.find(x=>x.k===k)||SHOTS[0];
-  $("hintTxt").textContent=s.hint||""; $("hintTxt").style.display=s.hint?"":"none";
-  drawGuide(s.guide);
+  $("hintTxt").textContent=(mode==="card"?(s.hint||""):""); $("hintTxt").style.display=(mode==="card"&&s.hint)?"":"none";
+  drawGuide(mode==="card"?s.guide:"");
 }
 function drawGuide(type){
   let svg="";
@@ -408,13 +507,10 @@ function drawGuide(type){
 $("shutter").addEventListener("click",capture);
 async function capture(){
   if(!track){ toast("カメラ未起動"); return; }
-  const v=$("video");
-  const vw=v.videoWidth, vh=v.videoHeight;
+  const v=$("video"); const vw=v.videoWidth, vh=v.videoHeight;
   if(!vw||!vh){ toast("準備中…もう一度"); return; }
-  // フラッシュ演出
   const fx=$("flashfx"); fx.classList.remove("go"); void fx.offsetWidth; fx.classList.add("go");
 
-  // 縮小
   const scale=Math.min(1, MAX_EDGE/Math.max(vw,vh));
   const w=Math.round(vw*scale), h=Math.round(vh*scale);
   const cv=document.createElement("canvas"); cv.width=w; cv.height=h;
@@ -422,14 +518,17 @@ async function capture(){
   const full=await new Promise(r=>cv.toBlob(r,"image/jpeg",JPEG_Q));
   const thumb=makeThumb(cv,w,h);
 
+  const pos=(mode==="quick")?lastPos:null;
   const rec={ id:"p_"+Date.now()+"_"+Math.random().toString(36).slice(2,7),
-    cardId:curCardId, ts:Date.now(), shot:curShot, note:"", w, h,
-    size:(full?full.size:0), full, thumb };
+    cardId:curCardId, ts:Date.now(), shot:curShot, addrType:"plan",
+    lat:pos?pos.lat:null, lng:pos?pos.lng:null, acc:pos?pos.acc:null,
+    addr:"", addrPending: !!pos, note:"", w, h, size:(full?full.size:0), full, thumb };
   try{
     await idbPut(rec); await refreshIndex(curCardId);
     sessCount++; const b=$("sessBadge"); b.textContent=sessCount; b.classList.remove("hide");
-    setLastThumb(thumb); await updateGalCount();
+    setLastThumb(thumb); await updateRightCount();
     if(navigator.vibrate) navigator.vibrate(15);
+    if(rec.lat!=null) resolveAddr(rec.id); // 住所は非同期で後追い
   }catch(e){ toast("保存に失敗（容量不足の可能性）"); }
 }
 function makeThumb(srcCv,w,h){
@@ -444,8 +543,6 @@ function setLastThumb(dataUrl){
   if(!img){ img=document.createElement("img"); host.insertBefore(img,host.firstChild); }
   img.src=dataUrl;
 }
-$("lastThumb").addEventListener("click",()=>openGallery(curCardId,true));
-async function updateGalCount(){ const n=await idbCountByCard(curCardId); $("galCount").textContent=n; }
 
 /* 標準カメラ フォールバック */
 $("fallbackBtn").addEventListener("click",()=>$("nativeCam").click());
@@ -456,93 +553,223 @@ $("nativeCam").addEventListener("change",async e=>{
   const w=Math.round(img.width*scale), h=Math.round(img.height*scale);
   const cv=document.createElement("canvas"); cv.width=w; cv.height=h; cv.getContext("2d").drawImage(img,0,0,w,h);
   const full=await new Promise(r=>cv.toBlob(r,"image/jpeg",JPEG_Q));
+  const pos=(mode==="quick")?lastPos:null;
   const rec={ id:"p_"+Date.now()+"_"+Math.random().toString(36).slice(2,7), cardId:curCardId, ts:Date.now(),
-    shot:curShot, note:"", w, h, size:full?full.size:0, full, thumb:makeThumb(cv,w,h) };
-  await idbPut(rec); await refreshIndex(curCardId); await updateGalCount();
+    shot:curShot, addrType:"plan", lat:pos?pos.lat:null,lng:pos?pos.lng:null,acc:pos?pos.acc:null,
+    addr:"", addrPending:!!pos, note:"", w, h, size:full?full.size:0, full, thumb:makeThumb(cv,w,h) };
+  await idbPut(rec); await refreshIndex(curCardId); await updateRightCount();
+  if(rec.lat!=null) resolveAddr(rec.id);
   toast("保存しました"); e.target.value="";
 });
 function blobToImage(blob){ return new Promise((res,rej)=>{ const u=URL.createObjectURL(blob); const im=new Image();
   im.onload=()=>{ URL.revokeObjectURL(u); res(im); }; im.onerror=rej; im.src=u; }); }
 
-/* ---------- ギャラリー ---------- */
+/* ---------- インボックス ---------- */
 let _objUrls=[];
 function clearObjUrls(){ _objUrls.forEach(u=>URL.revokeObjectURL(u)); _objUrls=[]; }
+async function openInbox(){ stopCamera(); show("inbox"); await renderInbox(); showStorage("inbStore"); }
+$("inbBack").addEventListener("click",()=>{ enterQuick(); });
+async function renderInbox(){
+  const list=(await idbByCard(INBOX)).sort((a,b)=>b.ts-a.ts);
+  $("inbTitle").textContent="📥 インボックス（"+list.length+"）";
+  const host=$("inbBody");
+  if(!list.length){ host.innerHTML='<div class="emptyst">未仕分けの写真はありません。<br>「← 撮影」からクイック撮影できます。</div>'; return; }
+  host.innerHTML=list.map(p=>{
+    const ad=p.addr?esc(p.addr):(p.addrPending?"住所を取得中…":(p.lat!=null?"住所未取得（地図で確認）":"位置情報なし"));
+    const cls=p.addr?"ad":"ad pend";
+    return '<div class="ibrow" data-id="'+esc(p.id)+'">'+
+      '<div class="th"><img src="'+p.thumb+'"></div>'+
+      '<div class="bd">'+
+        '<div class="'+cls+'">'+ad+'</div>'+
+        '<div class="wn">'+fmtWhen(p.ts)+(p.note?'・'+esc(p.note):'')+'</div>'+
+        '<div><span class="typechip '+p.addrType+'">'+TYPE_LABEL[p.addrType]+'</span></div>'+
+      '</div></div>';
+  }).join("");
+  host.querySelectorAll(".ibrow").forEach(el=>el.addEventListener("click",()=>openViewer(el.dataset.id,"inbox")));
+}
+
+/* ---------- カード一覧（撮影/閲覧 or 紐付け） ---------- */
+function openPick(m){
+  pickMode=m||"open";
+  $("pickBack").classList.toggle("hide", pickMode==="open");
+  $("pickTitle").textContent = pickMode==="link" ? "🔗 紐付け先のカード" : "⌘ カード一覧";
+  $("pickSub").textContent  = pickMode==="link" ? "この写真を紐付けるカードを選択" : "カードを選んで撮影・閲覧";
+  renderPicker($("pickSearch").value);
+  show("pick");
+}
+$("pickBack").addEventListener("click",()=>{
+  if(pickMode==="link"){ openViewer(linkTargetId, viewerFrom); } else { enterQuick(); }
+});
+function renderPicker(filter){
+  const idx=readIndex();
+  let cards=loadCards();
+  const f=(filter||"").trim();
+  if(f){ const lc=f.toLowerCase();
+    cards=cards.filter(c=>((c.name||"")+(c.manager||"")+(c.address||"")+(c.plan_address||"")).toLowerCase().includes(lc)); }
+  cards.sort((a,b)=>{ const na=(idx[a.id]||{}).n||0, nb=(idx[b.id]||{}).n||0;
+    if(nb!==na) return nb-na; return (b.discovery_date||"").localeCompare(a.discovery_date||""); });
+  const host=$("pickList");
+  if(!loadCards().length){
+    host.innerHTML='<div class="emptyst">アイビスのカードが見つかりません。<br>同じ端末・同じサイトでアイビスを一度開いてカードを作成してから、もう一度開いてください。</div>';
+    return;
+  }
+  if(!cards.length){ host.innerHTML='<div class="emptyst">該当するカードがありません。</div>'; return; }
+  host.innerHTML=cards.slice(0,200).map(c=>{
+    const n=(idx[c.id]||{}).n||0;
+    const meta=[c.manager,c.address||c.plan_address].filter(Boolean).join("・");
+    return '<div class="crow" data-id="'+esc(c.id)+'">'+
+      '<div class="grow" style="min-width:0">'+
+        '<div class="nm">'+esc(c.name||"無名")+'様</div>'+
+        '<div class="mt">'+esc(meta||"—")+'</div>'+
+      '</div>'+
+      '<div class="pc"><b>'+n+'</b><s>枚</s></div></div>';
+  }).join("");
+  host.querySelectorAll(".crow").forEach(el=>el.addEventListener("click",()=>onPickCard(el.dataset.id)));
+}
+$("pickSearch").addEventListener("input",e=>renderPicker(e.target.value));
+async function onPickCard(cardId){
+  if(pickMode==="link"){
+    const p=await idbGet(linkTargetId); if(!p){ toast("写真が見つかりません"); return; }
+    const oldCard=p.cardId;
+    p.cardId=cardId; await idbPut(p);
+    await refreshIndex(cardId); await refreshIndex(oldCard);
+    toast(cardLabel(cardId)+" に紐付けました");
+    pickMode="open"; openInbox();
+  } else {
+    fromAibis=false; enterCamera(cardId);
+  }
+}
+
+/* ---------- ギャラリー（カード別） ---------- */
 async function openGallery(cardId,cameFromCam){
   curCardId=cardId; openGallery._fromCam=!!cameFromCam;
-  const c=findCard(cardId);
-  $("galCardName").textContent=c?(c.name||"無名")+"様":"カード "+cardId.slice(0,10)+"…";
-  $("galCardMeta").textContent=c?[c.manager,c.address||c.plan_address].filter(Boolean).join("・"):"";
+  $("galCardName").textContent=cardLabel(cardId);
+  $("galCardMeta").textContent=cardMeta(cardId);
   show("gal"); stopCamera();
-  await renderGallery();
-  showStorage();
+  await renderGallery(); showStorage("storeLine");
 }
 async function renderGallery(){
   clearObjUrls();
   const list=await idbByCard(curCardId);
   const host=$("galBody");
   if(!list.length){ host.innerHTML='<div class="emptyst">まだ写真がありません。<br>「📷 撮る」から撮影してください。</div>'; return; }
-  // 種別ごとに区切る（SHOTSの順）
   const byShot={}; list.forEach(p=>{ (byShot[p.shot]=byShot[p.shot]||[]).push(p); });
   let html="";
   SHOTS.forEach(s=>{
     const arr=byShot[s.k]; if(!arr||!arr.length) return;
-    html+=`<div class="galsec">${s.label}（${arr.length}）</div><div class="galgrid">`;
-    html+=arr.map(p=>`<div class="gcell" data-id="${esc(p.id)}"><img src="${p.thumb}"><span class="tag">${shotLabel(p.shot)}</span></div>`).join("");
-    html+=`</div>`;
+    html+='<div class="galsec">'+s.label+'（'+arr.length+'）</div><div class="galgrid">';
+    html+=arr.map(p=>'<div class="gcell" data-id="'+esc(p.id)+'"><img src="'+p.thumb+'"><span class="tag">'+TYPE_LABEL[p.addrType]+'</span></div>').join("");
+    html+='</div>';
   });
   host.innerHTML=html;
-  host.querySelectorAll(".gcell").forEach(el=>el.addEventListener("click",()=>openViewer(el.dataset.id)));
+  host.querySelectorAll(".gcell").forEach(el=>el.addEventListener("click",()=>openViewer(el.dataset.id,"gal")));
 }
 $("galBack").addEventListener("click",()=>{
-  if(openGallery._fromCam){ show("cam"); startCamera(); setShot(curShot); }
-  else { renderPicker($("pickSearch").value); show("pick"); }
+  if(openGallery._fromCam){ enterCamera(curCardId); } else { openPick("open"); }
 });
 $("galShoot").addEventListener("click",()=>{ openGallery._fromCam=true; enterCamera(curCardId); });
 
-async function showStorage(){
+/* ---------- 容量表示 ---------- */
+async function showStorage(targetId){
   let line="";
   if(navigator.storage&&navigator.storage.estimate){
-    try{ const {usage,quota}=await navigator.storage.estimate();
-      line="使用容量 "+fmtMB(usage)+" / 上限目安 "+fmtMB(quota); }catch(e){}
+    try{ const est=await navigator.storage.estimate();
+      line="使用容量 "+fmtMB(est.usage)+" / 上限目安 "+fmtMB(est.quota); }catch(e){}
   }
-  $("storeLine").textContent=line;
+  $(targetId).textContent=line;
 }
 const fmtMB = b => b? (b>1073741824? (b/1073741824).toFixed(1)+"GB" : Math.round(b/1048576)+"MB") : "—";
 
-/* ---------- 全画面ビューア ---------- */
-async function openViewer(id){
-  const p=await idbGet(id); if(!p) return; viewerId=id;
+/* ---------- 全画面ビューア（仕分け・閲覧 共用） ---------- */
+async function openViewer(id,from){
+  const p=await idbGet(id); if(!p) return; viewerId=id; viewerFrom=from||"inbox";
+  clearObjUrls();
   const u=URL.createObjectURL(p.full); _objUrls.push(u);
-  $("vImg").src=u; $("vTag").textContent=shotLabel(p.shot);
-  $("vWhen").textContent=fmtWhen(p.ts)+"・"+(p.w+"×"+p.h)+"・"+fmtMB(p.size);
+  $("vImg").src=u;
+  $("vTitle").textContent=(p.cardId&&p.cardId!==INBOX)?cardLabel(p.cardId):"未仕分け";
+  $("vWhen").textContent=fmtWhen(p.ts)+"・"+shotLabel(p.shot)+"・"+(p.w+"×"+p.h)+"・"+fmtMB(p.size);
+  setTypeSeg(p.addrType);
+  fillViewerAddr(p);
   $("vNote").value=p.note||"";
+  $("vLink").textContent=(p.cardId&&p.cardId!==INBOX)?("🔗 "+cardLabel(p.cardId)):"🔗 カードに紐付け";
   $("viewer").classList.remove("hide");
 }
-$("vClose").addEventListener("click",()=>{ $("viewer").classList.add("hide"); viewerId=null; });
+function fillViewerAddr(p){
+  const el=$("vAddr");
+  if(p.addr){ el.textContent=p.addr; el.classList.remove("pend"); }
+  else { el.textContent = p.addrPending?"住所を取得中…":(p.lat!=null?"住所未取得（🔄で再取得 / 🗺で確認）":"位置情報なし"); el.classList.add("pend"); }
+  $("vMap").style.opacity = (p.lat!=null)?"1":".4";
+  $("vGeo").style.opacity = (p.lat!=null)?"1":".4";
+}
+function setTypeSeg(t){
+  $("vTypeSeg").querySelectorAll("button").forEach(b=>{
+    b.classList.toggle("on",b.dataset.t===t);
+  });
+}
+$("vTypeSeg").querySelectorAll("button").forEach(b=>b.addEventListener("click",async()=>{
+  const p=await idbGet(viewerId); if(!p) return;
+  p.addrType=b.dataset.t; await idbPut(p); setTypeSeg(p.addrType); toast(TYPE_LABEL[p.addrType]+"に設定");
+}));
+$("vClose").addEventListener("click",()=>{
+  $("viewer").classList.add("hide"); viewerId=null;
+  if(viewerFrom==="inbox") renderInbox(); else if(viewerFrom==="gal") renderGallery();
+});
+$("vMap").addEventListener("click",async()=>{
+  const p=await idbGet(viewerId); if(!p||p.lat==null){ toast("位置情報がありません"); return; }
+  window.open("https://www.google.com/maps?q="+p.lat+","+p.lng,"_blank");
+});
+$("vGeo").addEventListener("click",async()=>{
+  const p=await idbGet(viewerId); if(!p||p.lat==null){ toast("位置情報がありません"); return; }
+  p.addrPending=true; await idbPut(p); fillViewerAddr(p); toast("住所を取得中…"); resolveAddr(viewerId);
+});
 $("vNote").addEventListener("blur",async()=>{
   if(!viewerId) return; const p=await idbGet(viewerId); if(!p) return;
-  if((p.note||"")!==$("vNote").value){ p.note=$("vNote").value; await idbPut(p); toast("メモを保存しました"); }
+  if((p.note||"")!==$("vNote").value){ p.note=$("vNote").value; await idbPut(p); toast("備考を保存"); }
+});
+$("vMic").addEventListener("click",()=>{
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ toast("音声入力に未対応の端末です"); return; }
+  const rec=new SR(); rec.lang="ja-JP"; rec.interimResults=false; rec.maxAlternatives=1;
+  const btn=$("vMic"); btn.classList.add("rec");
+  rec.onresult=e=>{ const t=e.results[0][0].transcript||""; const inp=$("vNote");
+    inp.value=(inp.value?inp.value+" ":"")+t; inp.dispatchEvent(new Event("blur")); };
+  rec.onerror=()=>toast("音声を認識できませんでした");
+  rec.onend=()=>btn.classList.remove("rec");
+  try{ rec.start(); }catch(e){ btn.classList.remove("rec"); }
 });
 $("vShot").addEventListener("click",async()=>{
   const p=await idbGet(viewerId); if(!p) return;
   const i=SHOTS.findIndex(s=>s.k===p.shot); const next=SHOTS[(i+1)%SHOTS.length];
-  p.shot=next.k; await idbPut(p); $("vTag").textContent=next.label; toast("種別→"+next.label);
+  p.shot=next.k; await idbPut(p);
+  $("vWhen").textContent=fmtWhen(p.ts)+"・"+next.label+"・"+(p.w+"×"+p.h)+"・"+fmtMB(p.size);
+  toast("種別→"+next.label);
+});
+$("vLink").addEventListener("click",async()=>{
+  const p=await idbGet(viewerId); if(!p) return;
+  linkTargetId=viewerId; $("viewer").classList.add("hide");
+  openPick("link");
 });
 $("vDl").addEventListener("click",async()=>{
   const p=await idbGet(viewerId); if(!p||!p.full) return;
-  const c=findCard(p.cardId); const nm=(c&&c.name?c.name:"card").replace(/[^\w一-龠ぁ-んァ-ヶー]/g,"");
+  let base="inbox";
+  if(p.cardId&&p.cardId!==INBOX){ const c=findCard(p.cardId); base=(c&&c.name)?c.name:"card"; }
+  const nm=String(base).replace(/[^\w一-龠ぁ-んァ-ヶー]/g,"");
   const d=new Date(p.ts), pad=n=>String(n).padStart(2,"0");
-  const fn=nm+"_"+shotLabel(p.shot)+"_"+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+"_"+pad(d.getHours())+pad(d.getMinutes())+".jpg";
+  const fn=nm+"_"+TYPE_LABEL[p.addrType]+"_"+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+"_"+pad(d.getHours())+pad(d.getMinutes())+".jpg";
   const u=URL.createObjectURL(p.full); const a=document.createElement("a"); a.href=u; a.download=fn;
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),4000); toast("画像を保存しました");
 });
 $("vDel").addEventListener("click",async()=>{
   if(!viewerId) return;
   if(!confirm("この写真を削除しますか？")) return;
-  await idbDel(viewerId); await refreshIndex(curCardId);
+  const p=await idbGet(viewerId);
+  await idbDel(viewerId); if(p) await refreshIndex(p.cardId);
   $("viewer").classList.add("hide"); viewerId=null;
-  await renderGallery(); await updateGalCount(); showStorage(); toast("削除しました");
+  if(viewerFrom==="inbox"){ await renderInbox(); showStorage("inbStore"); }
+  else if(viewerFrom==="gal"){ await renderGallery(); showStorage("storeLine"); }
+  toast("削除しました");
 });
+
 /* ---------- util ---------- */
 function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 function fmtWhen(ts){ const d=new Date(ts); const p=n=>String(n).padStart(2,"0");
