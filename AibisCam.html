@@ -133,6 +133,17 @@
   .drow .wn{font-size:11px;color:var(--dim)}
   .drow .delbtn{flex:0 0 auto;width:42px;height:42px;border-radius:11px;background:rgba(255,93,125,.14);color:var(--danger);font-size:18px;display:flex;align-items:center;justify-content:center}
   .drow .delbtn:active{background:rgba(255,93,125,.28)}
+  .drow .selbox{flex:0 0 auto;width:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;align-self:stretch}
+  .drow .selbox .cbx{width:24px;height:24px;border-radius:7px;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#1a1300;background:transparent}
+  .drow .selbox .cbx.on{background:var(--gold);border-color:var(--gold)}
+  .drow.selrow{border-color:rgba(245,158,11,.32)}
+  .autobadge{display:inline-block;margin-left:6px;font-size:9.5px;font-weight:800;padding:1px 6px;border-radius:6px;background:rgba(56,189,176,.16);color:var(--teal);vertical-align:middle}
+  .selhdr{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .selhdr .seltools{display:flex;gap:6px;flex:0 0 auto}
+  .selhdr .seltools button{font-family:inherit;font-size:11px;font-weight:800;padding:5px 10px;border-radius:7px;background:var(--panel2);color:var(--gold);border:1px solid var(--line);cursor:pointer}
+  .selhdr .seltools button:active{filter:brightness(1.3)}
+  .sendhint{font-size:11.5px;color:var(--dim);line-height:1.65;margin:0 2px 10px;padding:9px 12px;border-radius:11px;background:var(--panel);border:1px solid var(--line)}
+  .sendhint b{color:var(--teal)}
   .drow .delbtn.ret{background:rgba(52,227,208,.14);color:var(--teal)}
   .drow .delbtn.ret:active{background:rgba(52,227,208,.28)}
   .sentbadge{display:inline-block;font-size:10px;font-weight:800;color:var(--ok);background:rgba(52,227,208,.14);border-radius:7px;padding:1px 7px;margin-left:6px}
@@ -384,7 +395,7 @@
    ※ prospect_cards_v1 には書き込まない（新規カード作成・PC連携は本体側）
    データ(set): {id,cardId,ts,addrType:'plan',lat,lng,acc,addr,addrPending,banchi,note,sent,photos:[{pid,full(Blob),thumb,w,h,size}]}
    ========================================================= */
-const APP_VERSION = "cam-v1.25";
+const APP_VERSION = "cam-v1.26";
 const SK_CARDS = "prospect_cards_v1";
 const IDX_KEY  = "aibis_media_index_v1";
 const DB_NAME  = "aibis_media_v1";
@@ -413,6 +424,7 @@ const TOKYO_WARDS = {
 /* ---------- 状態 ---------- */
 let DB=null, stream=null, track=null, geoWatch=null, lastPos=null;
 let mode="quick", targetCard=INBOX, curSet=null, fromAibis=false, facing="environment", torchOn=false, capturing=false;
+let sendSel=new Set(), sendSeen=new Set();   // 未紐付けの送信選択（idのSet）
 let viewPhoto=null, pickMode="open", linkTargetId=null, MUNI=null, micRec=null, kpVal="";
 let leafMap=null, meTargetId=null;
 
@@ -817,36 +829,65 @@ async function renderInbox(){
   const all=(await idbAll()).sort((a,b)=>b.ts-a.ts);
   const unlinked=all.filter(s=>!s.cardId||s.cardId===INBOX);
   const linked=all.filter(s=>s.cardId&&s.cardId!==INBOX);
+  // 選択の整合：消えたidを掃除し、新規の未紐付けは「未送信なら既定チェック」
+  const uids=new Set(unlinked.map(s=>s.id));
+  sendSel.forEach(id=>{ if(!uids.has(id)) sendSel.delete(id); });
+  sendSeen.forEach(id=>{ if(!uids.has(id)) sendSeen.delete(id); });
+  unlinked.forEach(s=>{ if(!sendSeen.has(s.id)){ sendSeen.add(s.id); if(!s.sent) sendSel.add(s.id); } });
+
   $("inbTitle").textContent="📥 インボックス（未紐付 "+unlinked.length+"）";
   const warn=$("inbWarn");
   if(unlinked.length>=WARN_HARD){ warn.className="warnbar hard"; warn.textContent="⚠ 未紐付けが"+unlinked.length+"件です。紐付け＆PCへ送って整理しましょう。"; }
   else if(unlinked.length>=WARN_SOFT){ warn.className="warnbar soft"; warn.textContent="そろそろ"+unlinked.length+"件です。区切りで紐付け＆PCへ送るのがおすすめです。"; }
   else warn.className="warnbar hide";
-  const unsent=all.filter(s=>!s.sent).length;
-  const sb=$("inbSendBtn"); if(sb){ sb.textContent="📤 PCへ送る（未送信 "+unsent+"件）"; sb.disabled=(unsent===0); }
+
+  const linkedUnsent=linked.filter(s=>!s.sent).length;
+  const selCount=unlinked.filter(s=>sendSel.has(s.id)).length;
+  const sendN=linkedUnsent+selCount;
+  const sb=$("inbSendBtn"); if(sb){ sb.textContent="📤 PCへ送る（"+sendN+"件）"; sb.disabled=(sendN===0); }
+
   const host=$("inbBody");
   if(!all.length){ host.innerHTML='<div class="emptyst">データはありません。<br>「📷」から撮影できます。</div>'; return; }
-  let html="";
-  if(unlinked.length){ html+='<div class="galsec">未紐付け（'+unlinked.length+'）</div>'+unlinked.map(s=>drowHtml(s)).join(""); }
-  if(linked.length){ html+='<div class="galsec">紐付け済み（'+linked.length+'）</div>'+linked.map(s=>drowHtml(s)).join(""); }
+
+  let html='<div class="sendhint">📤を押すと、<b>🔗紐付け済み</b>は<b>自動で送信</b>。<b>未紐付け</b>は下の <b>✓</b> で選んだぶんだけ送信します。</div>';
+  if(unlinked.length){
+    html+='<div class="galsec selhdr"><span>未紐付け（'+unlinked.length+'）</span>'+
+          '<span class="seltools"><button data-selall>☑ 全選択</button><button data-selnone>解除</button></span></div>'+
+          unlinked.map(s=>drowHtml(s,"sel")).join("");
+  }
+  if(linked.length){ html+='<div class="galsec">紐付け済み（'+linked.length+'）</div>'+linked.map(s=>drowHtml(s,"auto")).join(""); }
   host.innerHTML=html;
   bindDrows(host,"inbox");
+  // チェックボックス
+  host.querySelectorAll(".selbox").forEach(b=>b.addEventListener("click",e=>{
+    e.stopPropagation();
+    const id=b.dataset.sel;
+    if(sendSel.has(id)) sendSel.delete(id); else sendSel.add(id);
+    renderInbox();
+  }));
+  // 全選択 / 解除
+  const allBtn=host.querySelector("[data-selall]"), noneBtn=host.querySelector("[data-selnone]");
+  if(allBtn) allBtn.addEventListener("click",()=>{ unlinked.forEach(s=>sendSel.add(s.id)); renderInbox(); });
+  if(noneBtn) noneBtn.addEventListener("click",()=>{ unlinked.forEach(s=>sendSel.delete(s.id)); renderInbox(); });
 }
-function drowHtml(s){
+function drowHtml(s, kind){
   const full=s.addr?esc(s.addr+(s.banchi?(" "+s.banchi):"")):(s.addrPending?"住所を取得中…":(s.lat!=null?"住所未取得（地図で確認）":"位置情報なし"));
   const cls=s.addr?"ad":"ad pend";
   const sent=s.sent?'<span class="sentbadge">送信済</span>':"";
   const linked=(s.cardId&&s.cardId!==INBOX);
   const who=linked?'<span class="linkbadge">🔗 '+esc(cardLabel(s.cardId))+'</span>':'<span class="linkbadge un">未紐付け</span>';
-  return '<div class="drow" data-id="'+esc(s.id)+'">'+
+  const on=sendSel.has(s.id);
+  const lead = (kind==="sel") ? '<div class="selbox" data-sel="'+esc(s.id)+'"><span class="cbx'+(on?' on':'')+'">'+(on?'✓':'')+'</span></div>' : '';
+  const autoB = (kind==="auto"&&!s.sent) ? '<span class="autobadge">自動送信</span>' : '';
+  return '<div class="drow'+(kind==="sel"?' selrow':'')+'" data-id="'+esc(s.id)+'">'+lead+
     '<div class="th"><img src="'+(s.photos[0]?s.photos[0].thumb:"")+'"><span class="n">'+s.photos.length+'枚</span></div>'+
-    '<div class="bd"><div class="'+cls+'">'+full+sent+'</div>'+
+    '<div class="bd"><div class="'+cls+'">'+full+sent+autoB+'</div>'+
     '<div class="wn">'+who+' ・ '+fmtWhen(s.ts)+(s.note?'・'+esc(s.note):'')+'</div></div>'+
     '<button class="delbtn'+(linked?' ret':'')+'" data-del="'+esc(s.id)+'" title="'+(linked?'インボックスに戻す':'削除')+'">'+(linked?'📥':'🗑')+'</button></div>';
 }
 function bindDrows(host,fromWhere){
   host.querySelectorAll(".drow").forEach(el=>el.addEventListener("click",e=>{
-    if(e.target.closest(".delbtn")) return;
+    if(e.target.closest(".delbtn")||e.target.closest(".selbox")) return;
     openSet(el.dataset.id);
   }));
   host.querySelectorAll(".delbtn").forEach(b=>b.addEventListener("click",()=>{ destroyOrReturn(b.dataset.del); }));
@@ -878,8 +919,11 @@ async function buildBundle(sets){
   return { type:"aibis_photos", v:1, exported:Date.now(), sender:(loadCfg().name||""), email:cfgEmail(), sets:out };
 }
 async function sendInbox(){
-  const all=await idbAll(); const targets=all.filter(s=>!s.sent);
-  if(!targets.length){ toast("未送信のデータはありません"); return; }
+  const all=await idbAll();
+  const linkedUnsent=all.filter(s=>s.cardId&&s.cardId!==INBOX&&!s.sent);
+  const unlinkedSel=all.filter(s=>(!s.cardId||s.cardId===INBOX)&&sendSel.has(s.id));
+  const targets=linkedUnsent.concat(unlinkedSel);
+  if(!targets.length){ toast("送信するデータがありません（未紐付けは✓で選択）"); return; }
   toast("データをまとめています…");
   let bundle; try{ bundle=await buildBundle(targets); }catch(e){ toast("まとめに失敗しました"); return; }
   const file=new File([JSON.stringify(bundle)],"aibis_photos_"+stamp()+".json",{type:"application/json"});
@@ -897,6 +941,7 @@ async function sendInbox(){
     toast("ファイルを書き出しました"+(to?("。メールで "+to+" へ添付してPCへ"):"。メールに添付してPCへ"));
   }
   for(const s of targets){ const cur=await idbGet(s.id); if(cur){ cur.sent=true; await idbPut(cur); } }
+  unlinkedSel.forEach(s=>sendSel.delete(s.id));   // 送ったぶんは選択解除
   await renderInbox(); showStorage("inbStore");
 }
 $("inbSendBtn").addEventListener("click",sendInbox);
