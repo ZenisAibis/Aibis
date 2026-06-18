@@ -40,11 +40,12 @@
   #flashfx{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
   #flashfx.go{animation:flash .28s ease-out}
   @keyframes flash{0%{opacity:.0}15%{opacity:.85}100%{opacity:0}}
-  #guide{position:absolute;inset:0;pointer-events:none;z-index:3}
+  #guide{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
   #guide .grid line{stroke:rgba(255,255,255,.32);stroke-width:1;vector-effect:non-scaling-stroke}
   #level{position:absolute;left:0;right:0;top:50%;height:0;display:flex;justify-content:center;align-items:center;pointer-events:none;z-index:4}
-  #level i{display:block;width:56%;height:2px;border-radius:2px;background:rgba(255,255,255,.55);box-shadow:0 0 2px rgba(0,0,0,.5);transform-origin:center center;transition:background .12s,box-shadow .12s}
-  #level.ok i{background:#39e08a;box-shadow:0 0 8px rgba(57,224,138,.9)}
+  #level i{display:block;width:56%;height:3px;border-radius:3px;background:#ffd24d;box-shadow:0 0 3px rgba(0,0,0,.6);transform-origin:center center;transition:background .12s,box-shadow .12s}
+  #level.ok i{background:#39e08a;box-shadow:0 0 9px rgba(57,224,138,.95)}
+  #compass{position:absolute;left:10px;top:10px;z-index:5;background:rgba(0,0,0,.5);color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:14px;font-size:12px;font-weight:800;padding:5px 11px;letter-spacing:.02em}
   .gpschip{position:absolute;left:0;right:0;bottom:8px;display:flex;justify-content:center;pointer-events:none}
   .gpschip span{background:rgba(15,27,45,.8);border:1px solid var(--line);padding:5px 12px;border-radius:18px;
     font-size:11.5px;font-weight:700;color:var(--dim);max-width:92%;text-align:center}
@@ -200,6 +201,7 @@
     <video id="video" playsinline autoplay muted></video>
     <svg id="guide" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
     <div id="level"><i></i></div>
+    <div id="compass">🧭 方位</div>
     <div class="gpschip" id="gpsChip"><span id="gpsTxt">📍 位置情報を取得中…</span></div>
     <button id="camToggle" class="hide">⤢</button>
     <div id="flashfx"></div>
@@ -215,12 +217,12 @@
     <div class="addrline">
       <button class="mini" id="vGeo">🔄</button>
       <span class="at pend" id="vAddr">住所未取得</span>
+      <button class="mini" id="vLink">🔗 紐付け</button>
     </div>
     <div class="banchiline">
       <input id="vBanchi" class="banchi" placeholder="番地（例 23-5）" readonly>
       <button class="mini" id="vMap">🗺 地図</button>
       <button class="mini" id="vFix"><svg width="11" height="15" viewBox="0 0 24 34" style="vertical-align:-2px"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 22 12 22s12-13 12-22C24 5.4 18.6 0 12 0z" fill="#ff3b3b"/><circle cx="12" cy="12" r="5" fill="#fff"/></svg> 修正</button>
-      <button class="mini" id="vLink">🔗 紐付け</button>
     </div>
     <div class="notewrap">
       <button class="micbtn" id="vMic" title="音声入力">🎤</button>
@@ -339,7 +341,7 @@
    ※ prospect_cards_v1 には書き込まない（新規カード作成・PC連携は本体側）
    データ(set): {id,cardId,ts,addrType:'plan',lat,lng,acc,addr,addrPending,banchi,note,sent,photos:[{pid,full(Blob),thumb,w,h,size}]}
    ========================================================= */
-const APP_VERSION = "cam-v1.21";
+const APP_VERSION = "cam-v1.23";
 const SK_CARDS = "prospect_cards_v1";
 const IDX_KEY  = "aibis_media_index_v1";
 const DB_NAME  = "aibis_media_v1";
@@ -487,7 +489,7 @@ async function startCamera(){
     $("torchBtn").style.display = caps.torch ? "flex":"none";
     torchOn=false; $("torchBtn").classList.remove("on");
     $("shutter").disabled=false;
-    drawGuide(); initLevel(); startGeo();
+    drawGuide(); initLevel(); initCompass(); startGeo();
   }catch(e){
     let m="カメラを起動できませんでした。";
     if(e&&e.name==="NotAllowedError") m="カメラの使用が許可されていません。ブラウザの権限設定でこのサイトのカメラを許可してください。";
@@ -510,6 +512,22 @@ function initLevel(){
     const i=bar.querySelector("i"); if(i) i.style.transform="rotate("+(-show)+"deg)";
     bar.classList.toggle("ok", Math.abs(g)<1.2);
   },true);
+}
+let _compassOn=false;
+function dirJa(h){ return ["北","北東","東","南東","南","南西","西","北西"][Math.round(h/45)%8]; }
+function initCompass(){
+  if(_compassOn) return; _compassOn=true;
+  function onOri(e){
+    if(!screens.cam || screens.cam.classList.contains("hide")) return;
+    let h=null;
+    if(typeof e.webkitCompassHeading==="number") h=e.webkitCompassHeading;   // iOS
+    else if(typeof e.alpha==="number") h=360-e.alpha;                        // Android(絶対方位)
+    if(h==null||isNaN(h)) return;
+    h=(h%360+360)%360;
+    const c=$("compass"); if(c) c.textContent="🧭 "+dirJa(h)+" "+Math.round(h)+"°";
+  }
+  if("ondeviceorientationabsolute" in window) window.addEventListener("deviceorientationabsolute",onOri,true);
+  window.addEventListener("deviceorientation",onOri,true);
 }
 $("torchBtn").addEventListener("click",async()=>{
   if(!track) return; torchOn=!torchOn;
