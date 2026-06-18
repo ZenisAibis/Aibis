@@ -117,6 +117,8 @@
   .drow .wn{font-size:11px;color:var(--dim)}
   .drow .delbtn{flex:0 0 auto;width:42px;height:42px;border-radius:11px;background:rgba(255,93,125,.14);color:var(--danger);font-size:18px;display:flex;align-items:center;justify-content:center}
   .drow .delbtn:active{background:rgba(255,93,125,.28)}
+  .drow .delbtn.ret{background:rgba(52,227,208,.14);color:var(--teal)}
+  .drow .delbtn.ret:active{background:rgba(52,227,208,.28)}
   .sentbadge{display:inline-block;font-size:10px;font-weight:800;color:var(--ok);background:rgba(52,227,208,.14);border-radius:7px;padding:1px 7px;margin-left:6px}
   .warnbar{padding:11px 13px;border-radius:12px;margin-bottom:10px;font-size:12.5px;font-weight:700;line-height:1.5}
   .warnbar.soft{background:rgba(245,158,11,.14);color:var(--gold);border:1px solid rgba(245,158,11,.4)}
@@ -173,10 +175,10 @@
 <!-- ===== 撮影＝仕分け画面 ===== -->
 <div id="scrCam" class="scr hide">
   <div class="top">
-    <button class="tbtn" id="leftBtn">🗂 一覧</button>
-    <div class="cardchip grow"><b id="camTitle">z.AibisCam</b><span class="sub" id="camSub">シャッターで撮影・1データ最大4枚</span></div>
     <span class="vertag" id="verTag"></span>
-    <button class="tbtn" id="rightBtn">📥 <span class="cnt" id="rightCount">0</span></button>
+    <button class="tbtn" id="leftBtn">📥 <span class="cnt" id="leftCount">0</span></button>
+    <div class="cardchip grow"><b id="camTitle">z.AibisCam</b><span class="sub" id="camSub">シャッターで撮影・1データ最大4枚</span></div>
+    <button class="tbtn" id="rightBtn">🗂 一覧</button>
   </div>
 
   <div id="camWrap">
@@ -226,6 +228,7 @@
   <div class="top">
     <button class="tbtn" id="inbBack">← 撮影</button>
     <div class="cardchip grow"><b id="inbTitle">📥 インボックス</b><span class="sub">タップで仕分け・続けて撮影</span></div>
+    <button class="tbtn" id="inbList">🗂 一覧</button>
   </div>
   <div class="pad">
     <div id="inbWarn" class="warnbar hide"></div>
@@ -318,7 +321,7 @@
    ※ prospect_cards_v1 には書き込まない（新規カード作成・PC連携は本体側）
    データ(set): {id,cardId,ts,addrType:'plan',lat,lng,acc,addr,addrPending,banchi,note,sent,photos:[{pid,full(Blob),thumb,w,h,size}]}
    ========================================================= */
-const APP_VERSION = "cam-v1.14";
+const APP_VERSION = "cam-v1.16";
 const SK_CARDS = "prospect_cards_v1";
 const IDX_KEY  = "aibis_media_index_v1";
 const DB_NAME  = "aibis_media_v1";
@@ -426,16 +429,14 @@ async function boot(){
 
 /* ---------- 画面遷移 ---------- */
 function configureHeader(){
+  $("leftBtn").innerHTML='📥 <span class="cnt" id="leftCount">0</span>';
+  $("rightBtn").textContent="🗂 一覧";
   if(mode==="card"){
     $("camTitle").textContent=cardLabel(targetCard);
     $("camSub").textContent=cardMeta(targetCard)||"このカードに撮影";
-    $("leftBtn").textContent= fromAibis ? "← アイビス" : "🗂 一覧";
-    $("rightBtn").innerHTML='🖼 <span class="cnt" id="rightCount">0</span>';
   } else {
     $("camTitle").textContent="z.AibisCam";
     $("camSub").textContent="シャッターで撮影・1データ最大4枚";
-    $("leftBtn").textContent="🗂 一覧";
-    $("rightBtn").innerHTML='📥 <span class="cnt" id="rightCount">0</span>';
   }
 }
 async function enterQuick(){ mode="quick"; targetCard=INBOX; curSet=null; configureHeader(); show("cam"); await startCamera(); renderSetPanel(); await updateRightCount(); }
@@ -447,16 +448,12 @@ async function openSet(id){
   configureHeader(); show("cam"); await startCamera(); renderSetPanel(); await updateRightCount();
 }
 
-$("leftBtn").addEventListener("click",()=>{
-  stopCamera();
-  if(mode==="card" && fromAibis){ if(history.length>1) history.back(); else toast("アイビスのタブに戻ってください"); }
-  else openPick("open");
-});
-$("rightBtn").addEventListener("click",()=>{ if(mode==="quick") openInbox(); else openGallery(targetCard,true); });
+$("leftBtn").addEventListener("click",()=>{ stopCamera(); openInbox(); });
+$("rightBtn").addEventListener("click",()=>{ stopCamera(); openPick("open"); });
 async function updateRightCount(){
-  const n=await idbCountByCard(targetCard); const el=$("rightCount"); if(!el) return;
+  const n=await idbCountByCard(INBOX); const el=$("leftCount"); if(!el) return;
   el.textContent=n; el.classList.remove("warn","over");
-  if(mode==="quick"){ if(n>=WARN_HARD) el.classList.add("over"); else if(n>=WARN_SOFT) el.classList.add("warn"); }
+  if(n>=WARN_HARD) el.classList.add("over"); else if(n>=WARN_SOFT) el.classList.add("warn");
 }
 
 /* ---------- カメラ制御 ---------- */
@@ -618,6 +615,8 @@ async function renderSetPanel(){
   $("setThumbs").innerHTML=s.photos.map(p=>'<div class="sthumb" data-pid="'+esc(p.pid)+'"><img src="'+p.thumb+'"></div>').join("");
   $("setThumbs").querySelectorAll(".sthumb").forEach(el=>el.addEventListener("click",()=>openPhoto(curSet, el.dataset.pid)));
   const cnt=$("setCnt"); cnt.textContent=s.photos.length+"/"+MAX_PHOTOS; cnt.classList.toggle("full", s.photos.length>=MAX_PHOTOS);
+  const linked=(s.cardId&&s.cardId!==INBOX);
+  const dl=$("vDelSet"); dl.textContent=linked?"📥 戻す":"🗑 削除"; dl.classList.toggle("danger", !linked);
   fillAddr(s); $("vBanchi").value=s.banchi||""; $("vNote").value=s.note||"";
 }
 function fillAddr(s){
@@ -648,11 +647,23 @@ $("vMic").addEventListener("click",()=>{
   try{ rec.start(); }catch(e){ micRec=null; btn.classList.remove("rec"); btn.textContent="🎤"; }
 });
 $("vLink").addEventListener("click",()=>{ if(!curSet) return; linkTargetId=curSet; openPick("link"); });
+/* 紐付け済み＝インボックスに戻す / インボックス＝完全削除 */
+async function destroyOrReturn(id){
+  const s=await idbGet(id); if(!s) return false;
+  if(s.cardId && s.cardId!==INBOX){
+    if(!confirm("このデータをカードから外してインボックスに戻しますか？")) return false;
+    const old=s.cardId; s.cardId=INBOX; await idbPut(s); await refreshIndex(old);
+    toast("インボックスに戻しました"); return "returned";
+  } else {
+    if(!confirm("このデータ（写真"+s.photos.length+"枚）を削除しますか？")) return false;
+    const card=s.cardId; await idbDel(id); await refreshIndex(card);
+    toast("削除しました"); return "deleted";
+  }
+}
 $("vDelSet").addEventListener("click",async()=>{
-  if(!curSet) return; const s=await idbGet(curSet); if(!s) return;
-  if(!confirm("このデータ（写真"+s.photos.length+"枚）を削除しますか？")) return;
-  const card=s.cardId; await idbDel(curSet); await refreshIndex(card);
-  curSet=null; renderSetPanel(); await updateRightCount(); toast("削除しました");
+  if(!curSet) return;
+  const r=await destroyOrReturn(curSet);
+  if(r){ curSet=null; renderSetPanel(); await updateRightCount(); }
 });
 
 /* 番地キーパッド */
@@ -676,6 +687,7 @@ $("keypad").addEventListener("click",e=>{ if(e.target===$("keypad")) $("keypad")
 /* ---------- インボックス ---------- */
 async function openInbox(){ stopCamera(); show("inbox"); await renderInbox(); showStorage("inbStore"); }
 $("inbBack").addEventListener("click",()=>{ enterQuick(); });
+$("inbList").addEventListener("click",()=>{ openPick("open"); });
 async function renderInbox(){
   const list=(await idbByCard(INBOX)).sort((a,b)=>b.ts-a.ts);
   $("inbTitle").textContent="📥 インボックス（"+list.length+"）";
@@ -692,11 +704,12 @@ function drowHtml(s){
   const full=s.addr?esc(s.addr+(s.banchi?(" "+s.banchi):"")):(s.addrPending?"住所を取得中…":(s.lat!=null?"住所未取得（地図で確認）":"位置情報なし"));
   const cls=s.addr?"ad":"ad pend";
   const sent=s.sent?'<span class="sentbadge">送信済</span>':"";
+  const linked=(s.cardId&&s.cardId!==INBOX);
   return '<div class="drow" data-id="'+esc(s.id)+'">'+
     '<div class="th"><img src="'+(s.photos[0]?s.photos[0].thumb:"")+'"><span class="n">'+s.photos.length+'枚</span></div>'+
     '<div class="bd"><div class="'+cls+'">'+full+sent+'</div>'+
     '<div class="wn">'+fmtWhen(s.ts)+(s.note?'・'+esc(s.note):'')+'</div></div>'+
-    '<button class="delbtn" data-del="'+esc(s.id)+'">🗑</button></div>';
+    '<button class="delbtn'+(linked?' ret':'')+'" data-del="'+esc(s.id)+'" title="'+(linked?'インボックスに戻す':'削除')+'">'+(linked?'📥':'🗑')+'</button></div>';
 }
 function bindDrows(host,fromWhere){
   host.querySelectorAll(".drow").forEach(el=>el.addEventListener("click",e=>{
@@ -704,11 +717,10 @@ function bindDrows(host,fromWhere){
     openSet(el.dataset.id);
   }));
   host.querySelectorAll(".delbtn").forEach(b=>b.addEventListener("click",async()=>{
-    const s=await idbGet(b.dataset.del); if(!s) return;
-    if(!confirm("このデータ（写真"+s.photos.length+"枚）を削除しますか？")) return;
-    const card=s.cardId; await idbDel(b.dataset.del); await refreshIndex(card);
+    const r=await destroyOrReturn(b.dataset.del);
+    if(!r) return;
     if(fromWhere==="inbox"){ await renderInbox(); showStorage("inbStore"); } else { await renderGallery(); showStorage("storeLine"); }
-    toast("削除しました");
+    await updateRightCount();
   }));
 }
 
