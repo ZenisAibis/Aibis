@@ -30,6 +30,7 @@
   .tbtn .cnt{color:var(--teal);font-weight:900;margin-left:2px}
   .tbtn .cnt.warn{color:var(--gold)}
   .tbtn .cnt.over{color:var(--danger)}
+  .vertag{font-size:10.5px;font-weight:700;color:var(--dim);flex:0 0 auto;letter-spacing:.3px}
   .grow{flex:1;min-width:0}
   .cardchip{display:flex;flex-direction:column;min-width:0}
   .cardchip b{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -173,7 +174,8 @@
 <div id="scrCam" class="scr hide">
   <div class="top">
     <button class="tbtn" id="leftBtn">🗂 一覧</button>
-    <div class="cardchip grow"><b id="camTitle">クイック撮影</b><span class="sub" id="camSub">シャッターで撮影・1データ最大4枚</span></div>
+    <div class="cardchip grow"><b id="camTitle">z.AibisCam</b><span class="sub" id="camSub">シャッターで撮影・1データ最大4枚</span></div>
+    <span class="vertag" id="verTag"></span>
     <button class="tbtn" id="rightBtn">📥 <span class="cnt" id="rightCount">0</span></button>
   </div>
 
@@ -192,22 +194,22 @@
   <div id="setPanel" class="hide">
     <div class="setstrip"><div id="setThumbs" style="display:flex;gap:6px"></div><span class="setcnt" id="setCnt">0/4</span></div>
     <div class="addrline">
-      <span class="at pend" id="vAddr">住所未取得</span>
       <button class="mini" id="vGeo">🔄</button>
+      <span class="at pend" id="vAddr">住所未取得</span>
     </div>
     <div class="banchiline">
       <button class="mini" id="vMap">🗺 地図</button>
       <button class="mini" id="vFix"><svg width="11" height="15" viewBox="0 0 24 34" style="vertical-align:-2px"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 22 12 22s12-13 12-22C24 5.4 18.6 0 12 0z" fill="#ff3b3b"/><circle cx="12" cy="12" r="5" fill="#fff"/></svg> 位置修正</button>
       <button class="mini" id="vLink">🔗 紐付け</button>
-      <button class="mini danger" id="vDelSet">🗑 削除</button>
+      <button class="mini danger" id="vDelSet" style="margin-left:auto">🗑 削除</button>
     </div>
     <div class="banchiline">
       <span class="bl">番地</span>
       <input id="vBanchi" class="banchi" placeholder="例 23-5" readonly>
     </div>
     <div class="notewrap">
-      <input id="vNote" placeholder="計画地備考（任意）">
       <button class="micbtn" id="vMic" title="音声入力">🎤</button>
+      <input id="vNote" placeholder="計画地備考（任意）">
     </div>
   </div>
 
@@ -316,7 +318,7 @@
    ※ prospect_cards_v1 には書き込まない（新規カード作成・PC連携は本体側）
    データ(set): {id,cardId,ts,addrType:'plan',lat,lng,acc,addr,addrPending,banchi,note,sent,photos:[{pid,full(Blob),thumb,w,h,size}]}
    ========================================================= */
-const APP_VERSION = "cam-v1.10";
+const APP_VERSION = "cam-v1.14";
 const SK_CARDS = "prospect_cards_v1";
 const IDX_KEY  = "aibis_media_index_v1";
 const DB_NAME  = "aibis_media_v1";
@@ -414,6 +416,7 @@ function cardMeta(id){ const c=findCard(id); return c?[c.manager,c.address||c.pl
 
 /* ---------- 起動 ---------- */
 async function boot(){
+  $("verTag").textContent=APP_VERSION.replace("cam-","");
   try{ DB=await openDB(); }catch(e){ toast("保存領域を開けませんでした"); }
   if(navigator.storage&&navigator.storage.persist){ try{ await navigator.storage.persist(); }catch(e){} }
   loadMuni();
@@ -429,7 +432,7 @@ function configureHeader(){
     $("leftBtn").textContent= fromAibis ? "← アイビス" : "🗂 一覧";
     $("rightBtn").innerHTML='🖼 <span class="cnt" id="rightCount">0</span>';
   } else {
-    $("camTitle").textContent="クイック撮影";
+    $("camTitle").textContent="z.AibisCam";
     $("camSub").textContent="シャッターで撮影・1データ最大4枚";
     $("leftBtn").textContent="🗂 一覧";
     $("rightBtn").innerHTML='📥 <span class="cnt" id="rightCount">0</span>';
@@ -768,28 +771,42 @@ async function showStorage(targetId){
 }
 const fmtMB = b => b? (b>1073741824? (b/1073741824).toFixed(1)+"GB" : Math.round(b/1048576)+"MB") : "—";
 
-/* ---------- 単写真ビューア ---------- */
+/* ---------- 単写真ビューア（左右フリックでめくる） ---------- */
+let viewSet=null, viewIdx=0;
 async function openPhoto(setId,pid){
   const s=await idbGet(setId); if(!s) return;
   const i=s.photos.findIndex(p=>p.pid===pid); if(i<0) return;
-  const p=s.photos[i]; viewPhoto={setId, pid};
-  clearObjUrls(); const u=URL.createObjectURL(p.full); _objUrls.push(u);
-  $("vImg").src=u; $("vWhen").textContent=(i+1)+"/"+s.photos.length+"・"+(p.w+"×"+p.h)+"・"+fmtMB(p.size);
+  viewSet=s; showPhotoAt(i);
   $("viewer").classList.remove("hide");
 }
-$("vClose").addEventListener("click",()=>{ $("viewer").classList.add("hide"); viewPhoto=null; });
+function showPhotoAt(i){
+  if(!viewSet||!viewSet.photos.length) return;
+  i=Math.max(0,Math.min(i, viewSet.photos.length-1)); viewIdx=i;
+  const p=viewSet.photos[i]; viewPhoto={setId:viewSet.id, pid:p.pid};
+  clearObjUrls(); const u=URL.createObjectURL(p.full); _objUrls.push(u);
+  $("vImg").src=u; $("vWhen").textContent=(i+1)+"/"+viewSet.photos.length+"・"+(p.w+"×"+p.h)+"・"+fmtMB(p.size);
+}
+let _tsx=0,_tsy=0;
+$("viewer").addEventListener("touchstart",e=>{ const t=e.changedTouches[0]; _tsx=t.clientX; _tsy=t.clientY; },{passive:true});
+$("viewer").addEventListener("touchend",e=>{
+  const t=e.changedTouches[0], dx=t.clientX-_tsx, dy=t.clientY-_tsy;
+  if(Math.abs(dx)>45 && Math.abs(dx)>Math.abs(dy)){ if(dx<0) showPhotoAt(viewIdx+1); else showPhotoAt(viewIdx-1); }
+},{passive:true});
+$("vClose").addEventListener("click",()=>{ $("viewer").classList.add("hide"); viewPhoto=null; viewSet=null; });
 $("vDelPhoto").addEventListener("click",async()=>{
   if(!viewPhoto) return;
   if(!confirm("この写真を削除しますか？")) return;
   const s=await idbGet(viewPhoto.setId); if(!s) return;
   s.photos=s.photos.filter(p=>p.pid!==viewPhoto.pid);
-  if(!s.photos.length){ await idbDel(s.id); await refreshIndex(s.cardId); if(curSet===s.id) curSet=null; }
+  let closed=false;
+  if(!s.photos.length){ await idbDel(s.id); await refreshIndex(s.cardId); if(curSet===s.id) curSet=null; closed=true; }
   else { await idbPut(s); }
-  $("viewer").classList.add("hide"); viewPhoto=null;
   if(!screens.cam.classList.contains("hide")) renderSetPanel();
   if(!screens.inbox.classList.contains("hide")) renderInbox();
   if(!screens.gal.classList.contains("hide")) renderGallery();
   await updateRightCount(); toast("削除しました");
+  if(closed){ $("viewer").classList.add("hide"); viewPhoto=null; viewSet=null; }
+  else { viewSet=s; showPhotoAt(Math.min(viewIdx, s.photos.length-1)); } // 残りを表示し続ける
 });
 
 /* ---------- 位置修正（Leaflet 中心ピン固定） ---------- */
