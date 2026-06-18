@@ -1757,7 +1757,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.72";
+var APP_VERSION = "v7.73";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -5319,6 +5319,7 @@ function newCard(){
   document.getElementById('setupView').style.display='none';
   document.getElementById('editView').style.display=hasFSA&&!isMob?'flex':'block';
   switchTab('ti'); fillForm(cur); window.scrollTo(0,0);
+  if(typeof renderCardPhotos==='function') renderCardPhotos(curId);
   setTimeout(function(){setDirty(false);},100);
   _navGo('edit',curId);
   if(typeof updateCardNav==='function') updateCardNav();
@@ -5337,6 +5338,7 @@ function openCard(id){
   document.getElementById('setupView').style.display='none';
   document.getElementById('editView').style.display=hasFSA&&!isMob?'flex':'block';
   switchTab('ti'); fillForm(cur); window.scrollTo(0,0);
+  if(typeof renderCardPhotos==='function') renderCardPhotos(curId);
   setTimeout(function(){setDirty(false);},100);
   _navGo('edit',curId);
   if(typeof updateCardNav==='function') updateCardNav();
@@ -6011,6 +6013,7 @@ function _restoreDraft(){
   document.getElementById('setupView').style.display='none';
   document.getElementById('editView').style.display=hasFSA&&!isMob?'flex':'block';
   switchTab('ti'); fillForm(cur); window.scrollTo(0,0);
+  if(typeof renderCardPhotos==='function') renderCardPhotos(curId);
   setDirty(true);
   _navGo('edit',curId);
   if(typeof updateCardNav==='function') updateCardNav();
@@ -9965,6 +9968,11 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <span style="font-size:10px;color:#a0aec0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">タップで切替</span>
       </div>
     </div>
+    <!-- 📷 計画地写真（アイビスカメラ連携・表示専用） -->
+    <div class="sec no-print" id="cardPhotoSec" style="display:none">
+      <div class="stitle">📷 計画地写真 <span id="cardPhotoCount" style="font-weight:600;color:#718096;font-size:12px"></span></div>
+      <div id="cardPhotoBody"></div>
+    </div>
     <!-- 購買ステージ + 資産背景 -->
     <div class="sec">
       <!-- 購買ステージ -->
@@ -11597,6 +11605,23 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   #inboxPickList .ipr:active{background:#edf2f7}
   #inboxPickList .ipr .nm{font-size:14px;font-weight:800;color:#2d3748}
   #inboxPickList .ipr .mt{font-size:11px;color:#718096;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* 計画地写真（カード内・表示専用） */
+  #cardPhotoBody .cps-set{margin-bottom:12px}
+  #cardPhotoBody .cps-grid{display:grid;gap:4px}
+  #cardPhotoBody .cps-grid.g1{grid-template-columns:1fr}
+  #cardPhotoBody .cps-grid.g2{grid-template-columns:1fr 1fr}
+  #cardPhotoBody .cps-grid.g3,#cardPhotoBody .cps-grid.g4{grid-template-columns:1fr 1fr}
+  #cardPhotoBody .cps-th{position:relative;aspect-ratio:4/3;background:#edf2f7;border-radius:8px;overflow:hidden;cursor:pointer}
+  #cardPhotoBody .cps-grid.g1 .cps-th{aspect-ratio:16/10}
+  #cardPhotoBody .cps-th img{width:100%;height:100%;object-fit:cover;display:block}
+  #cardPhotoBody .cps-th:active{opacity:.7}
+  #cardPhotoBody .cps-noimg{display:flex;align-items:center;justify-content:center;height:100%;color:#a0aec0;font-size:20px}
+  #cardPhotoBody .cps-meta{font-size:11px;color:#718096;margin-top:5px;line-height:1.5;word-break:break-all}
+  #cardPhotoBody .cps-empty{text-align:center;color:#a0aec0;font-size:12.5px;padding:12px 8px;line-height:1.9}
+  #cardPhotoBody .cps-add,#cardPhotoBody .cps-add2{border:1px solid #cbd5e0;background:#fff;color:#2c5282;border-radius:8px;padding:9px 14px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer}
+  #cardPhotoBody .cps-add{margin-top:6px}
+  #cardPhotoBody .cps-add2{width:100%;margin-top:2px}
+  #cardPhotoBody .cps-load{color:#a0aec0;font-size:12px;padding:6px 2px}
   @media print{#inboxView,#inboxViewer,#inboxPick{display:none!important}}
 </style>
 <div id="inboxView">
@@ -11737,7 +11762,7 @@ function renderInboxPickList(){
 function _doLink(cardId){ if(!_pickSetId) return; var sid=_pickSetId; mGet(sid).then(function(s){ if(!s) return; s.cardId=cardId; mPut(s).then(function(){ closeInboxPick(); toast(_cardName(cardId)+" に紐付けました"); renderInboxBody(); }); }); }
 
 /* ---- 写真ビューア ---- */
-function openInboxPhoto(setId){ mGet(setId).then(function(s){ if(!s||!s.photos.length) return; _ivSet=s; _ivIdx=0; _showIv(); document.getElementById("inboxViewer").style.display="flex"; }); }
+function openInboxPhoto(setId,startIdx){ mGet(setId).then(function(s){ if(!s||!s.photos.length) return; _ivSet=s; _ivIdx=(startIdx>0&&startIdx<s.photos.length)?startIdx:0; _showIv(); document.getElementById("inboxViewer").style.display="flex"; }); }
 function _showIv(){ if(!_ivSet) return; var p=_ivSet.photos[_ivIdx]; if(!p) return;
   if(_ivUrl){ try{URL.revokeObjectURL(_ivUrl);}catch(e){} _ivUrl=null; }
   var img=document.getElementById("ivImg");
@@ -11746,6 +11771,40 @@ function _showIv(){ if(!_ivSet) return; var p=_ivSet.photos[_ivIdx]; if(!p) retu
   document.getElementById("ivWhen").textContent=(_ivIdx+1)+"/"+_ivSet.photos.length+(p.w?(" ・ "+p.w+"×"+p.h):""); }
 function inboxPhotoStep(d){ if(!_ivSet) return; _ivIdx=(_ivIdx+d+_ivSet.photos.length)%_ivSet.photos.length; _showIv(); }
 function closeInboxPhoto(){ document.getElementById("inboxViewer").style.display="none"; if(_ivUrl){ try{URL.revokeObjectURL(_ivUrl);}catch(e){} _ivUrl=null; } _ivSet=null; }
+
+/* ---- カード内の計画地写真表示（表示専用） ---- */
+function renderCardPhotos(cardId){
+  var sec=document.getElementById("cardPhotoSec"), body=document.getElementById("cardPhotoBody"), cnt=document.getElementById("cardPhotoCount");
+  if(!sec||!body) return;
+  if(!cardId){ sec.style.display="none"; return; }
+  sec.style.display="block"; if(cnt) cnt.textContent="";
+  body.innerHTML='<div class="cps-load">読み込み中…</div>';
+  mediaOpen().then(function(){ return mAll(); }).then(function(all){
+    var sets=(all||[]).filter(function(s){ return s.cardId===cardId; });
+    sets.sort(function(a,b){ return b.ts-a.ts; });
+    var total=sets.reduce(function(n,s){ return n+s.photos.length; },0);
+    if(cnt) cnt.textContent=total?("（"+total+"枚）"):"";
+    if(!sets.length){
+      body.innerHTML='<div class="cps-empty">計画地写真はまだありません。<br><button type="button" class="cps-add" onclick="openInboxForCard()">📥 インボックスから写真を選ぶ</button></div>';
+      return;
+    }
+    var html=sets.map(function(s){
+      var g=Math.min(s.photos.length,4)||1;
+      var thumbs=s.photos.map(function(p,i){
+        var src=p.thumb||(typeof p.full==="string"?p.full:"");
+        return '<div class="cps-th" data-sid="'+e(s.id)+'" data-idx="'+i+'">'+(src?'<img src="'+src+'" alt="">':'<span class="cps-noimg">📷</span>')+'</div>';
+      }).join("");
+      var meta=[]; if(s.addr) meta.push(e(s.addr+(s.banchi?(" "+s.banchi):""))); meta.push(_fmtWhen(s.ts)); if(s.note) meta.push(e(s.note));
+      return '<div class="cps-set"><div class="cps-grid g'+g+'">'+thumbs+'</div><div class="cps-meta">'+meta.join(" ・ ")+'</div></div>';
+    }).join("");
+    html+='<button type="button" class="cps-add2" onclick="openInboxForCard()">📥 写真を追加・管理</button>';
+    body.innerHTML=html;
+    body.querySelectorAll(".cps-th").forEach(function(el){
+      el.addEventListener("click",function(){ openInboxPhoto(el.getAttribute("data-sid"), parseInt(el.getAttribute("data-idx"),10)||0); });
+    });
+  }).catch(function(){ body.innerHTML='<div class="cps-empty">写真領域を開けませんでした。</div>'; });
+}
+window.renderCardPhotos=renderCardPhotos;
 
 /* ---- バッジ ---- */
 function updateInboxBadge(){ mediaOpen().then(function(){ return mAll(); }).then(function(all){
