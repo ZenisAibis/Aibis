@@ -481,15 +481,20 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
   .plan-btns-pc{display:none!important}
 }
 @media(max-width:600px){
-  #mikomiTop{display:grid;grid-template-columns:repeat(6,1fr);column-gap:8px;row-gap:8px;align-items:start}
+  #mikomiTop{display:grid;grid-template-columns:minmax(0,1fr) auto auto;column-gap:8px;row-gap:8px;align-items:start}
   #mikomiTop .mk-row{display:contents!important}
   #mikomiTop .mk-name{grid-column:1/-1;order:1}
-  #mikomiTop .mk-tel{grid-column:span 2;order:2}
-  #mikomiTop .mk-social{grid-column:span 2;order:3}
-  #mikomiTop .mk-genjo{grid-column:span 2;order:4}
+  #mikomiTop .mk-tel{grid-column:1;order:2}
+  #mikomiTop .mk-social{grid-column:2;order:3}
+  #mikomiTop .mk-genjo{grid-column:3;order:4}
   #mikomiTop .mk-email{grid-column:1/-1;order:5}
   #mikomiTop .mk-addr{grid-column:1/-1;order:6}
   #mikomiTop .mk-plan{grid-column:1/-1;order:7}
+  #mikomiTop .mk-addr,#mikomiTop .mk-plan{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+  #mikomiTop .mk-addr>label,#mikomiTop .mk-plan>label{flex:0 0 100%;margin:0}
+  #mikomiTop .mk-addr>input,#mikomiTop .mk-plan>input{flex:1 1 0;min-width:0;margin:0}
+  #mikomiTop .mk-addr>div{flex:0 0 auto;margin-top:0!important}
+  #mikomiTop .mk-plan>.plan-btns-mob{flex:0 0 auto;margin-top:0!important;width:auto}
 }
 .kaiwa-btn{font-size:12px;padding:8px 2px;white-space:nowrap;text-align:center;min-width:0;overflow:hidden;text-overflow:ellipsis}
 @media(max-width:600px){
@@ -1750,7 +1755,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.68";
+var APP_VERSION = "v7.69";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -9900,7 +9905,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <!-- 中段：TEL・メアド -->
       <div class="mk-row" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:8px">
         <div class="mk-tel"><label>TEL</label><input type="tel" id="f_tel" inputmode="numeric" placeholder="ハイフン無し" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
-        <div class="mk-email"><label>メールアドレス</label><div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap"><input type="email" inputmode="email" autocapitalize="none" autocomplete="off" spellcheck="false" id="f_email_local" placeholder="ID" style="flex:1;min-width:70px"><span style="color:#718096;flex-shrink:0">@</span><select id="f_email_domain" onchange="onEmailDomainChange()" style="width:auto;min-width:120px;flex-shrink:0"><option value="gmail.com">gmail.com</option><option value="yahoo.co.jp">yahoo.co.jp</option><option value="icloud.com">icloud.com</option><option value="docomo.ne.jp">docomo.ne.jp</option><option value="ezweb.ne.jp">ezweb.ne.jp(au)</option><option value="au.com">au.com</option><option value="softbank.ne.jp">softbank.ne.jp</option><option value="i.softbank.jp">i.softbank.jp</option><option value="outlook.jp">outlook.jp</option><option value="hotmail.com">hotmail.com</option><option value="ybb.ne.jp">ybb.ne.jp</option><option value="__custom__">その他(入力)</option></select><input type="text" inputmode="url" autocapitalize="none" autocomplete="off" spellcheck="false" id="f_email_domain_custom" placeholder="ドメイン" style="display:none;width:auto;min-width:110px;flex-shrink:0"></div></div>
+        <div class="mk-email"><label>メールアドレス</label><div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap"><input type="email" inputmode="email" autocapitalize="none" autocomplete="off" spellcheck="false" id="f_email_local" placeholder="ID" style="flex:1;min-width:70px"><span style="color:#718096;flex-shrink:0">@</span><select id="f_email_domain" onchange="onEmailDomainChange()" style="width:108px;min-width:0;flex-shrink:0"><option value="gmail.com">gmail.com</option><option value="yahoo.co.jp">yahoo.co.jp</option><option value="icloud.com">icloud.com</option><option value="docomo.ne.jp">docomo.ne.jp</option><option value="ezweb.ne.jp">ezweb.ne.jp(au)</option><option value="au.com">au.com</option><option value="softbank.ne.jp">softbank.ne.jp</option><option value="i.softbank.jp">i.softbank.jp</option><option value="outlook.jp">outlook.jp</option><option value="hotmail.com">hotmail.com</option><option value="ybb.ne.jp">ybb.ne.jp</option><option value="__custom__">その他(入力)</option></select><input type="text" inputmode="url" autocapitalize="none" autocomplete="off" spellcheck="false" id="f_email_domain_custom" placeholder="ドメイン" style="display:none;width:auto;min-width:110px;flex-shrink:0"></div></div>
       </div>
       <!-- 下段：住所・計画地 + 地図ボタン -->
       <div class="mk-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px">
