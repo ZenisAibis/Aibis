@@ -270,8 +270,10 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.show{opacity:1}
 #pwaBanner{display:none;position:fixed;bottom:80px;left:12px;right:12px;background:#1e3a5f;color:white;border-radius:10px;padding:12px 14px;z-index:150;box-shadow:0 4px 12px rgba(0,0,0,0.3)}
-.sortbar{background:white;border:1px solid #e2e8f0;border-radius:6px;padding:8px;margin-bottom:8px;display:flex;gap:4px;align-items:center;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.sortbar{background:white;border:1px solid #e2e8f0;border-radius:6px;padding:8px;margin:0 8px 8px;display:flex;gap:4px;align-items:center;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .sortbar::-webkit-scrollbar{display:none}
+#staffFilterBtns{scrollbar-width:none}
+#staffFilterBtns::-webkit-scrollbar{display:none}
 .sbtn{font-size:11px;padding:6px 8px;border-radius:6px;border:1px solid #cbd5e0;background:white;color:#4a5568;cursor:pointer;white-space:nowrap;flex-shrink:0}
 .sbtn.active{background:#ebf4ff;color:#2c5282;border-color:#2c5282;font-weight:600}
 .prhdr{display:none}
@@ -392,6 +394,7 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 .job-stats{display:flex;flex-direction:column;gap:9px}
 .stat-row{display:flex;align-items:center;gap:8px}
 .stat-lab{font-size:13px;font-weight:700;width:68px;flex-shrink:0;color:var(--z-ink);white-space:nowrap}
+.stat-emo{display:inline-block;width:1.5em;text-align:center;margin-right:1px}
 .stat-stars{font-size:13px;letter-spacing:1px;width:74px;flex-shrink:0;white-space:nowrap}
 .stat-track{flex:1;min-width:0;height:11px;background:rgba(255,255,255,.07);border-radius:6px;overflow:hidden;order:9}
 .stat-fill{display:block;height:100%;border-radius:6px;transition:width .6s ease}
@@ -980,7 +983,7 @@ body.is-mob .mob-menu{display:inline-block}
   </div>
   <div id="banner" style="display:none;background:#fef5e7;border:1px solid #ed8936;border-radius:6px;padding:12px;margin-bottom:8px"><div id="bannerBody"></div></div>
   <!-- 選択送信バー（常時表示） -->
-  <div id="selectBar" style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+  <div id="selectBar" style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;margin:0 8px 8px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
     <div style="font-size:12px;color:#4a5568;font-weight:600"><span id="selectCount">0</span>件選択</div>
     <div style="display:flex;gap:4px;flex-wrap:wrap;flex:1;justify-content:flex-end">
       <button onclick="selectAll()" class="bc" style="font-size:11px;padding:5px 8px">全選択</button>
@@ -991,10 +994,10 @@ body.is-mob .mob-menu{display:inline-block}
       <button onclick="mailSelectedToManager()" class="bw" style="font-size:11px;padding:5px 8px"><span class="bic">📧 </span>課長<span style="font-size:.8em;opacity:.85">へ</span></button>
     </div>
   </div>
-  <div id="staffFilterBar" style="display:none;background:white;border:1px solid #e2e8f0;border-radius:6px;padding:8px 10px;margin-bottom:6px;width:100%;box-sizing:border-box">
-    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+  <div id="staffFilterBar" style="display:none;background:white;border:1px solid #e2e8f0;border-radius:6px;padding:8px 10px;margin:0 8px 6px">
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:nowrap">
       <span style="font-size:12px;color:#4a5568;font-weight:600;flex-shrink:0">👤 担当：</span>
-      <div id="staffFilterBtns" style="display:flex;gap:4px;flex-wrap:wrap;flex:1"></div>
+      <div id="staffFilterBtns" style="display:flex;gap:4px;flex-wrap:nowrap;overflow-x:auto;flex:1"></div>
     </div>
   </div>
   <div class="sortbar">
@@ -1009,7 +1012,7 @@ body.is-mob .mob-menu{display:inline-block}
     <button class="sbtn" id="sb_pace" onclick="toggleSort('pace')">⏰ 遅れ</button>
     <button class="sbtn" id="sb_dt" onclick="toggleSort('dt')">📅 初訪</button>
   </div>
-  <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+  <div style="display:flex;align-items:center;gap:6px;margin:0 8px 6px">
     <button type="button" class="mic-btn" onclick="micStart('searchInput',this)" style="flex-shrink:0;margin-top:0" title="音声で検索">🎤</button>
     <div style="position:relative;flex:1">
       <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:#a0aec0;font-size:14px">🔍</span>
@@ -1049,8 +1052,8 @@ body.is-mob .mob-menu{display:inline-block}
         <div>
           <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">👤 氏名 <span style="color:#c53030">必須</span></label>
           <div style="display:flex;gap:6px;align-items:center">
-            <input id="qaName" type="text" placeholder="お客様名" style="flex:1;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px;font-family:inherit">
             <button type="button" class="mic-btn" onclick="micStart('qaName',this)" style="flex-shrink:0;margin-top:0">🎤</button>
+            <input id="qaName" type="text" placeholder="お客様名" style="flex:1;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px;font-family:inherit">
           </div>
         </div>
         <div>
@@ -1063,14 +1066,14 @@ body.is-mob .mob-menu{display:inline-block}
       </div>
       <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">🏠 住所（自宅）</label>
       <div style="display:flex;gap:6px;align-items:center;margin-bottom:10px">
-        <input id="qaAddr" type="text" placeholder="📍で現在地、🔢で番地" style="flex:1;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:13px;font-family:inherit">
         <button type="button" onclick="qaGeo('qaAddr')" style="flex-shrink:0;width:40px;height:40px;border:1px solid #cbd5e0;border-radius:8px;background:#ebf8ff;font-size:16px;cursor:pointer">📍</button>
+        <input id="qaAddr" type="text" placeholder="📍で現在地、🔢で番地" style="flex:1;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:13px;font-family:inherit">
         <button type="button" onclick="qaTenkeyOpen('qaAddr')" style="flex-shrink:0;width:40px;height:40px;border:1px solid #cbd5e0;border-radius:8px;background:#f7fafc;font-size:16px;cursor:pointer">🔢</button>
       </div>
       <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">🏛 計画地</label>
       <div style="display:flex;gap:6px;align-items:center;margin-bottom:10px">
-        <input id="qaPlan" type="text" placeholder="📍で現在地、🔢で番地" style="flex:1;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:13px;font-family:inherit">
         <button type="button" onclick="qaGeo('qaPlan')" style="flex-shrink:0;width:40px;height:40px;border:1px solid #cbd5e0;border-radius:8px;background:#ebf8ff;font-size:16px;cursor:pointer">📍</button>
+        <input id="qaPlan" type="text" placeholder="📍で現在地、🔢で番地" style="flex:1;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:13px;font-family:inherit">
         <button type="button" onclick="qaTenkeyOpen('qaPlan')" style="flex-shrink:0;width:40px;height:40px;border:1px solid #cbd5e0;border-radius:8px;background:#f7fafc;font-size:16px;cursor:pointer">🔢</button>
       </div>
       <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">🧠 購買心理ステージ</label>
@@ -1079,8 +1082,8 @@ body.is-mob .mob-menu{display:inline-block}
       <div id="qaKaiwa" style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:10px"></div>
       <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">📝 計画地備考</label>
       <div style="display:flex;gap:6px;align-items:center;margin-bottom:14px">
-        <input id="qaKuubi" type="text" placeholder="例：P空き多い・老朽建物あり・間口広め" style="flex:1;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:13px;font-family:inherit">
         <button type="button" class="mic-btn" onclick="micStart('qaKuubi',this)" style="flex-shrink:0;margin-top:0">🎤</button>
+        <input id="qaKuubi" type="text" placeholder="例：P空き多い・老朽建物あり・間口広め" style="flex:1;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:13px;font-family:inherit">
       </div>
       <button onclick="qaSave(false)" style="width:100%;background:#38a169;color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer">💾 保存</button>
     </div>
@@ -1726,7 +1729,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.61";
+var APP_VERSION = "v7.64";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -3981,7 +3984,7 @@ function _stars(v){
 function _job9StatHTML(corr, showNum){
   var rows=j9Stats(corr).map(function(s){
     return '<div class="stat-row">'
-      +'<span class="stat-lab">'+s.e+' '+s.n+'</span>'
+      +'<span class="stat-lab"><span class="stat-emo">'+s.e+'</span>'+s.n+'</span>'
       +'<span class="stat-stars" style="color:'+s.col+'">'+_stars(s.v)+'</span>'
       +(showNum===false?'':'<span class="stat-num">'+s.v+'</span>')
       +'<span class="stat-track"><span class="stat-fill" style="width:'+s.v+'%;background:'+s.col+'"></span></span>'
