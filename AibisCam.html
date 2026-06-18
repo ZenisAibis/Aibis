@@ -21,7 +21,6 @@
   .hide{display:none!important}
   .scr{flex:1;min-height:0;display:flex;flex-direction:column}
 
-  /* ---- 共通ヘッダ ---- */
   .top{display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + 8px) 12px 8px;
     background:linear-gradient(180deg,rgba(15,27,45,.96),rgba(15,27,45,.7));backdrop-filter:blur(6px);z-index:10}
   .top .ttl{font-size:13px;font-weight:800;letter-spacing:.5px;color:var(--gold)}
@@ -29,24 +28,19 @@
   .tbtn{padding:7px 11px;border-radius:9px;background:var(--panel2);font-size:12.5px;font-weight:700;white-space:nowrap}
   .tbtn:active{background:#264168}
   .tbtn .cnt{color:var(--teal);font-weight:900;margin-left:2px}
+  .tbtn .cnt.warn{color:var(--gold)}
+  .tbtn .cnt.over{color:var(--danger)}
   .grow{flex:1;min-width:0}
   .cardchip{display:flex;flex-direction:column;min-width:0}
   .cardchip b{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-  /* ---- カメラ画面 ---- */
-  #camWrap{position:relative;flex:1;min-height:0;background:#000;overflow:hidden}
+  #camWrap{position:relative;flex:1;min-height:170px;background:#000;overflow:hidden}
   #video{width:100%;height:100%;object-fit:cover;display:block;background:#000}
   #flashfx{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
   #flashfx.go{animation:flash .28s ease-out}
   @keyframes flash{0%{opacity:.0}15%{opacity:.85}100%{opacity:0}}
   #guide{position:absolute;inset:0;pointer-events:none}
   #guide .grid line{stroke:rgba(255,255,255,.28);stroke-width:1}
-  #guide .horizon{stroke:var(--teal);stroke-width:1.5;stroke-dasharray:6 6;opacity:.85}
-  #guide .vcenter{stroke:var(--gold);stroke-width:1.5;stroke-dasharray:6 6;opacity:.85}
-  #guide .frame{fill:none;stroke:rgba(245,158,11,.55);stroke-width:2;rx:10}
-  .hintbar{position:absolute;left:0;right:0;top:0;display:flex;justify-content:center;pointer-events:none}
-  .hintbar span{margin-top:10px;background:rgba(15,27,45,.78);border:1px solid var(--line);
-    padding:6px 13px;border-radius:20px;font-size:12.5px;font-weight:700;color:var(--teal);max-width:90%;text-align:center}
   .gpschip{position:absolute;left:0;right:0;bottom:8px;display:flex;justify-content:center;pointer-events:none}
   .gpschip span{background:rgba(15,27,45,.8);border:1px solid var(--line);padding:5px 12px;border-radius:18px;
     font-size:11.5px;font-weight:700;color:var(--dim);max-width:92%;text-align:center}
@@ -55,31 +49,48 @@
     gap:14px;padding:28px;text-align:center}
   .errcard .em{font-size:13px;color:var(--dim);line-height:1.7}
 
-  .shotbar{display:flex;gap:7px;overflow-x:auto;padding:9px 12px;background:var(--panel);
-    border-top:1px solid var(--line);scrollbar-width:none}
-  .shotbar::-webkit-scrollbar{display:none}
-  .chip{flex:0 0 auto;padding:7px 13px;border-radius:18px;background:var(--panel2);
-    font-size:13px;font-weight:700;color:var(--dim);border:1.5px solid transparent}
-  .chip.on{background:rgba(245,158,11,.15);color:var(--gold);border-color:var(--gold)}
+  /* 仕分けパネル（撮影画面の下） */
+  #setPanel{background:var(--panel);border-top:1px solid var(--line);padding:8px 12px;max-height:44vh;overflow-y:auto}
+  .setstrip{display:flex;gap:6px;align-items:center;margin-bottom:8px}
+  .sthumb{width:54px;height:54px;border-radius:9px;overflow:hidden;background:var(--panel2);position:relative;flex:0 0 auto;border:1.5px solid var(--line)}
+  .sthumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .setcnt{margin-left:auto;font-size:13px;font-weight:900;color:var(--teal);flex:0 0 auto}
+  .setcnt.full{color:var(--gold)}
+
+  .addrline{display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:8px}
+  .addrline .at{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .addrline .at.pend{color:var(--dim)}
+  .mini{padding:7px 11px;border-radius:9px;background:var(--panel2);font-size:12.5px;font-weight:700;flex:0 0 auto}
+  .mini:active{background:#264168}
+  .mini.danger{background:rgba(255,93,125,.16);color:var(--danger)}
+  .banchiline{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+  .banchiline .bl{font-size:12px;color:var(--dim);font-weight:700;flex:0 0 auto}
+  .banchi{flex:1;min-width:80px;padding:10px 13px;border-radius:11px;background:var(--bg);border:1px solid var(--line);
+    color:var(--txt);font-size:15px;font-weight:700;letter-spacing:1px}
+  .banchi::placeholder{color:var(--dim);font-weight:600;letter-spacing:normal}
+  .notewrap{display:flex;gap:8px}
+  .notewrap input{flex:1;padding:10px 13px;border-radius:11px;background:var(--bg);border:1px solid var(--line);color:var(--txt);font-size:14px}
+  .micbtn{flex:0 0 auto;width:46px;border-radius:11px;background:var(--panel2);font-size:19px}
+  .micbtn.rec{background:rgba(255,93,125,.25);color:var(--danger);animation:micpulse 1s infinite}
+  @keyframes micpulse{0%,100%{box-shadow:0 0 0 0 rgba(255,93,125,.55)}50%{box-shadow:0 0 0 7px rgba(255,93,125,0)}}
 
   .shootbar{display:flex;align-items:center;justify-content:space-between;
-    padding:14px 26px calc(env(safe-area-inset-bottom) + 16px);background:var(--bg)}
-  .iconbtn{width:52px;height:52px;border-radius:50%;background:var(--panel2);display:flex;
-    align-items:center;justify-content:center;font-size:22px}
+    padding:12px 22px calc(env(safe-area-inset-bottom) + 14px);background:var(--bg)}
+  .iconbtn{width:52px;height:52px;border-radius:50%;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-size:22px}
   .iconbtn:active{background:#264168}
   .iconbtn.on{background:rgba(245,158,11,.2);color:var(--gold)}
   .shutter{width:78px;height:78px;border-radius:50%;background:#fff;border:5px solid rgba(255,255,255,.35);
-    box-shadow:0 0 0 3px var(--gold);position:relative}
+    box-shadow:0 0 0 3px var(--gold)}
   .shutter:active{transform:scale(.92)}
   .shutter[disabled]{opacity:.4}
-  .lastthumb{width:52px;height:52px;border-radius:11px;background:var(--panel2);overflow:hidden;
-    position:relative;border:1.5px solid var(--line)}
-  .lastthumb img{width:100%;height:100%;object-fit:cover}
-  .lastthumb .badge{position:absolute;right:-4px;top:-6px;background:var(--gold);color:#1a1300;
-    font-size:11px;font-weight:900;min-width:18px;height:18px;border-radius:9px;display:flex;
-    align-items:center;justify-content:center;padding:0 4px}
+  .donebtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+    width:62px;height:52px;border-radius:13px;background:var(--panel2);font-weight:800}
+  .donebtn b{font-size:18px;line-height:1;color:var(--teal)}
+  .donebtn s{font-size:10px;text-decoration:none;color:var(--dim)}
+  .donebtn:active{background:#264168}
+  .donebtn[disabled]{opacity:.35}
 
-  /* ---- リスト / ギャラリー ---- */
+  /* リスト共通 */
   .pad{padding:12px 14px;overflow-y:auto;flex:1;min-height:0}
   .search{width:100%;padding:12px 14px;border-radius:12px;background:var(--panel);border:1px solid var(--line);
     color:var(--txt);font-size:15px;margin-bottom:10px}
@@ -89,62 +100,46 @@
   .crow:active{background:var(--panel2)}
   .crow .nm{font-size:15px;font-weight:800}
   .crow .mt{font-size:11.5px;color:var(--dim);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .crow .pc{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:1px;
-    background:var(--panel2);border-radius:10px;padding:6px 9px;min-width:48px}
+  .crow .pc{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:1px;background:var(--panel2);border-radius:10px;padding:6px 9px;min-width:48px}
   .crow .pc b{font-size:16px;font-weight:900;color:var(--teal);line-height:1}
   .crow .pc s{font-size:9.5px;color:var(--dim);text-decoration:none}
   .emptyst{text-align:center;color:var(--dim);padding:40px 20px;line-height:1.9;font-size:13.5px}
 
-  /* インボックス行 */
-  .ibrow{display:flex;gap:11px;padding:10px;border-radius:13px;background:var(--panel);
-    border:1px solid var(--line);margin-bottom:9px}
-  .ibrow .th{flex:0 0 auto;width:64px;height:64px;border-radius:10px;overflow:hidden;background:var(--panel2)}
-  .ibrow .th img{width:100%;height:100%;object-fit:cover;display:block}
-  .ibrow .bd{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;justify-content:center}
-  .ibrow .ad{font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .ibrow .ad.pend{color:var(--dim);font-weight:600}
-  .ibrow .wn{font-size:11px;color:var(--dim)}
-  .typechip{display:inline-block;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:8px}
-  .typechip.plan{background:rgba(245,158,11,.16);color:var(--gold)}
-  .typechip.home{background:rgba(52,227,208,.16);color:var(--teal)}
+  /* インボックス/ギャラリー行（データ＝写真の組） */
+  .drow{display:flex;gap:11px;padding:10px;border-radius:13px;background:var(--panel);border:1px solid var(--line);margin-bottom:9px;align-items:center}
+  .drow .th{flex:0 0 auto;width:64px;height:64px;border-radius:10px;overflow:hidden;background:var(--panel2);position:relative}
+  .drow .th img{width:100%;height:100%;object-fit:cover;display:block}
+  .drow .th .n{position:absolute;right:3px;bottom:3px;background:rgba(15,27,45,.85);color:var(--teal);font-size:10px;font-weight:900;padding:1px 6px;border-radius:7px}
+  .drow .bd{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+  .drow .ad{font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .drow .ad.pend{color:var(--dim);font-weight:600}
+  .drow .wn{font-size:11px;color:var(--dim)}
+  .drow .delbtn{flex:0 0 auto;width:42px;height:42px;border-radius:11px;background:rgba(255,93,125,.14);color:var(--danger);font-size:18px;display:flex;align-items:center;justify-content:center}
+  .drow .delbtn:active{background:rgba(255,93,125,.28)}
+  .sentbadge{display:inline-block;font-size:10px;font-weight:800;color:var(--ok);background:rgba(52,227,208,.14);border-radius:7px;padding:1px 7px;margin-left:6px}
+  .warnbar{padding:11px 13px;border-radius:12px;margin-bottom:10px;font-size:12.5px;font-weight:700;line-height:1.5}
+  .warnbar.soft{background:rgba(245,158,11,.14);color:var(--gold);border:1px solid rgba(245,158,11,.4)}
+  .warnbar.hard{background:rgba(255,93,125,.14);color:var(--danger);border:1px solid rgba(255,93,125,.45)}
+  .storeline{font-size:11px;color:var(--dim);text-align:center;padding:14px 0 6px}
 
   .galgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
   .gcell{position:relative;aspect-ratio:1;border-radius:9px;overflow:hidden;background:var(--panel2)}
   .gcell img{width:100%;height:100%;object-fit:cover;display:block}
-  .gcell .tag{position:absolute;left:4px;bottom:4px;background:rgba(15,27,45,.82);color:var(--teal);
-    font-size:10px;font-weight:800;padding:2px 6px;border-radius:6px}
+  .gcell .n{position:absolute;right:4px;bottom:4px;background:rgba(15,27,45,.82);color:var(--teal);font-size:10px;font-weight:800;padding:2px 6px;border-radius:6px}
   .galsec{font-size:12px;font-weight:800;color:var(--gold);margin:14px 2px 7px}
-  .storeline{font-size:11px;color:var(--dim);text-align:center;padding:14px 0 6px}
 
-  /* ---- 全画面ビューア ---- */
+  /* 単写真ビューア */
   #viewer{position:fixed;inset:0;background:rgba(7,12,20,.97);z-index:50;display:flex;flex-direction:column}
   #viewer img#vImg{flex:1;min-height:0;object-fit:contain;width:100%}
   .vtop{display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + 10px) 14px 10px}
-  .vmeta{padding:6px 16px 0;display:flex;flex-direction:column;gap:8px}
-  .vtoggle{display:flex;gap:8px;align-items:center}
-  .vlabel{font-size:13px;font-weight:800;color:var(--gold)}
-  .seg{display:flex;border:1px solid var(--line);border-radius:11px;overflow:hidden}
-  .seg button{padding:9px 16px;font-size:13.5px;font-weight:800;color:var(--dim);background:var(--panel)}
-  .seg button.on.plan{background:rgba(245,158,11,.18);color:var(--gold)}
-  .seg button.on.home{background:rgba(52,227,208,.18);color:var(--teal)}
-  .linkbtn{margin-left:auto;padding:9px 13px;border-radius:11px;background:var(--panel2);font-size:13px;font-weight:800;
-    max-width:55%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .addrline{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--txt)}
-  .addrline .mini{padding:6px 10px;border-radius:9px;background:var(--panel2);font-size:12px;font-weight:700;flex:0 0 auto}
-  .addrline .at{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .addrline .at.pend{color:var(--dim)}
-  .vsel{margin-left:auto;padding:9px 12px;border-radius:11px;background:var(--panel2);color:var(--txt);
-    font-size:13.5px;font-weight:800;border:1px solid var(--line);max-width:50%}
-  .banchiline{display:flex;align-items:center;gap:8px}
-  .banchiline .bl{font-size:12px;color:var(--dim);font-weight:700;flex:0 0 auto}
-  .banchi{flex:1;min-width:0;padding:10px 13px;border-radius:11px;background:var(--panel);border:1px solid var(--line);
-    color:var(--txt);font-size:15px;font-weight:700;letter-spacing:1px}
-  .banchi::placeholder{color:var(--dim);font-weight:600;letter-spacing:normal}
+  .vacts{display:flex;gap:8px;padding:10px 14px calc(env(safe-area-inset-bottom) + 16px)}
+  .vbtn{flex:1;padding:13px;border-radius:12px;background:var(--panel2);font-size:14px;font-weight:800;text-align:center}
+  .vbtn.danger{background:rgba(255,93,125,.16);color:var(--danger)}
+  .vbtn:active{filter:brightness(1.2)}
 
   /* 数字キーパッド */
   #keypad{position:fixed;inset:0;background:rgba(7,12,20,.6);z-index:70;display:flex;align-items:flex-end}
-  .kpcard{width:100%;background:var(--panel);border-top:1px solid var(--line);
-    border-radius:18px 18px 0 0;padding:14px 14px calc(env(safe-area-inset-bottom) + 14px)}
+  .kpcard{width:100%;background:var(--panel);border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding:14px 14px calc(env(safe-area-inset-bottom) + 14px)}
   .kphead{display:flex;justify-content:space-between;align-items:center;padding:2px 4px 12px;font-size:13px;color:var(--dim);font-weight:700}
   .kphead #kpVal{font-size:22px;font-weight:900;color:var(--teal);letter-spacing:2px}
   .kpgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
@@ -160,46 +155,31 @@
   #mapEdit{position:fixed;inset:0;background:var(--bg);z-index:75;display:flex;flex-direction:column}
   #leafWrap{position:relative;flex:1;min-height:0}
   #leafMap{position:absolute;inset:0;background:#0a1422}
-  #centerPin{position:absolute;left:50%;top:50%;transform:translate(-50%,-100%);
-    pointer-events:none;z-index:600;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
+  #centerPin{position:absolute;left:50%;top:50%;transform:translate(-50%,-100%);pointer-events:none;z-index:600;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
   .mefoot{display:flex;align-items:center;gap:10px;padding:12px 14px calc(env(safe-area-inset-bottom) + 14px);background:var(--bg)}
-  .mefoot .vbtn{flex:0 0 auto;width:auto;padding:12px 16px;border-radius:12px;background:var(--panel2);font-size:14px;font-weight:800}
+  .mefoot .vbtn{flex:0 0 auto;width:auto;padding:12px 16px}
   .mehint{font-size:11px;color:var(--dim);line-height:1.4}
   .aibis-pin{background:none;border:none}
-  .notewrap{display:flex;gap:8px}
-  .notewrap input{flex:1;padding:11px 13px;border-radius:11px;background:var(--panel);border:1px solid var(--line);
-    color:var(--txt);font-size:14px}
-  .micbtn{flex:0 0 auto;width:46px;border-radius:11px;background:var(--panel2);font-size:19px}
-  .micbtn.rec{background:rgba(255,93,125,.25);color:var(--danger);animation:micpulse 1s infinite}
-  @keyframes micpulse{0%,100%{box-shadow:0 0 0 0 rgba(255,93,125,.55)}50%{box-shadow:0 0 0 7px rgba(255,93,125,0)}}
-  .vacts{display:flex;gap:8px;padding:10px 14px calc(env(safe-area-inset-bottom) + 16px)}
-  .vbtn{flex:1;padding:13px;border-radius:12px;background:var(--panel2);font-size:14px;font-weight:800;text-align:center}
-  .vbtn.danger{background:rgba(255,93,125,.16);color:var(--danger)}
-  .vbtn:active{filter:brightness(1.2)}
 
   #toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 110px);transform:translateX(-50%) translateY(20px);
     background:var(--panel2);color:var(--txt);padding:11px 18px;border-radius:22px;font-size:13.5px;font-weight:700;
-    opacity:0;transition:.25s;z-index:60;border:1px solid var(--line);pointer-events:none;max-width:86%}
+    opacity:0;transition:.25s;z-index:80;border:1px solid var(--line);pointer-events:none;max-width:86%;text-align:center}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
 
-<!-- ===== カメラ画面（クイック / カード共用） ===== -->
+<!-- ===== 撮影＝仕分け画面 ===== -->
 <div id="scrCam" class="scr hide">
   <div class="top">
     <button class="tbtn" id="leftBtn">🗂 一覧</button>
-    <div class="cardchip grow">
-      <b id="camTitle">クイック撮影</b>
-      <span class="sub" id="camSub">→ インボックス（あとで仕分け）</span>
-    </div>
+    <div class="cardchip grow"><b id="camTitle">クイック撮影</b><span class="sub" id="camSub">シャッターで撮影・1データ最大4枚</span></div>
     <button class="tbtn" id="rightBtn">📥 <span class="cnt" id="rightCount">0</span></button>
   </div>
 
   <div id="camWrap">
     <video id="video" playsinline autoplay muted></video>
     <svg id="guide" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
-    <div class="hintbar"><span id="hintTxt"></span></div>
     <div class="gpschip" id="gpsChip"><span id="gpsTxt">📍 位置情報を取得中…</span></div>
     <div id="flashfx"></div>
     <div class="errcard hide" id="camErr">
@@ -209,20 +189,53 @@
     </div>
   </div>
 
-  <div class="shotbar hide" id="shotbar"></div>
+  <div id="setPanel" class="hide">
+    <div class="setstrip"><div id="setThumbs" style="display:flex;gap:6px"></div><span class="setcnt" id="setCnt">0/4</span></div>
+    <div class="addrline">
+      <span class="at pend" id="vAddr">住所未取得</span>
+      <button class="mini" id="vGeo">🔄</button>
+    </div>
+    <div class="banchiline">
+      <button class="mini" id="vMap">🗺 地図</button>
+      <button class="mini" id="vFix"><svg width="11" height="15" viewBox="0 0 24 34" style="vertical-align:-2px"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 22 12 22s12-13 12-22C24 5.4 18.6 0 12 0z" fill="#ff3b3b"/><circle cx="12" cy="12" r="5" fill="#fff"/></svg> 位置修正</button>
+      <button class="mini" id="vLink">🔗 紐付け</button>
+      <button class="mini danger" id="vDelSet">🗑 削除</button>
+    </div>
+    <div class="banchiline">
+      <span class="bl">番地</span>
+      <input id="vBanchi" class="banchi" placeholder="例 23-5" readonly>
+    </div>
+    <div class="notewrap">
+      <input id="vNote" placeholder="計画地備考（任意）">
+      <button class="micbtn" id="vMic" title="音声入力">🎤</button>
+    </div>
+  </div>
 
   <div class="shootbar">
     <button class="iconbtn" id="torchBtn" title="ライト">🔦</button>
     <button class="shutter" id="shutter" aria-label="撮影"></button>
-    <button class="lastthumb" id="lastThumb"><span class="badge hide" id="sessBadge">0</span></button>
+    <button class="donebtn" id="doneBtn"><b>✓</b><s>完了</s></button>
   </div>
   <input type="file" id="nativeCam" accept="image/*" capture="environment" class="hide">
 </div>
 
-<!-- ===== カード一覧（読み取り専用 / 紐付けピッカー兼用） ===== -->
+<!-- ===== インボックス ===== -->
+<div id="scrInbox" class="scr hide">
+  <div class="top">
+    <button class="tbtn" id="inbBack">← 撮影</button>
+    <div class="cardchip grow"><b id="inbTitle">📥 インボックス</b><span class="sub">タップで仕分け・続けて撮影</span></div>
+  </div>
+  <div class="pad">
+    <div id="inbWarn" class="warnbar hide"></div>
+    <div id="inbBody"></div>
+    <div class="storeline" id="inbStore"></div>
+  </div>
+</div>
+
+<!-- ===== カード一覧（撮影/閲覧 or 紐付け） ===== -->
 <div id="scrPick" class="scr hide">
   <div class="top">
-    <button class="tbtn hide" id="pickBack">←</button>
+    <button class="tbtn" id="pickBack">📷 撮影</button>
     <div class="cardchip grow"><b class="ttl" id="pickTitle">⌘ カード一覧</b><span class="sub" id="pickSub">カードを選んで撮影・閲覧</span></div>
   </div>
   <div class="pad">
@@ -231,19 +244,7 @@
   </div>
 </div>
 
-<!-- ===== インボックス（未仕分け） ===== -->
-<div id="scrInbox" class="scr hide">
-  <div class="top">
-    <button class="tbtn" id="inbBack">← 撮影</button>
-    <div class="cardchip grow"><b id="inbTitle">📥 インボックス</b><span class="sub">未仕分けの写真。タップで仕分け</span></div>
-  </div>
-  <div class="pad">
-    <div id="inbBody"></div>
-    <div class="storeline" id="inbStore"></div>
-  </div>
-</div>
-
-<!-- ===== ギャラリー（カード別） ===== -->
+<!-- ===== カード別ギャラリー ===== -->
 <div id="scrGal" class="scr hide">
   <div class="top">
     <button class="tbtn" id="galBack">←</button>
@@ -256,40 +257,19 @@
   </div>
 </div>
 
-<!-- ===== 全画面ビューア（仕分け・閲覧 共用） ===== -->
+<!-- ===== 単写真ビューア ===== -->
 <div id="viewer" class="hide">
   <div class="vtop">
     <button class="tbtn" id="vClose">✕</button>
-    <div class="cardchip grow"><b id="vTitle" style="font-size:13px;color:var(--gold)">写真</b><span class="sub" id="vWhen"></span></div>
+    <div class="cardchip grow"><b style="font-size:13px;color:var(--gold)">計画地写真</b><span class="sub" id="vWhen"></span></div>
   </div>
   <img id="vImg" alt="">
-  <div class="vmeta">
-    <div class="vlabel">📍 計画地写真</div>
-    <div class="addrline">
-      <span class="at pend" id="vAddr">住所未取得</span>
-    </div>
-    <div class="banchiline">
-      <button class="mini" id="vGeo">🔄 住所</button>
-      <button class="mini" id="vMap">🗺 地図</button>
-      <button class="mini" id="vFix"><svg width="11" height="15" viewBox="0 0 24 34" style="vertical-align:-2px"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 22 12 22s12-13 12-22C24 5.4 18.6 0 12 0z" fill="#ff3b3b"/><circle cx="12" cy="12" r="5" fill="#fff"/></svg> 位置修正</button>
-    </div>
-    <div class="banchiline">
-      <span class="bl">番地</span>
-      <input id="vBanchi" class="banchi" placeholder="例 23-5" readonly>
-    </div>
-    <div class="notewrap">
-      <input id="vNote" placeholder="計画地備考（任意：撮影方向・特徴など）">
-      <button class="micbtn" id="vMic" title="音声入力">🎤</button>
-    </div>
-  </div>
   <div class="vacts">
-    <button class="vbtn" id="vLink">🔗 紐付け</button>
-    <button class="vbtn" id="vDl">⬇ 端末に保存</button>
-    <button class="vbtn danger" id="vDel">🗑 削除</button>
+    <button class="vbtn danger" id="vDelPhoto">🗑 この写真を削除</button>
   </div>
 </div>
 
-<!-- ===== 数字キーパッド（番地用） ===== -->
+<!-- ===== 数字キーパッド ===== -->
 <div id="keypad" class="hide">
   <div class="kpcard">
     <div class="kphead"><span>番地を入力</span><span id="kpVal">—</span></div>
@@ -310,7 +290,7 @@
 <div id="mapEdit" class="hide">
   <div class="vtop">
     <button class="tbtn" id="meCancel">✕ 取消</button>
-    <div class="cardchip grow"><b style="font-size:13px;color:var(--gold)">📍 位置を修正</b><span class="sub">ピンを正しい場所へドラッグ</span></div>
+    <div class="cardchip grow"><b style="font-size:13px;color:var(--gold)">📍 位置を修正</b><span class="sub">地図を動かして中心に合わせる</span></div>
     <button class="tbtn" style="background:var(--gold);color:#1a1300" id="meSave">保存</button>
   </div>
   <div id="leafWrap">
@@ -328,48 +308,51 @@
 <script>
 "use strict";
 /* =========================================================
-   z.Aibis カメラ v1.1
+   z.Aibis カメラ v1.10  ── 1データ＝計画地写真 最大4枚（A4 4分割印刷を想定）
    連携契約:
    - カード一覧: localStorage['prospect_cards_v1'] を読み取り専用で参照
-   - 写真: IndexedDB 'aibis_media_v1' / store 'photos'(keyPath id, index by_card,by_ts)
-   - 件数索引: localStorage['aibis_media_index_v1'] = {cardId:{n,last}}（実カードのみ。__inbox__は含めない）
-   ※ prospect_cards_v1 には一切書き込まない（新規カード作成・PC連携は本体側で実施）
-   レコード: {id,cardId,ts,shot,addrType('plan'|'home'),lat,lng,acc,addr,addrPending,note,w,h,size,full(Blob),thumb(dataURL)}
+   - 写真データ: IndexedDB 'aibis_media_v1' / store 'photos'(keyPath id, index by_card,by_ts)
+   - 件数索引: localStorage['aibis_media_index_v1'] = {cardId:{n,last}}（実カードのみ・件数=データ数）
+   ※ prospect_cards_v1 には書き込まない（新規カード作成・PC連携は本体側）
+   データ(set): {id,cardId,ts,addrType:'plan',lat,lng,acc,addr,addrPending,banchi,note,sent,photos:[{pid,full(Blob),thumb,w,h,size}]}
    ========================================================= */
-const APP_VERSION = "cam-v1.9";
+const APP_VERSION = "cam-v1.10";
 const SK_CARDS = "prospect_cards_v1";
 const IDX_KEY  = "aibis_media_index_v1";
 const DB_NAME  = "aibis_media_v1";
 const STORE    = "photos";
 const INBOX    = "__inbox__";
-const MAX_EDGE = 1280;   // 長辺上限(px) ← 軽量化
-const JPEG_Q   = 0.72;   // 圧縮品質 ← 軽量化
+const MAX_PHOTOS = 4;       // 1データ＝最大4枚（A4 4分割）
+const MAX_EDGE = 1600;      // 印刷向け解像度（長辺px）
+const JPEG_Q   = 0.75;
 const THUMB_EDGE = 260;
+const WARN_SOFT = 10;       // この件数でPC送信を促す
+const WARN_HARD = 15;       // この件数で強めに促す
 const GSI_URL = "https://mreversegeocoder.gsi.go.jp/reverse-geocoder/LonLatToAddress";
-
-const SHOTS = [
-  {k:"zenkei",   label:"全景",      hint:"土地全体が入る引きで・水平を意識", guide:"horizon"},
-  {k:"tatemono", label:"建物外観",  hint:"正面が分かる構図・高さを入れる",   guide:"frame"},
-  {k:"doro",     label:"前面道路",  hint:"間口と道路幅が分かるように",        guide:"horizon"},
-  {k:"kyoukai",  label:"接道・境界",hint:"境界標・ブロック塀を明確に",        guide:"vcenter"},
-  {k:"maguchi",  label:"間口",      hint:"道路に対する間口の広がりを正面から",guide:"vcenter"},
-  {k:"shitsunai",label:"室内",      hint:"",                                 guide:"grid"},
-  {k:"shorui",   label:"書類",      hint:"公図・謄本は真上から水平に",        guide:"frame"},
-  {k:"other",    label:"その他",    hint:"",                                 guide:"grid"}
-];
-const shotLabel = k => (SHOTS.find(s=>s.k===k)||{label:"その他"}).label;
-const TYPE_LABEL = {plan:"計画地", home:"自宅"};
+const GSI_MUNI_URL = "https://maps.gsi.go.jp/js/muni.js";
+const TOKYO_WARDS = {
+  "13101":{pref:"東京都",city:"千代田区"},"13102":{pref:"東京都",city:"中央区"},"13103":{pref:"東京都",city:"港区"},
+  "13104":{pref:"東京都",city:"新宿区"},"13105":{pref:"東京都",city:"文京区"},"13106":{pref:"東京都",city:"台東区"},
+  "13107":{pref:"東京都",city:"墨田区"},"13108":{pref:"東京都",city:"江東区"},"13109":{pref:"東京都",city:"品川区"},
+  "13110":{pref:"東京都",city:"目黒区"},"13111":{pref:"東京都",city:"大田区"},"13112":{pref:"東京都",city:"世田谷区"},
+  "13113":{pref:"東京都",city:"渋谷区"},"13114":{pref:"東京都",city:"中野区"},"13115":{pref:"東京都",city:"杉並区"},
+  "13116":{pref:"東京都",city:"豊島区"},"13117":{pref:"東京都",city:"北区"},"13118":{pref:"東京都",city:"荒川区"},
+  "13119":{pref:"東京都",city:"板橋区"},"13120":{pref:"東京都",city:"練馬区"},"13121":{pref:"東京都",city:"足立区"},
+  "13122":{pref:"東京都",city:"葛飾区"},"13123":{pref:"東京都",city:"江戸川区"}
+};
 
 /* ---------- 状態 ---------- */
 let DB=null, stream=null, track=null, geoWatch=null, lastPos=null;
-let mode="quick", curCardId=INBOX, fromAibis=false, curShot=SHOTS[0].k, facing="environment", torchOn=false;
-let sessCount=0, viewerId=null, viewerFrom="inbox", pickMode="open", linkTargetId=null;
+let mode="quick", targetCard=INBOX, curSet=null, fromAibis=false, facing="environment", torchOn=false, capturing=false;
+let viewPhoto=null, pickMode="open", linkTargetId=null, MUNI=null, micRec=null, kpVal="";
+let leafMap=null, meTargetId=null;
 
 const $ = id => document.getElementById(id);
-const screens = {cam:$("scrCam"), pick:$("scrPick"), inbox:$("scrInbox"), gal:$("scrGal")};
+const screens = {cam:$("scrCam"), inbox:$("scrInbox"), pick:$("scrPick"), gal:$("scrGal")};
 function show(name){ for(const k in screens) screens[k].classList.toggle("hide", k!==name); }
 function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show");
-  clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("show"),1900); }
+  clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("show"),2100); }
+const rid = p => p+"_"+Date.now()+"_"+Math.random().toString(36).slice(2,7);
 
 /* ---------- IndexedDB ---------- */
 function openDB(){
@@ -390,11 +373,12 @@ function openDB(){
 function tx(m){ return DB.transaction(STORE,m).objectStore(STORE); }
 function idbPut(rec){ return new Promise((res,rej)=>{ const q=tx("readwrite").put(rec); q.onsuccess=()=>res(); q.onerror=()=>rej(q.error); }); }
 function idbDel(id){ return new Promise((res,rej)=>{ const q=tx("readwrite").delete(id); q.onsuccess=()=>res(); q.onerror=()=>rej(q.error); }); }
-function idbGet(id){ return new Promise((res,rej)=>{ const q=tx("readonly").get(id); q.onsuccess=()=>res(q.result); q.onerror=()=>rej(q.error); }); }
+function idbGetRaw(id){ return new Promise((res,rej)=>{ const q=tx("readonly").get(id); q.onsuccess=()=>res(q.result); q.onerror=()=>rej(q.error); }); }
+async function idbGet(id){ return normalize(await idbGetRaw(id)); }
 function idbByCard(cardId){
   return new Promise((res,rej)=>{
     const out=[], idx=tx("readonly").index("by_card"), q=idx.openCursor(IDBKeyRange.only(cardId));
-    q.onsuccess=()=>{ const c=q.result; if(c){ out.push(c.value); c.continue(); } else { out.sort((a,b)=>a.ts-b.ts); res(out); } };
+    q.onsuccess=()=>{ const c=q.result; if(c){ out.push(normalize(c.value)); c.continue(); } else { out.sort((a,b)=>a.ts-b.ts); res(out); } };
     q.onerror=()=>rej(q.error);
   });
 }
@@ -402,11 +386,21 @@ function idbCountByCard(cardId){
   return new Promise((res)=>{ const idx=tx("readonly").index("by_card"); const q=idx.count(IDBKeyRange.only(cardId));
     q.onsuccess=()=>res(q.result||0); q.onerror=()=>res(0); });
 }
+/* 旧形式(1枚=1レコード)を set 形式に正規化 */
+function normalize(rec){
+  if(!rec) return rec;
+  if(Array.isArray(rec.photos)) return rec;
+  rec.photos=[{pid:(rec.id||rid("p"))+"_0", full:rec.full, thumb:rec.thumb, w:rec.w, h:rec.h, size:rec.size}];
+  if(rec.sent===undefined) rec.sent=false;
+  if(rec.banchi===undefined) rec.banchi="";
+  return rec;
+}
+const setSize = s => (s.photos||[]).reduce((a,p)=>a+(p.size||0),0);
 
 /* ---------- 件数索引(localStorage) ---------- */
 function readIndex(){ try{ return JSON.parse(localStorage.getItem(IDX_KEY)||"{}"); }catch(e){ return {}; } }
 async function refreshIndex(cardId){
-  if(!cardId||cardId===INBOX) return; // インボックスは索引に載せない
+  if(!cardId||cardId===INBOX) return;
   const n=await idbCountByCard(cardId), idx=readIndex();
   if(n>0) idx[cardId]={n, last:Date.now()}; else delete idx[cardId];
   try{ localStorage.setItem(IDX_KEY, JSON.stringify(idx)); }catch(e){}
@@ -422,83 +416,59 @@ function cardMeta(id){ const c=findCard(id); return c?[c.manager,c.address||c.pl
 async function boot(){
   try{ DB=await openDB(); }catch(e){ toast("保存領域を開けませんでした"); }
   if(navigator.storage&&navigator.storage.persist){ try{ await navigator.storage.persist(); }catch(e){} }
-  loadMuni(); // 自治体マスターを先読み（非同期・市区町村名の付与用）
-  buildShotBar();
-  const p=new URLSearchParams(location.search);
-  const cid=p.get("cardId");
-  if(cid){ fromAibis=true; enterCamera(cid); }      // 本体カードから起動
-  else { enterQuick(); }                            // 既定＝クイック撮影（ホーム）
+  loadMuni();
+  const p=new URLSearchParams(location.search), cid=p.get("cardId");
+  if(cid){ fromAibis=true; enterCamera(cid); } else { enterQuick(); }
 }
 
-/* ---------- クイック撮影（ホーム） ---------- */
-async function enterQuick(){
-  mode="quick"; curCardId=INBOX; sessCount=0; curShot="other";
-  $("camTitle").textContent="クイック撮影";
-  $("camSub").textContent="→ インボックス（あとで仕分け）";
-  $("leftBtn").textContent="🗂 一覧";
-  $("rightBtn").innerHTML='📥 <span class="cnt" id="rightCount">0</span>';
-  $("shotbar").classList.add("hide");
-  $("gpsChip").style.display="";
-  resetSession();
-  show("cam");
-  await updateRightCount();
-  await startCamera();
-  setShot();
+/* ---------- 画面遷移 ---------- */
+function configureHeader(){
+  if(mode==="card"){
+    $("camTitle").textContent=cardLabel(targetCard);
+    $("camSub").textContent=cardMeta(targetCard)||"このカードに撮影";
+    $("leftBtn").textContent= fromAibis ? "← アイビス" : "🗂 一覧";
+    $("rightBtn").innerHTML='🖼 <span class="cnt" id="rightCount">0</span>';
+  } else {
+    $("camTitle").textContent="クイック撮影";
+    $("camSub").textContent="シャッターで撮影・1データ最大4枚";
+    $("leftBtn").textContent="🗂 一覧";
+    $("rightBtn").innerHTML='📥 <span class="cnt" id="rightCount">0</span>';
+  }
+}
+async function enterQuick(){ mode="quick"; targetCard=INBOX; curSet=null; configureHeader(); show("cam"); await startCamera(); renderSetPanel(); await updateRightCount(); }
+async function enterCamera(cardId){ mode="card"; targetCard=cardId; curSet=null; configureHeader(); show("cam"); await startCamera(); renderSetPanel(); await updateRightCount(); }
+async function openSet(id){
+  const s=await idbGet(id); if(!s) return;
+  curSet=id; targetCard=s.cardId;
+  mode=(s.cardId&&s.cardId!==INBOX)?"card":"quick"; fromAibis=false;
+  configureHeader(); show("cam"); await startCamera(); renderSetPanel(); await updateRightCount();
 }
 
-/* ---------- カード撮影モード ---------- */
-async function enterCamera(cardId){
-  mode="card"; curCardId=cardId; sessCount=0;
-  $("camTitle").textContent=cardLabel(cardId);
-  $("camSub").textContent=cardMeta(cardId)||"（本体に未登録のカードID）";
-  $("leftBtn").textContent= fromAibis ? "← アイビス" : "← 一覧";
-  $("rightBtn").innerHTML='🖼 <span class="cnt" id="rightCount">0</span>';
-  $("shotbar").classList.add("hide");
-  $("gpsChip").style.display="";
-  resetSession();
-  show("cam");
-  await updateRightCount();
-  await startCamera();
-  setShot();
-}
-function resetSession(){
-  $("sessBadge").classList.add("hide"); $("sessBadge").textContent="0";
-  const img=$("lastThumb").querySelector("img"); if(img) img.remove();
-}
-
-/* ヘッダ左右ボタン */
 $("leftBtn").addEventListener("click",()=>{
   stopCamera();
   if(mode==="card" && fromAibis){ if(history.length>1) history.back(); else toast("アイビスのタブに戻ってください"); }
-  else { openPick("open"); }
+  else openPick("open");
 });
-$("rightBtn").addEventListener("click",()=>{
-  if(mode==="quick"){ openInbox(); } else { openGallery(curCardId,true); }
-});
-$("lastThumb").addEventListener("click",()=>{
-  if(mode==="quick"){ openInbox(); } else { openGallery(curCardId,true); }
-});
+$("rightBtn").addEventListener("click",()=>{ if(mode==="quick") openInbox(); else openGallery(targetCard,true); });
 async function updateRightCount(){
-  const n=await idbCountByCard(curCardId);
-  const el=$("rightCount"); if(el) el.textContent=n;
+  const n=await idbCountByCard(targetCard); const el=$("rightCount"); if(!el) return;
+  el.textContent=n; el.classList.remove("warn","over");
+  if(mode==="quick"){ if(n>=WARN_HARD) el.classList.add("over"); else if(n>=WARN_SOFT) el.classList.add("warn"); }
 }
 
 /* ---------- カメラ制御 ---------- */
 async function startCamera(){
-  $("camErr").classList.add("hide");
-  stopCamera();
+  $("camErr").classList.add("hide"); stopCamera();
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ showCamErr("このブラウザはカメラに対応していません。"); return; }
   try{
-    stream=await navigator.mediaDevices.getUserMedia({
-      audio:false, video:{ facingMode:{ideal:facing}, width:{ideal:2560}, height:{ideal:1440} }
-    });
+    stream=await navigator.mediaDevices.getUserMedia({ audio:false, video:{ facingMode:{ideal:facing}, width:{ideal:2560}, height:{ideal:1440} } });
     const v=$("video"); v.srcObject=stream; await v.play().catch(()=>{});
     track=stream.getVideoTracks()[0];
     const caps=track.getCapabilities?track.getCapabilities():{};
     $("torchBtn").style.display = caps.torch ? "flex":"none";
     torchOn=false; $("torchBtn").classList.remove("on");
     $("shutter").disabled=false;
-    startGeo();
+    drawGuide(); startGeo();
   }catch(e){
     let m="カメラを起動できませんでした。";
     if(e&&e.name==="NotAllowedError") m="カメラの使用が許可されていません。ブラウザの権限設定でこのサイトのカメラを許可してください。";
@@ -508,8 +478,14 @@ async function startCamera(){
 }
 function stopCamera(){ if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; track=null; } stopGeo(); }
 function showCamErr(msg){ $("camErrMsg").textContent=msg; $("camErr").classList.remove("hide"); $("shutter").disabled=true; }
+function drawGuide(){ $("guide").innerHTML='<g class="grid"><line x1="33.3" y1="0" x2="33.3" y2="100"/><line x1="66.6" y1="0" x2="66.6" y2="100"/><line x1="0" y1="33.3" x2="100" y2="33.3"/><line x1="0" y1="66.6" x2="100" y2="66.6"/></g>'; }
+$("torchBtn").addEventListener("click",async()=>{
+  if(!track) return; torchOn=!torchOn;
+  try{ await track.applyConstraints({advanced:[{torch:torchOn}]}); $("torchBtn").classList.toggle("on",torchOn); }
+  catch(e){ toast("ライト非対応の端末です"); torchOn=false; }
+});
 
-/* ---------- 位置情報（撮影前から取得開始・キャッシュ） ---------- */
+/* ---------- 位置情報 ---------- */
 function startGeo(){
   if(!navigator.geolocation){ $("gpsTxt").innerHTML="📍 位置情報に未対応の端末"; return; }
   if(geoWatch!=null) return;
@@ -517,31 +493,14 @@ function startGeo(){
   geoWatch=navigator.geolocation.watchPosition(
     pos=>{ lastPos={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:pos.coords.accuracy};
       const m=lastPos.acc?Math.round(lastPos.acc):null;
-      $("gpsTxt").innerHTML="📍 位置OK"+(m!=null?"（±"+m+"m）":"")+" <b>計画地</b>で保存・ズレは後で修正可"; },
+      $("gpsTxt").innerHTML="📍 位置OK"+(m!=null?"（±"+m+"m）":"")+" 計画地で保存・ズレは後で修正可"; },
     err=>{ $("gpsTxt").innerHTML="📍 位置を取得できません（後で仕分け可）"; },
     {enableHighAccuracy:true, maximumAge:0, timeout:15000}
   );
 }
 function stopGeo(){ if(geoWatch!=null){ navigator.geolocation.clearWatch(geoWatch); geoWatch=null; } }
 
-/* ---------- 地理院リバースジオコーダ＋自治体マスター ---------- */
-const GSI_MUNI_URL = "https://maps.gsi.go.jp/js/muni.js";
-/* 主要エリア（東京23区）は内蔵。マスター取得失敗でも区名は必ず出る */
-const TOKYO_WARDS = {
-  "13101":{pref:"東京都",city:"千代田区"},"13102":{pref:"東京都",city:"中央区"},
-  "13103":{pref:"東京都",city:"港区"},"13104":{pref:"東京都",city:"新宿区"},
-  "13105":{pref:"東京都",city:"文京区"},"13106":{pref:"東京都",city:"台東区"},
-  "13107":{pref:"東京都",city:"墨田区"},"13108":{pref:"東京都",city:"江東区"},
-  "13109":{pref:"東京都",city:"品川区"},"13110":{pref:"東京都",city:"目黒区"},
-  "13111":{pref:"東京都",city:"大田区"},"13112":{pref:"東京都",city:"世田谷区"},
-  "13113":{pref:"東京都",city:"渋谷区"},"13114":{pref:"東京都",city:"中野区"},
-  "13115":{pref:"東京都",city:"杉並区"},"13116":{pref:"東京都",city:"豊島区"},
-  "13117":{pref:"東京都",city:"北区"},"13118":{pref:"東京都",city:"荒川区"},
-  "13119":{pref:"東京都",city:"板橋区"},"13120":{pref:"東京都",city:"練馬区"},
-  "13121":{pref:"東京都",city:"足立区"},"13122":{pref:"東京都",city:"葛飾区"},
-  "13123":{pref:"東京都",city:"江戸川区"}
-};
-let MUNI=null;
+/* ---------- 地理院＋自治体マスター ---------- */
 async function loadMuni(){
   if(MUNI) return MUNI;
   let base=Object.assign({}, TOKYO_WARDS);
@@ -556,10 +515,8 @@ async function loadMuni(){
 }
 async function gsiReverse(lat,lng){
   const r=await fetch(GSI_URL+"?lat="+lat+"&lon="+lng,{mode:"cors"});
-  const j=await r.json();
-  const res=j&&j.results;
-  let lv=res&&res.lv01Nm?String(res.lv01Nm):"";
-  if(lv==="－"||lv==="−") lv="";
+  const j=await r.json(); const res=j&&j.results;
+  let lv=res&&res.lv01Nm?String(res.lv01Nm):""; if(lv==="－"||lv==="−") lv="";
   const muni=res&&res.muniCd?String(res.muniCd):"";
   return {muni, lv};
 }
@@ -567,387 +524,322 @@ async function composeAddress(lat,lng){
   const {muni,lv}=await gsiReverse(lat,lng);
   let pref="", city="";
   if(muni){ const M=await loadMuni(); const e=M&&(M[muni]||M[muni.slice(0,5)]); if(e){ pref=e.pref; city=e.city; } }
-  let head=city;
-  if(pref && pref!=="東京都") head=pref+city; // 東京都は県名を省略
-  return (head||"")+(lv||""); // 例: 足立区神殿二丁目 / 埼玉県草加市○○一丁目
+  let head=city; if(pref && pref!=="東京都") head=pref+city;
+  return (head||"")+(lv||"");
 }
 async function resolveAddr(id){
   const p=await idbGet(id); if(!p||p.lat==null) return;
-  try{
-    const a=await composeAddress(p.lat,p.lng);
-    const cur=await idbGet(id); if(!cur) return;
+  try{ const a=await composeAddress(p.lat,p.lng); const cur=await idbGet(id); if(!cur) return;
     cur.addr=a||""; cur.addrPending=false; await idbPut(cur);
-  }catch(e){
-    const cur=await idbGet(id); if(cur){ cur.addrPending=false; await idbPut(cur); }
-  }
+  }catch(e){ const cur=await idbGet(id); if(cur){ cur.addrPending=false; await idbPut(cur); } }
   if(!screens.inbox.classList.contains("hide")) renderInbox();
-  if(viewerId===id && !$("viewer").classList.contains("hide")) fillViewerAddr(await idbGet(id));
+  if(curSet===id && !screens.cam.classList.contains("hide")) renderSetPanel();
 }
 
-/* ---------- トーチ / ショット種別 ---------- */
-$("torchBtn").addEventListener("click",async()=>{
-  if(!track) return; torchOn=!torchOn;
-  try{ await track.applyConstraints({advanced:[{torch:torchOn}]}); $("torchBtn").classList.toggle("on",torchOn); }
-  catch(e){ toast("ライト非対応の端末です"); torchOn=false; }
-});
-function buildShotBar(){
-  $("shotbar").classList.add("hide"); // 種別は廃止（全て計画地）
-}
-function setShot(k){
-  curShot="plan"; // 種別は廃止（全て計画地扱い）
-  $("hintTxt").style.display="none";
-  drawGuide();
-}
-function drawGuide(){
-  $("guide").innerHTML='<g class="grid"><line x1="33.3" y1="0" x2="33.3" y2="100"/><line x1="66.6" y1="0" x2="66.6" y2="100"/>'
-    +'<line x1="0" y1="33.3" x2="100" y2="33.3"/><line x1="0" y1="66.6" x2="100" y2="66.6"/></g>';
-}
-
-/* ---------- 撮影 ---------- */
+/* ---------- 撮影（最大4枚で1データ） ---------- */
 $("shutter").addEventListener("click",capture);
 async function capture(){
+  if(capturing) return;
   if(!track){ toast("カメラ未起動"); return; }
-  const v=$("video"); const vw=v.videoWidth, vh=v.videoHeight;
+  const v=$("video"), vw=v.videoWidth, vh=v.videoHeight;
   if(!vw||!vh){ toast("準備中…もう一度"); return; }
-  const fx=$("flashfx"); fx.classList.remove("go"); void fx.offsetWidth; fx.classList.add("go");
-
-  const scale=Math.min(1, MAX_EDGE/Math.max(vw,vh));
-  const w=Math.round(vw*scale), h=Math.round(vh*scale);
-  const cv=document.createElement("canvas"); cv.width=w; cv.height=h;
-  cv.getContext("2d").drawImage(v,0,0,w,h);
-  const full=await new Promise(r=>cv.toBlob(r,"image/jpeg",JPEG_Q));
-  const thumb=makeThumb(cv,w,h);
-
-  const pos=lastPos;
-  const rec={ id:"p_"+Date.now()+"_"+Math.random().toString(36).slice(2,7),
-    cardId:curCardId, ts:Date.now(), shot:"plan", addrType:"plan",
-    lat:pos?pos.lat:null, lng:pos?pos.lng:null, acc:pos?pos.acc:null,
-    addr:"", banchi:"", addrPending: !!pos, note:"", w, h, size:(full?full.size:0), full, thumb };
+  // 4枚チェック
+  if(curSet){ const s=await idbGet(curSet); if(s && s.photos.length>=MAX_PHOTOS){
+    toast("1データは4枚までです。不要な写真を削除するか「完了」で次のデータへ"); return; } }
+  capturing=true;
   try{
-    await idbPut(rec); await refreshIndex(curCardId);
-    sessCount++; const b=$("sessBadge"); b.textContent=sessCount; b.classList.remove("hide");
-    setLastThumb(thumb); await updateRightCount();
+    const fx=$("flashfx"); fx.classList.remove("go"); void fx.offsetWidth; fx.classList.add("go");
+    const scale=Math.min(1, MAX_EDGE/Math.max(vw,vh));
+    const w=Math.round(vw*scale), h=Math.round(vh*scale);
+    const cv=document.createElement("canvas"); cv.width=w; cv.height=h; cv.getContext("2d").drawImage(v,0,0,w,h);
+    const full=await new Promise(r=>cv.toBlob(r,"image/jpeg",JPEG_Q));
+    const photo={ pid:rid("p"), full, thumb:makeThumb(cv,w,h), w, h, size:(full?full.size:0) };
+    await addPhoto(photo);
     if(navigator.vibrate) navigator.vibrate(15);
-    if(rec.lat!=null) resolveAddr(rec.id); // 住所は非同期で後追い
   }catch(e){ toast("保存に失敗（容量不足の可能性）"); }
+  capturing=false;
+}
+async function addPhoto(photo){
+  if(curSet){
+    const s=await idbGet(curSet); if(!s) { curSet=null; }
+    else { s.photos.push(photo); await idbPut(s); renderSetPanel(); await updateRightCount(); return; }
+  }
+  // 新規データ
+  if(targetCard===INBOX){ const n=await idbCountByCard(INBOX);
+    if(n>=WARN_HARD) toast("インボックスが"+n+"件です。続けるなら先にPCへ送って整理しましょう");
+    else if(n>=WARN_SOFT) toast("インボックス"+n+"件。そろそろPCへ送りましょう"); }
+  const pos=lastPos;
+  const s={ id:rid("s"), cardId:targetCard, ts:Date.now(), addrType:"plan",
+    lat:pos?pos.lat:null, lng:pos?pos.lng:null, acc:pos?pos.acc:null,
+    addr:"", addrPending:!!pos, banchi:"", note:"", sent:false, photos:[photo] };
+  await idbPut(s); curSet=s.id; await refreshIndex(targetCard);
+  renderSetPanel(); await updateRightCount();
+  if(s.lat!=null) resolveAddr(s.id);
 }
 function makeThumb(srcCv,w,h){
   const sc=Math.min(1, THUMB_EDGE/Math.max(w,h));
   const tw=Math.round(w*sc), th=Math.round(h*sc);
-  const t=document.createElement("canvas"); t.width=tw; t.height=th;
-  t.getContext("2d").drawImage(srcCv,0,0,tw,th);
+  const t=document.createElement("canvas"); t.width=tw; t.height=th; t.getContext("2d").drawImage(srcCv,0,0,tw,th);
   return t.toDataURL("image/jpeg",0.65);
 }
-function setLastThumb(dataUrl){
-  const host=$("lastThumb"); let img=host.querySelector("img");
-  if(!img){ img=document.createElement("img"); host.insertBefore(img,host.firstChild); }
-  img.src=dataUrl;
-}
-
 /* 標準カメラ フォールバック */
 $("fallbackBtn").addEventListener("click",()=>$("nativeCam").click());
 $("nativeCam").addEventListener("change",async e=>{
   const file=e.target.files&&e.target.files[0]; if(!file) return;
+  if(curSet){ const s=await idbGet(curSet); if(s&&s.photos.length>=MAX_PHOTOS){ toast("1データは4枚までです。"); e.target.value=""; return; } }
   const img=await blobToImage(file);
   const scale=Math.min(1,MAX_EDGE/Math.max(img.width,img.height));
   const w=Math.round(img.width*scale), h=Math.round(img.height*scale);
   const cv=document.createElement("canvas"); cv.width=w; cv.height=h; cv.getContext("2d").drawImage(img,0,0,w,h);
   const full=await new Promise(r=>cv.toBlob(r,"image/jpeg",JPEG_Q));
-  const pos=lastPos;
-  const rec={ id:"p_"+Date.now()+"_"+Math.random().toString(36).slice(2,7), cardId:curCardId, ts:Date.now(),
-    shot:"plan", addrType:"plan", lat:pos?pos.lat:null,lng:pos?pos.lng:null,acc:pos?pos.acc:null,
-    addr:"", banchi:"", addrPending:!!pos, note:"", w, h, size:full?full.size:0, full, thumb:makeThumb(cv,w,h) };
-  await idbPut(rec); await refreshIndex(curCardId); await updateRightCount();
-  if(rec.lat!=null) resolveAddr(rec.id);
+  await addPhoto({ pid:rid("p"), full, thumb:makeThumb(cv,w,h), w, h, size:(full?full.size:0) });
   toast("保存しました"); e.target.value="";
 });
 function blobToImage(blob){ return new Promise((res,rej)=>{ const u=URL.createObjectURL(blob); const im=new Image();
   im.onload=()=>{ URL.revokeObjectURL(u); res(im); }; im.onerror=rej; im.src=u; }); }
 
-/* ---------- インボックス ---------- */
+/* 完了＝今のデータを確定し次のデータへ */
+$("doneBtn").addEventListener("click",async()=>{
+  if(!curSet){ toast("先に撮影してください"); return; }
+  curSet=null; renderSetPanel(); await updateRightCount();
+  toast("保存しました。次のデータへ");
+});
+
+/* ---------- 仕分けパネル ---------- */
 let _objUrls=[];
 function clearObjUrls(){ _objUrls.forEach(u=>URL.revokeObjectURL(u)); _objUrls=[]; }
-async function openInbox(){ stopCamera(); show("inbox"); await renderInbox(); showStorage("inbStore"); }
-$("inbBack").addEventListener("click",()=>{ enterQuick(); });
-async function renderInbox(){
-  const list=(await idbByCard(INBOX)).sort((a,b)=>b.ts-a.ts);
-  $("inbTitle").textContent="📥 インボックス（"+list.length+"）";
-  const host=$("inbBody");
-  if(!list.length){ host.innerHTML='<div class="emptyst">未仕分けの写真はありません。<br>「← 撮影」からクイック撮影できます。</div>'; return; }
-  host.innerHTML=list.map(p=>{
-    const baseAd=p.addr?esc(p.addr):(p.addrPending?"住所を取得中…":(p.lat!=null?"住所未取得（地図で確認）":"位置情報なし"));
-    const ad=(p.addr&&p.banchi)?esc(p.addr+" "+p.banchi):baseAd;
-    const cls=p.addr?"ad":"ad pend";
-    return '<div class="ibrow" data-id="'+esc(p.id)+'">'+
-      '<div class="th"><img src="'+p.thumb+'"></div>'+
-      '<div class="bd">'+
-        '<div class="'+cls+'">'+ad+'</div>'+
-        '<div class="wn">'+fmtWhen(p.ts)+(p.note?'・'+esc(p.note):'')+'</div>'+
-      '</div></div>';
-  }).join("");
-  host.querySelectorAll(".ibrow").forEach(el=>el.addEventListener("click",()=>openViewer(el.dataset.id,"inbox")));
+async function renderSetPanel(){
+  if(!curSet){ $("setPanel").classList.add("hide"); $("doneBtn").disabled=true; return; }
+  const s=await idbGet(curSet); if(!s){ curSet=null; $("setPanel").classList.add("hide"); $("doneBtn").disabled=true; return; }
+  $("setPanel").classList.remove("hide"); $("doneBtn").disabled=false;
+  $("setThumbs").innerHTML=s.photos.map(p=>'<div class="sthumb" data-pid="'+esc(p.pid)+'"><img src="'+p.thumb+'"></div>').join("");
+  $("setThumbs").querySelectorAll(".sthumb").forEach(el=>el.addEventListener("click",()=>openPhoto(curSet, el.dataset.pid)));
+  const cnt=$("setCnt"); cnt.textContent=s.photos.length+"/"+MAX_PHOTOS; cnt.classList.toggle("full", s.photos.length>=MAX_PHOTOS);
+  fillAddr(s); $("vBanchi").value=s.banchi||""; $("vNote").value=s.note||"";
 }
-
-/* ---------- カード一覧（撮影/閲覧 or 紐付け） ---------- */
-function openPick(m){
-  pickMode=m||"open";
-  $("pickBack").classList.remove("hide");
-  $("pickBack").textContent = pickMode==="link" ? "← 戻る" : "📷 撮影";
-  $("pickTitle").textContent = pickMode==="link" ? "🔗 紐付け先のカード" : "⌘ カード一覧";
-  $("pickSub").textContent  = pickMode==="link" ? "この写真を紐付けるカードを選択" : "カードを選んで撮影・閲覧";
-  renderPicker($("pickSearch").value);
-  show("pick");
-}
-$("pickBack").addEventListener("click",()=>{
-  if(pickMode==="link"){ openViewer(linkTargetId, viewerFrom); } else { enterQuick(); }
-});
-function renderPicker(filter){
-  const idx=readIndex();
-  let cards=loadCards();
-  const f=(filter||"").trim();
-  if(f){ const lc=f.toLowerCase();
-    cards=cards.filter(c=>((c.name||"")+(c.manager||"")+(c.address||"")+(c.plan_address||"")).toLowerCase().includes(lc)); }
-  cards.sort((a,b)=>{ const na=(idx[a.id]||{}).n||0, nb=(idx[b.id]||{}).n||0;
-    if(nb!==na) return nb-na; return (b.discovery_date||"").localeCompare(a.discovery_date||""); });
-  const host=$("pickList");
-  if(!loadCards().length){
-    host.innerHTML='<div class="emptyst">アイビスのカードが見つかりません。<br>同じ端末・同じサイトでアイビスを一度開いてカードを作成してから、もう一度開いてください。</div>';
-    return;
-  }
-  if(!cards.length){ host.innerHTML='<div class="emptyst">該当するカードがありません。</div>'; return; }
-  host.innerHTML=cards.slice(0,200).map(c=>{
-    const n=(idx[c.id]||{}).n||0;
-    const meta=[c.manager,c.address||c.plan_address].filter(Boolean).join("・");
-    return '<div class="crow" data-id="'+esc(c.id)+'">'+
-      '<div class="grow" style="min-width:0">'+
-        '<div class="nm">'+esc(c.name||"無名")+'様</div>'+
-        '<div class="mt">'+esc(meta||"—")+'</div>'+
-      '</div>'+
-      '<div class="pc"><b>'+n+'</b><s>枚</s></div></div>';
-  }).join("");
-  host.querySelectorAll(".crow").forEach(el=>el.addEventListener("click",()=>onPickCard(el.dataset.id)));
-}
-$("pickSearch").addEventListener("input",e=>renderPicker(e.target.value));
-async function onPickCard(cardId){
-  if(pickMode==="link"){
-    const p=await idbGet(linkTargetId); if(!p){ toast("写真が見つかりません"); return; }
-    const oldCard=p.cardId;
-    p.cardId=cardId; await idbPut(p);
-    await refreshIndex(cardId); await refreshIndex(oldCard);
-    toast(cardLabel(cardId)+" に紐付けました");
-    pickMode="open"; openInbox();
-  } else {
-    fromAibis=false; enterCamera(cardId);
-  }
-}
-
-/* ---------- ギャラリー（カード別） ---------- */
-async function openGallery(cardId,cameFromCam){
-  curCardId=cardId; openGallery._fromCam=!!cameFromCam;
-  $("galCardName").textContent=cardLabel(cardId);
-  $("galCardMeta").textContent=cardMeta(cardId);
-  show("gal"); stopCamera();
-  await renderGallery(); showStorage("storeLine");
-}
-async function renderGallery(){
-  clearObjUrls();
-  const list=(await idbByCard(curCardId)).sort((a,b)=>b.ts-a.ts);
-  const host=$("galBody");
-  if(!list.length){ host.innerHTML='<div class="emptyst">まだ写真がありません。<br>「📷 撮る」から撮影してください。</div>'; return; }
-  let html='<div class="galsec">計画地写真（'+list.length+'）</div><div class="galgrid">';
-  html+=list.map(p=>'<div class="gcell" data-id="'+esc(p.id)+'"><img src="'+p.thumb+'"></div>').join("");
-  html+='</div>';
-  host.innerHTML=html;
-  host.querySelectorAll(".gcell").forEach(el=>el.addEventListener("click",()=>openViewer(el.dataset.id,"gal")));
-}
-$("galBack").addEventListener("click",()=>{
-  if(openGallery._fromCam){ enterCamera(curCardId); } else { openPick("open"); }
-});
-$("galShoot").addEventListener("click",()=>{ openGallery._fromCam=true; enterCamera(curCardId); });
-
-/* ---------- 容量表示 ---------- */
-async function showStorage(targetId){
-  let line="";
-  if(navigator.storage&&navigator.storage.estimate){
-    try{ const est=await navigator.storage.estimate();
-      line="使用容量 "+fmtMB(est.usage)+" / 上限目安 "+fmtMB(est.quota); }catch(e){}
-  }
-  $(targetId).textContent=line;
-}
-const fmtMB = b => b? (b>1073741824? (b/1073741824).toFixed(1)+"GB" : Math.round(b/1048576)+"MB") : "—";
-
-/* ---------- 全画面ビューア（仕分け・閲覧 共用） ---------- */
-async function openViewer(id,from){
-  const p=await idbGet(id); if(!p) return; viewerId=id; viewerFrom=from||"inbox";
-  clearObjUrls();
-  const u=URL.createObjectURL(p.full); _objUrls.push(u);
-  $("vImg").src=u;
-  $("vTitle").textContent=(p.cardId&&p.cardId!==INBOX)?cardLabel(p.cardId):"未仕分け";
-  $("vWhen").textContent=fmtWhen(p.ts)+"・"+(p.w+"×"+p.h)+"・"+fmtMB(p.size);
-  fillViewerAddr(p);
-  $("vBanchi").value=p.banchi||"";
-  $("vNote").value=p.note||"";
-  $("vLink").textContent=(p.cardId&&p.cardId!==INBOX)?("🔗 "+cardLabel(p.cardId)):"🔗 紐付け";
-  $("viewer").classList.remove("hide");
-}
-function fillViewerAddr(p){
+function fillAddr(s){
   const el=$("vAddr");
-  if(p.addr){ el.textContent=p.addr; el.classList.remove("pend"); }
-  else { el.textContent = p.addrPending?"住所を取得中…":(p.lat!=null?"住所未取得（🔄で再取得 / 🗺で確認）":"位置情報なし"); el.classList.add("pend"); }
-  $("vMap").style.opacity = (p.lat!=null)?"1":".4";
-  $("vGeo").style.opacity = (p.lat!=null)?"1":".4";
-  $("vFix").style.opacity = (p.lat!=null)?"1":".4";
+  const full=s.addr?(s.addr+(s.banchi?(" "+s.banchi):"")):"";
+  if(s.addr){ el.textContent=full; el.classList.remove("pend"); }
+  else { el.textContent=s.addrPending?"住所を取得中…":(s.lat!=null?"住所未取得（🔄で再取得 / 🗺で確認）":"位置情報なし"); el.classList.add("pend"); }
+  $("vMap").style.opacity=(s.lat!=null)?"1":".4";
+  $("vFix").style.opacity=(s.lat!=null)?"1":".4";
+  $("vGeo").style.opacity=(s.lat!=null)?"1":".4";
 }
-$("vClose").addEventListener("click",()=>{
-  if(micRec){ try{ micRec.stop(); }catch(e){} }
-  $("viewer").classList.add("hide"); viewerId=null;
-  if(viewerFrom==="inbox") renderInbox(); else if(viewerFrom==="gal") renderGallery();
-});
-$("vMap").addEventListener("click",async()=>{
-  const p=await idbGet(viewerId); if(!p||p.lat==null){ toast("位置情報がありません"); return; }
-  window.open("https://www.google.com/maps?q="+p.lat+","+p.lng,"_blank");
-});
-$("vGeo").addEventListener("click",async()=>{
-  const p=await idbGet(viewerId); if(!p||p.lat==null){ toast("位置情報がありません"); return; }
-  p.addrPending=true; await idbPut(p); fillViewerAddr(p); toast("住所を取得中…"); resolveAddr(viewerId);
-});
-$("vNote").addEventListener("blur",async()=>{
-  if(!viewerId) return; const p=await idbGet(viewerId); if(!p) return;
-  if((p.note||"")!==$("vNote").value){ p.note=$("vNote").value; await idbPut(p); toast("計画地備考を保存"); }
-});
-let micRec=null;
+$("vGeo").addEventListener("click",async()=>{ const s=await idbGet(curSet); if(!s||s.lat==null){ toast("位置情報がありません"); return; }
+  s.addrPending=true; await idbPut(s); fillAddr(s); toast("住所を取得中…"); resolveAddr(curSet); });
+$("vMap").addEventListener("click",async()=>{ const s=await idbGet(curSet); if(!s||s.lat==null){ toast("位置情報がありません"); return; }
+  window.open("https://www.google.com/maps?q="+s.lat+","+s.lng,"_blank"); });
+$("vNote").addEventListener("blur",async()=>{ if(!curSet) return; const s=await idbGet(curSet); if(!s) return;
+  if((s.note||"")!==$("vNote").value){ s.note=$("vNote").value; await idbPut(s); toast("計画地備考を保存"); } });
 $("vMic").addEventListener("click",()=>{
   const btn=$("vMic");
-  if(micRec){ try{ micRec.stop(); }catch(e){} return; } // 録音中なら停止
+  if(micRec){ try{ micRec.stop(); }catch(e){} return; }
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){ toast("音声入力に未対応の端末です"); return; }
   const rec=new SR(); rec.lang="ja-JP"; rec.interimResults=false; rec.maxAlternatives=1;
   micRec=rec; btn.classList.add("rec"); btn.textContent="■";
-  rec.onresult=e=>{ const t=e.results[0][0].transcript||""; const inp=$("vNote");
-    inp.value=(inp.value?inp.value+" ":"")+t; inp.dispatchEvent(new Event("blur")); };
+  rec.onresult=e=>{ const t=e.results[0][0].transcript||""; const inp=$("vNote"); inp.value=(inp.value?inp.value+" ":"")+t; inp.dispatchEvent(new Event("blur")); };
   rec.onerror=()=>toast("音声を認識できませんでした");
   rec.onend=()=>{ micRec=null; btn.classList.remove("rec"); btn.textContent="🎤"; };
   try{ rec.start(); }catch(e){ micRec=null; btn.classList.remove("rec"); btn.textContent="🎤"; }
 });
+$("vLink").addEventListener("click",()=>{ if(!curSet) return; linkTargetId=curSet; openPick("link"); });
+$("vDelSet").addEventListener("click",async()=>{
+  if(!curSet) return; const s=await idbGet(curSet); if(!s) return;
+  if(!confirm("このデータ（写真"+s.photos.length+"枚）を削除しますか？")) return;
+  const card=s.cardId; await idbDel(curSet); await refreshIndex(card);
+  curSet=null; renderSetPanel(); await updateRightCount(); toast("削除しました");
+});
 
-/* ---------- 番地キーパッド（数字＋ハイフン） ---------- */
-let kpVal="";
-function openKeypad(){
-  if(!viewerId) return;
-  kpVal=$("vBanchi").value||"";
-  $("kpVal").textContent=kpVal||"—";
-  $("keypad").classList.remove("hide");
-}
-function kpRender(){ $("kpVal").textContent=kpVal||"—"; }
+/* 番地キーパッド */
+function openKeypad(){ if(!curSet) return; kpVal=$("vBanchi").value||""; $("kpVal").textContent=kpVal||"—"; $("keypad").classList.remove("hide"); }
 $("vBanchi").addEventListener("click",openKeypad);
 $("keypad").querySelectorAll(".kpgrid button").forEach(b=>b.addEventListener("click",()=>{
   const k=b.dataset.k;
   if(k==="bs") kpVal=kpVal.slice(0,-1);
   else if(k==="-"){ if(kpVal&&!kpVal.endsWith("-")) kpVal+="-"; }
   else kpVal+=k;
-  kpRender();
+  $("kpVal").textContent=kpVal||"—";
 }));
-$("kpClear").addEventListener("click",()=>{ kpVal=""; kpRender(); });
+$("kpClear").addEventListener("click",()=>{ kpVal=""; $("kpVal").textContent="—"; });
 $("kpDone").addEventListener("click",async()=>{
-  $("keypad").classList.add("hide");
-  $("vBanchi").value=kpVal;
-  const p=await idbGet(viewerId); if(!p) return;
-  if((p.banchi||"")!==kpVal){ p.banchi=kpVal; await idbPut(p); toast("番地を保存"); }
+  $("keypad").classList.add("hide"); $("vBanchi").value=kpVal;
+  const s=await idbGet(curSet); if(!s) return;
+  if((s.banchi||"")!==kpVal){ s.banchi=kpVal; await idbPut(s); fillAddr(s); toast("番地を保存"); }
 });
 $("keypad").addEventListener("click",e=>{ if(e.target===$("keypad")) $("keypad").classList.add("hide"); });
 
-/* ---------- 位置修正（Leaflet 遅延読込） ---------- */
-let leafMap=null, meTargetId=null;
+/* ---------- インボックス ---------- */
+async function openInbox(){ stopCamera(); show("inbox"); await renderInbox(); showStorage("inbStore"); }
+$("inbBack").addEventListener("click",()=>{ enterQuick(); });
+async function renderInbox(){
+  const list=(await idbByCard(INBOX)).sort((a,b)=>b.ts-a.ts);
+  $("inbTitle").textContent="📥 インボックス（"+list.length+"）";
+  const warn=$("inbWarn");
+  if(list.length>=WARN_HARD){ warn.className="warnbar hard"; warn.textContent="⚠ "+list.length+"件たまっています。これ以上撮るより、先にPCへ送って整理しましょう。"; }
+  else if(list.length>=WARN_SOFT){ warn.className="warnbar soft"; warn.textContent="そろそろ"+list.length+"件です。区切りでPCへ送って整理するのがおすすめです。"; }
+  else warn.className="warnbar hide";
+  const host=$("inbBody");
+  if(!list.length){ host.innerHTML='<div class="emptyst">未仕分けのデータはありません。<br>「← 撮影」から撮影できます。</div>'; return; }
+  host.innerHTML=list.map(s=>drowHtml(s)).join("");
+  bindDrows(host,"inbox");
+}
+function drowHtml(s){
+  const full=s.addr?esc(s.addr+(s.banchi?(" "+s.banchi):"")):(s.addrPending?"住所を取得中…":(s.lat!=null?"住所未取得（地図で確認）":"位置情報なし"));
+  const cls=s.addr?"ad":"ad pend";
+  const sent=s.sent?'<span class="sentbadge">送信済</span>':"";
+  return '<div class="drow" data-id="'+esc(s.id)+'">'+
+    '<div class="th"><img src="'+(s.photos[0]?s.photos[0].thumb:"")+'"><span class="n">'+s.photos.length+'枚</span></div>'+
+    '<div class="bd"><div class="'+cls+'">'+full+sent+'</div>'+
+    '<div class="wn">'+fmtWhen(s.ts)+(s.note?'・'+esc(s.note):'')+'</div></div>'+
+    '<button class="delbtn" data-del="'+esc(s.id)+'">🗑</button></div>';
+}
+function bindDrows(host,fromWhere){
+  host.querySelectorAll(".drow").forEach(el=>el.addEventListener("click",e=>{
+    if(e.target.closest(".delbtn")) return;
+    openSet(el.dataset.id);
+  }));
+  host.querySelectorAll(".delbtn").forEach(b=>b.addEventListener("click",async()=>{
+    const s=await idbGet(b.dataset.del); if(!s) return;
+    if(!confirm("このデータ（写真"+s.photos.length+"枚）を削除しますか？")) return;
+    const card=s.cardId; await idbDel(b.dataset.del); await refreshIndex(card);
+    if(fromWhere==="inbox"){ await renderInbox(); showStorage("inbStore"); } else { await renderGallery(); showStorage("storeLine"); }
+    toast("削除しました");
+  }));
+}
+
+/* ---------- カード一覧 ---------- */
+function openPick(m){
+  pickMode=m||"open";
+  $("pickBack").textContent = pickMode==="link" ? "← 戻る" : "📷 撮影";
+  $("pickTitle").textContent = pickMode==="link" ? "🔗 紐付け先のカード" : "⌘ カード一覧";
+  $("pickSub").textContent  = pickMode==="link" ? "このデータを紐付けるカードを選択" : "カードを選んで撮影・閲覧";
+  renderPicker($("pickSearch").value); show("pick");
+}
+$("pickBack").addEventListener("click",()=>{
+  if(pickMode==="link"){ openSet(linkTargetId); } else { enterQuick(); }
+});
+function renderPicker(filter){
+  const idx=readIndex(); let cards=loadCards();
+  const f=(filter||"").trim();
+  if(f){ const lc=f.toLowerCase(); cards=cards.filter(c=>((c.name||"")+(c.manager||"")+(c.address||"")+(c.plan_address||"")).toLowerCase().includes(lc)); }
+  cards.sort((a,b)=>{ const na=(idx[a.id]||{}).n||0, nb=(idx[b.id]||{}).n||0; if(nb!==na) return nb-na; return (b.discovery_date||"").localeCompare(a.discovery_date||""); });
+  const host=$("pickList");
+  if(!loadCards().length){ host.innerHTML='<div class="emptyst">アイビスのカードが見つかりません。<br>同じ端末・同じサイトでアイビスを一度開いてカードを作成してから、もう一度開いてください。</div>'; return; }
+  if(!cards.length){ host.innerHTML='<div class="emptyst">該当するカードがありません。</div>'; return; }
+  host.innerHTML=cards.slice(0,200).map(c=>{
+    const n=(idx[c.id]||{}).n||0, meta=[c.manager,c.address||c.plan_address].filter(Boolean).join("・");
+    return '<div class="crow" data-id="'+esc(c.id)+'"><div class="grow" style="min-width:0"><div class="nm">'+esc(c.name||"無名")+'様</div><div class="mt">'+esc(meta||"—")+'</div></div><div class="pc"><b>'+n+'</b><s>件</s></div></div>';
+  }).join("");
+  host.querySelectorAll(".crow").forEach(el=>el.addEventListener("click",()=>onPickCard(el.dataset.id)));
+}
+$("pickSearch").addEventListener("input",e=>renderPicker(e.target.value));
+async function onPickCard(cardId){
+  if(pickMode==="link"){
+    const s=await idbGet(linkTargetId); if(!s){ toast("データが見つかりません"); return; }
+    const old=s.cardId; s.cardId=cardId; await idbPut(s);
+    await refreshIndex(cardId); await refreshIndex(old);
+    toast(cardLabel(cardId)+" に紐付けました"); pickMode="open"; openSet(linkTargetId);
+  } else { fromAibis=false; enterCamera(cardId); }
+}
+
+/* ---------- カード別ギャラリー ---------- */
+async function openGallery(cardId,cameFromCam){
+  targetCard=cardId; openGallery._fromCam=!!cameFromCam;
+  $("galCardName").textContent=cardLabel(cardId); $("galCardMeta").textContent=cardMeta(cardId);
+  show("gal"); stopCamera(); await renderGallery(); showStorage("storeLine");
+}
+async function renderGallery(){
+  const list=(await idbByCard(targetCard)).sort((a,b)=>b.ts-a.ts);
+  const host=$("galBody");
+  if(!list.length){ host.innerHTML='<div class="emptyst">まだ写真がありません。<br>「📷 撮る」から撮影してください。</div>'; return; }
+  host.innerHTML='<div class="galsec">計画地データ（'+list.length+'件）</div>'+list.map(s=>drowHtml(s)).join("");
+  bindDrows(host,"gal");
+}
+$("galBack").addEventListener("click",()=>{ if(openGallery._fromCam){ enterCamera(targetCard); } else { openPick("open"); } });
+$("galShoot").addEventListener("click",()=>{ openGallery._fromCam=true; enterCamera(targetCard); });
+
+/* ---------- 容量表示 ---------- */
+async function showStorage(targetId){
+  let line="";
+  if(navigator.storage&&navigator.storage.estimate){ try{ const est=await navigator.storage.estimate(); line="使用容量 "+fmtMB(est.usage)+" / 上限目安 "+fmtMB(est.quota); }catch(e){} }
+  $(targetId).textContent=line;
+}
+const fmtMB = b => b? (b>1073741824? (b/1073741824).toFixed(1)+"GB" : Math.round(b/1048576)+"MB") : "—";
+
+/* ---------- 単写真ビューア ---------- */
+async function openPhoto(setId,pid){
+  const s=await idbGet(setId); if(!s) return;
+  const i=s.photos.findIndex(p=>p.pid===pid); if(i<0) return;
+  const p=s.photos[i]; viewPhoto={setId, pid};
+  clearObjUrls(); const u=URL.createObjectURL(p.full); _objUrls.push(u);
+  $("vImg").src=u; $("vWhen").textContent=(i+1)+"/"+s.photos.length+"・"+(p.w+"×"+p.h)+"・"+fmtMB(p.size);
+  $("viewer").classList.remove("hide");
+}
+$("vClose").addEventListener("click",()=>{ $("viewer").classList.add("hide"); viewPhoto=null; });
+$("vDelPhoto").addEventListener("click",async()=>{
+  if(!viewPhoto) return;
+  if(!confirm("この写真を削除しますか？")) return;
+  const s=await idbGet(viewPhoto.setId); if(!s) return;
+  s.photos=s.photos.filter(p=>p.pid!==viewPhoto.pid);
+  if(!s.photos.length){ await idbDel(s.id); await refreshIndex(s.cardId); if(curSet===s.id) curSet=null; }
+  else { await idbPut(s); }
+  $("viewer").classList.add("hide"); viewPhoto=null;
+  if(!screens.cam.classList.contains("hide")) renderSetPanel();
+  if(!screens.inbox.classList.contains("hide")) renderInbox();
+  if(!screens.gal.classList.contains("hide")) renderGallery();
+  await updateRightCount(); toast("削除しました");
+});
+
+/* ---------- 位置修正（Leaflet 中心ピン固定） ---------- */
 function loadLeaflet(){
   return new Promise((res,rej)=>{
     if(window.L) return res();
-    const css=document.createElement("link"); css.rel="stylesheet";
-    css.href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"; document.head.appendChild(css);
-    const js=document.createElement("script");
-    js.src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
-    js.onload=()=>res(); js.onerror=()=>rej(new Error("leaflet load failed"));
-    document.head.appendChild(js);
+    const css=document.createElement("link"); css.rel="stylesheet"; css.href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"; document.head.appendChild(css);
+    const js=document.createElement("script"); js.src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"; js.onload=()=>res(); js.onerror=()=>rej(new Error("leaflet")); document.head.appendChild(js);
   });
 }
 $("vFix").addEventListener("click",async()=>{
-  const p=await idbGet(viewerId); if(!p||p.lat==null){ toast("位置情報がありません"); return; }
-  meTargetId=viewerId;
+  const s=await idbGet(curSet); if(!s||s.lat==null){ toast("位置情報がありません"); return; }
+  meTargetId=curSet;
   try{ await loadLeaflet(); }
   catch(e){
-    if(navigator.geolocation){
-      toast("地図を読み込めません。現在地で取り直します");
-      navigator.geolocation.getCurrentPosition(async pos=>{
-        const cur=await idbGet(meTargetId); if(!cur) return;
-        cur.lat=pos.coords.latitude; cur.lng=pos.coords.longitude; cur.acc=pos.coords.accuracy;
-        cur.addrPending=true; await idbPut(cur); fillViewerAddr(cur); resolveAddr(meTargetId); toast("現在地に補正しました");
+    if(navigator.geolocation){ toast("地図を読み込めません。現在地で取り直します");
+      navigator.geolocation.getCurrentPosition(async pos=>{ const cur=await idbGet(meTargetId); if(!cur) return;
+        cur.lat=pos.coords.latitude; cur.lng=pos.coords.longitude; cur.acc=pos.coords.accuracy; cur.addrPending=true; await idbPut(cur); fillAddr(cur); resolveAddr(meTargetId); toast("現在地に補正しました");
       },()=>toast("現在地を取得できませんでした"),{enableHighAccuracy:true,maximumAge:0,timeout:15000});
     } else toast("地図も現在地も利用できません");
     return;
   }
-  $("mapEdit").classList.remove("hide");
-  setTimeout(()=>initLeaflet(p.lat,p.lng),60);
+  $("mapEdit").classList.remove("hide"); setTimeout(()=>initLeaflet(s.lat,s.lng),60);
 });
 function initLeaflet(lat,lng){
   if(!leafMap){
     leafMap=L.map("leafMap",{zoomControl:true}).setView([lat,lng],18);
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-      {maxZoom:20,attribution:"© OpenStreetMap"}).addTo(leafMap);
-  } else {
-    leafMap.setView([lat,lng],18);
-  }
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:20,attribution:"© OpenStreetMap"}).addTo(leafMap);
+  } else { leafMap.setView([lat,lng],18); }
   setTimeout(()=>leafMap.invalidateSize(),80);
 }
 $("meHere").addEventListener("click",()=>{
   if(!navigator.geolocation){ toast("現在地に未対応"); return; }
-  navigator.geolocation.getCurrentPosition(pos=>{
-    if(leafMap) leafMap.setView([pos.coords.latitude,pos.coords.longitude],18);
-  },()=>toast("現在地を取得できませんでした"),{enableHighAccuracy:true,maximumAge:0,timeout:15000});
+  navigator.geolocation.getCurrentPosition(pos=>{ if(leafMap) leafMap.setView([pos.coords.latitude,pos.coords.longitude],18); },()=>toast("現在地を取得できませんでした"),{enableHighAccuracy:true,maximumAge:0,timeout:15000});
 });
 $("meCancel").addEventListener("click",()=>$("mapEdit").classList.add("hide"));
 $("meSave").addEventListener("click",async()=>{
   if(!leafMap){ $("mapEdit").classList.add("hide"); return; }
-  const c=leafMap.getCenter();
-  const p=await idbGet(meTargetId); if(!p){ $("mapEdit").classList.add("hide"); return; }
-  p.lat=c.lat; p.lng=c.lng; p.acc=null; p.addrPending=true; await idbPut(p);
-  $("mapEdit").classList.add("hide");
-  fillViewerAddr(p); resolveAddr(meTargetId); toast("位置を修正しました");
-});
-$("vLink").addEventListener("click",async()=>{
-  const p=await idbGet(viewerId); if(!p) return;
-  linkTargetId=viewerId; $("viewer").classList.add("hide");
-  openPick("link");
-});
-$("vDl").addEventListener("click",async()=>{
-  const p=await idbGet(viewerId); if(!p||!p.full) return;
-  let base="inbox";
-  if(p.cardId&&p.cardId!==INBOX){ const c=findCard(p.cardId); base=(c&&c.name)?c.name:"card"; }
-  const nm=String(base).replace(/[^\w一-龠ぁ-んァ-ヶー]/g,"");
-  const bz=p.banchi?("_"+p.banchi):"";
-  const d=new Date(p.ts), pad=n=>String(n).padStart(2,"0");
-  const fn=nm+"_計画地"+bz+"_"+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+"_"+pad(d.getHours())+pad(d.getMinutes())+".jpg";
-  const u=URL.createObjectURL(p.full); const a=document.createElement("a"); a.href=u; a.download=fn;
-  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),4000); toast("画像を保存しました");
-});
-$("vDel").addEventListener("click",async()=>{
-  if(!viewerId) return;
-  if(!confirm("この写真を削除しますか？")) return;
-  const p=await idbGet(viewerId);
-  await idbDel(viewerId); if(p) await refreshIndex(p.cardId);
-  $("viewer").classList.add("hide"); viewerId=null;
-  if(viewerFrom==="inbox"){ await renderInbox(); showStorage("inbStore"); }
-  else if(viewerFrom==="gal"){ await renderGallery(); showStorage("storeLine"); }
-  toast("削除しました");
+  const c=leafMap.getCenter(); const s=await idbGet(meTargetId); if(!s){ $("mapEdit").classList.add("hide"); return; }
+  s.lat=c.lat; s.lng=c.lng; s.acc=null; s.addrPending=true; await idbPut(s);
+  $("mapEdit").classList.add("hide"); fillAddr(s); resolveAddr(meTargetId); toast("位置を修正しました");
 });
 
 /* ---------- util ---------- */
 function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
-function fmtWhen(ts){ const d=new Date(ts); const p=n=>String(n).padStart(2,"0");
-  return d.getFullYear()+"/"+p(d.getMonth()+1)+"/"+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes()); }
+function fmtWhen(ts){ const d=new Date(ts), p=n=>String(n).padStart(2,"0"); return d.getFullYear()+"/"+p(d.getMonth()+1)+"/"+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes()); }
 
-/* 画面復帰でカメラ再開 / 離脱で停止 */
 document.addEventListener("visibilitychange",()=>{
   if(document.hidden){ stopCamera(); }
-  else if(!screens.cam.classList.contains("hide")){ startCamera().then(()=>setShot(curShot)); }
+  else if(!screens.cam.classList.contains("hide")){ startCamera(); }
 });
 window.addEventListener("pagehide",stopCamera);
 
