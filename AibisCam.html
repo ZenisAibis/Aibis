@@ -157,7 +157,10 @@
 
   /* 位置修正マップ */
   #mapEdit{position:fixed;inset:0;background:var(--bg);z-index:75;display:flex;flex-direction:column}
-  #leafMap{flex:1;min-height:0;background:#0a1422}
+  #leafWrap{position:relative;flex:1;min-height:0}
+  #leafMap{position:absolute;inset:0;background:#0a1422}
+  #centerPin{position:absolute;left:50%;top:50%;transform:translate(-50%,-100%);
+    pointer-events:none;z-index:600;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
   .mefoot{display:flex;align-items:center;gap:10px;padding:12px 14px calc(env(safe-area-inset-bottom) + 14px);background:var(--bg)}
   .mefoot .vbtn{flex:0 0 auto;width:auto;padding:12px 16px;border-radius:12px;background:var(--panel2);font-size:14px;font-weight:800}
   .mehint{font-size:11px;color:var(--dim);line-height:1.4}
@@ -269,15 +272,15 @@
     </div>
     <div class="addrline">
       <span class="at pend" id="vAddr">住所未取得</span>
-      <button class="mini" id="vGeo">🔄</button>
+    </div>
+    <div class="banchiline">
+      <button class="mini" id="vGeo">🔄 住所</button>
+      <button class="mini" id="vMap">🗺 地図</button>
+      <button class="mini" id="vFix"><svg width="11" height="15" viewBox="0 0 24 34" style="vertical-align:-2px"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 22 12 22s12-13 12-22C24 5.4 18.6 0 12 0z" fill="#ff3b3b"/><circle cx="12" cy="12" r="5" fill="#fff"/></svg> 位置修正</button>
     </div>
     <div class="banchiline">
       <span class="bl">番地</span>
       <input id="vBanchi" class="banchi" placeholder="例 23-5" readonly>
-    </div>
-    <div class="banchiline">
-      <button class="mini" id="vMap">🗺 地図</button>
-      <button class="mini" id="vFix"><svg width="11" height="15" viewBox="0 0 24 34" style="vertical-align:-2px"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 22 12 22s12-13 12-22C24 5.4 18.6 0 12 0z" fill="#ff3b3b"/><circle cx="12" cy="12" r="5" fill="#fff"/></svg> 位置修正</button>
     </div>
     <div class="notewrap">
       <input id="vNote" placeholder="備考（任意：撮影方向・特徴など）">
@@ -315,10 +318,13 @@
     <div class="cardchip grow"><b style="font-size:13px;color:var(--gold)">📍 位置を修正</b><span class="sub">ピンを正しい場所へドラッグ</span></div>
     <button class="tbtn" style="background:var(--gold);color:#1a1300" id="meSave">保存</button>
   </div>
-  <div id="leafMap"></div>
+  <div id="leafWrap">
+    <div id="leafMap"></div>
+    <div id="centerPin"><svg width="34" height="46" viewBox="0 0 24 34"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 22 12 22s12-13 12-22C24 5.4 18.6 0 12 0z" fill="#ff3b3b" stroke="#fff" stroke-width="1.5"/><circle cx="12" cy="12" r="5" fill="#fff"/></svg></div>
+  </div>
   <div class="mefoot">
     <button class="vbtn" id="meHere">📍 現在地に移動</button>
-    <span id="meHint" class="mehint">地図をドラッグ＝移動 / ピンをドラッグ＝微調整</span>
+    <span id="meHint" class="mehint">地図を動かして、中心のピンを正しい場所に合わせてください</span>
   </div>
 </div>
 
@@ -335,7 +341,7 @@
    ※ prospect_cards_v1 には一切書き込まない（新規カード作成・PC連携は本体側で実施）
    レコード: {id,cardId,ts,shot,addrType('plan'|'home'),lat,lng,acc,addr,addrPending,note,w,h,size,full(Blob),thumb(dataURL)}
    ========================================================= */
-const APP_VERSION = "cam-v1.6";
+const APP_VERSION = "cam-v1.7";
 const SK_CARDS = "prospect_cards_v1";
 const IDX_KEY  = "aibis_media_index_v1";
 const DB_NAME  = "aibis_media_v1";
@@ -888,7 +894,7 @@ $("kpDone").addEventListener("click",async()=>{
 $("keypad").addEventListener("click",e=>{ if(e.target===$("keypad")) $("keypad").classList.add("hide"); });
 
 /* ---------- 位置修正（Leaflet 遅延読込） ---------- */
-let leafMap=null, leafMarker=null, meTargetId=null;
+let leafMap=null, meTargetId=null;
 function loadLeaflet(){
   return new Promise((res,rej)=>{
     if(window.L) return res();
@@ -905,7 +911,6 @@ $("vFix").addEventListener("click",async()=>{
   meTargetId=viewerId;
   try{ await loadLeaflet(); }
   catch(e){
-    // フォールバック：現在地で取り直す
     if(navigator.geolocation){
       toast("地図を読み込めません。現在地で取り直します");
       navigator.geolocation.getCurrentPosition(async pos=>{
@@ -919,35 +924,28 @@ $("vFix").addEventListener("click",async()=>{
   $("mapEdit").classList.remove("hide");
   setTimeout(()=>initLeaflet(p.lat,p.lng),60);
 });
-function pinIcon(){
-  return L.divIcon({className:"aibis-pin",
-    html:'<svg width="30" height="42" viewBox="0 0 24 34"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 22 12 22s12-13 12-22C24 5.4 18.6 0 12 0z" fill="#ff3b3b" stroke="#fff" stroke-width="1.5"/><circle cx="12" cy="12" r="5" fill="#fff"/></svg>',
-    iconSize:[30,42], iconAnchor:[15,41]});
-}
 function initLeaflet(lat,lng){
   if(!leafMap){
     leafMap=L.map("leafMap",{zoomControl:true}).setView([lat,lng],18);
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",
       {maxZoom:20,attribution:"© OpenStreetMap"}).addTo(leafMap);
-    leafMarker=L.marker([lat,lng],{draggable:true,icon:pinIcon()}).addTo(leafMap);
   } else {
-    leafMap.setView([lat,lng],18); leafMarker.setLatLng([lat,lng]);
+    leafMap.setView([lat,lng],18);
   }
   setTimeout(()=>leafMap.invalidateSize(),80);
 }
 $("meHere").addEventListener("click",()=>{
   if(!navigator.geolocation){ toast("現在地に未対応"); return; }
   navigator.geolocation.getCurrentPosition(pos=>{
-    const la=pos.coords.latitude, ln=pos.coords.longitude;
-    if(leafMap){ leafMap.setView([la,ln],18); leafMarker.setLatLng([la,ln]); }
+    if(leafMap) leafMap.setView([pos.coords.latitude,pos.coords.longitude],18);
   },()=>toast("現在地を取得できませんでした"),{enableHighAccuracy:true,maximumAge:0,timeout:15000});
 });
 $("meCancel").addEventListener("click",()=>$("mapEdit").classList.add("hide"));
 $("meSave").addEventListener("click",async()=>{
-  if(!leafMarker){ $("mapEdit").classList.add("hide"); return; }
-  const ll=leafMarker.getLatLng();
+  if(!leafMap){ $("mapEdit").classList.add("hide"); return; }
+  const c=leafMap.getCenter();
   const p=await idbGet(meTargetId); if(!p){ $("mapEdit").classList.add("hide"); return; }
-  p.lat=ll.lat; p.lng=ll.lng; p.acc=null; p.addrPending=true; await idbPut(p);
+  p.lat=c.lat; p.lng=c.lng; p.acc=null; p.addrPending=true; await idbPut(p);
   $("mapEdit").classList.add("hide");
   fillViewerAddr(p); resolveAddr(meTargetId); toast("位置を修正しました");
 });
