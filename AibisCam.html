@@ -122,6 +122,7 @@
   .vtop{display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + 10px) 14px 10px}
   .vmeta{padding:6px 16px 0;display:flex;flex-direction:column;gap:8px}
   .vtoggle{display:flex;gap:8px;align-items:center}
+  .vlabel{font-size:13px;font-weight:800;color:var(--gold)}
   .seg{display:flex;border:1px solid var(--line);border-radius:11px;overflow:hidden}
   .seg button{padding:9px 16px;font-size:13.5px;font-weight:800;color:var(--dim);background:var(--panel)}
   .seg button.on.plan{background:rgba(245,158,11,.18);color:var(--gold)}
@@ -263,13 +264,7 @@
   </div>
   <img id="vImg" alt="">
   <div class="vmeta">
-    <div class="vtoggle">
-      <div class="seg" id="vTypeSeg">
-        <button data-t="plan" class="plan">計画地</button>
-        <button data-t="home" class="home">自宅</button>
-      </div>
-      <select id="vShotSel" class="vsel"></select>
-    </div>
+    <div class="vlabel">📍 計画地写真</div>
     <div class="addrline">
       <span class="at pend" id="vAddr">住所未取得</span>
     </div>
@@ -283,13 +278,13 @@
       <input id="vBanchi" class="banchi" placeholder="例 23-5" readonly>
     </div>
     <div class="notewrap">
-      <input id="vNote" placeholder="備考（任意：撮影方向・特徴など）">
+      <input id="vNote" placeholder="計画地備考（任意：撮影方向・特徴など）">
       <button class="micbtn" id="vMic" title="音声入力">🎤</button>
     </div>
   </div>
   <div class="vacts">
     <button class="vbtn" id="vLink">🔗 紐付け</button>
-    <button class="vbtn" id="vDl">⬇ 保存</button>
+    <button class="vbtn" id="vDl">⬇ 端末に保存</button>
     <button class="vbtn danger" id="vDel">🗑 削除</button>
   </div>
 </div>
@@ -341,7 +336,7 @@
    ※ prospect_cards_v1 には一切書き込まない（新規カード作成・PC連携は本体側で実施）
    レコード: {id,cardId,ts,shot,addrType('plan'|'home'),lat,lng,acc,addr,addrPending,note,w,h,size,full(Blob),thumb(dataURL)}
    ========================================================= */
-const APP_VERSION = "cam-v1.7";
+const APP_VERSION = "cam-v1.9";
 const SK_CARDS = "prospect_cards_v1";
 const IDX_KEY  = "aibis_media_index_v1";
 const DB_NAME  = "aibis_media_v1";
@@ -448,7 +443,7 @@ async function enterQuick(){
   show("cam");
   await updateRightCount();
   await startCamera();
-  setShot("other");
+  setShot();
 }
 
 /* ---------- カード撮影モード ---------- */
@@ -458,13 +453,13 @@ async function enterCamera(cardId){
   $("camSub").textContent=cardMeta(cardId)||"（本体に未登録のカードID）";
   $("leftBtn").textContent= fromAibis ? "← アイビス" : "← 一覧";
   $("rightBtn").innerHTML='🖼 <span class="cnt" id="rightCount">0</span>';
-  $("shotbar").classList.remove("hide");
-  $("gpsChip").style.display="none";
+  $("shotbar").classList.add("hide");
+  $("gpsChip").style.display="";
   resetSession();
   show("cam");
   await updateRightCount();
   await startCamera();
-  setShot(curShot==="other"?SHOTS[0].k:curShot);
+  setShot();
 }
 function resetSession(){
   $("sessBadge").classList.add("hide"); $("sessBadge").textContent="0";
@@ -503,7 +498,7 @@ async function startCamera(){
     $("torchBtn").style.display = caps.torch ? "flex":"none";
     torchOn=false; $("torchBtn").classList.remove("on");
     $("shutter").disabled=false;
-    if(mode==="quick") startGeo();
+    startGeo();
   }catch(e){
     let m="カメラを起動できませんでした。";
     if(e&&e.name==="NotAllowedError") m="カメラの使用が許可されていません。ブラウザの権限設定でこのサイトのカメラを許可してください。";
@@ -596,27 +591,16 @@ $("torchBtn").addEventListener("click",async()=>{
   catch(e){ toast("ライト非対応の端末です"); torchOn=false; }
 });
 function buildShotBar(){
-  $("shotbar").innerHTML=SHOTS.map(s=>'<button class="chip" data-k="'+s.k+'">'+s.label+'</button>').join("");
-  $("shotbar").querySelectorAll(".chip").forEach(el=>el.addEventListener("click",()=>setShot(el.dataset.k)));
-  $("vShotSel").innerHTML=SHOTS.map(s=>'<option value="'+s.k+'">'+s.label+'</option>').join("");
+  $("shotbar").classList.add("hide"); // 種別は廃止（全て計画地）
 }
 function setShot(k){
-  curShot=k;
-  $("shotbar").querySelectorAll(".chip").forEach(el=>el.classList.toggle("on",el.dataset.k===k));
-  const s=SHOTS.find(x=>x.k===k)||SHOTS[0];
-  $("hintTxt").textContent=(mode==="card"?(s.hint||""):""); $("hintTxt").style.display=(mode==="card"&&s.hint)?"":"none";
-  drawGuide(mode==="card"?s.guide:"");
+  curShot="plan"; // 種別は廃止（全て計画地扱い）
+  $("hintTxt").style.display="none";
+  drawGuide();
 }
-function drawGuide(type){
-  let svg="";
-  if(type==="grid"||type==="horizon"||type==="vcenter"||type==="frame"){
-    svg+='<g class="grid"><line x1="33.3" y1="0" x2="33.3" y2="100"/><line x1="66.6" y1="0" x2="66.6" y2="100"/>'
-       +'<line x1="0" y1="33.3" x2="100" y2="33.3"/><line x1="0" y1="66.6" x2="100" y2="66.6"/></g>';
-  }
-  if(type==="horizon") svg+='<line class="horizon" x1="0" y1="50" x2="100" y2="50"/>';
-  if(type==="vcenter") svg+='<line class="vcenter" x1="50" y1="0" x2="50" y2="100"/>';
-  if(type==="frame") svg+='<rect class="frame" x="8" y="10" width="84" height="80" rx="3"/>';
-  $("guide").innerHTML=svg;
+function drawGuide(){
+  $("guide").innerHTML='<g class="grid"><line x1="33.3" y1="0" x2="33.3" y2="100"/><line x1="66.6" y1="0" x2="66.6" y2="100"/>'
+    +'<line x1="0" y1="33.3" x2="100" y2="33.3"/><line x1="0" y1="66.6" x2="100" y2="66.6"/></g>';
 }
 
 /* ---------- 撮影 ---------- */
@@ -634,9 +618,9 @@ async function capture(){
   const full=await new Promise(r=>cv.toBlob(r,"image/jpeg",JPEG_Q));
   const thumb=makeThumb(cv,w,h);
 
-  const pos=(mode==="quick")?lastPos:null;
+  const pos=lastPos;
   const rec={ id:"p_"+Date.now()+"_"+Math.random().toString(36).slice(2,7),
-    cardId:curCardId, ts:Date.now(), shot:curShot, addrType:"plan",
+    cardId:curCardId, ts:Date.now(), shot:"plan", addrType:"plan",
     lat:pos?pos.lat:null, lng:pos?pos.lng:null, acc:pos?pos.acc:null,
     addr:"", banchi:"", addrPending: !!pos, note:"", w, h, size:(full?full.size:0), full, thumb };
   try{
@@ -669,9 +653,9 @@ $("nativeCam").addEventListener("change",async e=>{
   const w=Math.round(img.width*scale), h=Math.round(img.height*scale);
   const cv=document.createElement("canvas"); cv.width=w; cv.height=h; cv.getContext("2d").drawImage(img,0,0,w,h);
   const full=await new Promise(r=>cv.toBlob(r,"image/jpeg",JPEG_Q));
-  const pos=(mode==="quick")?lastPos:null;
+  const pos=lastPos;
   const rec={ id:"p_"+Date.now()+"_"+Math.random().toString(36).slice(2,7), cardId:curCardId, ts:Date.now(),
-    shot:curShot, addrType:"plan", lat:pos?pos.lat:null,lng:pos?pos.lng:null,acc:pos?pos.acc:null,
+    shot:"plan", addrType:"plan", lat:pos?pos.lat:null,lng:pos?pos.lng:null,acc:pos?pos.acc:null,
     addr:"", banchi:"", addrPending:!!pos, note:"", w, h, size:full?full.size:0, full, thumb:makeThumb(cv,w,h) };
   await idbPut(rec); await refreshIndex(curCardId); await updateRightCount();
   if(rec.lat!=null) resolveAddr(rec.id);
@@ -699,7 +683,6 @@ async function renderInbox(){
       '<div class="bd">'+
         '<div class="'+cls+'">'+ad+'</div>'+
         '<div class="wn">'+fmtWhen(p.ts)+(p.note?'・'+esc(p.note):'')+'</div>'+
-        '<div><span class="typechip '+p.addrType+'">'+TYPE_LABEL[p.addrType]+'</span></div>'+
       '</div></div>';
   }).join("");
   host.querySelectorAll(".ibrow").forEach(el=>el.addEventListener("click",()=>openViewer(el.dataset.id,"inbox")));
@@ -768,17 +751,12 @@ async function openGallery(cardId,cameFromCam){
 }
 async function renderGallery(){
   clearObjUrls();
-  const list=await idbByCard(curCardId);
+  const list=(await idbByCard(curCardId)).sort((a,b)=>b.ts-a.ts);
   const host=$("galBody");
   if(!list.length){ host.innerHTML='<div class="emptyst">まだ写真がありません。<br>「📷 撮る」から撮影してください。</div>'; return; }
-  const byShot={}; list.forEach(p=>{ (byShot[p.shot]=byShot[p.shot]||[]).push(p); });
-  let html="";
-  SHOTS.forEach(s=>{
-    const arr=byShot[s.k]; if(!arr||!arr.length) return;
-    html+='<div class="galsec">'+s.label+'（'+arr.length+'）</div><div class="galgrid">';
-    html+=arr.map(p=>'<div class="gcell" data-id="'+esc(p.id)+'"><img src="'+p.thumb+'"><span class="tag">'+TYPE_LABEL[p.addrType]+'</span></div>').join("");
-    html+='</div>';
-  });
+  let html='<div class="galsec">計画地写真（'+list.length+'）</div><div class="galgrid">';
+  html+=list.map(p=>'<div class="gcell" data-id="'+esc(p.id)+'"><img src="'+p.thumb+'"></div>').join("");
+  html+='</div>';
   host.innerHTML=html;
   host.querySelectorAll(".gcell").forEach(el=>el.addEventListener("click",()=>openViewer(el.dataset.id,"gal")));
 }
@@ -806,8 +784,6 @@ async function openViewer(id,from){
   $("vImg").src=u;
   $("vTitle").textContent=(p.cardId&&p.cardId!==INBOX)?cardLabel(p.cardId):"未仕分け";
   $("vWhen").textContent=fmtWhen(p.ts)+"・"+(p.w+"×"+p.h)+"・"+fmtMB(p.size);
-  setTypeSeg(p.addrType);
-  $("vShotSel").value=p.shot||"other";
   fillViewerAddr(p);
   $("vBanchi").value=p.banchi||"";
   $("vNote").value=p.note||"";
@@ -822,15 +798,6 @@ function fillViewerAddr(p){
   $("vGeo").style.opacity = (p.lat!=null)?"1":".4";
   $("vFix").style.opacity = (p.lat!=null)?"1":".4";
 }
-function setTypeSeg(t){
-  $("vTypeSeg").querySelectorAll("button").forEach(b=>{
-    b.classList.toggle("on",b.dataset.t===t);
-  });
-}
-$("vTypeSeg").querySelectorAll("button").forEach(b=>b.addEventListener("click",async()=>{
-  const p=await idbGet(viewerId); if(!p) return;
-  p.addrType=b.dataset.t; await idbPut(p); setTypeSeg(p.addrType); toast(TYPE_LABEL[p.addrType]+"に設定");
-}));
 $("vClose").addEventListener("click",()=>{
   if(micRec){ try{ micRec.stop(); }catch(e){} }
   $("viewer").classList.add("hide"); viewerId=null;
@@ -846,7 +813,7 @@ $("vGeo").addEventListener("click",async()=>{
 });
 $("vNote").addEventListener("blur",async()=>{
   if(!viewerId) return; const p=await idbGet(viewerId); if(!p) return;
-  if((p.note||"")!==$("vNote").value){ p.note=$("vNote").value; await idbPut(p); toast("備考を保存"); }
+  if((p.note||"")!==$("vNote").value){ p.note=$("vNote").value; await idbPut(p); toast("計画地備考を保存"); }
 });
 let micRec=null;
 $("vMic").addEventListener("click",()=>{
@@ -861,10 +828,6 @@ $("vMic").addEventListener("click",()=>{
   rec.onerror=()=>toast("音声を認識できませんでした");
   rec.onend=()=>{ micRec=null; btn.classList.remove("rec"); btn.textContent="🎤"; };
   try{ rec.start(); }catch(e){ micRec=null; btn.classList.remove("rec"); btn.textContent="🎤"; }
-});
-$("vShotSel").addEventListener("change",async()=>{
-  const p=await idbGet(viewerId); if(!p) return;
-  p.shot=$("vShotSel").value; await idbPut(p); toast("種別→"+shotLabel(p.shot));
 });
 
 /* ---------- 番地キーパッド（数字＋ハイフン） ---------- */
@@ -961,7 +924,7 @@ $("vDl").addEventListener("click",async()=>{
   const nm=String(base).replace(/[^\w一-龠ぁ-んァ-ヶー]/g,"");
   const bz=p.banchi?("_"+p.banchi):"";
   const d=new Date(p.ts), pad=n=>String(n).padStart(2,"0");
-  const fn=nm+"_"+TYPE_LABEL[p.addrType]+bz+"_"+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+"_"+pad(d.getHours())+pad(d.getMinutes())+".jpg";
+  const fn=nm+"_計画地"+bz+"_"+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+"_"+pad(d.getHours())+pad(d.getMinutes())+".jpg";
   const u=URL.createObjectURL(p.full); const a=document.createElement("a"); a.href=u; a.download=fn;
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),4000); toast("画像を保存しました");
 });
