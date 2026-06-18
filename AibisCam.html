@@ -139,6 +139,12 @@
   .banchi{flex:1;min-width:0;padding:10px 13px;border-radius:11px;background:var(--panel);border:1px solid var(--line);
     color:var(--txt);font-size:15px;font-weight:700;letter-spacing:1px}
   .banchi::placeholder{color:var(--dim);font-weight:600;letter-spacing:normal}
+  .sugline{display:flex;align-items:center;gap:8px}
+  .sugline .sughint{font-size:11px;color:var(--dim);font-weight:700;flex:0 0 auto}
+  .sugchip{flex:1;min-width:0;text-align:left;padding:9px 13px;border-radius:11px;
+    background:rgba(52,227,208,.12);border:1px solid rgba(52,227,208,.4);color:var(--teal);
+    font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sugchip:active{filter:brightness(1.2)}
 
   /* 数字キーパッド */
   #keypad{position:fixed;inset:0;background:rgba(7,12,20,.6);z-index:70;display:flex;align-items:flex-end}
@@ -161,11 +167,13 @@
   .mefoot{display:flex;align-items:center;gap:10px;padding:12px 14px calc(env(safe-area-inset-bottom) + 14px);background:var(--bg)}
   .mefoot .vbtn{flex:0 0 auto;width:auto;padding:12px 16px;border-radius:12px;background:var(--panel2);font-size:14px;font-weight:800}
   .mehint{font-size:11px;color:var(--dim);line-height:1.4}
+  .aibis-pin{background:none;border:none}
   .notewrap{display:flex;gap:8px}
   .notewrap input{flex:1;padding:11px 13px;border-radius:11px;background:var(--panel);border:1px solid var(--line);
     color:var(--txt);font-size:14px}
   .micbtn{flex:0 0 auto;width:46px;border-radius:11px;background:var(--panel2);font-size:19px}
-  .micbtn.rec{background:rgba(255,93,125,.2);color:var(--danger)}
+  .micbtn.rec{background:rgba(255,93,125,.25);color:var(--danger);animation:micpulse 1s infinite}
+  @keyframes micpulse{0%,100%{box-shadow:0 0 0 0 rgba(255,93,125,.55)}50%{box-shadow:0 0 0 7px rgba(255,93,125,0)}}
   .vacts{display:flex;gap:8px;padding:10px 14px calc(env(safe-area-inset-bottom) + 16px)}
   .vbtn{flex:1;padding:13px;border-radius:12px;background:var(--panel2);font-size:14px;font-weight:800;text-align:center}
   .vbtn.danger{background:rgba(255,93,125,.16);color:var(--danger)}
@@ -272,8 +280,15 @@
     <div class="banchiline">
       <span class="bl">番地</span>
       <input id="vBanchi" class="banchi" placeholder="例 23-5" readonly>
+      <button class="mini" id="vSugBtn" title="番地候補を検索">🔎</button>
+    </div>
+    <div class="sugline hide" id="vSugWrap">
+      <span class="sughint">候補(実験)</span>
+      <button class="sugchip" id="vSug"></button>
+    </div>
+    <div class="banchiline">
       <button class="mini" id="vMap">🗺 地図</button>
-      <button class="mini" id="vFix">📍 位置修正</button>
+      <button class="mini" id="vFix"><svg width="11" height="15" viewBox="0 0 24 34" style="vertical-align:-2px"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 22 12 22s12-13 12-22C24 5.4 18.6 0 12 0z" fill="#ff3b3b"/><circle cx="12" cy="12" r="5" fill="#fff"/></svg> 位置修正</button>
     </div>
     <div class="notewrap">
       <input id="vNote" placeholder="備考（任意：撮影方向・特徴など）">
@@ -331,7 +346,7 @@
    ※ prospect_cards_v1 には一切書き込まない（新規カード作成・PC連携は本体側で実施）
    レコード: {id,cardId,ts,shot,addrType('plan'|'home'),lat,lng,acc,addr,addrPending,note,w,h,size,full(Blob),thumb(dataURL)}
    ========================================================= */
-const APP_VERSION = "cam-v1.2";
+const APP_VERSION = "cam-v1.4";
 const SK_CARDS = "prospect_cards_v1";
 const IDX_KEY  = "aibis_media_index_v1";
 const DB_NAME  = "aibis_media_v1";
@@ -539,6 +554,47 @@ async function resolveAddr(id){
   if(!screens.inbox.classList.contains("hide")) renderInbox();
   if(viewerId===id && !$("viewer").classList.contains("hide")) fillViewerAddr(await idbGet(id));
 }
+
+/* ---------- 番地候補（実験：OpenStreetMap Nominatim・無料/候補のみ） ---------- */
+const NOMINATIM = "https://nominatim.openstreetmap.org/reverse";
+let _sugToken=0, _sugLast=0, _sugCand="";
+async function nominatimBanchi(lat,lng){
+  const url=NOMINATIM+"?format=jsonv2&lat="+lat+"&lon="+lng+"&zoom=18&addressdetails=1&accept-language=ja";
+  const r=await fetch(url,{headers:{"Accept":"application/json"}});
+  const j=await r.json();
+  const a=(j&&j.address)?j.address:{};
+  let hn=a.house_number||"";
+  return hn?String(hn).trim():"";
+}
+async function trySuggest(p,manual){
+  const wrap=$("vSugWrap"); _sugCand="";
+  if(!p||p.lat==null){ wrap.classList.add("hide"); return; }
+  const now=Date.now();
+  if(!manual && now-_sugLast<1200) return; // 連打抑制（Nominatimの常識的利用）
+  _sugLast=now; const token=++_sugToken;
+  $("vSug").textContent="検索中…"; wrap.classList.remove("hide");
+  try{
+    const hn=await nominatimBanchi(p.lat,p.lng);
+    if(token!==_sugToken || viewerId!==p.id) return; // 別写真に移っていたら破棄
+    if(hn){ _sugCand=hn; $("vSug").textContent="候補: "+hn+"　▸ 番地に入力"; }
+    else { $("vSug").textContent="候補なし（手入力してください）"; }
+  }catch(e){
+    if(token!==_sugToken) return;
+    $("vSug").textContent="候補を取得できませんでした";
+  }
+}
+$("vSug").addEventListener("click",async()=>{
+  if(!_sugCand||!viewerId) return;
+  $("vBanchi").value=_sugCand;
+  const p=await idbGet(viewerId); if(!p) return;
+  p.banchi=_sugCand; await idbPut(p); $("vSugWrap").classList.add("hide");
+  toast("番地に入力しました（必要なら修正可）");
+});
+$("vSugBtn").addEventListener("click",async()=>{
+  const p=await idbGet(viewerId); if(!p){ return; }
+  if(p.lat==null){ toast("位置情報がありません"); return; }
+  trySuggest(p,true);
+});
 
 /* ---------- トーチ / ショット種別 ---------- */
 $("torchBtn").addEventListener("click",async()=>{
@@ -764,6 +820,8 @@ async function openViewer(id,from){
   $("vNote").value=p.note||"";
   $("vLink").textContent=(p.cardId&&p.cardId!==INBOX)?("🔗 "+cardLabel(p.cardId)):"🔗 紐付け";
   $("viewer").classList.remove("hide");
+  $("vSugWrap").classList.add("hide");
+  if(p.lat!=null && !p.banchi) trySuggest(p,false); // 番地が空なら候補を自動検索
 }
 function fillViewerAddr(p){
   const el=$("vAddr");
@@ -783,6 +841,7 @@ $("vTypeSeg").querySelectorAll("button").forEach(b=>b.addEventListener("click",a
   p.addrType=b.dataset.t; await idbPut(p); setTypeSeg(p.addrType); toast(TYPE_LABEL[p.addrType]+"に設定");
 }));
 $("vClose").addEventListener("click",()=>{
+  if(micRec){ try{ micRec.stop(); }catch(e){} }
   $("viewer").classList.add("hide"); viewerId=null;
   if(viewerFrom==="inbox") renderInbox(); else if(viewerFrom==="gal") renderGallery();
 });
@@ -798,16 +857,19 @@ $("vNote").addEventListener("blur",async()=>{
   if(!viewerId) return; const p=await idbGet(viewerId); if(!p) return;
   if((p.note||"")!==$("vNote").value){ p.note=$("vNote").value; await idbPut(p); toast("備考を保存"); }
 });
+let micRec=null;
 $("vMic").addEventListener("click",()=>{
+  const btn=$("vMic");
+  if(micRec){ try{ micRec.stop(); }catch(e){} return; } // 録音中なら停止
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){ toast("音声入力に未対応の端末です"); return; }
   const rec=new SR(); rec.lang="ja-JP"; rec.interimResults=false; rec.maxAlternatives=1;
-  const btn=$("vMic"); btn.classList.add("rec");
+  micRec=rec; btn.classList.add("rec"); btn.textContent="■";
   rec.onresult=e=>{ const t=e.results[0][0].transcript||""; const inp=$("vNote");
     inp.value=(inp.value?inp.value+" ":"")+t; inp.dispatchEvent(new Event("blur")); };
   rec.onerror=()=>toast("音声を認識できませんでした");
-  rec.onend=()=>btn.classList.remove("rec");
-  try{ rec.start(); }catch(e){ btn.classList.remove("rec"); }
+  rec.onend=()=>{ micRec=null; btn.classList.remove("rec"); btn.textContent="🎤"; };
+  try{ rec.start(); }catch(e){ micRec=null; btn.classList.remove("rec"); btn.textContent="🎤"; }
 });
 $("vShotSel").addEventListener("change",async()=>{
   const p=await idbGet(viewerId); if(!p) return;
@@ -872,12 +934,17 @@ $("vFix").addEventListener("click",async()=>{
   $("mapEdit").classList.remove("hide");
   setTimeout(()=>initLeaflet(p.lat,p.lng),60);
 });
+function pinIcon(){
+  return L.divIcon({className:"aibis-pin",
+    html:'<svg width="30" height="42" viewBox="0 0 24 34"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 22 12 22s12-13 12-22C24 5.4 18.6 0 12 0z" fill="#ff3b3b" stroke="#fff" stroke-width="1.5"/><circle cx="12" cy="12" r="5" fill="#fff"/></svg>',
+    iconSize:[30,42], iconAnchor:[15,41]});
+}
 function initLeaflet(lat,lng){
   if(!leafMap){
     leafMap=L.map("leafMap",{zoomControl:true}).setView([lat,lng],18);
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",
       {maxZoom:20,attribution:"© OpenStreetMap"}).addTo(leafMap);
-    leafMarker=L.marker([lat,lng],{draggable:true}).addTo(leafMap);
+    leafMarker=L.marker([lat,lng],{draggable:true,icon:pinIcon()}).addTo(leafMap);
   } else {
     leafMap.setView([lat,lng],18); leafMarker.setLatLng([lat,lng]);
   }
