@@ -132,6 +132,35 @@
   .addrline .mini{padding:6px 10px;border-radius:9px;background:var(--panel2);font-size:12px;font-weight:700;flex:0 0 auto}
   .addrline .at{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .addrline .at.pend{color:var(--dim)}
+  .vsel{margin-left:auto;padding:9px 12px;border-radius:11px;background:var(--panel2);color:var(--txt);
+    font-size:13.5px;font-weight:800;border:1px solid var(--line);max-width:50%}
+  .banchiline{display:flex;align-items:center;gap:8px}
+  .banchiline .bl{font-size:12px;color:var(--dim);font-weight:700;flex:0 0 auto}
+  .banchi{flex:1;min-width:0;padding:10px 13px;border-radius:11px;background:var(--panel);border:1px solid var(--line);
+    color:var(--txt);font-size:15px;font-weight:700;letter-spacing:1px}
+  .banchi::placeholder{color:var(--dim);font-weight:600;letter-spacing:normal}
+
+  /* 数字キーパッド */
+  #keypad{position:fixed;inset:0;background:rgba(7,12,20,.6);z-index:70;display:flex;align-items:flex-end}
+  .kpcard{width:100%;background:var(--panel);border-top:1px solid var(--line);
+    border-radius:18px 18px 0 0;padding:14px 14px calc(env(safe-area-inset-bottom) + 14px)}
+  .kphead{display:flex;justify-content:space-between;align-items:center;padding:2px 4px 12px;font-size:13px;color:var(--dim);font-weight:700}
+  .kphead #kpVal{font-size:22px;font-weight:900;color:var(--teal);letter-spacing:2px}
+  .kpgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+  .kpgrid button{padding:16px 0;border-radius:13px;background:var(--panel2);font-size:22px;font-weight:800}
+  .kpgrid button:active{background:#264168}
+  .kpgrid .kpsub{background:#13223a;color:var(--gold);font-size:20px}
+  .kpacts{display:flex;gap:9px;margin-top:11px}
+  .kpacts button{flex:1;padding:14px;border-radius:13px;font-size:15px;font-weight:800}
+  .kpacts .kpx{background:var(--panel2);color:var(--dim)}
+  .kpacts .kpok{background:var(--gold);color:#1a1300}
+
+  /* 位置修正マップ */
+  #mapEdit{position:fixed;inset:0;background:var(--bg);z-index:75;display:flex;flex-direction:column}
+  #leafMap{flex:1;min-height:0;background:#0a1422}
+  .mefoot{display:flex;align-items:center;gap:10px;padding:12px 14px calc(env(safe-area-inset-bottom) + 14px);background:var(--bg)}
+  .mefoot .vbtn{flex:0 0 auto;width:auto;padding:12px 16px;border-radius:12px;background:var(--panel2);font-size:14px;font-weight:800}
+  .mehint{font-size:11px;color:var(--dim);line-height:1.4}
   .notewrap{display:flex;gap:8px}
   .notewrap input{flex:1;padding:11px 13px;border-radius:11px;background:var(--panel);border:1px solid var(--line);
     color:var(--txt);font-size:14px}
@@ -234,12 +263,17 @@
         <button data-t="plan" class="plan">計画地</button>
         <button data-t="home" class="home">自宅</button>
       </div>
-      <button class="linkbtn" id="vLink">🔗 カードに紐付け</button>
+      <select id="vShotSel" class="vsel"></select>
     </div>
     <div class="addrline">
-      <button class="mini" id="vMap">🗺 地図</button>
       <span class="at pend" id="vAddr">住所未取得</span>
-      <button class="mini" id="vGeo">🔄 取得</button>
+      <button class="mini" id="vGeo">🔄</button>
+    </div>
+    <div class="banchiline">
+      <span class="bl">番地</span>
+      <input id="vBanchi" class="banchi" placeholder="例 23-5" readonly>
+      <button class="mini" id="vMap">🗺 地図</button>
+      <button class="mini" id="vFix">📍 位置修正</button>
     </div>
     <div class="notewrap">
       <input id="vNote" placeholder="備考（任意：撮影方向・特徴など）">
@@ -247,9 +281,40 @@
     </div>
   </div>
   <div class="vacts">
-    <button class="vbtn" id="vShot">種別</button>
+    <button class="vbtn" id="vLink">🔗 紐付け</button>
     <button class="vbtn" id="vDl">⬇ 保存</button>
     <button class="vbtn danger" id="vDel">🗑 削除</button>
+  </div>
+</div>
+
+<!-- ===== 数字キーパッド（番地用） ===== -->
+<div id="keypad" class="hide">
+  <div class="kpcard">
+    <div class="kphead"><span>番地を入力</span><span id="kpVal">—</span></div>
+    <div class="kpgrid">
+      <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+      <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+      <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+      <button data-k="-" class="kpsub">−</button><button data-k="0">0</button><button data-k="bs" class="kpsub">⌫</button>
+    </div>
+    <div class="kpacts">
+      <button id="kpClear" class="kpx">クリア</button>
+      <button id="kpDone" class="kpok">完了</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 位置修正マップ ===== -->
+<div id="mapEdit" class="hide">
+  <div class="vtop">
+    <button class="tbtn" id="meCancel">✕ 取消</button>
+    <div class="cardchip grow"><b style="font-size:13px;color:var(--gold)">📍 位置を修正</b><span class="sub">ピンを正しい場所へドラッグ</span></div>
+    <button class="tbtn" style="background:var(--gold);color:#1a1300" id="meSave">保存</button>
+  </div>
+  <div id="leafMap"></div>
+  <div class="mefoot">
+    <button class="vbtn" id="meHere">📍 現在地に移動</button>
+    <span id="meHint" class="mehint">地図をドラッグ＝移動 / ピンをドラッグ＝微調整</span>
   </div>
 </div>
 
@@ -266,7 +331,7 @@
    ※ prospect_cards_v1 には一切書き込まない（新規カード作成・PC連携は本体側で実施）
    レコード: {id,cardId,ts,shot,addrType('plan'|'home'),lat,lng,acc,addr,addrPending,note,w,h,size,full(Blob),thumb(dataURL)}
    ========================================================= */
-const APP_VERSION = "cam-v1.1";
+const APP_VERSION = "cam-v1.2";
 const SK_CARDS = "prospect_cards_v1";
 const IDX_KEY  = "aibis_media_index_v1";
 const DB_NAME  = "aibis_media_v1";
@@ -445,9 +510,10 @@ function startGeo(){
   $("gpsTxt").innerHTML="📍 位置情報を取得中…";
   geoWatch=navigator.geolocation.watchPosition(
     pos=>{ lastPos={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:pos.coords.accuracy};
-      $("gpsTxt").innerHTML="📍 位置OK <b>計画地</b>として保存・住所は後で自動付与"; },
+      const m=lastPos.acc?Math.round(lastPos.acc):null;
+      $("gpsTxt").innerHTML="📍 位置OK"+(m!=null?"（±"+m+"m）":"")+" <b>計画地</b>で保存・ズレは後で修正可"; },
     err=>{ $("gpsTxt").innerHTML="📍 位置を取得できません（後で仕分け可）"; },
-    {enableHighAccuracy:true, maximumAge:15000, timeout:12000}
+    {enableHighAccuracy:true, maximumAge:0, timeout:15000}
   );
 }
 function stopGeo(){ if(geoWatch!=null){ navigator.geolocation.clearWatch(geoWatch); geoWatch=null; } }
@@ -483,6 +549,7 @@ $("torchBtn").addEventListener("click",async()=>{
 function buildShotBar(){
   $("shotbar").innerHTML=SHOTS.map(s=>'<button class="chip" data-k="'+s.k+'">'+s.label+'</button>').join("");
   $("shotbar").querySelectorAll(".chip").forEach(el=>el.addEventListener("click",()=>setShot(el.dataset.k)));
+  $("vShotSel").innerHTML=SHOTS.map(s=>'<option value="'+s.k+'">'+s.label+'</option>').join("");
 }
 function setShot(k){
   curShot=k;
@@ -522,7 +589,7 @@ async function capture(){
   const rec={ id:"p_"+Date.now()+"_"+Math.random().toString(36).slice(2,7),
     cardId:curCardId, ts:Date.now(), shot:curShot, addrType:"plan",
     lat:pos?pos.lat:null, lng:pos?pos.lng:null, acc:pos?pos.acc:null,
-    addr:"", addrPending: !!pos, note:"", w, h, size:(full?full.size:0), full, thumb };
+    addr:"", banchi:"", addrPending: !!pos, note:"", w, h, size:(full?full.size:0), full, thumb };
   try{
     await idbPut(rec); await refreshIndex(curCardId);
     sessCount++; const b=$("sessBadge"); b.textContent=sessCount; b.classList.remove("hide");
@@ -556,7 +623,7 @@ $("nativeCam").addEventListener("change",async e=>{
   const pos=(mode==="quick")?lastPos:null;
   const rec={ id:"p_"+Date.now()+"_"+Math.random().toString(36).slice(2,7), cardId:curCardId, ts:Date.now(),
     shot:curShot, addrType:"plan", lat:pos?pos.lat:null,lng:pos?pos.lng:null,acc:pos?pos.acc:null,
-    addr:"", addrPending:!!pos, note:"", w, h, size:full?full.size:0, full, thumb:makeThumb(cv,w,h) };
+    addr:"", banchi:"", addrPending:!!pos, note:"", w, h, size:full?full.size:0, full, thumb:makeThumb(cv,w,h) };
   await idbPut(rec); await refreshIndex(curCardId); await updateRightCount();
   if(rec.lat!=null) resolveAddr(rec.id);
   toast("保存しました"); e.target.value="";
@@ -575,7 +642,8 @@ async function renderInbox(){
   const host=$("inbBody");
   if(!list.length){ host.innerHTML='<div class="emptyst">未仕分けの写真はありません。<br>「← 撮影」からクイック撮影できます。</div>'; return; }
   host.innerHTML=list.map(p=>{
-    const ad=p.addr?esc(p.addr):(p.addrPending?"住所を取得中…":(p.lat!=null?"住所未取得（地図で確認）":"位置情報なし"));
+    const baseAd=p.addr?esc(p.addr):(p.addrPending?"住所を取得中…":(p.lat!=null?"住所未取得（地図で確認）":"位置情報なし"));
+    const ad=(p.addr&&p.banchi)?esc(p.addr+" "+p.banchi):baseAd;
     const cls=p.addr?"ad":"ad pend";
     return '<div class="ibrow" data-id="'+esc(p.id)+'">'+
       '<div class="th"><img src="'+p.thumb+'"></div>'+
@@ -591,7 +659,8 @@ async function renderInbox(){
 /* ---------- カード一覧（撮影/閲覧 or 紐付け） ---------- */
 function openPick(m){
   pickMode=m||"open";
-  $("pickBack").classList.toggle("hide", pickMode==="open");
+  $("pickBack").classList.remove("hide");
+  $("pickBack").textContent = pickMode==="link" ? "← 戻る" : "📷 撮影";
   $("pickTitle").textContent = pickMode==="link" ? "🔗 紐付け先のカード" : "⌘ カード一覧";
   $("pickSub").textContent  = pickMode==="link" ? "この写真を紐付けるカードを選択" : "カードを選んで撮影・閲覧";
   renderPicker($("pickSearch").value);
@@ -687,11 +756,13 @@ async function openViewer(id,from){
   const u=URL.createObjectURL(p.full); _objUrls.push(u);
   $("vImg").src=u;
   $("vTitle").textContent=(p.cardId&&p.cardId!==INBOX)?cardLabel(p.cardId):"未仕分け";
-  $("vWhen").textContent=fmtWhen(p.ts)+"・"+shotLabel(p.shot)+"・"+(p.w+"×"+p.h)+"・"+fmtMB(p.size);
+  $("vWhen").textContent=fmtWhen(p.ts)+"・"+(p.w+"×"+p.h)+"・"+fmtMB(p.size);
   setTypeSeg(p.addrType);
+  $("vShotSel").value=p.shot||"other";
   fillViewerAddr(p);
+  $("vBanchi").value=p.banchi||"";
   $("vNote").value=p.note||"";
-  $("vLink").textContent=(p.cardId&&p.cardId!==INBOX)?("🔗 "+cardLabel(p.cardId)):"🔗 カードに紐付け";
+  $("vLink").textContent=(p.cardId&&p.cardId!==INBOX)?("🔗 "+cardLabel(p.cardId)):"🔗 紐付け";
   $("viewer").classList.remove("hide");
 }
 function fillViewerAddr(p){
@@ -700,6 +771,7 @@ function fillViewerAddr(p){
   else { el.textContent = p.addrPending?"住所を取得中…":(p.lat!=null?"住所未取得（🔄で再取得 / 🗺で確認）":"位置情報なし"); el.classList.add("pend"); }
   $("vMap").style.opacity = (p.lat!=null)?"1":".4";
   $("vGeo").style.opacity = (p.lat!=null)?"1":".4";
+  $("vFix").style.opacity = (p.lat!=null)?"1":".4";
 }
 function setTypeSeg(t){
   $("vTypeSeg").querySelectorAll("button").forEach(b=>{
@@ -737,12 +809,95 @@ $("vMic").addEventListener("click",()=>{
   rec.onend=()=>btn.classList.remove("rec");
   try{ rec.start(); }catch(e){ btn.classList.remove("rec"); }
 });
-$("vShot").addEventListener("click",async()=>{
+$("vShotSel").addEventListener("change",async()=>{
   const p=await idbGet(viewerId); if(!p) return;
-  const i=SHOTS.findIndex(s=>s.k===p.shot); const next=SHOTS[(i+1)%SHOTS.length];
-  p.shot=next.k; await idbPut(p);
-  $("vWhen").textContent=fmtWhen(p.ts)+"・"+next.label+"・"+(p.w+"×"+p.h)+"・"+fmtMB(p.size);
-  toast("種別→"+next.label);
+  p.shot=$("vShotSel").value; await idbPut(p); toast("種別→"+shotLabel(p.shot));
+});
+
+/* ---------- 番地キーパッド（数字＋ハイフン） ---------- */
+let kpVal="";
+function openKeypad(){
+  if(!viewerId) return;
+  kpVal=$("vBanchi").value||"";
+  $("kpVal").textContent=kpVal||"—";
+  $("keypad").classList.remove("hide");
+}
+function kpRender(){ $("kpVal").textContent=kpVal||"—"; }
+$("vBanchi").addEventListener("click",openKeypad);
+$("keypad").querySelectorAll(".kpgrid button").forEach(b=>b.addEventListener("click",()=>{
+  const k=b.dataset.k;
+  if(k==="bs") kpVal=kpVal.slice(0,-1);
+  else if(k==="-"){ if(kpVal&&!kpVal.endsWith("-")) kpVal+="-"; }
+  else kpVal+=k;
+  kpRender();
+}));
+$("kpClear").addEventListener("click",()=>{ kpVal=""; kpRender(); });
+$("kpDone").addEventListener("click",async()=>{
+  $("keypad").classList.add("hide");
+  $("vBanchi").value=kpVal;
+  const p=await idbGet(viewerId); if(!p) return;
+  if((p.banchi||"")!==kpVal){ p.banchi=kpVal; await idbPut(p); toast("番地を保存"); }
+});
+$("keypad").addEventListener("click",e=>{ if(e.target===$("keypad")) $("keypad").classList.add("hide"); });
+
+/* ---------- 位置修正（Leaflet 遅延読込） ---------- */
+let leafMap=null, leafMarker=null, meTargetId=null;
+function loadLeaflet(){
+  return new Promise((res,rej)=>{
+    if(window.L) return res();
+    const css=document.createElement("link"); css.rel="stylesheet";
+    css.href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"; document.head.appendChild(css);
+    const js=document.createElement("script");
+    js.src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+    js.onload=()=>res(); js.onerror=()=>rej(new Error("leaflet load failed"));
+    document.head.appendChild(js);
+  });
+}
+$("vFix").addEventListener("click",async()=>{
+  const p=await idbGet(viewerId); if(!p||p.lat==null){ toast("位置情報がありません"); return; }
+  meTargetId=viewerId;
+  try{ await loadLeaflet(); }
+  catch(e){
+    // フォールバック：現在地で取り直す
+    if(navigator.geolocation){
+      toast("地図を読み込めません。現在地で取り直します");
+      navigator.geolocation.getCurrentPosition(async pos=>{
+        const cur=await idbGet(meTargetId); if(!cur) return;
+        cur.lat=pos.coords.latitude; cur.lng=pos.coords.longitude; cur.acc=pos.coords.accuracy;
+        cur.addrPending=true; await idbPut(cur); fillViewerAddr(cur); resolveAddr(meTargetId); toast("現在地に補正しました");
+      },()=>toast("現在地を取得できませんでした"),{enableHighAccuracy:true,maximumAge:0,timeout:15000});
+    } else toast("地図も現在地も利用できません");
+    return;
+  }
+  $("mapEdit").classList.remove("hide");
+  setTimeout(()=>initLeaflet(p.lat,p.lng),60);
+});
+function initLeaflet(lat,lng){
+  if(!leafMap){
+    leafMap=L.map("leafMap",{zoomControl:true}).setView([lat,lng],18);
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+      {maxZoom:20,attribution:"© OpenStreetMap"}).addTo(leafMap);
+    leafMarker=L.marker([lat,lng],{draggable:true}).addTo(leafMap);
+  } else {
+    leafMap.setView([lat,lng],18); leafMarker.setLatLng([lat,lng]);
+  }
+  setTimeout(()=>leafMap.invalidateSize(),80);
+}
+$("meHere").addEventListener("click",()=>{
+  if(!navigator.geolocation){ toast("現在地に未対応"); return; }
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const la=pos.coords.latitude, ln=pos.coords.longitude;
+    if(leafMap){ leafMap.setView([la,ln],18); leafMarker.setLatLng([la,ln]); }
+  },()=>toast("現在地を取得できませんでした"),{enableHighAccuracy:true,maximumAge:0,timeout:15000});
+});
+$("meCancel").addEventListener("click",()=>$("mapEdit").classList.add("hide"));
+$("meSave").addEventListener("click",async()=>{
+  if(!leafMarker){ $("mapEdit").classList.add("hide"); return; }
+  const ll=leafMarker.getLatLng();
+  const p=await idbGet(meTargetId); if(!p){ $("mapEdit").classList.add("hide"); return; }
+  p.lat=ll.lat; p.lng=ll.lng; p.acc=null; p.addrPending=true; await idbPut(p);
+  $("mapEdit").classList.add("hide");
+  fillViewerAddr(p); resolveAddr(meTargetId); toast("位置を修正しました");
 });
 $("vLink").addEventListener("click",async()=>{
   const p=await idbGet(viewerId); if(!p) return;
@@ -754,8 +909,9 @@ $("vDl").addEventListener("click",async()=>{
   let base="inbox";
   if(p.cardId&&p.cardId!==INBOX){ const c=findCard(p.cardId); base=(c&&c.name)?c.name:"card"; }
   const nm=String(base).replace(/[^\w一-龠ぁ-んァ-ヶー]/g,"");
+  const bz=p.banchi?("_"+p.banchi):"";
   const d=new Date(p.ts), pad=n=>String(n).padStart(2,"0");
-  const fn=nm+"_"+TYPE_LABEL[p.addrType]+"_"+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+"_"+pad(d.getHours())+pad(d.getMinutes())+".jpg";
+  const fn=nm+"_"+TYPE_LABEL[p.addrType]+bz+"_"+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+"_"+pad(d.getHours())+pad(d.getMinutes())+".jpg";
   const u=URL.createObjectURL(p.full); const a=document.createElement("a"); a.href=u; a.download=fn;
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),4000); toast("画像を保存しました");
 });
