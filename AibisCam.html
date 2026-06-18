@@ -139,12 +139,6 @@
   .banchi{flex:1;min-width:0;padding:10px 13px;border-radius:11px;background:var(--panel);border:1px solid var(--line);
     color:var(--txt);font-size:15px;font-weight:700;letter-spacing:1px}
   .banchi::placeholder{color:var(--dim);font-weight:600;letter-spacing:normal}
-  .sugline{display:flex;align-items:center;gap:8px}
-  .sugline .sughint{font-size:11px;color:var(--dim);font-weight:700;flex:0 0 auto}
-  .sugchip{flex:1;min-width:0;text-align:left;padding:9px 13px;border-radius:11px;
-    background:rgba(52,227,208,.12);border:1px solid rgba(52,227,208,.4);color:var(--teal);
-    font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .sugchip:active{filter:brightness(1.2)}
 
   /* 数字キーパッド */
   #keypad{position:fixed;inset:0;background:rgba(7,12,20,.6);z-index:70;display:flex;align-items:flex-end}
@@ -280,11 +274,6 @@
     <div class="banchiline">
       <span class="bl">番地</span>
       <input id="vBanchi" class="banchi" placeholder="例 23-5" readonly>
-      <button class="mini" id="vSugBtn" title="番地候補を検索">🔎</button>
-    </div>
-    <div class="sugline hide" id="vSugWrap">
-      <span class="sughint">候補(実験)</span>
-      <button class="sugchip" id="vSug"></button>
     </div>
     <div class="banchiline">
       <button class="mini" id="vMap">🗺 地図</button>
@@ -346,7 +335,7 @@
    ※ prospect_cards_v1 には一切書き込まない（新規カード作成・PC連携は本体側で実施）
    レコード: {id,cardId,ts,shot,addrType('plan'|'home'),lat,lng,acc,addr,addrPending,note,w,h,size,full(Blob),thumb(dataURL)}
    ========================================================= */
-const APP_VERSION = "cam-v1.4";
+const APP_VERSION = "cam-v1.6";
 const SK_CARDS = "prospect_cards_v1";
 const IDX_KEY  = "aibis_media_index_v1";
 const DB_NAME  = "aibis_media_v1";
@@ -432,6 +421,7 @@ function cardMeta(id){ const c=findCard(id); return c?[c.manager,c.address||c.pl
 async function boot(){
   try{ DB=await openDB(); }catch(e){ toast("保存領域を開けませんでした"); }
   if(navigator.storage&&navigator.storage.persist){ try{ await navigator.storage.persist(); }catch(e){} }
+  loadMuni(); // 自治体マスターを先読み（非同期・市区町村名の付与用）
   buildShotBar();
   const p=new URLSearchParams(location.search);
   const cid=p.get("cardId");
@@ -533,19 +523,57 @@ function startGeo(){
 }
 function stopGeo(){ if(geoWatch!=null){ navigator.geolocation.clearWatch(geoWatch); geoWatch=null; } }
 
-/* ---------- 地理院リバースジオコーダ ---------- */
+/* ---------- 地理院リバースジオコーダ＋自治体マスター ---------- */
+const GSI_MUNI_URL = "https://maps.gsi.go.jp/js/muni.js";
+/* 主要エリア（東京23区）は内蔵。マスター取得失敗でも区名は必ず出る */
+const TOKYO_WARDS = {
+  "13101":{pref:"東京都",city:"千代田区"},"13102":{pref:"東京都",city:"中央区"},
+  "13103":{pref:"東京都",city:"港区"},"13104":{pref:"東京都",city:"新宿区"},
+  "13105":{pref:"東京都",city:"文京区"},"13106":{pref:"東京都",city:"台東区"},
+  "13107":{pref:"東京都",city:"墨田区"},"13108":{pref:"東京都",city:"江東区"},
+  "13109":{pref:"東京都",city:"品川区"},"13110":{pref:"東京都",city:"目黒区"},
+  "13111":{pref:"東京都",city:"大田区"},"13112":{pref:"東京都",city:"世田谷区"},
+  "13113":{pref:"東京都",city:"渋谷区"},"13114":{pref:"東京都",city:"中野区"},
+  "13115":{pref:"東京都",city:"杉並区"},"13116":{pref:"東京都",city:"豊島区"},
+  "13117":{pref:"東京都",city:"北区"},"13118":{pref:"東京都",city:"荒川区"},
+  "13119":{pref:"東京都",city:"板橋区"},"13120":{pref:"東京都",city:"練馬区"},
+  "13121":{pref:"東京都",city:"足立区"},"13122":{pref:"東京都",city:"葛飾区"},
+  "13123":{pref:"東京都",city:"江戸川区"}
+};
+let MUNI=null;
+async function loadMuni(){
+  if(MUNI) return MUNI;
+  let base=Object.assign({}, TOKYO_WARDS);
+  try{ const c=localStorage.getItem("aibis_muni_v1"); if(c){ MUNI=Object.assign(base, JSON.parse(c)); return MUNI; } }catch(e){}
+  try{
+    const r=await fetch(GSI_MUNI_URL); const txt=await r.text();
+    const map={}; const re=/"(\d{5})"\s*\]?\s*[:=]\s*['"]([^'"]+)['"]/g; let m;
+    while((m=re.exec(txt))){ const parts=m[2].split(","); map[m[1]]={pref:parts[1]||"",city:parts[3]||parts[parts.length-1]||""}; }
+    if(Object.keys(map).length){ try{ localStorage.setItem("aibis_muni_v1", JSON.stringify(map)); }catch(e){} base=Object.assign(base, map); }
+  }catch(e){}
+  MUNI=base; return MUNI;
+}
 async function gsiReverse(lat,lng){
   const r=await fetch(GSI_URL+"?lat="+lat+"&lon="+lng,{mode:"cors"});
   const j=await r.json();
   const res=j&&j.results;
-  let s=res&&res.lv01Nm?String(res.lv01Nm):"";
-  if(s==="－"||s==="−") s="";
-  return s; // 町丁目（市区町村名は本体側 or 将来付与）
+  let lv=res&&res.lv01Nm?String(res.lv01Nm):"";
+  if(lv==="－"||lv==="−") lv="";
+  const muni=res&&res.muniCd?String(res.muniCd):"";
+  return {muni, lv};
+}
+async function composeAddress(lat,lng){
+  const {muni,lv}=await gsiReverse(lat,lng);
+  let pref="", city="";
+  if(muni){ const M=await loadMuni(); const e=M&&(M[muni]||M[muni.slice(0,5)]); if(e){ pref=e.pref; city=e.city; } }
+  let head=city;
+  if(pref && pref!=="東京都") head=pref+city; // 東京都は県名を省略
+  return (head||"")+(lv||""); // 例: 足立区神殿二丁目 / 埼玉県草加市○○一丁目
 }
 async function resolveAddr(id){
   const p=await idbGet(id); if(!p||p.lat==null) return;
   try{
-    const a=await gsiReverse(p.lat,p.lng);
+    const a=await composeAddress(p.lat,p.lng);
     const cur=await idbGet(id); if(!cur) return;
     cur.addr=a||""; cur.addrPending=false; await idbPut(cur);
   }catch(e){
@@ -554,47 +582,6 @@ async function resolveAddr(id){
   if(!screens.inbox.classList.contains("hide")) renderInbox();
   if(viewerId===id && !$("viewer").classList.contains("hide")) fillViewerAddr(await idbGet(id));
 }
-
-/* ---------- 番地候補（実験：OpenStreetMap Nominatim・無料/候補のみ） ---------- */
-const NOMINATIM = "https://nominatim.openstreetmap.org/reverse";
-let _sugToken=0, _sugLast=0, _sugCand="";
-async function nominatimBanchi(lat,lng){
-  const url=NOMINATIM+"?format=jsonv2&lat="+lat+"&lon="+lng+"&zoom=18&addressdetails=1&accept-language=ja";
-  const r=await fetch(url,{headers:{"Accept":"application/json"}});
-  const j=await r.json();
-  const a=(j&&j.address)?j.address:{};
-  let hn=a.house_number||"";
-  return hn?String(hn).trim():"";
-}
-async function trySuggest(p,manual){
-  const wrap=$("vSugWrap"); _sugCand="";
-  if(!p||p.lat==null){ wrap.classList.add("hide"); return; }
-  const now=Date.now();
-  if(!manual && now-_sugLast<1200) return; // 連打抑制（Nominatimの常識的利用）
-  _sugLast=now; const token=++_sugToken;
-  $("vSug").textContent="検索中…"; wrap.classList.remove("hide");
-  try{
-    const hn=await nominatimBanchi(p.lat,p.lng);
-    if(token!==_sugToken || viewerId!==p.id) return; // 別写真に移っていたら破棄
-    if(hn){ _sugCand=hn; $("vSug").textContent="候補: "+hn+"　▸ 番地に入力"; }
-    else { $("vSug").textContent="候補なし（手入力してください）"; }
-  }catch(e){
-    if(token!==_sugToken) return;
-    $("vSug").textContent="候補を取得できませんでした";
-  }
-}
-$("vSug").addEventListener("click",async()=>{
-  if(!_sugCand||!viewerId) return;
-  $("vBanchi").value=_sugCand;
-  const p=await idbGet(viewerId); if(!p) return;
-  p.banchi=_sugCand; await idbPut(p); $("vSugWrap").classList.add("hide");
-  toast("番地に入力しました（必要なら修正可）");
-});
-$("vSugBtn").addEventListener("click",async()=>{
-  const p=await idbGet(viewerId); if(!p){ return; }
-  if(p.lat==null){ toast("位置情報がありません"); return; }
-  trySuggest(p,true);
-});
 
 /* ---------- トーチ / ショット種別 ---------- */
 $("torchBtn").addEventListener("click",async()=>{
@@ -820,8 +807,6 @@ async function openViewer(id,from){
   $("vNote").value=p.note||"";
   $("vLink").textContent=(p.cardId&&p.cardId!==INBOX)?("🔗 "+cardLabel(p.cardId)):"🔗 紐付け";
   $("viewer").classList.remove("hide");
-  $("vSugWrap").classList.add("hide");
-  if(p.lat!=null && !p.banchi) trySuggest(p,false); // 番地が空なら候補を自動検索
 }
 function fillViewerAddr(p){
   const el=$("vAddr");
