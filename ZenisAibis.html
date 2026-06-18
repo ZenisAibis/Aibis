@@ -270,7 +270,10 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.show{opacity:1}
 #pwaBanner{display:none;position:fixed;bottom:80px;left:12px;right:12px;background:#1e3a5f;color:white;border-radius:10px;padding:12px 14px;z-index:150;box-shadow:0 4px 12px rgba(0,0,0,0.3)}
-.sortbar{background:white;border:1px solid #e2e8f0;border-radius:6px;padding:8px;margin:0 8px 8px;display:flex;gap:4px;align-items:center;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.sortbar{background:white;border:1px solid #e2e8f0;border-radius:6px;padding:8px;margin:0 8px 8px;display:flex;gap:6px;align-items:center;flex-wrap:nowrap;overflow:hidden}
+.sortbar-lab{font-size:12px;color:#4a5568;font-weight:600;white-space:nowrap;flex-shrink:0}
+.sortbar-scroll{display:flex;gap:4px;flex-wrap:nowrap;overflow-x:auto;flex:1;min-width:0;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.sortbar-scroll::-webkit-scrollbar{display:none}
 .sortbar::-webkit-scrollbar{display:none}
 #staffFilterBtns{scrollbar-width:none}
 #staffFilterBtns::-webkit-scrollbar{display:none}
@@ -316,6 +319,9 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 .mic-btn{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border:1px solid #cbd5e0;border-radius:6px;background:white;color:#4a5568;font-size:12px;cursor:pointer;font-family:inherit;margin-top:5px;transition:all 0.15s;vertical-align:middle}
 .mic-btn:hover{border-color:#2c5282;color:#2c5282}
 .mic-btn.recording{background:#fff5f5;border-color:#e53e3e;color:#c53030;animation:micpulse 1s infinite}
+.hand-right .hb{order:99}
+.hb-rev{margin-right:auto}
+.hand-right .hb-rev{order:99;margin-right:0;margin-left:auto}
 @keyframes micpulse{0%,100%{opacity:1}50%{opacity:0.5}}
 .fam-sec-lbl{font-size:11px;font-weight:700;color:#2c5282;margin:8px 0 5px;padding:3px 6px;background:#ebf4ff;border-radius:4px}
 .fam-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:6px}
@@ -473,6 +479,17 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 @media(max-width:600px){
   .plan-btns-mob{display:flex!important}
   .plan-btns-pc{display:none!important}
+}
+@media(max-width:600px){
+  #mikomiTop{display:grid;grid-template-columns:repeat(6,1fr);column-gap:8px;row-gap:8px;align-items:start}
+  #mikomiTop .mk-row{display:contents!important}
+  #mikomiTop .mk-name{grid-column:1/-1;order:1}
+  #mikomiTop .mk-tel{grid-column:span 2;order:2}
+  #mikomiTop .mk-social{grid-column:span 2;order:3}
+  #mikomiTop .mk-genjo{grid-column:span 2;order:4}
+  #mikomiTop .mk-email{grid-column:1/-1;order:5}
+  #mikomiTop .mk-addr{grid-column:1/-1;order:6}
+  #mikomiTop .mk-plan{grid-column:1/-1;order:7}
 }
 .kaiwa-btn{font-size:12px;padding:8px 2px;white-space:nowrap;text-align:center;min-width:0;overflow:hidden;text-overflow:ellipsis}
 @media(max-width:600px){
@@ -1001,19 +1018,21 @@ body.is-mob .mob-menu{display:inline-block}
     </div>
   </div>
   <div class="sortbar">
-    <span style="font-size:12px;color:#4a5568;font-weight:600;white-space:nowrap">並替：</span>
-    <button class="sbtn active" id="sb_lv" onclick="toggleSort('lv')">🚶 最新</button>
-    <button class="sbtn" id="sb_rv" onclick="toggleSort('rv')">🔁 再訪</button>
-    <button class="sbtn" id="sb_jw" onclick="toggleSort('jw')">⚖ 判定待ち</button>
-    <button class="sbtn" id="sb_ad" onclick="toggleSort('ad')">🏠 住所</button>
-    <button class="sbtn" id="sb_sc" onclick="toggleSort('sc')">⭐ スコア</button>
-    <button class="sbtn" id="sb_st" onclick="toggleSort('st')">📊 心理</button>
-    <button class="sbtn" id="sb_pj" onclick="toggleSort('pj')">🎯 ランク</button>
-    <button class="sbtn" id="sb_pace" onclick="toggleSort('pace')">⏰ 遅れ</button>
-    <button class="sbtn" id="sb_dt" onclick="toggleSort('dt')">📅 初訪</button>
+    <span class="sortbar-lab">🔀 並替：</span>
+    <div class="sortbar-scroll">
+      <button class="sbtn active" id="sb_lv" onclick="toggleSort('lv')">🚶 最新</button>
+      <button class="sbtn" id="sb_rv" onclick="toggleSort('rv')">🔁 再訪</button>
+      <button class="sbtn" id="sb_jw" onclick="toggleSort('jw')">⚖ 判定待ち</button>
+      <button class="sbtn" id="sb_ad" onclick="toggleSort('ad')">🏠 住所</button>
+      <button class="sbtn" id="sb_sc" onclick="toggleSort('sc')">⭐ スコア</button>
+      <button class="sbtn" id="sb_st" onclick="toggleSort('st')">📊 心理</button>
+      <button class="sbtn" id="sb_pj" onclick="toggleSort('pj')">🎯 ランク</button>
+      <button class="sbtn" id="sb_pace" onclick="toggleSort('pace')">⏰ 遅れ</button>
+      <button class="sbtn" id="sb_dt" onclick="toggleSort('dt')">📅 初訪</button>
+    </div>
   </div>
   <div style="display:flex;align-items:center;gap:6px;margin:0 8px 6px">
-    <button type="button" class="mic-btn" onclick="micStart('searchInput',this)" style="flex-shrink:0;margin-top:0" title="音声で検索">🎤</button>
+    <button type="button" class="mic-btn hb" onclick="micStart('searchInput',this)" style="flex-shrink:0;margin-top:0" title="音声で検索">🎤</button>
     <div style="position:relative;flex:1">
       <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:#a0aec0;font-size:14px">🔍</span>
       <input type="text" id="searchInput" placeholder="氏名・住所・地名で検索（スペース区切りで複数）" enterkeyhint="search" style="padding-left:30px;font-size:13px;border-radius:6px" oninput="onSearchInput()" onchange="onSearchInput(true)" oncompositionend="onSearchInput(true)" onkeydown="onSearchEnter(event)">
@@ -1052,7 +1071,7 @@ body.is-mob .mob-menu{display:inline-block}
         <div>
           <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">👤 氏名 <span style="color:#c53030">必須</span></label>
           <div style="display:flex;gap:6px;align-items:center">
-            <button type="button" class="mic-btn" onclick="micStart('qaName',this)" style="flex-shrink:0;margin-top:0">🎤</button>
+            <button type="button" class="mic-btn hb" onclick="micStart('qaName',this)" style="flex-shrink:0;margin-top:0">🎤</button>
             <input id="qaName" type="text" placeholder="お客様名" style="flex:1;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px;font-family:inherit">
           </div>
         </div>
@@ -1082,7 +1101,7 @@ body.is-mob .mob-menu{display:inline-block}
       <div id="qaKaiwa" style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:10px"></div>
       <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">📝 計画地備考</label>
       <div style="display:flex;gap:6px;align-items:center;margin-bottom:14px">
-        <button type="button" class="mic-btn" onclick="micStart('qaKuubi',this)" style="flex-shrink:0;margin-top:0">🎤</button>
+        <button type="button" class="mic-btn hb" onclick="micStart('qaKuubi',this)" style="flex-shrink:0;margin-top:0">🎤</button>
         <input id="qaKuubi" type="text" placeholder="例：P空き多い・老朽建物あり・間口広め" style="flex:1;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:13px;font-family:inherit">
       </div>
       <button onclick="qaSave(false)" style="width:100%;background:#38a169;color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer">💾 保存</button>
@@ -1498,6 +1517,7 @@ body.is-mob .mob-menu{display:inline-block}
       </div>
       <div style="display:grid;grid-template-columns:2fr 2fr 1.5fr 1fr;gap:8px;margin-top:10px">
         <div><label>ニックネーム</label><input type="text" id="sNick" placeholder="例: 大東" oninput="autoSaveSetup()"></div>
+        <div><label>📱 スマホの持ち手</label><select id="sHand" onchange="setHand(this.value)"><option value="left">左手持ち</option><option value="right">右手持ち</option></select></div>
       </div>
       <!-- ▼▼ 開発者ツールパネル START（DEV_EMAIL時のみ表示・JSはdev区画と対） ▼▼ -->
       <div id="devHashTool" style="display:none;margin-top:14px;padding:10px;border:1px dashed #cbd5e0;border-radius:8px;background:#faf5ff">
@@ -1724,12 +1744,13 @@ var SCK  = 'prospect_sec_v1';
 var RLK  = 'prospect_role_v1';
 var SMK  = 'prospect_staffmails_v1';
 var NICKK = 'prospect_nick_v1';
+var HANDK = 'prospect_hand_v1';
 var LSDK = 'prospect_last_saved';
 var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.64";
+var APP_VERSION = "v7.68";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -1911,6 +1932,7 @@ var cur = null, curId = null;
 var uName = '', mgrEmail = '', selfEmail = '', branch = '', section = '', userRole = '';
 var staffMails = [];
 var uNick = '';
+var uHand = 'left';
 var fHandle = null;
 var sortKey = 'lv'; // lv=最新, ad=住所, st=段階, dt=初訪
 var sortDir = { lv:'asc', ad:'asc', st:'desc', dt:'desc' };
@@ -2110,6 +2132,7 @@ function init() {
   section   = localStorage.getItem(SCK) || '';
   userRole  = localStorage.getItem(RLK) || '';
   uNick     = localStorage.getItem(NICKK) || '';
+  uHand     = localStorage.getItem(HANDK) || 'left'; applyHand();
 
   // バージョン表示
   var mv=document.getElementById('mobVersion'); if(mv) mv.textContent='z.Aibis '+APP_VERSION;
@@ -2527,6 +2550,8 @@ function aibisToast(msg){
   clearTimeout(aibisToastTimer);
   aibisToastTimer=setTimeout(function(){ t.classList.remove('show'); setTimeout(function(){ if(t.parentNode) t.parentNode.removeChild(t); },320); }, 3200);
 }
+function applyHand(){ try{ document.body.classList.toggle('hand-right', uHand==='right'); }catch(_e){} }
+function setHand(v){ uHand=(v==='right')?'right':'left'; try{ localStorage.setItem(HANDK,uHand); }catch(_e){} applyHand(); }
 function autoSaveSetup(){
   // フォーム入力を即時LocalStorageに仮保存
   var fields={sName:UNK,sBranch:BRK,sSelf:SEK,sMgr:MEK,sRole:RLK,sSec:SCK};
@@ -3138,6 +3163,7 @@ function showSetup() {
   if ((el=document.getElementById('sSec')))    el.value = section||'';
   if ((el=document.getElementById('sRole')))   el.value = userRole||'';
   if ((el=document.getElementById('sNick')))   el.value = uNick||'';
+  if ((el=document.getElementById('sHand')))   el.value = uHand||'left';
   if ((el=document.getElementById('sCopilotUrl'))) el.value = localStorage.getItem(CPK)||'';
   var _sm=document.getElementById('staffMailSection'); if(_sm){ _sm.style.display=isMgrUnlocked()?'block':'none'; if(typeof renderStaffMailRows==='function'){renderStaffMailRows();renderStaffMailChips();} }
   var has = !!(uName && mgrEmail && branch && section);
@@ -5839,7 +5865,7 @@ function renderRevisits(){
     var rid='rv_'+vi;
     return '<div class="vcard ri" data-vi="'+vi+'"><div class="vh"><span class="vn">再訪 '+v.num+' 回目</span></div>'
       +'<div style="display:flex;gap:4px 6px;align-items:center;justify-content:flex-end;flex-wrap:wrap;margin:2px 0 4px">'
-        +'<button type="button" class="mic-btn" onclick="micStart(\''+rid+'_c\',this)" style="margin-top:0;margin-right:auto">🎤</button>'
+        +'<button type="button" class="mic-btn hb-rev" onclick="micStart(\''+rid+'_c\',this)" style="margin-top:0">🎤</button>'
         +'<span style="display:inline-flex;align-items:center;gap:3px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">訪問日</label><input type="date" data-f="date" value="'+e(v.date||'')+'" style="width:auto;min-height:32px;padding:3px 4px;font-size:13px"></span>'
         +'<span style="display:inline-flex;align-items:center;gap:4px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">アポ</label><select data-f="appo" style="width:auto;min-height:32px;padding:4px 4px;font-size:13px"><option value="">-</option><option value="アポ有り"'+(v.appo==='アポ有り'?' selected':'')+'>アポ有り</option><option value="仮アポ"'+(v.appo==='仮アポ'?' selected':'')+'>仮アポ</option><option value="アポ無し"'+(v.appo==='アポ無し'?' selected':'')+'>アポ無し</option></select></span>'
         +_doukouBtnHTML(v.visit_type)
@@ -5873,7 +5899,7 @@ function renderPursuits(){
       +'</div></div>'
       +(i===0?'<div class="tcro">★ テスクロ！提案依頼を持ち掛けよう！</div>':'')
       +'<div style="display:flex;gap:4px 6px;align-items:center;flex-wrap:wrap;margin:2px 0 4px">'
-        +'<button type="button" class="mic-btn" onclick="micStart(\''+pid+'_c\',this)" style="margin-top:0">🎤</button>'
+        +'<button type="button" class="mic-btn hb" onclick="micStart(\''+pid+'_c\',this)" style="margin-top:0">🎤</button>'
         +'<label style="margin:0;font-size:12px">訪問内容</label>'
         +'<span style="display:inline-flex;align-items:center;gap:3px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">面談者</label><select data-f="iv" style="width:auto;min-height:32px;padding:4px 4px;font-size:12px"><option value="">-</option>'+famRoles.map(function(r){return '<option value="'+e(r)+'"'+(v.interviewer===r?' selected':'')+'>'+e(r)+'</option>';}).join('')+((v.interviewer&&famRoles.indexOf(v.interviewer)<0)?'<option value="'+e(v.interviewer)+'" selected>'+e(v.interviewer)+'</option>':'')+'</select></span>'
         +'<span style="display:inline-flex;align-items:center;gap:3px;margin-left:auto"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">次回</label><input type="date" data-f="nad" value="'+e(v.next_appo_date||'')+'" style="width:auto;min-height:32px;padding:3px 4px;font-size:13px"></span>'
@@ -9849,10 +9875,11 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
     </div>
     <h2>《 見込みカード 》</h2>
     <div class="sec" id="secMikomi">
+      <div id="mikomiTop">
       <!-- 上段：氏名50%・ソーシャル25%・現状25% -->
-      <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:8px">
-        <div><label>氏名 <span class="req">*</span></label><div style="display:flex;gap:6px;align-items:center"><input type="text" id="f_name" placeholder="お客様名" style="flex:1"><button type="button" id="doukouBtn" onclick="toggleDoukou()" style="flex-shrink:0;padding:8px 10px;border:2px solid #e2e8f0;border-radius:6px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;color:#718096;white-space:nowrap;min-height:38px;min-width:78px;text-align:center">単独</button></div></div>
-        <div>
+      <div class="mk-row" style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:8px">
+        <div class="mk-name"><label>氏名 <span class="req">*</span></label><div style="display:flex;gap:6px;align-items:center"><input type="text" id="f_name" placeholder="お客様名" style="flex:1"><button type="button" id="doukouBtn" onclick="toggleDoukou()" style="flex-shrink:0;padding:8px 10px;border:2px solid #e2e8f0;border-radius:6px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;color:#718096;white-space:nowrap;min-height:38px;min-width:78px;text-align:center">単独</button></div></div>
+        <div class="mk-social">
           <label>ソーシャル</label>
           <select id="f_social">
             <option value="">未判定</option>
@@ -9862,7 +9889,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
             <option value="エミ">エミ</option>
           </select>
         </div>
-        <div>
+        <div class="mk-genjo">
           <label>現状</label>
           <select id="f_genjo">
             <option value="">-</option><option value="P">駐車場</option>
@@ -9871,13 +9898,13 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         </div>
       </div>
       <!-- 中段：TEL・メアド -->
-      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:8px">
-        <div><label>TEL</label><input type="tel" id="f_tel" inputmode="numeric" placeholder="ハイフン無し" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
-        <div><label>メールアドレス</label><div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap"><input type="email" inputmode="email" autocapitalize="none" autocomplete="off" spellcheck="false" id="f_email_local" placeholder="ID" style="flex:1;min-width:70px"><span style="color:#718096;flex-shrink:0">@</span><select id="f_email_domain" onchange="onEmailDomainChange()" style="width:auto;min-width:120px;flex-shrink:0"><option value="gmail.com">gmail.com</option><option value="yahoo.co.jp">yahoo.co.jp</option><option value="icloud.com">icloud.com</option><option value="docomo.ne.jp">docomo.ne.jp</option><option value="ezweb.ne.jp">ezweb.ne.jp(au)</option><option value="au.com">au.com</option><option value="softbank.ne.jp">softbank.ne.jp</option><option value="i.softbank.jp">i.softbank.jp</option><option value="outlook.jp">outlook.jp</option><option value="hotmail.com">hotmail.com</option><option value="ybb.ne.jp">ybb.ne.jp</option><option value="__custom__">その他(入力)</option></select><input type="text" inputmode="url" autocapitalize="none" autocomplete="off" spellcheck="false" id="f_email_domain_custom" placeholder="ドメイン" style="display:none;width:auto;min-width:110px;flex-shrink:0"></div></div>
+      <div class="mk-row" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:8px">
+        <div class="mk-tel"><label>TEL</label><input type="tel" id="f_tel" inputmode="numeric" placeholder="ハイフン無し" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
+        <div class="mk-email"><label>メールアドレス</label><div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap"><input type="email" inputmode="email" autocapitalize="none" autocomplete="off" spellcheck="false" id="f_email_local" placeholder="ID" style="flex:1;min-width:70px"><span style="color:#718096;flex-shrink:0">@</span><select id="f_email_domain" onchange="onEmailDomainChange()" style="width:auto;min-width:120px;flex-shrink:0"><option value="gmail.com">gmail.com</option><option value="yahoo.co.jp">yahoo.co.jp</option><option value="icloud.com">icloud.com</option><option value="docomo.ne.jp">docomo.ne.jp</option><option value="ezweb.ne.jp">ezweb.ne.jp(au)</option><option value="au.com">au.com</option><option value="softbank.ne.jp">softbank.ne.jp</option><option value="i.softbank.jp">i.softbank.jp</option><option value="outlook.jp">outlook.jp</option><option value="hotmail.com">hotmail.com</option><option value="ybb.ne.jp">ybb.ne.jp</option><option value="__custom__">その他(入力)</option></select><input type="text" inputmode="url" autocapitalize="none" autocomplete="off" spellcheck="false" id="f_email_domain_custom" placeholder="ドメイン" style="display:none;width:auto;min-width:110px;flex-shrink:0"></div></div>
       </div>
       <!-- 下段：住所・計画地 + 地図ボタン -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px">
-        <div>
+      <div class="mk-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px">
+        <div class="mk-addr">
           <label>住所（自宅）</label>
           <input type="text" id="f_addr" placeholder="例: 東京都江戸川区...">
           <div style="margin-top:4px;display:flex;gap:4px;align-items:center">
@@ -9885,7 +9912,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
             <button type="button" id="planSvBtn" onclick="planStreetView()" disabled title="計画地のストリートビュー（計画地を入力すると押せます）" style="flex-shrink:0;font-size:14px;line-height:1;padding:4px 9px;border:1px solid #cbd5e0;border-radius:6px;background:white;cursor:pointer;color:#4a5568">🌐</button>
           </div>
         </div>
-        <div>
+        <div class="mk-plan">
           <label>計画地</label>
           <input type="text" id="f_plan" placeholder="計画地の住所" oninput="updatePlanSvBtn()">
           <!-- スマホ：ボタンを下段に -->
@@ -9899,6 +9926,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
             <button type="button" onclick="copyPlanToClipboard()" style="flex-shrink:0;font-size:11px;padding:6px 10px;border:1px solid #cbd5e0;border-radius:6px;background:white;cursor:pointer;color:#4a5568;white-space:nowrap">📋</button>
           </div>
         </div>
+      </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
         <button type="button" class="bc" style="padding:8px;font-size:12px" onclick="mapRoute()">🚗 計画地から自宅</button>
@@ -9962,7 +9990,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
     <!-- 家族構成 -->
     <div class="sec">
       <div style="display:flex;gap:10px;align-items:flex-start">
-        <div style="flex:65;min-width:0">
+        <div style="flex:73;min-width:0">
           <div class="stitle">家族構成</div>
           <div class="fam-gen-row">
             <div class="fam-gen-label">祖父母</div>
@@ -9983,11 +10011,11 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           </div>
           <div class="fam-summary" id="famSummary" style="display:none"></div>
         </div>
-        <div style="flex:35;border-left:1px solid #e2e8f0;padding-left:8px;font-size:10px;color:#4a5568;display:flex;flex-direction:column;gap:8px">
+        <div style="flex:27;border-left:1px solid #e2e8f0;padding-left:8px;font-size:10px;color:#4a5568;display:flex;flex-direction:column;gap:8px">
           <!-- コンプリートボタン（大） -->
           <div>
             <div class="stitle" style="font-size:11px;margin-bottom:6px">家族人数</div>
-            <button type="button" id="famHeadcountBtn" onclick="toggleFamHeadcount()" style="width:100%;padding:10px 4px;border:2px solid #e2e8f0;border-radius:8px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:13px;color:#718096;line-height:1.4">👥<br>人数を確定</button>
+            <button type="button" id="famHeadcountBtn" onclick="toggleFamHeadcount()" style="width:100%;padding:7px 3px;border:2px solid #e2e8f0;border-radius:8px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;color:#718096;line-height:1.35">👥<br>人数を確定</button>
           </div>
           <!-- 凡例 -->
           <div>
@@ -10009,7 +10037,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <div style="margin-top:8px">
         <label>家族構成備考</label>
         <div style="display:flex;gap:6px;align-items:center">
-          <button type="button" class="mic-btn" onclick="micStart('f_fambiko',this)" style="flex-shrink:0;margin-top:0">🎤</button>
+          <button type="button" class="mic-btn hb" onclick="micStart('f_fambiko',this)" style="flex-shrink:0;margin-top:0">🎤</button>
           <input type="text" id="f_fambiko" placeholder="同居の経緯・相続の意向 など" style="flex:1">
         </div>
       </div>
@@ -10061,7 +10089,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <div style="margin-bottom:8px">
         <label>計画地備考</label>
         <div style="display:flex;gap:6px;align-items:center">
-          <button type="button" class="mic-btn" onclick="micStart('f_kuubi',this)" style="flex-shrink:0;margin-top:0">🎤</button>
+          <button type="button" class="mic-btn hb" onclick="micStart('f_kuubi',this)" style="flex-shrink:0;margin-top:0">🎤</button>
           <input type="text" id="f_kuubi" placeholder="P空き多い・退去予定あり など" style="flex:1">
         </div>
       </div>
@@ -10207,7 +10235,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
     </div>
     <div class="sec">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-        <button type="button" class="mic-btn" onclick="micStart('f_content',this)" style="margin-top:0;flex-shrink:0">🎤</button>
+        <button type="button" class="mic-btn hb" onclick="micStart('f_content',this)" style="margin-top:0;flex-shrink:0">🎤</button>
         <div class="stitle" style="margin-bottom:0">初訪内容（見込み候補だと判断した理由）<span class="req">*</span></div>
       </div>
       <textarea id="f_content" rows="5" placeholder="相手の反応を書く。例：相続の話→「税理士に聞かないと」と真顔。発言は「」でそのまま"></textarea>
