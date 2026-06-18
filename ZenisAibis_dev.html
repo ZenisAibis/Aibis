@@ -7,6 +7,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="z.Aibis">
+<link rel="manifest" href='data:application/manifest+json,{"name":"z.Aibis","short_name":"z.Aibis","display":"standalone","theme_color":"%231e3a5f","background_color":"%23f0f2f5","start_url":"https://zenisaibis.github.io/Aibis/ZenisAibis.html","scope":"https://zenisaibis.github.io/Aibis/"}'>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="AIBIS">
 <meta name="application-name" content="AIBIS">
 <meta name="theme-color" content="#1e3a5f">
@@ -120,17 +125,16 @@ button:active{opacity:0.8}
 .bg{background:transparent;color:white;border:1px solid rgba(255,255,255,0.4)}
 .bd{background:#c53030;color:white}
 @media(max-width:768px){
-  body{padding:0}
-  body.is-mob #listView,body.is-mob #editView,body.is-mob #setupView,body.is-mob #helpView{position:static!important;height:auto!important;min-height:100dvh;overflow:visible!important;overscroll-behavior:auto}
-  body.is-mob #listView,body.is-mob #setupView,body.is-mob #helpView{padding-bottom:28px}
+  body{padding:8px;padding-bottom:96px}
   #helpView header,#setupView header,#editView header{flex-direction:column;align-items:stretch}
   header h1{text-align:center}
   .ha{justify-content:center}
   .ha button{flex:1 1 auto;font-size:11px;padding:8px 4px}
-  #selectBar{flex-wrap:nowrap!important;flex-direction:column;align-items:stretch;gap:6px;padding:8px 10px}
-  #selectBar>div:first-child{font-size:12px}
-  #selectBar>div:last-child{flex-wrap:nowrap!important;gap:4px;justify-content:flex-end}
-  #selectBar>div:last-child button{font-size:10.5px;padding:5px 6px;white-space:nowrap;flex:1 1 0;min-width:0}
+  #selectBar{flex-wrap:nowrap!important;gap:6px;padding:8px 8px}
+  #selectBar>div:first-child{flex-shrink:0;font-size:11px}
+  #selectBar>div:last-child{flex-wrap:nowrap!important;gap:4px;flex:1;min-width:0;justify-content:flex-end}
+  #selectBar>div:last-child button{font-size:10.5px;padding:5px 6px;white-space:nowrap;flex:0 1 auto;min-width:0}
+  body.is-mob .bic{display:none}
 }
 .tabs{display:flex;background:#fff;border-bottom:2px solid #e2e8f0;position:sticky;top:var(--tabsTop,66px);z-index:49;box-shadow:0 3px 8px rgba(0,0,0,0.05)}
 .tab{padding:12px 8px;cursor:pointer;font-weight:500;color:#4a5568;border-bottom:3px solid transparent;font-size:13px;flex:1;text-align:center;min-height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
@@ -142,7 +146,7 @@ button:active{opacity:0.8}
 .tab[data-tab="ta"].active{border-top-color:#fff;border-bottom-color:#fff}
 .tab.done.active{border-top-color:#fff;border-bottom-color:#fff}
 @media(max-width:768px){
-  .tabs{position:fixed;top:auto;bottom:0;left:0;right:0;background:white;box-shadow:0 -2px 8px rgba(0,0,0,0.1);z-index:100;border-bottom:none;border-top:2px solid #e2e8f0;transform:translateZ(0);backface-visibility:hidden}
+  .tabs{position:fixed;top:auto;bottom:0;left:0;right:0;background:white;box-shadow:0 -2px 8px rgba(0,0,0,0.1);z-index:100;border-bottom:none;border-top:2px solid #e2e8f0}
   .tab{padding:10px 4px;font-size:11px;border-bottom:none;border-top:3px solid transparent;min-height:64px}
   .tab.active{border-top-color:#2c5282;border-bottom:none}
   #editView{padding-bottom:calc(104px + env(safe-area-inset-bottom,0px))}
@@ -988,8 +992,8 @@ body.is-mob .mob-menu{display:inline-block}
       <button onclick="selectNone()" class="bc" style="font-size:11px;padding:5px 8px">全解除</button>
       <button onclick="openPlannerFromSelected()" class="bp pc-only-btn" style="font-size:11px;padding:5px 8px;background:#319795">📅 本日の予定表</button>
       <button onclick="mailSelectedToSelf()" class="bp" style="font-size:11px;padding:5px 8px" id="btnSendSelf">📧 スマホへ</button>
-      <button onclick="mailSelectedToStaff()" class="bp" style="font-size:11px;padding:5px 8px;background:#553c9a;display:none" id="btnSendStaff">📧 担当へ</button>
-      <button onclick="mailSelectedToManager()" class="bw" style="font-size:11px;padding:5px 8px">📧 課長へ</button>
+      <button onclick="mailSelectedToStaff()" class="bp" style="font-size:11px;padding:5px 8px;background:#553c9a;display:none" id="btnSendStaff"><span class="bic">📧 </span>担当へ</button>
+      <button onclick="mailSelectedToManager()" class="bw" style="font-size:11px;padding:5px 8px"><span class="bic">📧 </span>課長へ</button>
     </div>
   </div>
   <div id="staffFilterBar" style="display:none;background:white;border:1px solid #e2e8f0;border-radius:6px;padding:8px 10px;margin-bottom:6px;width:100%;box-sizing:border-box">
@@ -1727,7 +1731,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.54";
+var APP_VERSION = "v7.56";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -2114,7 +2118,7 @@ function init() {
   try{_streakTick();}catch(_e){}
   document.querySelectorAll('.aibisVer').forEach(function(el){ el.textContent=APP_VERSION; });
   var btnSelf=document.getElementById('btnSendSelf');
-  if(btnSelf) btnSelf.textContent=isMob?'📧 PCへ':'📧 スマホへ';
+  if(btnSelf){ if(isMob){ btnSelf.innerHTML='PCへ'; } else { btnSelf.innerHTML='<span class="bic">📧 </span>スマホへ'; } }
 
   // 利用者情報未設定 → 初期設定
   if (!uName || !mgrEmail || !branch || !section) {
@@ -5305,26 +5309,6 @@ function openCard(id){
   if(typeof updateCardNav==='function') updateCardNav();
 }
 function fitTabsTop(){ var h=document.querySelector('#editView header'); var hh=(h&&h.offsetHeight)||66; document.documentElement.style.setProperty('--hdrTop', hh+'px'); if(isMob) return; var nav=document.getElementById('cardNav'); var nh=(nav && nav.style.display!=='none' && nav.offsetHeight)?nav.offsetHeight:0; document.documentElement.style.setProperty('--tabsTop', (hh+nh)+'px'); }
-/* ⑨ Android Chrome対策：アドレスバー開閉(visualViewport変化)後に、固定タブ/吸着ヘッダの当たり判定がズレる問題への再同期 */
-(function(){
-  if(!window.visualViewport) return;
-  var vv=window.visualViewport, queued=false;
-  function resync(){
-    queued=false;
-    var ev=document.getElementById('editView');
-    if(!ev || ev.style.display==='none') return;
-    [ev.querySelector('header'), document.getElementById('cardNav'), ev.querySelector('.tabs')].forEach(function(el){
-      if(!el) return;
-      var t=el.style.transform;
-      el.style.transform='translateZ(0)';
-      void el.offsetHeight;            /* 強制リフローで当たり判定を再計算させる */
-      el.style.transform=t;
-    });
-  }
-  function sched(){ if(!queued){ queued=true; requestAnimationFrame(resync); } }
-  vv.addEventListener('resize', sched, {passive:true});
-  vv.addEventListener('scroll', sched, {passive:true});
-})();
 window.fitTabsTop=fitTabsTop;
 function navCard(dir){
   if(!Array.isArray(lastVisible)||!lastVisible.length||!curId) return;
