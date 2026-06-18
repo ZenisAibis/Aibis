@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="AIBIS">
 <meta name="application-name" content="AIBIS">
-<meta name="theme-color" content="#c53030">
+<meta name="theme-color" content="#1e3a5f">
 <style>
 /* Google Fontsが読み込めない環境用のフォールバック */
 @font-face {
@@ -79,7 +79,10 @@ body{font-family:-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-seri
 #listHeaderMob{display:none}
 body.is-mob #listHeaderPC{display:none!important}
 body.is-mob #listHeaderMob{display:block!important}
-body.is-mob #doukouBtn{min-width:60px!important;padding:8px 5px!important;font-size:11px!important}
+body.is-mob #doukouBtn{min-width:42px!important;padding:7px 3px!important;font-size:10px!important}
+body.is-mob #actCols{grid-template-columns:1fr!important}
+body.is-mob #houbunPills{flex-wrap:nowrap!important}
+body.is-mob #houbunPills .pbtn{flex:1 1 0;min-width:0;padding:8px 2px;font-size:12.5px;white-space:nowrap}
 body.is-mob #analysisSummary{grid-template-columns:repeat(2,1fr)!important}
 body.is-mob #analysisStats2{grid-template-columns:repeat(2,1fr)!important}
 body.is-mob #analysisChartsGrid{grid-template-columns:1fr!important}
@@ -110,6 +113,8 @@ button{cursor:pointer;border:none;border-radius:6px;padding:8px 10px;font-size:1
 button:active{opacity:0.8}
 .bp{background:#2c5282;color:white}
 .bs{background:#38a169;color:white}
+@keyframes saveBlink{0%,100%{background:#38a169;box-shadow:0 0 0 0 rgba(237,137,54,.55)}50%{background:#ed8936;box-shadow:0 0 0 5px rgba(237,137,54,0)}}
+.bs.needsave{animation:saveBlink 1s ease-in-out infinite}
 .bw{background:#d69e2e;color:white}
 .bc{background:#fff;color:#2c5282;border:1px solid #2c5282}
 .bg{background:transparent;color:white;border:1px solid rgba(255,255,255,0.4)}
@@ -120,6 +125,11 @@ button:active{opacity:0.8}
   header h1{text-align:center}
   .ha{justify-content:center}
   .ha button{flex:1 1 auto;font-size:11px;padding:8px 4px}
+  #selectBar{flex-wrap:nowrap!important;gap:6px;padding:8px 8px}
+  #selectBar>div:first-child{flex-shrink:0;font-size:11px}
+  #selectBar>div:last-child{flex-wrap:nowrap!important;gap:4px;flex:1;min-width:0;justify-content:flex-end}
+  #selectBar>div:last-child button{font-size:10.5px;padding:5px 6px;white-space:nowrap;flex:0 1 auto;min-width:0}
+  body.is-mob .bic{display:none}
 }
 .tabs{display:flex;background:#fff;border-bottom:2px solid #e2e8f0;position:sticky;top:var(--tabsTop,66px);z-index:49;box-shadow:0 3px 8px rgba(0,0,0,0.05)}
 .tab{padding:12px 8px;cursor:pointer;font-weight:500;color:#4a5568;border-bottom:3px solid transparent;font-size:13px;flex:1;text-align:center;min-height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
@@ -134,6 +144,7 @@ button:active{opacity:0.8}
   .tabs{position:fixed;top:auto;bottom:0;left:0;right:0;background:white;box-shadow:0 -2px 8px rgba(0,0,0,0.1);z-index:100;border-bottom:none;border-top:2px solid #e2e8f0}
   .tab{padding:10px 4px;font-size:11px;border-bottom:none;border-top:3px solid transparent;min-height:64px}
   .tab.active{border-top-color:#2c5282;border-bottom:none}
+  #editView{padding-bottom:calc(104px + env(safe-area-inset-bottom,0px))}
 }
 .panel{background:white;padding:16px;border-radius:0 0 8px 8px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
 .panel h2{font-size:16px;color:var(--za-navy);font-weight:800;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #CBD5E0}
@@ -218,6 +229,7 @@ textarea{resize:vertical;min-height:80px}
 .jbtn.active.jsoak{background:#718096;color:white;border-color:#718096}
 .jbtn.rj-locked{opacity:.45}
 .addbtn.pursuit-locked{opacity:.5}
+.jbtn.pj-locked{opacity:.45}
 .xa-sec{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
 .xa-h{font-size:12px;font-weight:700;color:#2c5282;margin-bottom:10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #edf2f7;padding-bottom:6px}
 .xa-grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -975,8 +987,8 @@ body.is-mob .mob-menu{display:inline-block}
       <button onclick="selectNone()" class="bc" style="font-size:11px;padding:5px 8px">全解除</button>
       <button onclick="openPlannerFromSelected()" class="bp pc-only-btn" style="font-size:11px;padding:5px 8px;background:#319795">📅 本日の予定表</button>
       <button onclick="mailSelectedToSelf()" class="bp" style="font-size:11px;padding:5px 8px" id="btnSendSelf">📧 スマホへ</button>
-      <button onclick="mailSelectedToStaff()" class="bp" style="font-size:11px;padding:5px 8px;background:#553c9a;display:none" id="btnSendStaff">📧 担当へ</button>
-      <button onclick="mailSelectedToManager()" class="bw" style="font-size:11px;padding:5px 8px">📧 課長へ</button>
+      <button onclick="mailSelectedToStaff()" class="bp" style="font-size:11px;padding:5px 8px;background:#553c9a;display:none" id="btnSendStaff"><span class="bic">📧 </span>担当へ</button>
+      <button onclick="mailSelectedToManager()" class="bw" style="font-size:11px;padding:5px 8px"><span class="bic">📧 </span>課長へ</button>
     </div>
   </div>
   <div id="staffFilterBar" style="display:none;background:white;border:1px solid #e2e8f0;border-radius:6px;padding:8px 10px;margin-bottom:6px;width:100%;box-sizing:border-box">
@@ -1044,7 +1056,7 @@ body.is-mob .mob-menu{display:inline-block}
         <div>
           <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">現状</label>
           <select id="qaGenjo" style="width:100%;box-sizing:border-box;padding:10px 6px;border:1px solid #cbd5e0;border-radius:8px;font-size:13px;font-family:inherit;background:#fff">
-            <option value="">-</option><option value="P">P（駐車場）</option>
+            <option value="">-</option><option value="P">駐車場</option>
             <option value="老朽">老朽</option><option value="店舗">店舗</option><option value="自宅">自宅</option><option value="雑種地">雑種地</option><option value="都外">都外</option>
           </select>
         </div>
@@ -1223,7 +1235,7 @@ body.is-mob .mob-menu{display:inline-block}
         ※ <b>チェックなしで押すと、前回送信から更新・新規のカードだけ</b>を自動で選んで送るよ（確認あり）。全部送るなら「全選択」<br><br>
         <b style="color:#718096">【共通】</b><br>
         検索 … 氏名・住所・地名で絞り込み（スペース区切りで複数）<br>
-        並び替え … 最新・再訪・住所・スコア・心理・ランク・遅れ・初訪から選択<br>
+        並び替え … 最新・再訪・判定待ち・住所・スコア・心理・ランク・遅れ・初訪から選択<br>
         一覧の各カードには「追客ランク」「心理ステージ」が表示されます
       </div>
     </div>
@@ -1563,6 +1575,10 @@ if(Z_ALLOW.indexOf(location.hostname)<0){
 'use strict';
 
 // ===== スコア計算（優先順位） =====
+// 案件化 必須5項目の加重充足度（家族合意=2/自己資金=1/確定申告=1/名寄帳=0.5/納期=0.5・満点5）
+function _amScore(c){ var m=(c&&c.am_checks)||{}; var s=0; if(m.kazoku)s+=2; if(m.jikoshikin)s+=1; if(m.kakutei)s+=1; if(m.nayose)s+=0.5; if(m.nouki)s+=0.5; return s; }
+// 充足A見込み＝A見込みかつ家族合意済かつ充足度3以上（“見かけA”を除外）
+function _amFulfilledA(c){ if(!c)return false; var m=c.am_checks||{}; var isA=(c.pursuit_judge==='A'||c.pursuit_judge==='S'||c.pursuit_judge_sel==='A見込み'); return isA && !!m.kazoku && _amScore(c)>=3; }
 // スコア計算
 function calcScoreParts(c){
   // ① ステージ（最大13点）3:連想を強調
@@ -1625,6 +1641,10 @@ function calcScoreParts(c){
   var rusuMap=[4,3,2,1,0,0];
   var rusuN=Math.max(0,Math.min(5,parseInt(c.rusu,10)||0));
   var rusuScore=rusuMap[rusuN];
+  // ⑪ 案件化充足（A見込みのみ・必須項目の取得状況／見かけAは上がらない・最大6点）
+  var _isA=(c.pursuit_judge==='A'||c.pursuit_judge==='S'||c.pursuit_judge_sel==='A見込み');
+  var _amSc=_amScore(c);
+  var amCardPt=_isA?Math.round(_amSc/5*6):0;
   var stgNm=(typeof STG!=='undefined'&&STG[si])?STG[si]:String(si);
   var parts=[
    {lb:'⭐ 提案依頼',pt:proposalScore,mx:15,why:c.proposal_req?'取得済み（顧客の意思表示）':'未取得。連想(3)到達でテストクロージングを'},
@@ -1634,10 +1654,11 @@ function calcScoreParts(c){
    {lb:'🏷 追客ランク',pt:r,mx:8,why:c.pursuit_judge||'未判定'},
    {lb:'🌍 土地×路線価',pt:landFinal,mx:7.5,why:c.asset_type?'アセット系のため対象外':(tsubo>0?(Math.round(tsubo)+'坪 × 係数'+rosenCoef):'面積未入力')},
    {lb:'👪 KP/所有者面談',pt:famScore,mx:6,why:'所有者'+(hasOwnerMet?'✓':'未')+'・KP'+(hasKpMet?'✓':'未')},
+   {lb:'✅ 案件化充足',pt:amCardPt,mx:6,why:_isA?(_amSc>=3?'必須項目を取得（家族合意ほか）':(_amSc>0?'A見込みだが取得不足':'A見込みだが未取得＝見かけA')):'A見込み確定で対象'},
    {lb:'🚪 連続留守',pt:rusuScore,mx:4,why:'留守'+rusuN+'回（減点式・留守ゼロで満点）'},
    {lb:'🚉 駅徒歩',pt:ekiScore,mx:2,why:c.ekitoho||'未確認（±2点）'}
   ];
-  var total=Math.max(0, Math.round(s+r+k+landFinal+famScore+assetScore+ekiScore+proposalScore+rusuScore));
+  var total=Math.max(0, Math.round(s+r+k+landFinal+famScore+assetScore+ekiScore+proposalScore+rusuScore+amCardPt));
   return {total:total,parts:parts};
 }
 function calcScore(c){ return calcScoreParts(c).total; }
@@ -1705,7 +1726,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.22";
+var APP_VERSION = "v7.57";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -1992,6 +2013,7 @@ function readLS() {
   try { cards = JSON.parse(localStorage.getItem(SK)||'[]'); } catch(ex){ cards=[]; }
   lastSaveSnapshot=JSON.stringify(cards);
   migrateRosenka();
+  migratePursuitLock();
 }
 var BACKUP_KEY='prospect_backup_v1';
 var BACKUP_META='prospect_backup_meta_v1';
@@ -2091,7 +2113,7 @@ function init() {
   try{_streakTick();}catch(_e){}
   document.querySelectorAll('.aibisVer').forEach(function(el){ el.textContent=APP_VERSION; });
   var btnSelf=document.getElementById('btnSendSelf');
-  if(btnSelf) btnSelf.textContent=isMob?'📧 PCへ':'📧 スマホへ';
+  if(btnSelf){ if(isMob){ btnSelf.innerHTML='PCへ'; } else { btnSelf.innerHTML='<span class="bic">📧 </span>スマホへ'; } }
 
   // 利用者情報未設定 → 初期設定
   if (!uName || !mgrEmail || !branch || !section) {
@@ -2271,7 +2293,7 @@ var AIBIS_FAQ=[
   {q:'自動保存先って何？',a:'PC版でOneDriveに設定する主ファイルのことだよ！保存するたびに自動で書き込まれるよ。<br><br>初期設定の「💾 自動保存先を設定」から設定できるよ。ファイル名はz-aibis_氏名.jsonで自動入力されるから変更不要！<br><br>⚠ このファイルを削除すると全データが消えるから絶対に削除しないでね！'},
   {q:'データが消えた！',a:'落ち着いて！まず確認してみてね😊<br><br>【まず試す】⋮その他→⏪1つ前に戻す　で直前の保存状態に復元できるよ！<br><br>【PC版】OneDriveのz-aibis_氏名.jsonが残っていないか確認。コピー保存先も確認してみて。<br>【スマホ版】PCにバックアップ（📧 PCへ）が残っていないか確認。<br><br>これからはPC版でコピー保存先も設定しておくと二重に守れるよ！'},
   {q:'1つ前に戻すって何？',a:'⏪1つ前に戻すは、直前の保存状態に復元する機能だよ！<br><br>保存するたびに、その直前のデータが自動でバックアップされてるよ。<br><br>誤ってカードを消した・上書きしてしまった・読み込みミスをした、そんなときに⋮その他→⏪1つ前に戻すで復活できるよ😊<br><br>※もう一度押すと、戻す前の状態に戻せるよ（行ったり来たり）。ただし2つ前より前には戻れないから注意してね！'},
-  {q:'検索ってどう使うの？',a:'名前や住所を入れるだけ！スペース区切りで複数キーワードも使えるよ🔍<br>並び替えは最新・再訪・住所・スコア・心理・ランク・遅れ・初訪から選べるよ！'},
+  {q:'検索ってどう使うの？',a:'名前や住所を入れるだけ！スペース区切りで複数キーワードも使えるよ🔍<br>並び替えは最新・再訪・判定待ち・住所・スコア・心理・ランク・遅れ・初訪から選べるよ！'},
   {q:'バージョンアップするには？',a:function(){ return isMgrUnlocked()?'Claudeに修正を頼んで、GitHubに上書きするだけ！みんな次回アクセスで自動的に最新版になるよ👏':'アップデートは課長が管理しているよ😊 アプリを開き直すだけで、いつでも自動的に最新版が使えるから安心してね！'; }},
   {q:'マニュアルはどこ？',a:function(){return isMob?'⋮その他→📖マニュアルから見れるよ！タイトルをタップすると詳細が開くよ。':'⋮その他→📖マニュアルから見れるよ！各セクションをクリックすると詳細が開くよ。';}},
   {q:'戦略協議ってどう使うの？',a:'戦略協議は、お客様の情報をAI（会社のCopilot）に分析してもらう機能だよ！<br><br>①「💭 戦略協議」タブを開く<br>②分析テーマを選ぶ（8種）<br>③「🤖 分析用に抽出」でコピー、または「📎 ファイルで抽出」でtxt保存（Copilotに添付→「添付の指示に従って分析して」とだけ送ればOK）<br>④「🤖 AI分析」でCopilotが開く<br>⑤貼り付けて送信→回答を貼り付け欄にペースト<br><br>総合分析では追客ランク（S〜E）が自動で検出されるよ🧚'},
@@ -2308,7 +2330,7 @@ var AIBIS_FAQ=[
     +'連れ出しの例：ショールーム・バスツアー・物件見学会・各種セミナー・スポーツ観戦など<br><br>'
     +'上り込みでお茶・雑談・お菓子。この関係を大切にしてね！'},
   {q:'ソーシャル',a:'ソーシャルスタイルは4タイプだよ！<br><b>ドライバー</b>…決断が早く結果重視。手短に要点を。<br><b>エクスプレッシブ</b>…感情豊か。共感を示して。<br><b>アナリティカル</b>…データ・論理重視。根拠をしっかり。<br><b>エミアブル</b>…協調性が高い。急がせず丁寧に。'},
-  {q:'Judgmentって何？',a:'Judgmentはお客様の現状を課長と協議して判定するもの。<br><br>【再訪Judgment】追客開始 / 継続訪問 / 打ち切り の3択<br>【追撃Judgment】A見込み / 訪問継続 / 打ち切り の3択<br><br>🔒 再訪Judgmentは再訪3回目（日付・訪問内容・録音要約のいずれか）を記録すると押せるよ。追撃カードの発行には先に再訪Judgmentが必要。15回超の追撃追加には追撃Judgmentが必要。<br>ボタンはもう一度押すと選択解除（未選択ならAIの判定を優先）。A見込み=A・訪問継続=B・打ち切り=X。<br><br>必ず課長との協議のうえで選択してね！'},
+  {q:'Judgmentって何？',a:'Judgmentはお客様の現状を課長と協議して判定するもの。<br><br>【再訪Judgment】追客開始 / 継続訪問 / 打ち切り の3択<br>【追撃Judgment】A見込み / 追撃継続 / 変化待ち（長期継続）/ 打ち切り の4択<br><br>🔒 再訪Judgmentは再訪3回目（日付・訪問内容・録音要約のいずれか）を記録すると押せるよ。追撃カードの発行には先に再訪Judgmentが必要。15回目以降の追撃追加には追撃Judgmentが必要。<br>ボタンはもう一度押すと選択解除（未選択ならAIの判定を優先）。A見込み=A・追撃継続=B・変化待ち=C・打ち切り=X。<br><br>必ず課長との協議のうえで選択してね！'},
   {q:'スコアってどう計算するの？',a:function(){return isMgrUnlocked()?'提案依頼15点＋ステージ13点＋会話状況12点＋資産背景10点＋追客ランク8点＋連続留守4点（留守ゼロで満点・減点式）＋土地面積×路線価 約7.5点＋KP面談6点＋最寄駅±2点の合計で約78点満点！提案依頼の取得・連想到達・上り込み・資産背景が大きいお客様ほど高得点になるよ。スコア順の並び替えで今週誰に行くべきかが一目でわかるよ📊':'スコアは「今週どのお客様を優先するか」を見やすくする並び替え用の目安だよ📊 細かい配点は内部設定なので、まずはスコア順の上位から動いてみてね！';}},
   {q:'提案依頼ボタンって何？',a:'再訪タブの「連続留守カウント」の右にあるボタン！タップで ❌提案依頼未取得 ⇔ ⭕提案依頼取得 を切替。提案依頼の取得はお客様の意思表示なのでスコアが大きく上がるよ(+15)😊 ベストは「3:連想」でテストクロージングし、動機を引き上げながら取得すること💡 取得すると10客・40客リストにも⭕提案依頼が出るよ。'},
   {q:'駅徒歩フラグって何？',a:'計画地の最寄り駅からの徒歩区分だよ🚉 計画地の「🚉最寄り駅 徒歩」ボタンをタップで 未確認→〜10分→〜20分→21分以上 と切り替わるよ（同行ボタンと同じ要領）。〜10分は加点(+2)、21分以上は減点(-2)＆赤フラグ（一覧・課分析にも表示）。分数は地図で一度確認して印を付けるだけでOK😊'},
@@ -2701,45 +2723,48 @@ function switchStrategyTab(key){
 window.switchStrategyTab=switchStrategyTab;
 var RANK_COLOR={S:'#c53030',A:'#e53e3e',B:'#dd6b20',C:'#d69e2e',D:'#38a169',E:'#718096',X:'#4a5568'};
 var RANK_DESC={S:'S：積極提案',A:'A：積極追客',B:'B：継続追客',C:'C：染み込み',D:'D：状況確認',E:'E：初期除外',X:'X：追客打切'};
-function updateAiRankDisp(rank){
-  var disp=document.getElementById('aiRankDisp');
-  var label=document.getElementById('aiRankLabel');
-  var pace=document.getElementById('aiPaceDisp');
+// 協議ランク＝Judgmentボタン由来（A/B/C/X）。全解除なら空。
+function _coRank(){
+  if(!cur) return '';
+  var mp={'A見込み':'A','追撃継続':'B','変化待ち':'C','打ち切り':'X'};
+  var mr={'追客開始':'B','打ち切り':'X'};
+  if(cur.pursuit_judge_sel&&mp[cur.pursuit_judge_sel]) return mp[cur.pursuit_judge_sel];
+  if(cur.revisit_judge&&mr[cur.revisit_judge]) return mr[cur.revisit_judge];
+  return '';
+}
+function _setRankBox(dispId,lblId,rank,emptyLbl){
+  var disp=document.getElementById(dispId), label=document.getElementById(lblId);
   if(!disp) return;
-  if(!rank||rank===''){
-    disp.textContent='—'; disp.style.color='#cbd5e0';
-    if(label){label.textContent='未判定'; label.style.color='#718096';}
-    if(pace) pace.style.display='none';
-    return;
-  }
-  var r=rank.toUpperCase();
-  disp.textContent=r;
-  disp.style.color=RANK_COLOR[r]||'#2d3748';
-  if(label){label.textContent=RANK_DESC[r]||r; label.style.color=RANK_COLOR[r]||'#718096';}
-  // ペース判定
-  if(pace&&cur){
-    var allDates=[];
-    if(cur.discovery_date) allDates.push(cur.discovery_date);
-    (cur.revisits||[]).forEach(function(v){if(v.date)allDates.push(v.date);});
-    (cur.pursuits||[]).forEach(function(v){if(v.date)allDates.push(v.date);});
-    if(_judgeMissing(cur)){ pace.style.display='block'; pace.textContent='\u26a0 ランク判定必須（再訪フェーズ終了）'; pace.style.color='#c53030'; }
-    else if(allDates.length&&(_isRevisitPhase(cur)||(r!=='E'&&r!=='X'))){
-      allDates.sort();
-      var last=allDates[allDates.length-1];
-      var days=Math.floor((new Date()-new Date(last))/(1000*60*60*24));
-      var lim=_isRevisitPhase(cur)?REVISIT_PHASE.interval:PACE_LIMIT[r];
-      if(lim){
-        pace.style.display='block';
-        if(days>lim){
-          pace.textContent='⚠ '+days+'日経過';
-          pace.style.background='#fff5f5'; pace.style.color='#c53030'; pace.style.border='1px solid #fc8181';
-        } else {
-          pace.textContent='✅ '+days+'日経過';
-          pace.style.background='#f0fff4'; pace.style.color='#276749'; pace.style.border='1px solid #9ae6b4';
-        }
-      } else { pace.style.display='none'; }
+  if(!rank){ disp.textContent='—'; disp.style.color='#cbd5e0'; if(label){label.textContent=emptyLbl;label.style.color='#718096';} return; }
+  var r=String(rank).toUpperCase();
+  disp.textContent=r; disp.style.color=RANK_COLOR[r]||'#2d3748';
+  if(label){ label.textContent=RANK_DESC[r]||r; label.style.color=RANK_COLOR[r]||'#718096'; }
+}
+function updateAiRankDisp(){
+  // 🤖 AI分析ランク：貼り付けで検出した値。Judgmentを押しても上書きしない
+  _setRankBox('aiRankDisp','aiRankLabel',(cur&&cur.pursuit_judge_ai)||'','未検出');
+  // 🤝 協議ランク：Judgmentボタン由来。全解除なら空
+  _setRankBox('coRankDisp','coRankLabel',_coRank(),'未判定');
+  // ペース判定（公式の追客ランク＝pursuit_judge 基準）
+  var pace=document.getElementById('aiPaceDisp'); if(!pace) return;
+  var r=(cur&&cur.pursuit_judge)?String(cur.pursuit_judge).toUpperCase():'';
+  if(!cur||!r){ pace.style.display='none'; return; }
+  var allDates=[];
+  if(cur.discovery_date) allDates.push(cur.discovery_date);
+  (cur.revisits||[]).forEach(function(v){if(v.date)allDates.push(v.date);});
+  (cur.pursuits||[]).forEach(function(v){if(v.date)allDates.push(v.date);});
+  if(_judgeMissing(cur)){ pace.style.display='block'; pace.textContent='\u26a0 ランク判定必須（再訪フェーズ終了）'; pace.style.color='#c53030'; pace.style.background='transparent'; pace.style.border='none'; return; }
+  if(allDates.length&&(_isRevisitPhase(cur)||(r!=='E'&&r!=='X'))){
+    allDates.sort();
+    var last=allDates[allDates.length-1];
+    var days=Math.floor((new Date()-new Date(last))/(1000*60*60*24));
+    var lim=_isRevisitPhase(cur)?REVISIT_PHASE.interval:PACE_LIMIT[r];
+    if(lim){
+      pace.style.display='block';
+      if(days>lim){ pace.textContent='⚠ '+days+'日経過'; pace.style.background='#fff5f5'; pace.style.color='#c53030'; pace.style.border='1px solid #fc8181'; }
+      else { pace.textContent='✅ '+days+'日経過'; pace.style.background='#f0fff4'; pace.style.color='#276749'; pace.style.border='1px solid #9ae6b4'; }
     } else { pace.style.display='none'; }
-  }
+  } else { pace.style.display='none'; }
 }
 function autoDetectJudge(text){
   if(!cur) return;
@@ -3063,6 +3088,8 @@ function setDirty(v){
   isDirty=v;
   var d=document.getElementById('dirtyDot');
   if(d) d.style.display=v?'inline-block':'none';
+  var sb=document.getElementById('saveCardBtn');
+  if(sb) sb.classList.toggle('needsave', !!v && !!isMob);
 }
 document.addEventListener('input',function(ev){
   if(ev.target&&ev.target.closest('#editView')){ setDirty(true); if(typeof scheduleDraftSave==='function') scheduleDraftSave(); }
@@ -3180,7 +3207,6 @@ function applyRoleUI(){
   var sdBar=document.getElementById('selfDashBar');
   if(sdBar) sdBar.style.display=(!isManager)?'flex':'none';
   var stb=document.getElementById('btnSendStaff'); if(stb) stb.style.display=isManager?'inline-block':'none';
-  var mjr=document.getElementById('mgrJudgeRow'); if(mjr) mjr.style.display=isManager?'block':'none';
   var _sms=document.getElementById('staffMailSection'); if(_sms) _sms.style.display=isManager?'block':'none';
   if(isManager) renderAnalysis();
   // カードの印刷ボタンはPC版のみ
@@ -3459,6 +3485,15 @@ function j9Axes(cards){
       ax[k]=_clip(struct);
     }
   });
+  // 案件化充足（A見込みの必須項目取得）→ 提案軸を主に加点。1枚だけで突出しないよう3件で大きく効くゲート。
+  var amN=0; cards.forEach(function(c){ if(_amFulfilledA(c)) amN++; });
+  if(amN>0){
+    var seB, enB;
+    if(amN>=3){ seB=Math.min(22, 10+(amN-3)*3); enB=Math.min(10, 4+(amN-3)*1.5); }
+    else { seB=amN*2.5; enB=amN*1; }   // N=1〜2は控えめ
+    ax.seian=_clip(ax.seian+seB);
+    ax.enmusubi=_clip(ax.enmusubi+enB);
+  }
   // 行動：担当レベル（発掘量30件で満点・直近更新率・訪問量）
   // 行動：枚数(発掘量)は最低条件＝ゲート(j9CardCap)で効くので“価値”には入れない。
   // ここでは「実際に動いた率」＝再訪着手率・追撃着手率・直近の動き・訪問総量で評価。
@@ -3484,7 +3519,7 @@ var J9_TWO={
  'houbun+choshin':'法心師','houbun+seian':'法案師','houbun+sakujin':'法策師','houbun+kiroku':'証録師',
  'choshin+enmusubi':'和談師','choshin+seian':'聴案師','choshin+sakujin':'聴策師',
  'enmusubi+tsuibi':'継縁師','enmusubi+seian':'成縁師',
- 'tsuibi+seian':'追案師','sakujin+tsuibi':'追策師','kiroku+sakujin':'分析師',
+ 'tsuibi+seian':'追案師','tsuibi+sakujin':'追策師','sakujin+kiroku':'分析師',
  // 記録×行動系（v6.65追加）
  'choshin+kiroku':'聴録師','seian+kiroku':'立証師','tsuibi+kiroku':'追録師','tsuibi+sokko':'遊撃師','kiroku+sokko':'走録師'
 };
@@ -3508,6 +3543,11 @@ var J9_FIVE={
 };
 var J9_INIT=['芽士','初陣士','見込士']; // 初心者帯（rank0）：芽士→初陣士→見込士
 var J9_CARD_GATE={ meshiMax:25, mikomiCardMin:35, mikomiAvg:55, jobMin:41, tier34:65, tier5:80, trust34:0.70, trust5:0.85 };
+// 基礎職判定で使う「行動ゲート」しきい値（行動軸がこれ以上でゲート通過）。記録ゲートは入力率(trust)≧trust34。
+var J9_GATE_ACT=55;
+// ゲート富化（スキル＋ゲートで上位職）の段位別しきい：段位が上がるほど厳しく。記録=入力率trust、行動=行動軸値。
+var J9_GATE_REC={2:0.70,3:0.80,4:0.85,5:0.90};
+var J9_GATE_ACTT={2:55,3:65,4:72,5:80};
 function j9CardCap(n, trust, ps){
   var PS=(ps&&ps>0)?ps:1;
   if(n<J9_CARD_GATE.jobMin*PS) return 0;
@@ -3564,6 +3604,26 @@ function _j9lookup(table, keys){
   if(table[k]) return table[k];
   return null;
 }
+// ゲート富化：スキル突出軸(skillUp・値降順)に、段位別しきいを満たすゲート軸(記録/行動)を足して
+// 定義済みの上位組み合わせ職（2〜5強）に到達させる。段位が上がるほどゲートのしきいは厳しい。
+function j9GateEnrich(skillUp, corr, trust, cap){
+  var maxT=Math.min(5, cap||0);
+  for(var T=maxT; T>=2; T--){
+    var need=T-skillUp.length;
+    if(need<=0 || need>2) continue;            // ゲートを1〜2本足してT軸（純スキルは別処理）
+    var gates=[];
+    if(corr.sokko>=J9_GATE_ACTT[T]) gates.push({k:'sokko',v:corr.sokko});
+    if(trust>=J9_GATE_REC[T])       gates.push({k:'kiroku',v:corr.kiroku});
+    if(gates.length<need) continue;
+    gates.sort(function(a,b){return b.v-a.v;});
+    var useG=gates.slice(0,need).map(function(g){return g.k;});
+    var axes=skillUp.slice(0,T-need).concat(useG);
+    var table=(T===2?J9_TWO:T===3?J9_THREE:T===4?J9_FOUR:J9_FIVE);
+    var job=_j9lookup(table, axes);
+    if(job) return {job:job, strong:axes, tier:T};
+  }
+  return null;
+}
 // メイン：カード配列→ジョブ判定
 function j9DetermineJob(cards, repName, popScale){ var PS=(popScale&&popScale>0)?popScale:1;
   var r=j9Axes(cards);
@@ -3600,10 +3660,27 @@ function j9DetermineJob(cards, repName, popScale){ var PS=(popScale&&popScale>0)
   if(loadR>1.0 && _contactCovR<J9_CONTACT_LO){
     res.job='雑欲士'; res.greed=true; res.strong=[]; return res;
   }
-  // 本ジョブ＝41枚以上 かつ 強い軸が1つ以上。満たさなければ初心者帯に留める
-  // （枚数を積んでも中身が薄い＝最高軸すら55未満なら1強にもしない）
-  if(r.n<J9_CARD_GATE.jobMin*PS || ns===0){
+  // スキル突出軸（閾値超え。無ければ≥55の軽い突出を1つ）。ゲート軸(記録/行動)は別扱い。
+  var _skillAx=['chizu','houbun','choshin','enmusubi','tsuibi','seian','sakujin'];
+  var skillUp=_skillAx.filter(function(k){return corrJob[k]>=(J9_STRONG_MIN[k]||60);}).sort(function(a,b){return corr[b]-corr[a];});
+  if(skillUp.length===0){ var _bs=_skillAx.slice().sort(function(a,b){return corr[b]-corr[a];})[0]; if(corr[_bs]>=55) skillUp=[_bs]; }
+  // スキル突出なし → ゲート(入力率＝記録／行動)基準の基礎職（2ゲート=走録師／記録のみ=記録士／行動のみ=疾行士／未達=初心者帯）
+  if(r.n<J9_CARD_GATE.jobMin*PS || skillUp.length===0){
+    if(r.n>=J9_CARD_GATE.jobMin*PS){
+      var _rg=(r.trust>=J9_CARD_GATE.trust34), _ag=(corr.sokko>=J9_GATE_ACT);
+      if(_rg&&_ag){ res.job='走録師'; res.strong=['kiroku','sokko']; return res; }
+      if(_rg){ res.job='記録士'; res.strong=['kiroku']; return res; }
+      if(_ag){ res.job='疾行士'; res.strong=['sokko']; return res; }
+    }
     res.job=initJob; res.provisional=true; res.strong=[]; return res;
+  }
+  // ゲート富化：スキル突出にクリア済みゲートを足して上位の組み合わせ職へ（段位が上がるほどゲートのしきいは厳しい）
+  var _eff=Math.min(cardCap, (r.trust<0.50?1:(r.trust<0.70?2:(r.trust<0.85?3:9))));
+  var _ge=j9GateEnrich(skillUp, corr, r.trust, _eff);
+  if(_ge){
+    res.strong=_ge.strong; res.job=_ge.job;
+    if(r.trust>=0.85 && corr[skillUp[0]]>=90) res.title=J9_EYE[skillUp[0]];
+    return res;
   }
   res.strong=strong;
   // 全軸高水準＋高信頼→天眼王
@@ -3650,6 +3727,9 @@ function openTypeDex(curName){
    if(curName) _reach[curName]=1;
    try{
      var _meK=(typeof uName!=='undefined'&&uName)?uName:'自分';
+     var _rch=j9LoadReached()[_meK]||null;
+     if(_rch) Object.keys(_rch).forEach(function(_j){ if(_j) _reach[_j]=1; });
+     // 後方互換：既存の月次スナップからも取り込み（永久ログ移行前のデータ救済）
      var _sn=j9LoadSnaps(); var _b=_sn[_meK]||null;
      if(_b) Object.keys(_b).forEach(function(_y){ var _j=_b[_y]&&_b[_y].job; if(_j) _reach[_j]=1; });
    }catch(_e){}
@@ -3709,6 +3789,11 @@ var J9_SNAP='prospect_job9_snap_v1';
 function _ymKey(d){ d=d||new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2); }
 function j9LoadSnaps(){ try{ var o=JSON.parse(localStorage.getItem(J9_SNAP)||'{}'); return (o&&typeof o==='object')?o:{}; }catch(_e){ return {}; } }
 function j9SaveSnaps(o){ try{ localStorage.setItem(J9_SNAP,JSON.stringify(o)); }catch(_e){} }
+// ===== 🏅 永久到達ログ（一度なったジョブは消さない・期間/件数制限なし） =====
+// 担当名→{ジョブ名:初到達ISO}。図鑑の解放はこれを正とする（月次スナップは成長比較用）。
+var J9_REACHED='prospect_job9_reached_v1';
+function j9LoadReached(){ try{ var o=JSON.parse(localStorage.getItem(J9_REACHED)||'{}'); return (o&&typeof o==='object')?o:{}; }catch(_e){ return {}; } }
+function j9SaveReached(o){ try{ localStorage.setItem(J9_REACHED,JSON.stringify(o)); }catch(_e){} }
 // 当月のスナップショットを記録（担当名→月→要約）。1日数回呼ばれても上書きで軽量
 function j9Snapshot(repName, cardsArr){
   if(!repName) return;
@@ -3735,8 +3820,14 @@ function j9Snapshot(repName, cardsArr){
     var months=Object.keys(snaps[rp]).sort();
     while(months.length>12){ delete snaps[rp][months.shift()]; }
   });
+  // 永久到達ログへ追記（現ジョブ＋既存スナップ履歴を取り込み。一度入れたら消さない）
+  try{
+    var _rch=j9LoadReached(); if(!_rch[repName]) _rch[repName]={}; var _chg=false;
+    if(res.job && !_rch[repName][res.job]){ _rch[repName][res.job]=new Date().toISOString(); _chg=true; }
+    Object.keys(snaps[repName]).forEach(function(_y){ var _j=snaps[repName][_y]&&snaps[repName][_y].job; if(_j&&!_rch[repName][_j]){ _rch[repName][_j]=new Date().toISOString(); _chg=true; } });
+    if(_chg) j9SaveReached(_rch);
+  }catch(_e){}
   j9SaveSnaps(snaps);
-  return snaps[repName][ym];
 }
 // 前月スナップショット取得
 function j9PrevSnap(repName){
@@ -4235,7 +4326,7 @@ function _kpiCnt(arr,fn,ym){return arr.filter(function(c){var dd=fn(c);return dd
 function _kpiHalf(arr,fn){var h=_halfRange();return arr.filter(function(c){var dd=fn(c);if(!dd)return false;var mk=String(dd).slice(0,7);return mk>=h.s&&mk<=h.e;}).length;}
 function _kpi3Cards(arr){var n0=_ymOff(0),p1=_ymOff(1),h=_halfRange();return _KPI3.map(function(k){var fn=k[2],col=k[1],lab=k[0];var now=_kpiCnt(arr,fn,n0),prev=_kpiCnt(arr,fn,p1),half=_kpiHalf(arr,fn),d=now-prev;var spark=_zMonthly(arr,fn).slice(6);return '<div class="z-card z-kpi z-c1 z-k3card" style="--mc:'+col+'"><span class="z-klab" style="color:'+col+'">'+lab+'</span>'+((now||prev)?'<span class="z-delta '+(d>=0?'up':'dn')+'">'+(d>=0?'\u25b2':'\u25bc')+' '+Math.abs(d)+'</span>':'')+'<div class="z-kval z-num" style="color:'+col+'">'+now+'<small>\u4ef6</small></div><div class="z-ksub">\u524d\u6708 '+prev+' \u30fb \u534a\u671f('+h.label+') <b style="color:'+col+'">'+half+'</b></div>'+_zSpark(spark,col)+_kpi3Hint(lab,now,prev,d)+'</div>';}).join('');}
 
-var _GENJO=[['P','P(駐車場)','#4aa8ff'],['老朽','老朽','#ff5d7d'],['店舗','店舗','#8b7cff'],['自宅','自宅','#34e3d0'],['雑種地','雑種地','#ffb443'],['都外','都外','#9be15d'],['','未設定','#6b7894']];
+var _GENJO=[['P','駐車場','#4aa8ff'],['老朽','老朽','#ff5d7d'],['店舗','店舗','#8b7cff'],['自宅','自宅','#34e3d0'],['雑種地','雑種地','#ffb443'],['都外','都外','#9be15d'],['','未設定','#6b7894']];
 function _kpi3Hint(lab,now,prev,d){var st=(now===0&&prev===0)?'none':(now===0)?'zero':(d>0)?'up':(d<0)?'down':'flat';var ic={up:'🔥',flat:'➡️',down:'⚠️',zero:'⏳',none:'🎯'}[st];var cls=(st==='up')?'up':(st==='down'||st==='zero')?'warn':'mut';var M={'提案依頼':{up:'連想到達のカードに続けてテスクロを',flat:'連想のカードにもう一押し',down:'連想カードのテスクロ機会を逃さず',zero:'連想到達のカードに提案依頼の一言を',none:'連想(3)まで来たカードにテスクロを'},'同行':{up:'山場のカードに同行で後押しを',flat:'決め所のカードに同行を1本',down:'ここぞのカードに同行依頼を',zero:'山場のカードに同行を1件',none:'同行は強い後押し。1件設定を'},'家族構成':{up:'相続人の数が提案の起点',flat:'次回訪問で1件深掘りを',down:'初回で家族構成を聞く習慣に',zero:'次の訪問で家族構成を1つ',none:'家族構成は提案の土台。まず1件'}};var t=(M[lab]||{})[st]||'';return t?'<div class="z-khint '+cls+'"><span class="ic">'+ic+'</span><span>'+t+'</span></div>':'';}
 function _reactivated(c){var ds=[];if(c.discovery_date)ds.push(c.discovery_date);(c.revisits||[]).forEach(function(r){if(r.date)ds.push(r.date);});(c.pursuits||[]).forEach(function(pp){if(pp.date)ds.push(pp.date);});ds=ds.map(function(d){return +new Date(d);}).filter(function(t){return !isNaN(t);}).sort(function(a,b){return a-b;});if(ds.length<2)return false;var recent=(Date.now()-ds[ds.length-1])/864e5<=30;var mg=0;for(var i=1;i<ds.length;i++){var gp=(ds[i]-ds[i-1])/864e5;if(gp>mg)mg=gp;}return recent&&mg>=45;}
 function _actPoints(c){var p=10,st=+(c.stage||0);if((c.initial_content&&String(c.initial_content).trim())||(c.analog_memo&&String(c.analog_memo).trim()))p+=20;if((c.revisits||[]).length)p+=20;if((c.pursuits||[]).length)p+=15;if(st>=3)p+=30;if(c.proposal_req)p+=50;if(c.doukou)p+=20;if(st>=6)p+=100;if(c.pursuit_judge==='A'||c.pursuit_judge==='S')p+=100;if(c.family_headcount)p+=10;if((c.family||[]).some(function(x){return x.met&&(x.owner||x.kp);}))p+=10;if(_reactivated(c))p+=50;return p;}
@@ -4436,21 +4527,6 @@ function renderSelfDash(tid){
    +_rkArr.slice(0,3).map(function(r,i){return '<div class="z-mrow"><span>'+_med[i]+'</span><b style="flex:1;margin-left:6px">'+e(r.m)+'</b><span class="z-sub"><b>'+r.p+'</b>pt</span></div>';}).join('')
    +(_meIdx>=0?'<div class="z-sub" style="margin-top:6px">あなたは <b>'+(_meIdx+1)+'位</b>（'+_rkArr[_meIdx].p+'pt）／'+_rkArr.length+'人中</div>':'')
    +'</div>';
- }
- if(_rkNames.length>=2){
-  var _syRows=[];
-  _rkNames.forEach(function(m){
-   var cs=_rkMap[m].filter(function(c){return c.mgr_judge&&c.pursuit_judge;});
-   if(!cs.length) return;
-   var hit=cs.filter(function(c){return c.mgr_judge===c.pursuit_judge;}).length;
-   _syRows.push({m:m,n:cs.length,h:hit,r:Math.round(hit/cs.length*100)});
-  });
-  if(_syRows.length){
-   _syRows.sort(function(a,b){return b.r-a.r;});
-   H+='<div class="z-card z-c2"><h3>\ud83d\udc54 判定シンクロ率</h3><div class="z-sub">担当判定と課長判定の一致率＝基準の浸透度。80%以上\u00d75件以上は\ud83c\udf93判定卒業候補。</div>'
-    +_syRows.map(function(o){return '<div class="z-mrow"><b style="flex:1">'+e(o.m)+'</b><span class="z-sub">'+o.h+'/'+o.n+'件</span><b style="margin-left:10px">'+o.r+'%</b>'+((o.r>=80&&o.n>=5)?' <span title="判定卒業候補">\ud83c\udf93</span>':'')+'</div>';}).join('')
-    +'</div>';
-  }
  }
 
  var bodyState='',bodyGrow='';
@@ -5190,7 +5266,7 @@ function mkBlank() {
     kouzou:'', kosu:'', kaisuu:'', prate:'',
     kaiwa:'', materials:[], maefuri:[],
     initial_content:'', manager_instruction_initial:'',
-    jchecks:{}, rusu:'0', rusu_date:'',
+    jchecks:{}, am_checks:{}, tk_checks:{}, rusu:'0', rusu_date:'',
     revisits:[{num:1,date:'',appo:'',content:'',instruction:''},{num:2,date:'',appo:'',content:'',instruction:''},{num:3,date:'',appo:'',content:'',instruction:''}],
     revisit_judge_date:'', revisit_judge:'',
     pursuits:[], pursuit_judge_date:'', pursuit_judge:'', pursuit_judge_sel:'', pursuit_judge_ai:'',
@@ -5274,6 +5350,7 @@ var TF = ['f_disc','f_name','f_social','f_genjo','f_tel','f_addr','f_plan',
   'f_sreason','f_soutei','f_oldrent','f_parking','f_jitaku','f_ryokuchi','f_landasset','f_rosenka','f_chishaku','f_m2','f_maguchi','f_youto',
   'f_kb','f_ky','f_chiku','f_kuushitsu','f_kuushitsu_aki','f_kuubi','f_fambiko','f_kouzou','f_kosu','f_kai','f_prate','f_m2tanka','f_chusharyo',
   'f_content','f_rjdate','f_pjdate','f_r4eyes','f_p4eyes','f_analog','f_content_rec','f_dtrigger','f_dtrigger_when',
+  'f_am_fund','f_am_nouki_when','f_tk_key',
   'f_ai_summary','f_ai_memo'];
 var TFmap = {
   f_disc:'discovery_date', f_name:'name', f_social:'social', f_genjo:'genjo',
@@ -5286,6 +5363,8 @@ var TFmap = {
   f_kouzou:'kouzou', f_kosu:'kosu', f_kai:'kaisuu', f_prate:'prate',
   f_m2tanka:'m2tanka', f_chusharyo:'chusharyo',
   f_content:'initial_content', f_dtrigger:'d_trigger', f_dtrigger_when:'d_trigger_when',
+  f_am_fund:'am_fund', f_am_nouki_when:'am_nouki_when',
+  f_tk_key:'tk_key',
   f_rjdate:'revisit_judge_date', f_pjdate:'pursuit_judge_date',
   f_r4eyes:'revisit_4eyes', f_p4eyes:'pursuit_4eyes',
   f_analog:'analog_memo',
@@ -5350,6 +5429,8 @@ function fillForm(c) {
   document.querySelectorAll('#materials input').forEach(function(cb){ cb.checked=(c.materials||[]).indexOf(cb.value)>=0; });
   document.querySelectorAll('#maefuri input').forEach(function(cb){ cb.checked=(c.maefuri||[]).indexOf(cb.value)>=0; });
   document.querySelectorAll('#jChecklist input').forEach(function(cb){ cb.checked=!!(c.jchecks&&c.jchecks[cb.dataset.ck]); });
+  document.querySelectorAll('#amChecks input[type="checkbox"]').forEach(function(cb){ cb.checked=!!(c.am_checks&&c.am_checks[cb.dataset.am]); });
+  document.querySelectorAll('#tkChecks input[type="checkbox"]').forEach(function(cb){ cb.checked=!!(c.tk_checks&&c.tk_checks[cb.dataset.tk]); });
   _rusuReset(c);
   document.querySelectorAll('input[name="rusu"]').forEach(function(r){ r.checked=String(r.value)===String(c.rusu||'0'); });
   renderFam(); renderRevisits(); renderPursuits();
@@ -5359,7 +5440,6 @@ function fillForm(c) {
   if(c.pursuit_judge_ai==null||c.pursuit_judge_ai==='') c.pursuit_judge_ai=c.pursuit_judge||'';
   _rankFanfare='';
   setRJ(c.revisit_judge||''); setPJ(c.pursuit_judge_sel||'');
-  paintMgrJudge();
   paintScoreWhy();
   if(window.applyRevisitLock) applyRevisitLock();
   if(window.applyPursuitLock) applyPursuitLock();
@@ -5415,6 +5495,8 @@ function collectForm() {
   c.maefuri=Array.from(document.querySelectorAll('#maefuri input:checked')).map(function(cb){return cb.value;});
   c.jchecks={};
   document.querySelectorAll('#jChecklist input').forEach(function(cb){ c.jchecks[cb.dataset.ck]=cb.checked; });
+  c.am_checks={}; document.querySelectorAll('#amChecks input[type="checkbox"]').forEach(function(cb){ c.am_checks[cb.dataset.am]=cb.checked; });
+  c.tk_checks={}; document.querySelectorAll('#tkChecks input[type="checkbox"]').forEach(function(cb){ c.tk_checks[cb.dataset.tk]=cb.checked; });
   var rv=document.querySelector('input[name="rusu"]:checked'); c.rusu=rv?rv.value:'';
   c.revisits=Array.from(document.querySelectorAll('.ri')).map(function(el,i){
     return {num:i+1,date:el.querySelector('[data-f="date"]').value,appo:el.querySelector('[data-f="appo"]').value,visit_type:el.querySelector('[data-f="vtype"]')?.value||'',content:el.querySelector('[data-f="content"]').value,rec:el.querySelector('[data-f="rec"]')?.value||'',instruction:el.querySelector('[data-f="inst"]').value};
@@ -5469,7 +5551,7 @@ document.addEventListener('change',function(ev){
 // ===== ステージ・ピルボタン =====
 document.addEventListener('click',function(ev){
   var sb=ev.target.closest('.stbtn');
-  if(sb){document.querySelectorAll('.stbtn').forEach(function(b){b.classList.remove('active');}); sb.classList.add('active'); return;}
+  if(sb){var wasOn=sb.classList.contains('active'); document.querySelectorAll('.stbtn').forEach(function(b){b.classList.remove('active');}); if(!wasOn) sb.classList.add('active'); return;}
   var pb=ev.target.closest('.pbtn');
   if(pb){
     if(pb.dataset.multi==='1'){pb.classList.toggle('active');}
@@ -5542,13 +5624,17 @@ function famRenderSummary(){
   else if(pos>neg) ov='<span style="color:#2c5282;font-weight:700">👍 概ねポジティブ</span>';
   else ov='<span style="color:#744210;font-weight:700">🔍 確認中</span>';
   el.style.display='flex';
-  el.innerHTML='<span style="font-size:11px;color:#718096;font-weight:600">家族全体：</span>'
+  el.style.flexDirection='column';
+  el.style.alignItems='flex-start';
+  el.innerHTML='<div style="display:flex;align-items:center;gap:5px;flex-wrap:nowrap;white-space:nowrap">'
+    +'<span style="font-size:11px;color:#718096;font-weight:600">家族全体：</span>'
     +'<span style="display:flex;align-items:center;gap:2px"><span style="width:10px;height:10px;border-radius:50%;background:#38a169;display:inline-block"></span>'+pos+'人</span>'
     +'<span style="color:#ddd">|</span>'
     +'<span style="display:flex;align-items:center;gap:2px"><span style="width:10px;height:10px;border-radius:50%;background:#e53e3e;display:inline-block"></span>'+neg+'人</span>'
     +'<span style="color:#ddd">|</span>'
     +'<span style="display:flex;align-items:center;gap:2px"><span style="width:10px;height:10px;border-radius:50%;background:white;border:1px solid #aaa;display:inline-block"></span>'+unk+'人</span>'
-    +'<span style="margin-left:8px">'+ov+'</span>';
+    +'</div>'
+    +'<div style="margin-top:3px">'+ov+'</div>';
 }
 function famSetStance(s){
   famCurStance=s;
@@ -5755,7 +5841,7 @@ function renderRevisits(){
         +_doukouBtnHTML(v.visit_type)
         +'<button type="button" class="mic-btn" onclick="micStart(\''+rid+'_c\',this)" style="margin-top:0">🎤</button>'
       +'</div>'
-      +'<textarea id="'+rid+'_c" data-f="content" rows="3" placeholder="自分がした事より「投げかけ→相手の反応」を書く。例：固定資産税の話→身を乗り出した／奥様は渋い顔。断り・他社・税理士/税額・時期の発言は「」でそのまま必ず">'+e(v.content||'')+'</textarea>'
+      +'<textarea id="'+rid+'_c" data-f="content" rows="3" placeholder="投げかけ→相手の反応を書く。例：税金の話→身を乗り出した。断り・他社・税額・時期の発言は「」でそのまま">'+e(v.content||'')+'</textarea>'
       +'<div style="margin-top:6px;padding:7px 10px;background:#f0fff4;border:1px solid #c6f6d5;border-radius:6px">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px"><label style="margin:0;font-size:12px;font-weight:600;color:#276749">🎙 録音要約・メール等貼り付け</label><button type="button" onclick="clearStrategyField(\''+rid+'_rec\')" style="background:none;border:none;color:#c53030;font-size:15px;padding:0 2px;cursor:pointer;font-family:inherit;flex-shrink:0;line-height:1">🗑</button></div>'
       +'<textarea id="'+rid+'_rec" data-f="rec" rows="2" placeholder="録音要約・メールなどを貼り付け" style="font-size:13px;background:transparent;border-color:#c6f6d5">'+e(v.rec||'')+'</textarea>'
@@ -5789,7 +5875,7 @@ function renderPursuits(){
         +'<span style="display:inline-flex;align-items:center;gap:3px;margin-left:auto"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">次回</label><input type="date" data-f="nad" value="'+e(v.next_appo_date||'')+'" style="width:auto;min-height:32px;padding:3px 4px;font-size:13px"></span>'
         +'<button type="button" class="mic-btn" onclick="micStart(\''+pid+'_c\',this)" style="margin-top:0">🎤</button>'
       +'</div>'
-      +'<textarea id="'+pid+'_c" data-f="content" rows="3" placeholder="提案やテストクロージングへの「相手の反応」を書く。例：プラン見せた→「息子に相談する」と前向き／金額で表情が曇った。断り・他社・税理士/税額・時期の発言は「」でそのまま">'+e(v.content||'')+'</textarea>'
+      +'<textarea id="'+pid+'_c" data-f="content" rows="3" placeholder="提案への相手の反応を書く。例：プラン提示→「息子に相談」と前向き。断り・他社・税額・時期の発言は「」でそのまま">'+e(v.content||'')+'</textarea>'
       +'<div style="margin-top:6px;padding:7px 10px;background:#f0fff4;border:1px solid #c6f6d5;border-radius:6px">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px"><label style="margin:0;font-size:12px;font-weight:600;color:#276749">🎙 録音要約・メール等貼り付け</label><button type="button" onclick="clearStrategyField(\''+pid+'_rec\')" style="background:none;border:none;color:#c53030;font-size:15px;padding:0 2px;cursor:pointer;font-family:inherit;flex-shrink:0;line-height:1">🗑</button></div>'
       +'<textarea id="'+pid+'_rec" data-f="rec" rows="2" placeholder="録音要約・メールなどを貼り付け" style="font-size:13px;background:transparent;border-color:#c6f6d5">'+e(v.rec||'')+'</textarea>'
@@ -5805,7 +5891,7 @@ function addPursuit(){
   if(!isRevisitJudgeDone()){ if(window.applyPursuitLock) applyPursuitLock(); aibisAlert('再訪Judgmentが終わるまで、追撃はこれ以上追加できないよ🔒<br><br>判定日・フォーアイズ・判定ボタンのどれかを入れてね。<br>※入力済みの追撃カードはそのまま残るよ。<br><br>課長と協議した？'); return; }
   if(cur.pursuits.length>=14){
     var judged=!!(cur.pursuit_judge_sel||cur.pursuit_judge_date);
-    if(!judged){ toast('14回を超えて追加するには、追撃Judgmentをしてください。課長と必ず協議するんだよ'); return; }
+    if(!judged && !window.IS_DEV){ toast('14回を超えて追加するには、追撃Judgmentをしてください。課長と必ず協議するんだよ'); return; }
   }
   cur.pursuits.push({num:cur.pursuits.length+1,date:'',appo:'',interviewer:'',next_appo_date:'',visit_type:'',content:'',instruction:''});
   renderPursuits();
@@ -5821,43 +5907,24 @@ var _rankFanfare='';
 function _rankOrd(r){ return {S:0,A:1,B:2,C:3,D:4,E:5,X:6}[r]; }
 function queueOrPlayFanfare(dir){ var ta=document.querySelector('.tab[data-tab="ta"]'); if(ta&&ta.classList.contains('active')){ if(dir==='up'){ if(window.playRankUp) playRankUp(); } else { if(window.playRankDown) playRankDown(); } _rankFanfare=''; } else { _rankFanfare=dir; } }
 function recomputeRank(){ if(!cur) return; var old=cur.pursuit_judge||''; var mp={'A見込み':'A','追撃継続':'B','変化待ち':'C','打ち切り':'X','訪問継続':'B','C染み込み':'C','S積極提案':'A'}; var mr={'追客開始':'B','打ち切り':'X'}; var rk=''; if(cur.pursuit_judge_sel&&mp[cur.pursuit_judge_sel]) rk=mp[cur.pursuit_judge_sel]; else if(cur.revisit_judge&&mr[cur.revisit_judge]) rk=mr[cur.revisit_judge]; if(!rk) rk=cur.pursuit_judge_ai||''; cur.pursuit_judge=rk; if(rk&&old&&rk!==old&&_rankOrd(rk)!==undefined&&_rankOrd(old)!==undefined){ queueOrPlayFanfare(_rankOrd(rk)<_rankOrd(old)?'up':'down'); } if(window.updateAiRankDisp) updateAiRankDisp(rk||''); }
-function isRevisitJudgeLocked(){ if(!cur) return true; var r=((cur.revisits)||[])[2]; return !(r&&(r.date||r.content||r.rec)); }
+function isRevisitJudgeLocked(){ if(window.IS_DEV) return false; if(!cur) return true; var r=((cur.revisits)||[])[2]; return !(r&&(r.date||r.content||r.rec)); }
 function applyRevisitLock(){ var locked=isRevisitJudgeLocked(); document.querySelectorAll('[data-rj]').forEach(function(b){ b.classList.toggle('rj-locked',locked); }); }
 window.isRevisitJudgeLocked=isRevisitJudgeLocked; window.applyRevisitLock=applyRevisitLock;
-function isRevisitJudgeDone(){ return !!(cur && (cur.revisit_judge || cur.revisit_judge_date || (cur.revisit_4eyes && String(cur.revisit_4eyes).trim()))); }
-function applyPursuitLock(){ var b=document.getElementById('addPursuitBtn'); if(b) b.classList.toggle('pursuit-locked', !isRevisitJudgeDone()); }
+function isRevisitJudgeDone(){ if(window.IS_DEV) return true; return !!(cur && (cur.revisit_judge || cur.revisit_judge_date || (cur.revisit_4eyes && String(cur.revisit_4eyes).trim()))); }
+function applyPursuitLock(){ var locked=!isRevisitJudgeDone(); var b=document.getElementById('addPursuitBtn'); if(b) b.classList.toggle('pursuit-locked', locked); document.querySelectorAll('[data-pj]').forEach(function(x){ x.classList.toggle('pj-locked', locked); }); }
 window.isRevisitJudgeDone=isRevisitJudgeDone; window.applyPursuitLock=applyPursuitLock;
-function setRJ(v,user){ if(user){ if(typeof collectForm==='function') collectForm(); if(isRevisitJudgeLocked()){ applyRevisitLock(); aibisAlert('再訪Judgmentはまだロック中だよ🔒<br><br>ヒアリングは足りてる？課長と協議した？<br><br>再訪3回目の「訪問日・訪問内容・録音要約」のどれかを記録するとJudgmentできるよ。'); return; } if(cur.revisit_judge===v) v=''; } cur.revisit_judge=v; document.querySelectorAll('[data-rj]').forEach(function(b){b.classList.toggle('active',b.dataset.rj===v);}); if(user){ recomputeRank(); if(typeof setDirty==='function') setDirty(true); } if(window.updateTabProgress) updateTabProgress(); }
-function setMgrJudge(r){
- if(!cur) return;
- if(cur.mgr_judge===r){ delete cur.mgr_judge; delete cur.mgr_judge_at; delete cur.mgr_judge_by; }
- else{
-  cur.mgr_judge=r; cur.mgr_judge_at=new Date().toISOString(); cur.mgr_judge_by=uName||'';
-  if(r==='E'||r==='X'){
-   aibisConfirm('課長判定【'+r+'】を担当ランクにも即時反映しますか？<br><span style="font-size:11px;color:#718096">（無駄追客の早期停止。理由はフォーアイズ欄に一言残すのを推奨）</span>',
-    function(){ cur.pursuit_judge_ai=r; recomputeRank(); paintMgrJudge(); if(typeof setDirty==='function') setDirty(true); toast('担当ランクにも【'+r+'】を反映しました'); },'反映する','所見のみ');
-  }
- }
- paintMgrJudge(); if(typeof setDirty==='function') setDirty(true);
+function setRJ(v,user){ if(user){ if(typeof collectForm==='function') collectForm(); if(isRevisitJudgeLocked()){ applyRevisitLock(); aibisAlert('再訪Judgmentはまだロック中だよ🔒<br><br>ヒアリングは足りてる？課長と協議した？<br><br>再訪3回目の「訪問日・訪問内容・録音要約」のどれかを記録するとJudgmentできるよ。'); return; } if(cur.revisit_judge===v) v=''; } cur.revisit_judge=v; document.querySelectorAll('[data-rj]').forEach(function(b){b.classList.toggle('active',b.dataset.rj===v);}); if(user){ recomputeRank(); if(window.applyPursuitLock) applyPursuitLock(); if(typeof setDirty==='function') setDirty(true); } if(window.updateTabProgress) updateTabProgress(); }
+function setPJ(v,user){ if(user){ if(typeof collectForm==='function') collectForm(); if(!isRevisitJudgeDone()){ if(window.applyPursuitLock) applyPursuitLock(); aibisAlert('先に再訪Judgmentを行ってね🔒<br><br>追撃Judgmentは、再訪Judgment（判定日・フォーアイズ・判定ボタンのどれか）を入れてからだよ。<br><br>課長と協議した？'); return; } if(cur.pursuit_judge_sel===v) v=''; } cur.pursuit_judge_sel=v; document.querySelectorAll('[data-pj]').forEach(function(b){b.classList.toggle('active',b.dataset.pj===v);}); if(window.renderJudgeDetail) renderJudgeDetail(); if(user){ recomputeRank(); if(typeof setDirty==='function') setDirty(true); } if(window.updateTabProgress) updateTabProgress(); }
+// 追撃Judgmentの選択に応じて重点ボックス（A見込み/追撃継続/変化待ち）を1つだけ表示
+function renderJudgeDetail(){
+  var sel=(cur&&cur.pursuit_judge_sel)||'';
+  var common=(sel==='A見込み'||sel==='追撃継続'||sel==='変化待ち');
+  var set=function(id,show){ var el=document.getElementById(id); if(el) el.style.display=show?'block':'none'; };
+  set('jdCommon',common);
+  set('jdK',sel==='追撃継続');
+  set('jdWait',sel==='変化待ち');
 }
-function paintMgrJudge(){
- try{
-  document.querySelectorAll('[data-mj]').forEach(function(b){ b.classList.toggle('active',!!(cur&&cur.mgr_judge===b.dataset.mj)); });
-  var d=document.getElementById('mgrJudgeDisp'); if(!d) return;
-  if(cur&&cur.mgr_judge){
-   var mine=cur.pursuit_judge||'未判定';
-   if(cur.mgr_judge===cur.pursuit_judge){
-    d.style.display='block'; d.style.background='#f0fff4'; d.style.color='#22543d';
-    d.innerHTML='👔 課長判定：'+e(cur.mgr_judge)+'（あなたの判定と一致 ✓）';
-   }else{
-    d.style.display='block'; d.style.background='#fffbeb'; d.style.color='#92400e';
-    d.innerHTML='👔 課長判定：'+e(cur.mgr_judge)+'（あなたの判定：'+e(mine)+'）— なぜ違うか、次の協議で話そう';
-   }
-  }else{ d.style.display='none'; d.innerHTML=''; }
- }catch(_e){}
-}
-window.setMgrJudge=setMgrJudge; window.paintMgrJudge=paintMgrJudge;
-function setPJ(v,user){ if(user&&cur.pursuit_judge_sel===v) v=''; cur.pursuit_judge_sel=v; document.querySelectorAll('[data-pj]').forEach(function(b){b.classList.toggle('active',b.dataset.pj===v);}); if(user){ recomputeRank(); if(typeof setDirty==='function') setDirty(true); } if(window.updateTabProgress) updateTabProgress(); }
+window.renderJudgeDetail=renderJudgeDetail;
 
 // ===== 保存 =====
 // ===== 下書き自動保存＆画面離脱時の自動確定（保存忘れ対策） =====
@@ -6284,48 +6351,48 @@ function closePrintModal(){
   document.getElementById('printModal').classList.remove('show');
 }
 function buildPrintCSS(){
-  return '@page{size:A4;margin:8mm 12mm}'
+  return '@page{size:A4;margin:12mm 15mm}'
     +'*{box-sizing:border-box}'
-    +'body{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;font-size:9.5pt;color:#1a202c;margin:0;padding:0;background:white}'
-    +'.prhdr{display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#1e3a5f 0%,#2c5282 60%,#553c9a 100%);color:white;padding:3mm 4mm;margin-bottom:4mm;border-radius:2mm}'
-    +'.prhdr-left{font-size:11pt;font-weight:900;letter-spacing:1px}'
-    +'.prhdr-right{font-size:8pt;opacity:0.85;text-align:right;line-height:1.6}'
-    +'.h2{font-size:11pt;font-weight:900;padding:2mm 3mm;margin:3mm 0 2mm;border-radius:1.5mm;color:white;display:flex;align-items:center;gap:2mm;page-break-after:avoid;break-after:avoid}'
+    +'body{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;font-size:10.5pt;color:#1a202c;margin:0;padding:0;background:white}'
+    +'.prhdr{display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#1e3a5f 0%,#2c5282 60%,#553c9a 100%);color:white;padding:3.5mm 4.5mm;margin-bottom:5mm;border-radius:2mm}'
+    +'.prhdr-left{font-size:12.5pt;font-weight:900;letter-spacing:1px}'
+    +'.prhdr-right{font-size:8.5pt;opacity:0.85;text-align:right;line-height:1.6}'
+    +'.h2{font-size:12pt;font-weight:900;padding:2.3mm 3mm;margin:3mm 0 2mm;border-radius:1.5mm;color:white;display:flex;align-items:center;gap:2mm;page-break-after:avoid;break-after:avoid}'
     +'.h2.init{background:linear-gradient(90deg,#2c5282,#3182ce)}'
     +'.h2.revis{background:linear-gradient(90deg,#276749,#38a169)}'
     +'.h2.pursuit{background:linear-gradient(90deg,#9b2c2c,#c53030)}'
     +'.h2.fam{background:linear-gradient(90deg,#744210,#d69e2e)}'
     +'.h2.strat{background:linear-gradient(90deg,#44337a,#6b46c1)}'
-    +'.sec{border:0.5pt solid #cbd5e0;border-left:3pt solid #3182ce;padding:2mm 3mm;margin-bottom:2mm;page-break-inside:avoid;background:#f8fafc;border-radius:0 1.5mm 1.5mm 0}'
+    +'.sec{border:0.5pt solid #cbd5e0;border-left:3pt solid #3182ce;padding:2.5mm 3mm;margin-bottom:2.5mm;page-break-inside:avoid;background:#f8fafc;border-radius:0 1.5mm 1.5mm 0}'
     +'.sec.green{border-left-color:#38a169;background:#f0fff4}'
     +'.sec.red{border-left-color:#c53030;background:#fff5f5}'
     +'.sec.yellow{border-left-color:#d69e2e;background:#fffff0}'
     +'.sec.purple{border-left-color:#6b46c1;background:#faf5ff}'
-    +'.stitle{font-size:9pt;font-weight:700;color:#2c5282;margin-bottom:1.5mm}'
+    +'.stitle{font-size:10pt;font-weight:700;color:#2c5282;margin-bottom:1.5mm}'
     +'.row2{display:grid;grid-template-columns:1fr 1fr;gap:5pt}'
     +'.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5pt}'
     +'.field{margin-bottom:1.5mm}'
-    +'.label{font-size:7.5pt;color:#718096;display:block;margin-bottom:0.5mm}'
-    +'.val{font-size:9.5pt;font-weight:700;border-bottom:1pt solid #e2e8f0;padding-bottom:1pt;min-height:4.5mm;display:block;color:#1a202c}'
-    +'.vcard{border:0.5pt solid #e2e8f0;border-left:3pt solid #38a169;padding:2mm 3mm;margin-bottom:2mm;page-break-inside:avoid;background:white;border-radius:0 1.5mm 1.5mm 0}'
+    +'.label{font-size:8.5pt;color:#718096;display:block;margin-bottom:0.5mm}'
+    +'.val{font-size:10.5pt;font-weight:700;border-bottom:1pt solid #e2e8f0;padding-bottom:1pt;min-height:5mm;display:block;color:#1a202c}'
+    +'.vcard{border:0.5pt solid #e2e8f0;border-left:3pt solid #38a169;padding:2.5mm 3mm;margin-bottom:2.5mm;page-break-inside:avoid;background:white;border-radius:0 1.5mm 1.5mm 0}'
     +'.vcard.red{border-left-color:#c53030}'
-    +'.vhdr{font-size:9.5pt;font-weight:800;color:#2d3748;margin-bottom:1.5mm}'
+    +'.vhdr{font-size:10.5pt;font-weight:800;color:#2d3748;margin-bottom:1.5mm}'
     +'.stage-bar{display:flex;gap:2pt;margin:1.5mm 0}'
     +'.stage-pip{flex:1;height:5pt;border-radius:2pt;background:#e2e8f0}'
     +'.stage-pip.active{background:linear-gradient(90deg,#3182ce,#553c9a)}'
     +'.jgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2pt;margin-bottom:2mm}'
-    +'.jitem{font-size:8pt;padding:1.5pt 2pt;display:flex;align-items:center;gap:3pt}'
-    +'.chk{display:inline-flex;width:10pt;height:10pt;border:1pt solid #cbd5e0;border-radius:2pt;align-items:center;justify-content:center;font-size:7pt;flex-shrink:0}'
+    +'.jitem{font-size:9pt;padding:1.5pt 2pt;display:flex;align-items:center;gap:3pt}'
+    +'.chk{display:inline-flex;width:11pt;height:11pt;border:1pt solid #cbd5e0;border-radius:2pt;align-items:center;justify-content:center;font-size:8pt;flex-shrink:0}'
     +'.chk.on{background:#2c5282;border-color:#2c5282;color:white}'
     +'.stsel{display:flex;gap:3pt;flex-wrap:wrap;margin-bottom:1.5mm}'
-    +'.stbtn{padding:2pt 6pt;border:0.5pt solid #cbd5e0;border-radius:10pt;font-size:8pt;background:#f7fafc;color:#718096}'
+    +'.stbtn{padding:2pt 6pt;border:0.5pt solid #cbd5e0;border-radius:10pt;font-size:8.5pt;background:#f7fafc;color:#718096}'
     +'.stbtn.active{background:#2c5282;color:white;border-color:#2c5282;font-weight:700}'
-    +'.pbtn{padding:2pt 6pt;border:0.5pt solid #cbd5e0;border-radius:10pt;font-size:8pt;background:#f7fafc;color:#718096}'
+    +'.pbtn{padding:2pt 6pt;border:0.5pt solid #cbd5e0;border-radius:10pt;font-size:8.5pt;background:#f7fafc;color:#718096}'
     +'.pbtn.active{background:#276749;color:white;border-color:#276749;font-weight:700}'
     +'.pgbrk{page-break-before:always}'
-    +'.hint{font-size:7.5pt;color:#a0aec0;text-align:right;margin-top:1mm}'
+    +'.hint{font-size:8pt;color:#a0aec0;text-align:right;margin-top:1mm}'
     +'.jsec{border:1pt solid #553c9a;border-radius:2mm;padding:2mm 3mm;background:#faf5ff}'
-    +'.jsec-title{font-size:9pt;font-weight:800;color:#553c9a;margin-bottom:1.5mm}';
+    +'.jsec-title{font-size:10pt;font-weight:800;color:#553c9a;margin-bottom:1.5mm}';
 }
 function execPrint(){
   var printCard=document.getElementById('printCard').checked;
@@ -6493,7 +6560,7 @@ function buildInitVisitHTML(c){
     html+='<div class="hint">※詳細は家族構成印刷を参照</div></div>';
   }
   html+='<div class="sec"><div class="stitle">✍ 初訪内容（見込み候補だと判断した理由）</div>'
-    +'<div style="min-height:20mm;border:0.5pt solid #e2e8f0;padding:2mm;font-size:9pt;border-radius:1.5mm;background:white">'+e(c.initial_content||'').replace(/\n/g,'<br>')+'</div>'
+    +'<div style="min-height:22mm;border:0.5pt solid #e2e8f0;padding:2mm;font-size:10.5pt;line-height:1.55;border-radius:1.5mm;background:white">'+e(c.initial_content||'').replace(/\n/g,'<br>')+'</div>'
     +'</div>';
   return html;
 }
@@ -6529,7 +6596,7 @@ function buildRevisitHTML(c){
       +'<span style="font-size:8pt;color:#333">日付：<span style="font-weight:600;border-bottom:0.5pt solid #aaa;display:inline-block;min-width:25mm">'+e(r.date||'')+'</span></span>'
       +'<span style="font-size:8pt;color:#333">アポ：<span style="font-weight:600;border-bottom:0.5pt solid #aaa;display:inline-block;min-width:16mm">'+e(r.appo||'')+'</span></span>'
       +'</div>'
-      +'<div style="min-height:22mm;border:0.5pt solid #aaa;padding:2mm;font-size:8pt">'+e(r.content||'').replace(/\n/g,'<br>')+'</div>'
+      +'<div style="min-height:22mm;border:0.5pt solid #aaa;padding:2mm;font-size:9.5pt;line-height:1.5">'+e(r.content||'').replace(/\n/g,'<br>')+'</div>'
       +'</div>';
   }
   // Judgment（未入力でも枠を表示）
@@ -6540,7 +6607,7 @@ function buildRevisitHTML(c){
     +'<div class="field"><span class="label">フォーアイズ</span><span class="val">'+e(c.revisit_4eyes||'')+'</span></div>'
     +'</div>'
     +'<div class="field" style="margin-top:1.5mm"><span class="label">課長協議内容・判断理由</span>'
-    +'<div style="min-height:10mm;border:0.5pt solid #aaa;padding:2mm;font-size:8pt">'+e(c.revisit_judge_reason||'').replace(/\n/g,'<br>')+'</div>'
+    +'<div style="min-height:10mm;border:0.5pt solid #aaa;padding:2mm;font-size:9.5pt;line-height:1.5">'+e(c.revisit_judge_reason||'').replace(/\n/g,'<br>')+'</div>'
     +'</div></div>';
   return html;
 }
@@ -6569,7 +6636,7 @@ function buildPursuitHTML(c){
       +(p.interviewer?'<span style="font-size:8pt;color:#333">面談者：<span style="font-weight:600">'+e(p.interviewer)+'</span></span>':'')
       +(p.next_appo_date?'<span style="font-size:8pt;color:#333">次回アポ：<span style="font-weight:600">'+e(p.next_appo_date)+'</span></span>':'')
       +'</div>'
-      +'<div style="min-height:18mm;border:0.5pt solid #aaa;padding:2mm;font-size:8pt;margin-bottom:1mm">'+e(p.content||'').replace(/\n/g,'<br>')+'</div>'
+      +'<div style="min-height:18mm;border:0.5pt solid #aaa;padding:2mm;font-size:9.5pt;line-height:1.5;margin-bottom:1mm">'+e(p.content||'').replace(/\n/g,'<br>')+'</div>'
       +(p.instruction?'<div style="font-size:8pt;border-left:2pt solid #c53030;padding-left:2mm;color:#c53030">指示：'+e(p.instruction)+'</div>':'')
       +'</div>';
   });
@@ -6823,7 +6890,7 @@ function buildFamilyHTML(c){
       var mc='';
       if(DEEP.indexOf(m.role)>=0){if(m.marriage&&m.marriage!=='不明')mc+=m.marriage;if(m.children)mc+=(mc?'・':'')+'子'+m.children+'人';}
       var sep='<span style="color:#cbd5e0;padding:0 1mm">|</span>';
-      html+='<div style="display:flex;align-items:baseline;gap:1.5mm;padding:1.2mm 0;border-bottom:0.3pt solid #edf2f7;font-size:8.5pt;flex-wrap:wrap">'
+      html+='<div style="display:flex;align-items:baseline;gap:1.5mm;padding:1.2mm 0;border-bottom:0.3pt solid #edf2f7;font-size:9.5pt;flex-wrap:wrap">'
         +'<span style="font-weight:700;min-width:17mm;color:#2d3748">'+(m.owner?'★':'')+e(m.role)+'</span>'
         +(m.name?'<span style="font-weight:600">'+e(m.name)+'</span>':'')
         +(m.age?'<span style="color:#718096">'+e(m.age)+'歳</span>':'')
@@ -6855,7 +6922,7 @@ function buildStrategyHTML(c){
     hasContent=true;
     html+='<div class="sec" style="margin-bottom:3mm;page-break-inside:auto;break-inside:auto">'
       +'<div class="stitle">'+THEMES[key]+'</div>'
-      +'<div style="font-size:8.5pt;white-space:pre-wrap;line-height:1.7">'+e(val)+'</div>'
+      +'<div style="font-size:9.5pt;white-space:pre-wrap;line-height:1.7">'+e(val)+'</div>'
       +'</div>';
   });
   if(!hasContent){
@@ -7001,6 +7068,12 @@ function genPrompt(anon){
   var lines=[];
   lines.push('あなたは大東建託の土地活用営業のトップ営業マンであり、相続コンサルタント課長です。');
   lines.push('以下の見込み客カードを読み、部下が明日すぐ動ける営業戦略のアドバイスをしてください。');
+  lines.push('');
+  lines.push('【出力ルール｜最優先・例外なし】');
+  lines.push('・前置き・あいさつ・お礼・「了解しました」等の確認文は書かない。いきなり本編から始める。');
+  lines.push('・依頼が長くても、分割提案や「一括で作成しますか？」等の確認質問は一切しない。質問せず、そのまま最後まで一気に出力する。');
+  lines.push('・添付ファイルがある場合も同様に、確認せずファイル内の指示どおり即座に実行する。');
+  lines.push('・総合分析のときは、回答の1行目を必ず「判定：X」（Xは半角の S/A/B/C/D/E/X のいずれか1文字）から書き始める。その前に何も置かない。');
   lines.push('');
   lines.push('【この営業組織の哲学・判断軸】');
   lines.push('◆【営業アイデンティティ＝最重要前提】私たちは「建てましょう」と迫る建築営業ではない。相続・承継の相談相手として、お客様の潜在的な不安や悩みに寄り添うコンサルタントである。ゴールは契約そのものではなく、ご本人とご家族それぞれのネガティブをポジティブに変え、「なるほどね」という納得を積み重ね、ご家族みんなが「建築に進んでよかった」「大東建託に託してよかった」と思える合意形成。したがって：焦らせる表現・期限やキャンペーンで煽るトーク・ステージを飛ばしたクロージングは一切提案しないこと。すべての提案はこの前提に沿って行う');
@@ -7794,10 +7867,10 @@ function renderAnalysis(){
  // team活動（フル稼働）
  var g=_zByMgr(cards), reps=Object.keys(g).sort(), curMonth=_zMonths()[11];
  var active=reps.filter(function(r){return g[r].some(function(c){return (c.discovery_date||'').slice(0,7)===curMonth||_zVisitDates(c).some(function(d){return d.slice(0,7)===curMonth;});});});
- var H='<div class="zdash zdash-mgr"><div class="z-cockpit"><div class="z-cmdhead">⌘ COMMAND CENTER <span>/ 課分析</span></div>';
+ var H='<div class="zdash zdash-mgr"><div class="z-cockpit"><div class="z-cmdhead">⌘ COMMAND CENTER <span>/ '+(scope==='all'?'課分析':e(scope))+'</span></div>';
  // KPI + gauge
  H+='<div class="z-bento"><div class="z-card z-kpi z-c1"><span class="z-klab">今月発掘</span>'+(thisM||lastM?'<span class="z-delta '+(dd>=0?'up':'dn')+'">'+(dd>=0?'▲':'▼')+' '+Math.abs(dd)+'</span>':'')+'<div class="z-kval z-num">'+thisM+'<small>件</small></div>'+_zSpark(mDisc,'#34e3d0')+'</div>'
-  +'<div class="z-card z-kpi z-c1"><span class="z-klab">課スコア平均</span><div class="z-kval z-num" style="color:#8b7cff">'+avg+'<small>/78</small></div><div class="z-ksub">対象 '+n+'件</div></div>'
+  +'<div class="z-card z-kpi z-c1"><span class="z-klab">スコア平均</span><div class="z-kval z-num" style="color:#8b7cff">'+avg+'<small>/78</small></div><div class="z-ksub">対象 '+n+'件</div></div>'
   +'<div class="z-card z-kpi z-c1"><span class="z-klab">連想率</span><div class="z-kval z-num" style="color:#9be15d">'+_zPct(conn,n)+'<small>%</small></div><div class="z-ksub">'+conn+'件</div></div>'
   +'<div class="z-card z-kpi z-c1"><span class="z-klab">ペース遅れ</span><div class="z-kval z-num" style="color:#ff5d7d">'+late+'<small>件</small></div><div class="z-ksub">'+_zPct(late,n)+'%</div></div></div>';
  H+='</div>';
@@ -9202,6 +9275,24 @@ function updateRosenkaDisp(val){
   disp.textContent='約'+man+'万円/㎡'+rateStr;
 }
 // 既存データの路線価を千円/㎡に変換（1000以上の値を自動変換）
+// 再訪Judgment未済なのに追撃Judgment（ロック導入前に押された残り）があるカードを一括リセット。冪等。
+function migratePursuitLock(){
+  var n=0;
+  cards.forEach(function(c){
+    var revDone=!!(c.revisit_judge || c.revisit_judge_date || (c.revisit_4eyes && String(c.revisit_4eyes).trim()));
+    if(!revDone && (c.pursuit_judge_sel || c.pursuit_judge_date)){
+      c.pursuit_judge_sel=''; c.pursuit_judge_date='';
+      var mp={'A見込み':'A','追撃継続':'B','変化待ち':'C','打ち切り':'X','訪問継続':'B','C染み込み':'C','S積極提案':'A'};
+      var mr={'追客開始':'B','打ち切り':'X'};
+      var rk='';
+      if(c.revisit_judge&&mr[c.revisit_judge]) rk=mr[c.revisit_judge];
+      if(!rk) rk=c.pursuit_judge_ai||'';
+      c.pursuit_judge=rk;
+      n++;
+    }
+  });
+  if(n>0){ try{saveLS();}catch(e){} if(typeof toast==='function') toast('🔓 再訪Judgment未済の追撃判定 '+n+'件をリセットしました'); }
+}
 function migrateRosenka(){
   var changed=false;
   cards.forEach(function(c){
@@ -9711,7 +9802,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <svg class="ehdr-logo" onclick="history.back()" title="タップで一覧に戻る" width="130" height="40" viewBox="0 0 130 40" xmlns="http://www.w3.org/2000/svg" style="position:absolute;left:50%;transform:translateX(-50%);flex-shrink:0;cursor:pointer"><defs><linearGradient id="tg3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#ffffff"/><stop offset="60%" style="stop-color:#e0e7ff"/><stop offset="100%" style="stop-color:#c7d2fe"/></linearGradient></defs><text x="4" y="32" font-family="'Dancing Script','Brush Script MT','Comic Sans MS',cursive" font-size="30" font-weight="700" fill="url(#tg3)" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.4))">z.Aibis</text></svg>
       <div style="display:flex;gap:4px;flex-shrink:0;align-items:center">
         <span id="dirtyDot" style="display:none;width:8px;height:8px;background:#ed8936;border-radius:50%;margin-right:2px" title="未保存"></span>
-        <button class="bs" onclick="saveCard()" style="font-size:11px;padding:6px 10px">💾 保存</button>
+        <button id="saveCardBtn" class="bs" onclick="saveCard()" style="font-size:11px;padding:6px 10px">💾 保存</button>
         <div class="mob-menu" style="position:relative">
           <button onclick="toggleCardMenu(event)" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:6px;font-size:16px;padding:4px 8px;cursor:pointer;font-family:inherit;line-height:1.6;min-height:36px;width:36px">⋮</button>
           <div class="mob-dropdown" id="cardDropdown" style="right:0;left:auto;min-width:150px">
@@ -9771,7 +9862,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <div>
           <label>現状</label>
           <select id="f_genjo">
-            <option value="">-</option><option value="P">P（駐車場）</option>
+            <option value="">-</option><option value="P">駐車場</option>
             <option value="老朽">老朽</option><option value="店舗">店舗</option><option value="自宅">自宅</option><option value="雑種地">雑種地</option><option value="都外">都外</option>
           </select>
         </div>
@@ -9934,7 +10025,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         </div>
         <div style="font-size:9px;color:#a0aec0;text-align:center;margin-top:2px">ピンポン ➤ 立ち話 ➤ 玄関内 ➤ 連れ出し ➤ 上り込み</div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+      <div id="actCols" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
         <div>
           <label style="font-size:11px">提示資料</label>
           <div class="cg" id="materials" style="gap:3px;margin-top:2px">
@@ -9964,6 +10055,13 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
     <div class="sec" id="secTochi">
       <div class="stitle" style="display:flex;align-items:center;gap:8px">土地情報（優先計画地）<button type="button" id="assetBtn" onclick="toggleAssetType()">アセット系</button></div>
       <div class="asset-note">🏢 アセット系：土地情報は封印中（入力不可・各判定では対象外）</div>
+      <div style="margin-bottom:8px">
+        <label>計画地備考</label>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input type="text" id="f_kuubi" placeholder="P空き多い・退去予定あり など" style="flex:1">
+          <button type="button" class="mic-btn" onclick="micStart('f_kuubi',this)" style="flex-shrink:0;margin-top:0">🎤</button>
+        </div>
+      </div>
       <!-- 路線価・面積・間口 -->
       <div style="display:grid;grid-template-columns:1fr 1fr 0.5fr;gap:8px;margin-bottom:8px">
         <div>
@@ -10001,26 +10099,26 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
             <button type="button" class="pbtn" data-pill="setsudo" data-multi="1" data-val="北">北</button>
             <button type="button" class="pbtn" data-pill="setsudo" data-multi="1" data-val="南">南</button>
             <button type="button" class="pbtn" data-pill="setsudo" data-multi="1" data-val="西">西</button>
-            <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:#4a5568;white-space:nowrap"><input type="checkbox" id="f_hatazao" style="width:auto">旗竿</label>
+            <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#4a5568;white-space:nowrap"><input type="checkbox" id="f_hatazao" style="width:19px;height:19px;flex-shrink:0">旗竿</label>
           </div>
         </div>
         <div>
           <label>用途地域</label>
           <select id="f_youto" style="font-size:12px">
             <option value="">-</option>
-            <option value="第一種低層住居専用地域">一低層</option>
-            <option value="第二種低層住居専用地域">二低層</option>
-            <option value="田園住居地域">田園住居</option>
-            <option value="第一種中高層住居専用地域">一中高層</option>
-            <option value="第二種中高層住居専用地域">二中高層</option>
-            <option value="第一種住居地域">一住居</option>
-            <option value="第二種住居地域">二住居</option>
-            <option value="準住居地域">準住居</option>
-            <option value="近隣商業地域">近隣商業</option>
-            <option value="商業地域">商業</option>
-            <option value="準工業地域">準工業</option>
-            <option value="工業地域">工業</option>
-            <option value="工業専用地域">工業専用</option>
+            <option value="第一種低層住居専用地域">第一種低層住居専用地域</option>
+            <option value="第二種低層住居専用地域">第二種低層住居専用地域</option>
+            <option value="田園住居地域">田園住居地域</option>
+            <option value="第一種中高層住居専用地域">第一種中高層住居専用地域</option>
+            <option value="第二種中高層住居専用地域">第二種中高層住居専用地域</option>
+            <option value="第一種住居地域">第一種住居地域</option>
+            <option value="第二種住居地域">第二種住居地域</option>
+            <option value="準住居地域">準住居地域</option>
+            <option value="近隣商業地域">近隣商業地域</option>
+            <option value="商業地域">商業地域</option>
+            <option value="準工業地域">準工業地域</option>
+            <option value="工業地域">工業地域</option>
+            <option value="工業専用地域">工業専用地域</option>
             <option value="無指定">無指定</option>
           </select>
         </div>
@@ -10028,12 +10126,11 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <!-- 権利関係チェック -->
       <div style="margin-bottom:8px">
         <label>権利関係チェック</label>
-        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:2px">
-          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="共有名義">共有名義</button>
+        <div id="houbunPills" style="display:flex;gap:4px;flex-wrap:wrap;margin-top:2px">
+          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="単独名義">単独</button>
+          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="法人名義">法人</button>
+          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="共有名義">共有</button>
           <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="借地">借地</button>
-          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="底地">底地</button>
-          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="農地">農地</button>
-          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="相続課題">相続課題</button>
         </div>
       </div>
       <!-- 建蔽容積・築年数 -->
@@ -10086,17 +10183,10 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           </div>
         </div>
       </div>
-      <!-- 満室・空き・備考 -->
+      <!-- 満室・空き -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
         <div><label>満室数（戸）</label><input type="number" id="f_kuushitsu" placeholder="例: 10" inputmode="numeric" pattern="[0-9]*"></div>
         <div><label>空き数（戸）</label><input type="number" id="f_kuushitsu_aki" placeholder="例: 2" inputmode="numeric" pattern="[0-9]*"></div>
-      </div>
-      <div>
-        <label>計画地備考</label>
-        <div style="display:flex;gap:6px;align-items:center">
-          <input type="text" id="f_kuubi" placeholder="P空き多い・退去予定あり など" style="flex:1">
-          <button type="button" class="mic-btn" onclick="micStart('f_kuubi',this)" style="flex-shrink:0;margin-top:0">🎤</button>
-        </div>
       </div>
     </div>
     <div class="sec" id="secKeikaku">
@@ -10117,7 +10207,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <div class="stitle" style="margin-bottom:0">初訪内容（見込み候補だと判断した理由）<span class="req">*</span></div>
         <button type="button" class="mic-btn" onclick="micStart('f_content',this)">🎤</button>
       </div>
-      <textarea id="f_content" rows="5" placeholder="なぜ見込み候補か＝相手の反応で書く。例：相続の話を振った→「税理士に聞かないとな」と真顔になった。発言は「」でそのまま。表情・家族の様子・土地の悩みも"></textarea>
+      <textarea id="f_content" rows="5" placeholder="相手の反応を書く。例：相続の話→「税理士に聞かないと」と真顔。発言は「」でそのまま"></textarea>
       <div class="no-print" style="margin-top:8px;padding:8px 10px;background:#f0fff4;border:1px solid #c6f6d5;border-radius:6px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><label style="margin:0;font-size:12px;font-weight:600;color:#276749">🎙 録音要約・メール等貼り付け</label><button type="button" onclick="clearStrategyField('f_content_rec')" style="background:none;border:none;color:#c53030;font-size:15px;padding:0 2px;cursor:pointer;font-family:inherit;flex-shrink:0;line-height:1">🗑</button></div>
         <textarea id="f_content_rec" rows="3" placeholder="録音要約・メールなどを貼り付け" style="font-size:13px;background:transparent;border-color:#c6f6d5"></textarea>
@@ -10168,12 +10258,11 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
     <div id="revisitList"></div>
     <div class="jsec">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:10px">
-        <h3 style="margin:0">♦ 再訪 Judgment</h3>
+        <h3 style="margin:0">♦ 再訪 Judgment <span style="font-size:11px;font-weight:700;color:#2c5282;background:#ebf4ff;border:1px solid #bee3f8;border-radius:999px;padding:2px 9px;letter-spacing:.05em;vertical-align:middle">フォーアイズジャッジ</span></h3>
         <div style="background:#fff5f5;border:1px solid #fc8181;border-radius:6px;padding:6px 10px;font-size:11px;color:#c53030;font-weight:700">⚠ 判定は必ず課長と協議の上で選択してください！</div>
       </div>
       <div style="margin-bottom:10px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:6px;flex-wrap:wrap">
-          <label style="font-weight:600;color:#2c5282;margin:0">フォーアイズジャッジ</label>
           <span style="display:inline-flex;align-items:center;gap:6px;margin-left:auto">
             <label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">判定日</label><input type="date" id="f_rjdate" style="width:150px;min-height:32px;padding:4px 6px">
             <button type="button" class="mic-btn" onclick="micStart('f_r4eyes',this)" style="margin-top:0">🎤</button>
@@ -10201,12 +10290,11 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
     <button class="addbtn" id="addPursuitBtn" onclick="addPursuit()">＋ 追撃訪問を追加（14回超はJudgment記入後）</button>
     <div class="jsec">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:10px">
-        <h3 style="margin:0">♦ 追撃 Judgment</h3>
+        <h3 style="margin:0">♦ 追撃 Judgment <span style="font-size:11px;font-weight:700;color:#553c9a;background:#f3effc;border:1px solid #d6bcfa;border-radius:999px;padding:2px 9px;letter-spacing:.05em;vertical-align:middle">シックスアイズジャッジ</span></h3>
         <div style="background:#fff5f5;border:1px solid #fc8181;border-radius:6px;padding:6px 10px;font-size:11px;color:#c53030;font-weight:700">⚠ 判定は必ず課長と協議の上で選択してください！</div>
       </div>
       <div style="margin-bottom:10px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:6px;flex-wrap:wrap">
-          <label style="font-weight:600;color:#2c5282;margin:0">フォーアイズジャッジ</label>
           <span style="display:inline-flex;align-items:center;gap:6px;margin-left:auto">
             <label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">判定日</label><input type="date" id="f_pjdate" style="width:150px;min-height:32px;padding:4px 6px">
             <button type="button" class="mic-btn" onclick="micStart('f_p4eyes',this)" style="margin-top:0">🎤</button>
@@ -10217,34 +10305,52 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <div class="jbtns">
         <button type="button" class="jbtn jp" data-pj="A見込み" onclick="setPJ('A見込み',true)">A見込み</button>
         <button type="button" class="jbtn jc" data-pj="追撃継続" onclick="setPJ('追撃継続',true)">追撃継続</button>
-        <button type="button" class="jbtn jsoak" data-pj="変化待ち" onclick="setPJ('変化待ち',true)">変化待ち<br><small style="font-weight:600;opacity:.8">長期継続</small></button>
+        <button type="button" class="jbtn jsoak" data-pj="変化待ち" onclick="setPJ('変化待ち',true)">変化待ち</button>
         <button type="button" class="jbtn js" data-pj="打ち切り" onclick="setPJ('打ち切り',true)">打ち切り</button>
       </div>
-      <div id="mgrJudgeDisp" style="display:none;margin-top:8px;padding:6px 8px;border-radius:4px;font-size:12px;font-weight:600"></div>
-      <div id="mgrJudgeRow" style="display:none;margin-top:8px;padding:8px;background:#fff;border:1px dashed #b7791f;border-radius:6px">
-        <div style="font-size:11.5px;font-weight:700;color:#b7791f;margin-bottom:5px">👔 課長判定（担当のランクは変えない・所見として記録）</div>
-        <div style="display:flex;gap:5px;flex-wrap:wrap">
-          <button type="button" data-mj="S" onclick="setMgrJudge('S')" class="jbtn">S</button>
-          <button type="button" data-mj="A" onclick="setMgrJudge('A')" class="jbtn">A</button>
-          <button type="button" data-mj="B" onclick="setMgrJudge('B')" class="jbtn">B</button>
-          <button type="button" data-mj="C" onclick="setMgrJudge('C')" class="jbtn">C</button>
-          <button type="button" data-mj="D" onclick="setMgrJudge('D')" class="jbtn">D</button>
-          <button type="button" data-mj="E" onclick="setMgrJudge('E')" class="jbtn">E</button>
-          <button type="button" data-mj="X" onclick="setMgrJudge('X')" class="jbtn">X</button>
+      <div style="margin-top:8px;padding:6px;background:#fff;border-radius:4px;font-size:11px;color:#c53030;font-weight:600">
+        ★ A見込みは毎日訪問・45日以内に契約！
+      </div>
+      <!-- 判定別の重点ボックス：選んだJudgmentに応じて1つだけ表示 -->
+      <div id="jdCommon" style="display:none;margin-top:8px;padding:9px;background:#fff;border:1px dashed #c53030;border-radius:6px">
+        <div style="font-size:11.5px;font-weight:700;color:#c53030;margin-bottom:6px">✅ 案件化 必須確認（A見込み・追撃継続・変化待ち 共通／取得状況が期待度に直結）</div>
+        <div id="amChecks" style="display:flex;flex-direction:column;gap:6px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;margin:0"><input type="checkbox" data-am="jikoshikin"><span>自己資金の確認</span><select id="f_am_fund" style="margin-left:auto;width:auto;min-height:30px;font-size:12px;padding:3px 6px"><option value="">方法 -</option><option value="現金">現金</option><option value="融資">融資</option><option value="併用">併用</option></select></label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;margin:0"><input type="checkbox" data-am="kakutei"><span>確定申告・決算書の確認</span></label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;margin:0"><input type="checkbox" data-am="nayose"><span>名寄帳の確認</span></label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;margin:0"><input type="checkbox" data-am="kazoku"><span>家族合意の確認 ★最重要</span></label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;margin:0"><input type="checkbox" data-am="nouki"><span>決断までの納期設定</span><input type="month" id="f_am_nouki_when" style="margin-left:auto;width:auto;min-height:30px;font-size:12px;padding:3px 6px"></label>
         </div>
       </div>
-      <div style="margin-top:8px;padding:6px;background:#fff;border-radius:4px;font-size:11px;color:#c53030;font-weight:600">
-        ★ A見込みに引き上げたら目指せ毎日訪問！45日以内の契約を目指そう！
+      <div id="jdK" style="display:none;margin-top:8px;padding:9px;background:#fff;border:1px dashed #dd6b20;border-radius:6px">
+        <div style="font-size:11.5px;font-weight:700;color:#c05621;margin-bottom:6px">🤝 追撃継続 重点確認</div>
+        <div id="tkChecks" style="display:flex;flex-direction:column;gap:6px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;margin:0"><input type="checkbox" data-tk="kazoku_apo"><span>家族同席アポ ★最重要</span></label>
+        </div>
+        <div style="margin-top:8px;padding-top:8px;border-top:1px dashed #f0c9a8">
+          <div style="font-size:11px;font-weight:700;color:#c05621;margin-bottom:4px">🎯 決断の決め手は？（これさえクリアすれば見込みに上がる、最優先の1つ）</div>
+          <select id="f_tk_key" style="width:100%;min-height:34px">
+            <option value="">（最優先の決め手を選択）</option>
+            <option>収支・採算（利回り）</option>
+            <option>家族同意</option>
+            <option>借入・返済の不安</option>
+            <option>自己資金</option>
+            <option>相続税・節税効果</option>
+            <option>建築費・初期費用</option>
+            <option>既存建物の解体・立退き</option>
+            <option>土地への愛着</option>
+            <option>業者・プランへの信頼</option>
+            <option>その他</option>
+          </select>
+        </div>
       </div>
-      <div style="margin-top:8px;padding:8px;background:#fff;border:1px dashed #4a5568;border-radius:6px">
-        <div style="font-size:11.5px;font-weight:700;color:#4a5568;margin-bottom:5px">⏳ 待ちトリガー（D判定なら必須）— 何を待っているか</div>
+      <div id="jdWait" style="display:none;margin-top:8px;padding:8px;background:#fff;border:1px dashed #4a5568;border-radius:6px">
+        <div style="font-size:11.5px;font-weight:700;color:#4a5568;margin-bottom:5px">⏳ 変化待ちトリガー — 何を待っているか</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-          <select id="f_dtrigger" style="flex:2;min-width:150px;min-height:32px">
+          <select id="f_dtrigger" style="flex:1;min-width:150px;min-height:32px">
             <option value="">（なし／未設定）</option>
             <option>相続発生待ち</option><option>代替わり待ち</option><option>契約満了・退去待ち</option><option>資金時期待ち</option><option>家族合意待ち</option><option>農地・期限待ち</option><option>その他</option>
           </select>
-          <label style="margin:0;font-size:11px;color:#718096">目安時期</label>
-          <input type="month" id="f_dtrigger_when" style="flex:1;min-width:130px;min-height:32px">
         </div>
       </div>
       <div id="scoreWhyRow" onclick="showScoreWhy()" style="margin-top:8px;padding:8px 10px;background:#fff;border:1px solid #cbd5e0;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:8px">
@@ -10272,12 +10378,22 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <option value="inheritance">相続シナリオ</option>
         </select>
       </div>
-      <!-- 追客ランク（右） -->
-      <div style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:6px;padding:8px;text-align:center;min-width:90px;display:flex;flex-direction:column;align-items:center;justify-content:center">
-        <div style="font-size:10px;color:#718096;font-weight:600;margin-bottom:4px">追客ランク</div>
-        <div id="aiRankDisp" style="font-size:36px;font-weight:900;line-height:1;letter-spacing:-1px">—</div>
-        <div id="aiRankLabel" style="font-size:9px;margin-top:2px;color:#718096">未判定</div>
-        <div id="aiPaceDisp" style="font-size:10px;font-weight:700;margin-top:5px;padding:3px 8px;border-radius:10px;display:none"></div>
+      <!-- 追客ランク（右：AI分析＋協議を併記） -->
+      <div style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:6px;padding:8px;min-width:130px;display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <div style="display:flex;gap:8px;align-items:stretch;justify-content:center;width:100%">
+          <div style="flex:1;text-align:center">
+            <div style="font-size:9px;color:#718096;font-weight:600;margin-bottom:2px">🤖 AI分析</div>
+            <div id="aiRankDisp" style="font-size:30px;font-weight:900;line-height:1;letter-spacing:-1px">—</div>
+            <div id="aiRankLabel" style="font-size:8px;margin-top:1px;color:#718096">未検出</div>
+          </div>
+          <div style="width:1px;background:#e2e8f0"></div>
+          <div style="flex:1;text-align:center">
+            <div style="font-size:9px;color:#718096;font-weight:600;margin-bottom:2px">🤝 協議</div>
+            <div id="coRankDisp" style="font-size:30px;font-weight:900;line-height:1;letter-spacing:-1px">—</div>
+            <div id="coRankLabel" style="font-size:8px;margin-top:1px;color:#718096">未判定</div>
+          </div>
+        </div>
+        <div id="aiPaceDisp" style="font-size:10px;font-weight:700;margin-top:6px;padding:3px 8px;border-radius:10px;display:none"></div>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
