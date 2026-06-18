@@ -175,9 +175,9 @@
 <!-- ===== 撮影＝仕分け画面 ===== -->
 <div id="scrCam" class="scr hide">
   <div class="top">
-    <span class="vertag" id="verTag"></span>
     <button class="tbtn" id="leftBtn">📥 <span class="cnt" id="leftCount">0</span></button>
     <div class="cardchip grow"><b id="camTitle">z.AibisCam</b><span class="sub" id="camSub">シャッターで撮影・1データ最大4枚</span></div>
+    <span class="vertag" id="verTag"></span>
     <button class="tbtn" id="rightBtn">🗂 一覧</button>
   </div>
 
@@ -226,9 +226,9 @@
 <!-- ===== インボックス ===== -->
 <div id="scrInbox" class="scr hide">
   <div class="top">
-    <button class="tbtn" id="inbBack">← 撮影</button>
-    <div class="cardchip grow"><b id="inbTitle">📥 インボックス</b><span class="sub">タップで仕分け・続けて撮影</span></div>
     <button class="tbtn" id="inbList">🗂 一覧</button>
+    <div class="cardchip grow"><b id="inbTitle">📥 インボックス</b><span class="sub">タップで仕分け・続けて撮影</span></div>
+    <button class="tbtn" id="inbBack">📷</button>
   </div>
   <div class="pad">
     <div id="inbWarn" class="warnbar hide"></div>
@@ -242,6 +242,7 @@
   <div class="top">
     <button class="tbtn" id="pickBack">📷 撮影</button>
     <div class="cardchip grow"><b class="ttl" id="pickTitle">⌘ カード一覧</b><span class="sub" id="pickSub">カードを選んで撮影・閲覧</span></div>
+    <button class="tbtn" id="pickInbox">📥 <span class="cnt" id="pickInboxCount">0</span></button>
   </div>
   <div class="pad">
     <input class="search" id="pickSearch" placeholder="名前・担当・住所で検索">
@@ -321,7 +322,7 @@
    ※ prospect_cards_v1 には書き込まない（新規カード作成・PC連携は本体側）
    データ(set): {id,cardId,ts,addrType:'plan',lat,lng,acc,addr,addrPending,banchi,note,sent,photos:[{pid,full(Blob),thumb,w,h,size}]}
    ========================================================= */
-const APP_VERSION = "cam-v1.16";
+const APP_VERSION = "cam-v1.18";
 const SK_CARDS = "prospect_cards_v1";
 const IDX_KEY  = "aibis_media_index_v1";
 const DB_NAME  = "aibis_media_v1";
@@ -728,10 +729,14 @@ function bindDrows(host,fromWhere){
 function openPick(m){
   pickMode=m||"open";
   $("pickBack").textContent = pickMode==="link" ? "← 戻る" : "📷 撮影";
+  $("pickInbox").classList.toggle("hide", pickMode==="link");
   $("pickTitle").textContent = pickMode==="link" ? "🔗 紐付け先のカード" : "⌘ カード一覧";
   $("pickSub").textContent  = pickMode==="link" ? "このデータを紐付けるカードを選択" : "カードを選んで撮影・閲覧";
   renderPicker($("pickSearch").value); show("pick");
+  if(pickMode!=="link") updatePickInbox();
 }
+async function updatePickInbox(){ const n=await idbCountByCard(INBOX), el=$("pickInboxCount"); if(el) el.textContent=n; }
+$("pickInbox").addEventListener("click",()=>openInbox());
 $("pickBack").addEventListener("click",()=>{
   if(pickMode==="link"){ openSet(linkTargetId); } else { enterQuick(); }
 });
