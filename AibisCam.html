@@ -96,6 +96,15 @@
   .search{width:100%;padding:12px 14px;border-radius:12px;background:var(--panel);border:1px solid var(--line);
     color:var(--txt);font-size:15px;margin-bottom:10px}
   .search::placeholder{color:var(--dim)}
+  .srow{display:flex;gap:8px;margin-bottom:8px}
+  .srow .search{margin-bottom:0;flex:1;min-width:0}
+  .srow .micbtn{flex:0 0 auto;width:46px;border-radius:12px;background:var(--panel);border:1px solid var(--line);font-size:19px}
+  .srow .micbtn.rec{background:rgba(255,93,125,.25);color:var(--danger);animation:micpulse 1s infinite}
+  .sortbar{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
+  .sortbar::-webkit-scrollbar{display:none}
+  .sortchip{flex:0 0 auto;padding:7px 11px;border-radius:16px;background:var(--panel2);font-size:12px;font-weight:700;
+    color:var(--dim);white-space:nowrap;border:1.5px solid transparent}
+  .sortchip.active{background:rgba(245,158,11,.16);color:var(--gold);border-color:var(--gold)}
   .crow{display:flex;align-items:center;gap:10px;padding:13px 14px;border-radius:13px;background:var(--panel);
     border:1px solid var(--line);margin-bottom:9px}
   .crow:active{background:var(--panel2)}
@@ -245,7 +254,11 @@
     <button class="tbtn" id="pickInbox">📥 <span class="cnt" id="pickInboxCount">0</span></button>
   </div>
   <div class="pad">
-    <input class="search" id="pickSearch" placeholder="名前・担当・住所で検索">
+    <div class="srow">
+      <input class="search" id="pickSearch" placeholder="氏名・住所・地名で検索（スペース区切りで複数）" enterkeyhint="search">
+      <button class="micbtn" id="pickMic" title="音声で検索">🎤</button>
+    </div>
+    <div class="sortbar" id="sortBar"></div>
     <div id="pickList"></div>
   </div>
 </div>
@@ -322,7 +335,7 @@
    ※ prospect_cards_v1 には書き込まない（新規カード作成・PC連携は本体側）
    データ(set): {id,cardId,ts,addrType:'plan',lat,lng,acc,addr,addrPending,banchi,note,sent,photos:[{pid,full(Blob),thumb,w,h,size}]}
    ========================================================= */
-const APP_VERSION = "cam-v1.18";
+const APP_VERSION = "cam-v1.19";
 const SK_CARDS = "prospect_cards_v1";
 const IDX_KEY  = "aibis_media_index_v1";
 const DB_NAME  = "aibis_media_v1";
@@ -732,7 +745,7 @@ function openPick(m){
   $("pickInbox").classList.toggle("hide", pickMode==="link");
   $("pickTitle").textContent = pickMode==="link" ? "🔗 紐付け先のカード" : "⌘ カード一覧";
   $("pickSub").textContent  = pickMode==="link" ? "このデータを紐付けるカードを選択" : "カードを選んで撮影・閲覧";
-  renderPicker($("pickSearch").value); show("pick");
+  renderSortBar(); renderPicker($("pickSearch").value); show("pick");
   if(pickMode!=="link") updatePickInbox();
 }
 async function updatePickInbox(){ const n=await idbCountByCard(INBOX), el=$("pickInboxCount"); if(el) el.textContent=n; }
@@ -740,21 +753,109 @@ $("pickInbox").addEventListener("click",()=>openInbox());
 $("pickBack").addEventListener("click",()=>{
   if(pickMode==="link"){ openSet(linkTargetId); } else { enterQuick(); }
 });
+
+/* ===== 本体「一覧」と同じ並び替え（移植・配点/ペースは2026-06確定値） ===== */
+var sortKey="lv", sortDir={};
+const SORT_ORDER=["lv","rv","jw","ad","sc","st","pj","pace","dt"];
+const SORT_BASE={lv:"🚶 最新",rv:"🔁 再訪",jw:"⚖ 判定待ち",ad:"🏠 住所",sc:"⭐ スコア",st:"📊 心理",pj:"🎯 ランク",pace:"⏰ 遅れ",dt:"📅 初訪"};
+const SORT_ACT={
+  lv:{desc:"🚶 古い→",asc:"🚶 最新→"}, rv:{desc:"🔁 再訪 0→",asc:"🔁 再訪 3→"},
+  jw:{desc:"⚖ 判定待ち",asc:"⚖ 判定待ち"}, ad:{desc:"🏠 住所 わ→",asc:"🏠 住所 あ→"},
+  sc:{desc:"⭐ スコア 低→",asc:"⭐ スコア 高→"}, st:{desc:"📊 心理 低→",asc:"📊 心理 高→"},
+  pj:{desc:"🎯 ランク X→",asc:"🎯 ランク S→"}, pace:{desc:"⏰ 遅れ 小→",asc:"⏰ 遅れ 大→"},
+  dt:{desc:"📅 初訪 古→",asc:"📅 初訪 新→"}
+};
+const PACE_LIMIT={S:7,A:10,B:21,C:40,D:80};
+const REVISIT_PHASE={span:14,times:3,interval:5};
+function getLastVD(c){ var d=[]; (c.pursuits||[]).forEach(v=>{if(v.date)d.push(v.date);}); (c.revisits||[]).forEach(v=>{if(v.date)d.push(v.date);}); if(c.discovery_date)d.push(c.discovery_date); return d.length?d.sort((a,b)=>b.localeCompare(a))[0]:""; }
+function getArea(addr){ if(!addr)return""; var m=addr.match(/^(.+?[都道府県])(.+?[市区町村郡])/); return m?m[1]+m[2]:addr.substring(0,10); }
+function _isRevisitPhase(c){ if(!c||!c.discovery_date)return false; var pv=(c.pursuits||[]).filter(v=>v&&v.date).length; var rv=(c.revisits||[]).filter(v=>v&&v.date).length; return pv===0&&rv<REVISIT_PHASE.times; }
+function _judgeMissing(c){ return !c.pursuit_judge && !_isRevisitPhase(c); }
+function _revisitCount(c){ return ((c&&c.revisits)||[]).filter(v=>v&&(v.date||v.content||v.rec)).length; }
+function _hasPursuitActivity(c){ if(!c)return false; if(c.pursuit_judge)return true; return ((c.pursuits)||[]).some(v=>v&&(v.date||v.content||v.rec||v.appo||v.interviewer)); }
+function calcPaceOverrate(c){
+  var a=[]; if(c.discovery_date)a.push(c.discovery_date); (c.revisits||[]).forEach(v=>{if(v.date)a.push(v.date);}); (c.pursuits||[]).forEach(v=>{if(v.date)a.push(v.date);});
+  if(!a.length)return -1; a.sort(); var days=Math.floor((new Date()-new Date(a[a.length-1]))/86400000);
+  if(_isRevisitPhase(c)){ var sd=Math.floor((new Date()-new Date(c.discovery_date))/86400000); var r=days/REVISIT_PHASE.interval; if(sd>REVISIT_PHASE.span)r=Math.max(r,sd/REVISIT_PHASE.span); return r; }
+  var lim=PACE_LIMIT[c.pursuit_judge||""]; if(!lim)return -1; return days/lim;
+}
+function _amScore(c){ var m=(c&&c.am_checks)||{}; var s=0; if(m.kazoku)s+=2; if(m.jikoshikin)s+=1; if(m.kakutei)s+=1; if(m.nayose)s+=0.5; if(m.nouki)s+=0.5; return s; }
+function calcScore(c){
+  var stageScore=[0,1,3,5,8,11,12,13]; var si=+(c.stage||0); var s=stageScore[Math.min(si,7)]||0;
+  var rankMap={S:8,A:6,B:4,C:2,D:1,E:0,X:0}; var r=rankMap[c.pursuit_judge]||0;
+  var kaiwaScore={"ピンポン":1,"立ち話":3,"玄関内":5,"連れ出し":8,"上り込み":12};
+  var karr=Array.isArray(c.kaiwa)?c.kaiwa:(c.kaiwa?[c.kaiwa]:[]); var k=0; karr.forEach(v=>{var sc=kaiwaScore[v]||0; if(sc>k)k=sc;});
+  var m2=parseFloat(String(c.m2||"").replace(/,/g,""))||0; var tsubo=m2/3.30578; var landScore=0;
+  if(tsubo<=0)landScore=0; else if(tsubo<40)landScore=0; else if(tsubo<50)landScore=1; else if(tsubo<100)landScore=2; else if(tsubo<200)landScore=4; else if(tsubo<=500)landScore=5; else landScore=4;
+  var rosen=parseFloat(String(c.rosenka||"").replace(/,/g,""))||0; var rc=1.0;
+  if(rosen>0){ if(rosen<15)rc=0.7; else if(rosen<30)rc=0.9; else if(rosen<50)rc=1.0; else if(rosen<100)rc=1.2; else rc=1.5; }
+  var landFinal=Math.round(landScore*rc*10)/10; if(c.asset_type)landFinal=0;
+  var fam=c.family||[]; var ho=fam.some(m=>m.owner&&m.met); var hk=fam.some(m=>m.kp&&m.met); var famScore=(ho?3:0)+(hk?3:0);
+  function invNum(v){ if(v==="5以上")return 6; var n=parseInt(v,10); return isNaN(n)?0:n; }
+  var invSum=invNum(c.old_rent)+invNum(c.parking_lot)+invNum(c.jitaku)+invNum(c.ryokuchi); var invScore=0;
+  if(invSum<=0)invScore=0; else if(invSum<=2)invScore=1; else if(invSum<=5)invScore=2; else if(invSum<=9)invScore=3; else if(invSum<=14)invScore=4; else invScore=5;
+  var laMap={"1億以下":1,"3億以下":2,"5億以下":3,"10億未満":4,"10億以上":5}; var assetScore=invScore+(laMap[c.land_asset]||0);
+  var ekiScore=(c.ekitoho==="〜10分")?2:(c.ekitoho==="21分以上")?-2:0;
+  var proposalScore=c.proposal_req?15:0;
+  var rusuMap=[4,3,2,1,0,0]; var rusuN=Math.max(0,Math.min(5,parseInt(c.rusu,10)||0)); var rusuScore=rusuMap[rusuN];
+  var _isA=(c.pursuit_judge==="A"||c.pursuit_judge==="S"||c.pursuit_judge_sel==="A見込み"); var amCardPt=_isA?Math.round(_amScore(c)/5*6):0;
+  return Math.max(0, Math.round(s+r+k+landFinal+famScore+assetScore+ekiScore+proposalScore+rusuScore+amCardPt));
+}
+function getSortedCards(src){
+  var arr=src.slice(); var dir=sortDir[sortKey]==="desc"?-1:1;
+  if(sortKey==="lv"){ arr.sort((a,b)=>dir*getLastVD(b).localeCompare(getLastVD(a))); }
+  else if(sortKey==="ad"){ var ad=sortDir["ad"]==="desc"?-1:1; arr.sort((a,b)=>ad*getArea(a.address||"").localeCompare(getArea(b.address||""),"ja")); }
+  else if(sortKey==="st"){ arr.sort((a,b)=>{var sa=(a.stage!==""&&a.stage!=null)?+a.stage:(dir>0?-1:99); var sb=(b.stage!==""&&b.stage!=null)?+b.stage:(dir>0?-1:99); return dir*(sb-sa);}); }
+  else if(sortKey==="sc"){ arr.sort((a,b)=>dir*(calcScore(b)-calcScore(a))); }
+  else if(sortKey==="pj"){ var o={S:0,A:1,B:2,C:3,D:4,E:5,X:6}; arr.sort((a,b)=>{var pa=o[a.pursuit_judge]!==undefined?o[a.pursuit_judge]:99; var pb=o[b.pursuit_judge]!==undefined?o[b.pursuit_judge]:99; return dir*(pa-pb);}); }
+  else if(sortKey==="rv"){ arr=arr.filter(c=>!_hasPursuitActivity(c)); arr.sort((a,b)=>dir*(_revisitCount(b)-_revisitCount(a))); }
+  else if(sortKey==="jw"){ arr=arr.filter(_judgeMissing); arr.sort((a,b)=>getLastVD(b).localeCompare(getLastVD(a))); }
+  else if(sortKey==="pace"){ arr.sort((a,b)=>{var ra=calcPaceOverrate(a),rb=calcPaceOverrate(b); if(ra===-1&&rb===-1)return 0; if(ra===-1)return 1; if(rb===-1)return -1; return dir*(rb-ra);}); }
+  else { arr.sort((a,b)=>dir*(b.discovery_date||"").localeCompare(a.discovery_date||"")); }
+  return arr;
+}
+function renderSortBar(){
+  const bar=$("sortBar"); if(!bar) return;
+  bar.innerHTML=SORT_ORDER.map(k=>{
+    const active=(k===sortKey);
+    const label=active?SORT_ACT[k][sortDir[k]==="desc"?"desc":"asc"]:SORT_BASE[k];
+    return '<button class="sortchip'+(active?" active":"")+'" data-k="'+k+'">'+label+'</button>';
+  }).join("");
+  bar.querySelectorAll(".sortchip").forEach(el=>el.addEventListener("click",()=>toggleSort(el.dataset.k)));
+}
+function toggleSort(key){
+  if(sortKey===key){ sortDir[key]=sortDir[key]==="desc"?"asc":"desc"; } else { sortKey=key; }
+  renderSortBar(); renderPicker($("pickSearch").value);
+}
 function renderPicker(filter){
-  const idx=readIndex(); let cards=loadCards();
-  const f=(filter||"").trim();
-  if(f){ const lc=f.toLowerCase(); cards=cards.filter(c=>((c.name||"")+(c.manager||"")+(c.address||"")+(c.plan_address||"")).toLowerCase().includes(lc)); }
-  cards.sort((a,b)=>{ const na=(idx[a.id]||{}).n||0, nb=(idx[b.id]||{}).n||0; if(nb!==na) return nb-na; return (b.discovery_date||"").localeCompare(a.discovery_date||""); });
+  const idx=readIndex();
+  let arr=getSortedCards(loadCards());
+  const q=(filter||"").trim(), kw=q?q.split(/[\s　]+/).filter(Boolean):[];
+  if(kw.length){ arr=arr.filter(c=>{ const hay=[c.name,c.address,c.plan_address,c.manager,c.branch,c.section].filter(Boolean).join(" "); return kw.some(k=>hay.indexOf(k)>=0); }); }
   const host=$("pickList");
   if(!loadCards().length){ host.innerHTML='<div class="emptyst">アイビスのカードが見つかりません。<br>同じ端末・同じサイトでアイビスを一度開いてカードを作成してから、もう一度開いてください。</div>'; return; }
-  if(!cards.length){ host.innerHTML='<div class="emptyst">該当するカードがありません。</div>'; return; }
-  host.innerHTML=cards.slice(0,200).map(c=>{
+  if(!arr.length){ host.innerHTML='<div class="emptyst">該当するカードがありません。</div>'; return; }
+  host.innerHTML=arr.slice(0,300).map(c=>{
     const n=(idx[c.id]||{}).n||0, meta=[c.manager,c.address||c.plan_address].filter(Boolean).join("・");
     return '<div class="crow" data-id="'+esc(c.id)+'"><div class="grow" style="min-width:0"><div class="nm">'+esc(c.name||"無名")+'様</div><div class="mt">'+esc(meta||"—")+'</div></div><div class="pc"><b>'+n+'</b><s>件</s></div></div>';
   }).join("");
   host.querySelectorAll(".crow").forEach(el=>el.addEventListener("click",()=>onPickCard(el.dataset.id)));
 }
 $("pickSearch").addEventListener("input",e=>renderPicker(e.target.value));
+/* 一覧検索の音声入力 */
+let searchRec=null;
+$("pickMic").addEventListener("click",()=>{
+  const btn=$("pickMic");
+  if(searchRec){ try{ searchRec.stop(); }catch(e){} return; }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ toast("音声入力に未対応の端末です"); return; }
+  const rec=new SR(); rec.lang="ja-JP"; rec.interimResults=false; rec.maxAlternatives=1; searchRec=rec;
+  btn.classList.add("rec"); btn.textContent="■";
+  rec.onresult=e=>{ const t=e.results[0][0].transcript||""; const inp=$("pickSearch"); inp.value=(inp.value?inp.value+" ":"")+t; renderPicker(inp.value); };
+  rec.onerror=()=>toast("音声を認識できませんでした");
+  rec.onend=()=>{ searchRec=null; btn.classList.remove("rec"); btn.textContent="🎤"; };
+  try{ rec.start(); }catch(e){ searchRec=null; btn.classList.remove("rec"); btn.textContent="🎤"; }
+});
 async function onPickCard(cardId){
   if(pickMode==="link"){
     const s=await idbGet(linkTargetId); if(!s){ toast("データが見つかりません"); return; }
