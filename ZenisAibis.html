@@ -270,7 +270,8 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.show{opacity:1}
 #pwaBanner{display:none;position:fixed;bottom:80px;left:12px;right:12px;background:#1e3a5f;color:white;border-radius:10px;padding:12px 14px;z-index:150;box-shadow:0 4px 12px rgba(0,0,0,0.3)}
-.sortbar{background:white;border:1px solid #e2e8f0;border-radius:6px;padding:8px;margin-bottom:8px;display:flex;gap:4px;align-items:center;flex-wrap:wrap;overflow-x:visible}
+.sortbar{background:white;border:1px solid #e2e8f0;border-radius:6px;padding:8px;margin-bottom:8px;display:flex;gap:4px;align-items:center;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.sortbar::-webkit-scrollbar{display:none}
 .sbtn{font-size:11px;padding:6px 8px;border-radius:6px;border:1px solid #cbd5e0;background:white;color:#4a5568;cursor:pointer;white-space:nowrap;flex-shrink:0}
 .sbtn.active{background:#ebf4ff;color:#2c5282;border-color:#2c5282;font-weight:600}
 .prhdr{display:none}
@@ -1009,11 +1010,11 @@ body.is-mob .mob-menu{display:inline-block}
     <button class="sbtn" id="sb_dt" onclick="toggleSort('dt')">📅 初訪</button>
   </div>
   <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+    <button type="button" class="mic-btn" onclick="micStart('searchInput',this)" style="flex-shrink:0;margin-top:0" title="音声で検索">🎤</button>
     <div style="position:relative;flex:1">
       <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:#a0aec0;font-size:14px">🔍</span>
       <input type="text" id="searchInput" placeholder="氏名・住所・地名で検索（スペース区切りで複数）" enterkeyhint="search" style="padding-left:30px;font-size:13px;border-radius:6px" oninput="onSearchInput()" onchange="onSearchInput(true)" oncompositionend="onSearchInput(true)" onkeydown="onSearchEnter(event)">
     </div>
-    <button type="button" class="mic-btn" onclick="micStart('searchInput',this)" style="flex-shrink:0;margin-top:0" title="音声で検索">🎤</button>
     <button id="searchClear" onclick="clearSearch()" style="display:none;background:none;border:1px solid #cbd5e0;color:#718096;border-radius:6px;padding:7px 10px;font-size:12px;cursor:pointer;white-space:nowrap">✕ クリア</button>
   </div>
   <div id="mgrDashBar" onclick="openAnalysis()" style="display:none;margin:8px;padding:13px 16px;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;background:#ebf4ff;border:1px solid #bee3f8;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.06)">
@@ -1725,7 +1726,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.60";
+var APP_VERSION = "v7.61";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -5835,10 +5836,10 @@ function renderRevisits(){
     var rid='rv_'+vi;
     return '<div class="vcard ri" data-vi="'+vi+'"><div class="vh"><span class="vn">再訪 '+v.num+' 回目</span></div>'
       +'<div style="display:flex;gap:4px 6px;align-items:center;justify-content:flex-end;flex-wrap:wrap;margin:2px 0 4px">'
+        +'<button type="button" class="mic-btn" onclick="micStart(\''+rid+'_c\',this)" style="margin-top:0;margin-right:auto">🎤</button>'
         +'<span style="display:inline-flex;align-items:center;gap:3px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">訪問日</label><input type="date" data-f="date" value="'+e(v.date||'')+'" style="width:auto;min-height:32px;padding:3px 4px;font-size:13px"></span>'
         +'<span style="display:inline-flex;align-items:center;gap:4px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">アポ</label><select data-f="appo" style="width:auto;min-height:32px;padding:4px 4px;font-size:13px"><option value="">-</option><option value="アポ有り"'+(v.appo==='アポ有り'?' selected':'')+'>アポ有り</option><option value="仮アポ"'+(v.appo==='仮アポ'?' selected':'')+'>仮アポ</option><option value="アポ無し"'+(v.appo==='アポ無し'?' selected':'')+'>アポ無し</option></select></span>'
         +_doukouBtnHTML(v.visit_type)
-        +'<button type="button" class="mic-btn" onclick="micStart(\''+rid+'_c\',this)" style="margin-top:0">🎤</button>'
       +'</div>'
       +'<textarea id="'+rid+'_c" data-f="content" rows="3" placeholder="投げかけ→相手の反応を書く。例：税金の話→身を乗り出した。断り・他社・税額・時期の発言は「」でそのまま">'+e(v.content||'')+'</textarea>'
       +'<div style="margin-top:6px;padding:7px 10px;background:#f0fff4;border:1px solid #c6f6d5;border-radius:6px">'
@@ -5869,10 +5870,10 @@ function renderPursuits(){
       +'</div></div>'
       +(i===0?'<div class="tcro">★ テスクロ！提案依頼を持ち掛けよう！</div>':'')
       +'<div style="display:flex;gap:4px 6px;align-items:center;flex-wrap:wrap;margin:2px 0 4px">'
+        +'<button type="button" class="mic-btn" onclick="micStart(\''+pid+'_c\',this)" style="margin-top:0">🎤</button>'
         +'<label style="margin:0;font-size:12px">訪問内容</label>'
         +'<span style="display:inline-flex;align-items:center;gap:3px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">面談者</label><select data-f="iv" style="width:auto;min-height:32px;padding:4px 4px;font-size:12px"><option value="">-</option>'+famRoles.map(function(r){return '<option value="'+e(r)+'"'+(v.interviewer===r?' selected':'')+'>'+e(r)+'</option>';}).join('')+((v.interviewer&&famRoles.indexOf(v.interviewer)<0)?'<option value="'+e(v.interviewer)+'" selected>'+e(v.interviewer)+'</option>':'')+'</select></span>'
         +'<span style="display:inline-flex;align-items:center;gap:3px;margin-left:auto"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">次回</label><input type="date" data-f="nad" value="'+e(v.next_appo_date||'')+'" style="width:auto;min-height:32px;padding:3px 4px;font-size:13px"></span>'
-        +'<button type="button" class="mic-btn" onclick="micStart(\''+pid+'_c\',this)" style="margin-top:0">🎤</button>'
       +'</div>'
       +'<textarea id="'+pid+'_c" data-f="content" rows="3" placeholder="提案への相手の反応を書く。例：プラン提示→「息子に相談」と前向き。断り・他社・税額・時期の発言は「」でそのまま">'+e(v.content||'')+'</textarea>'
       +'<div style="margin-top:6px;padding:7px 10px;background:#f0fff4;border:1px solid #c6f6d5;border-radius:6px">'
@@ -10005,8 +10006,8 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <div style="margin-top:8px">
         <label>家族構成備考</label>
         <div style="display:flex;gap:6px;align-items:center">
-          <input type="text" id="f_fambiko" placeholder="同居の経緯・相続の意向 など" style="flex:1">
           <button type="button" class="mic-btn" onclick="micStart('f_fambiko',this)" style="flex-shrink:0;margin-top:0">🎤</button>
+          <input type="text" id="f_fambiko" placeholder="同居の経緯・相続の意向 など" style="flex:1">
         </div>
       </div>
     </div>
@@ -10057,8 +10058,8 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <div style="margin-bottom:8px">
         <label>計画地備考</label>
         <div style="display:flex;gap:6px;align-items:center">
-          <input type="text" id="f_kuubi" placeholder="P空き多い・退去予定あり など" style="flex:1">
           <button type="button" class="mic-btn" onclick="micStart('f_kuubi',this)" style="flex-shrink:0;margin-top:0">🎤</button>
+          <input type="text" id="f_kuubi" placeholder="P空き多い・退去予定あり など" style="flex:1">
         </div>
       </div>
       <!-- 路線価・面積・間口 -->
@@ -10202,9 +10203,9 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       </div>
     </div>
     <div class="sec">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <button type="button" class="mic-btn" onclick="micStart('f_content',this)" style="margin-top:0;flex-shrink:0">🎤</button>
         <div class="stitle" style="margin-bottom:0">初訪内容（見込み候補だと判断した理由）<span class="req">*</span></div>
-        <button type="button" class="mic-btn" onclick="micStart('f_content',this)">🎤</button>
       </div>
       <textarea id="f_content" rows="5" placeholder="相手の反応を書く。例：相続の話→「税理士に聞かないと」と真顔。発言は「」でそのまま"></textarea>
       <div class="no-print" style="margin-top:8px;padding:8px 10px;background:#f0fff4;border:1px solid #c6f6d5;border-radius:6px">
