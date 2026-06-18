@@ -184,6 +184,24 @@
     background:var(--panel2);color:var(--txt);padding:11px 18px;border-radius:22px;font-size:13.5px;font-weight:700;
     opacity:0;transition:.25s;z-index:80;border:1px solid var(--line);pointer-events:none;max-width:86%;text-align:center}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @keyframes abFloat{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-3px) rotate(5deg)}}
+  @keyframes abSpark{0%,100%{opacity:.15;transform:scale(.7)}50%{opacity:1;transform:scale(1.1)}}
+  @keyframes abGlow{0%,100%{opacity:.5;transform:scale(.9)}50%{opacity:.95;transform:scale(1.06)}}
+  @keyframes zfaOverlayIn{from{opacity:0}to{opacity:1}}
+  @keyframes zfaCardIn{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
+  .zfa-overlay{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:flex-start;justify-content:center;padding:20px;background:rgba(8,15,30,0.5);-webkit-backdrop-filter:blur(7px) saturate(120%);backdrop-filter:blur(7px) saturate(120%);animation:zfaOverlayIn .22s ease both}
+  .zfa-card{position:relative;width:100%;max-width:330px;text-align:center;margin-top:16vh;background:rgba(255,255,255,0.94);border:1px solid rgba(255,255,255,0.8);border-radius:22px;padding:34px 22px 20px;box-shadow:0 24px 60px -12px rgba(15,23,42,0.55);animation:zfaCardIn .26s cubic-bezier(.2,.9,.25,1.2) both}
+  .zfa-fairy{position:relative;width:54px;height:54px;display:flex;align-items:center;justify-content:center;flex:none}
+  .zfa-card .zfa-fairy{position:absolute;top:-28px;left:50%;transform:translateX(-50%)}
+  .zfa-fairy::after{content:'';position:absolute;inset:-22px;border-radius:50%;background:radial-gradient(circle,rgba(246,173,85,.66),rgba(246,173,85,0) 70%);z-index:-1;animation:abGlow 1.8s ease-in-out infinite}
+  .zfa-face{font-size:34px;line-height:1;display:inline-block;transform-origin:50% 80%;animation:abFloat 1.5s ease-in-out infinite}
+  .zfa-spark{position:absolute;opacity:.2}
+  .zfa-s1{top:-1px;left:-1px;font-size:13px;animation:abSpark 1.4s ease-in-out infinite}
+  .zfa-s2{bottom:0;right:-1px;font-size:11px;animation:abSpark 1.4s ease-in-out infinite .5s}
+  .zfa-name{font-size:11px;font-weight:800;letter-spacing:.1em;color:#2c5282;margin-bottom:8px}
+  .zfa-msg{font-size:14px;color:#2d3748;font-weight:600;line-height:1.7;margin-bottom:18px}
+  .zfa-btns{display:flex;gap:10px;margin-top:4px}
+  .zfa-ok{flex:1;padding:11px;border:none;border-radius:10px;background:#1a365d;color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer}
 </style>
 </head>
 <body>
@@ -341,7 +359,7 @@
    ※ prospect_cards_v1 には書き込まない（新規カード作成・PC連携は本体側）
    データ(set): {id,cardId,ts,addrType:'plan',lat,lng,acc,addr,addrPending,banchi,note,sent,photos:[{pid,full(Blob),thumb,w,h,size}]}
    ========================================================= */
-const APP_VERSION = "cam-v1.23";
+const APP_VERSION = "cam-v1.24";
 const SK_CARDS = "prospect_cards_v1";
 const IDX_KEY  = "aibis_media_index_v1";
 const DB_NAME  = "aibis_media_v1";
@@ -378,6 +396,26 @@ function show(name){ for(const k in screens) screens[k].classList.toggle("hide",
 function setCamFocus(on){ const sc=screens.cam; if(sc) sc.classList.toggle("focus", !!on); const b=$("camToggle"); if(b) b.textContent=on?"⤡":"⤢"; }
 function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show");
   clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("show"),2100); }
+function closeAibisAlert(){ const o=$("aibisAlertOverlay"); if(o&&o.parentNode) o.parentNode.removeChild(o); }
+function aibisAlert(msg,buttons){
+  closeAibisAlert();
+  const ov=document.createElement("div"); ov.id="aibisAlertOverlay"; ov.className="zfa-overlay";
+  ov.innerHTML='<div class="zfa-card">'
+    +'<div class="zfa-fairy"><span class="zfa-spark zfa-s1">✨</span><span class="zfa-face">🧚</span><span class="zfa-spark zfa-s2">✨</span></div>'
+    +'<div class="zfa-name">AIBIS</div>'
+    +'<div class="zfa-msg">'+msg+'</div>'
+    +'<div class="zfa-btns"></div></div>';
+  ov.addEventListener("click",e=>{ if(e.target===ov) closeAibisAlert(); });
+  const bw=ov.querySelector(".zfa-btns");
+  const list=(buttons&&buttons.length)?buttons:[{label:"OK"}];
+  list.forEach(b=>{ const btn=document.createElement("button"); btn.className="zfa-ok";
+    if(b.style) btn.setAttribute("style",b.style); btn.textContent=b.label;
+    btn.addEventListener("click",()=>{ closeAibisAlert(); if(b.cb) b.cb(); }); bw.appendChild(btn); });
+  document.body.appendChild(ov);
+}
+function aibisConfirm(msg,onYes,yesLabel,noLabel){
+  aibisAlert(msg,[ {label:(noLabel||"やめる"),style:"background:#e2e8f0;color:#2d3748"}, {label:(yesLabel||"OK"),cb:onYes} ]);
+}
 const rid = p => p+"_"+Date.now()+"_"+Math.random().toString(36).slice(2,7);
 
 /* ---------- IndexedDB ---------- */
@@ -704,22 +742,21 @@ $("vMic").addEventListener("click",()=>{
 $("vLink").addEventListener("click",()=>{ if(!curSet) return; linkTargetId=curSet; openPick("link"); });
 /* 紐付け済み＝インボックスに戻す / インボックス＝完全削除 */
 async function destroyOrReturn(id){
-  const s=await idbGet(id); if(!s) return false;
+  const s=await idbGet(id); if(!s) return;
+  const cleanup=async()=>{ curSet=null; renderSetPanel(); await updateRightCount(); };
   if(s.cardId && s.cardId!==INBOX){
-    if(!confirm("このデータをカードから外してインボックスに戻しますか？")) return false;
-    const old=s.cardId; s.cardId=INBOX; await idbPut(s); await refreshIndex(old);
-    toast("インボックスに戻しました"); return "returned";
+    aibisConfirm(cardLabel(s.cardId)+" の写真をカードから外してインボックスに戻しますか？", async()=>{
+      const old=s.cardId; s.cardId=INBOX; await idbPut(s); await refreshIndex(old);
+      toast("インボックスに戻しました"); await cleanup();
+    }, "戻す", "やめる");
   } else {
-    if(!confirm("このデータ（写真"+s.photos.length+"枚）を削除しますか？")) return false;
-    const card=s.cardId; await idbDel(id); await refreshIndex(card);
-    toast("削除しました"); return "deleted";
+    aibisConfirm("このデータ（写真"+s.photos.length+"枚）を削除しますか？", async()=>{
+      const card=s.cardId; await idbDel(id); await refreshIndex(card);
+      toast("削除しました"); await cleanup();
+    }, "削除する", "やめる");
   }
 }
-$("vDelSet").addEventListener("click",async()=>{
-  if(!curSet) return;
-  const r=await destroyOrReturn(curSet);
-  if(r){ curSet=null; renderSetPanel(); await updateRightCount(); }
-});
+$("vDelSet").addEventListener("click",()=>{ if(!curSet) return; destroyOrReturn(curSet); });
 
 /* 番地キーパッド */
 function openKeypad(){ if(!curSet) return; kpVal=$("vBanchi").value||""; $("kpVal").textContent=kpVal||"—"; $("keypad").classList.remove("hide"); }
@@ -900,9 +937,11 @@ $("pickMic").addEventListener("click",()=>{
 async function onPickCard(cardId){
   if(pickMode==="link"){
     const s=await idbGet(linkTargetId); if(!s){ toast("データが見つかりません"); return; }
-    const old=s.cardId; s.cardId=cardId; await idbPut(s);
-    await refreshIndex(cardId); await refreshIndex(old);
-    toast(cardLabel(cardId)+" に紐付けました"); pickMode="open"; openSet(linkTargetId);
+    aibisConfirm(cardLabel(cardId)+" を紐付けしますか？", async()=>{
+      const old=s.cardId; s.cardId=cardId; await idbPut(s);
+      await refreshIndex(cardId); await refreshIndex(old);
+      toast(cardLabel(cardId)+" に紐付けました"); pickMode="open"; openSet(linkTargetId);
+    }, "紐付ける", "やめる");
   } else { fromAibis=false; enterCamera(cardId); }
 }
 
@@ -952,9 +991,9 @@ $("viewer").addEventListener("touchend",e=>{
   if(Math.abs(dx)>45 && Math.abs(dx)>Math.abs(dy)){ if(dx<0) showPhotoAt(viewIdx+1); else showPhotoAt(viewIdx-1); }
 },{passive:true});
 $("vClose").addEventListener("click",()=>{ $("viewer").classList.add("hide"); viewPhoto=null; viewSet=null; });
-$("vDelPhoto").addEventListener("click",async()=>{
+$("vDelPhoto").addEventListener("click",()=>{
   if(!viewPhoto) return;
-  if(!confirm("この写真を削除しますか？")) return;
+  aibisConfirm("この写真を削除しますか？", async()=>{
   const s=await idbGet(viewPhoto.setId); if(!s) return;
   s.photos=s.photos.filter(p=>p.pid!==viewPhoto.pid);
   let closed=false;
@@ -966,6 +1005,7 @@ $("vDelPhoto").addEventListener("click",async()=>{
   await updateRightCount(); toast("削除しました");
   if(closed){ $("viewer").classList.add("hide"); viewPhoto=null; viewSet=null; }
   else { viewSet=s; showPhotoAt(Math.min(viewIdx, s.photos.length-1)); } // 残りを表示し続ける
+  }, "削除する", "やめる");
 });
 
 /* ---------- 位置修正（Leaflet 中心ピン固定） ---------- */
