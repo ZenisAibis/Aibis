@@ -494,6 +494,9 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 .addr-row{display:flex;gap:4px;align-items:center;margin-top:4px}
 .ar-btn{flex:0 0 auto;width:36px;min-height:40px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;line-height:1;border:1px solid #cbd5e0;border-radius:8px;background:white;cursor:pointer;color:#4a5568;padding:0}
 .ar-btn:active{background:#edf2f7}
+.hand-toggle{width:100%;padding:9px 11px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px;font-family:inherit;background:white;min-height:40px;color:#2D3748;cursor:pointer;text-align:left}
+.hand-toggle:active{background:#edf2f7}
+@media(max-width:768px){.hand-toggle{font-size:16px;min-height:44px}}
 .kaiwa-btn{font-size:12px;padding:8px 2px;white-space:nowrap;text-align:center;min-width:0;overflow:hidden;text-overflow:ellipsis}
 @media(max-width:600px){
   .kaiwa-btn{font-size:11px;padding:8px 1px}
@@ -1471,7 +1474,6 @@ body.is-mob .mob-menu{display:inline-block}
         <button class="bg" id="setupBack" onclick="showList()" style="flex-shrink:0">← 一覧</button>
         <div style="font-size:12px;color:rgba(255,255,255,0.75);white-space:nowrap">⚙ 初期設定</div>
       </div>
-      <svg width="130" height="40" viewBox="0 0 130 40" xmlns="http://www.w3.org/2000/svg" style="position:absolute;left:50%;transform:translateX(-50%);flex-shrink:0"><defs><linearGradient id="tg4" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#ffffff"/><stop offset="60%" style="stop-color:#e0e7ff"/><stop offset="100%" style="stop-color:#c7d2fe"/></linearGradient></defs><text x="4" y="32" font-family="'Dancing Script','Brush Script MT','Comic Sans MS',cursive" font-size="30" font-weight="700" fill="url(#tg4)" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.4))">z.Aibis</text></svg>
       <div style="display:flex;gap:4px;flex-shrink:0;align-items:center">
         <button onclick="openAibisChat()" style="background:#d97706;color:white;border:none;border-radius:6px;font-size:11px;padding:4px 8px;cursor:pointer;font-family:inherit;line-height:1.2;flex:0 0 auto">🧚<br><span class="aibisVer" style="font-size:8px;opacity:0.8;font-weight:700">v3.3</span></button>
       </div>
@@ -1518,9 +1520,9 @@ body.is-mob .mob-menu{display:inline-block}
       <div id="changeNote" style="display:none;margin-top:10px;padding:10px;background:#fef5e7;border-left:3px solid #ed8936;border-radius:4px;font-size:12px">
         <strong style="color:#c05621">📢 異動の場合</strong>：変更後は新規カードのみに反映。既存カードは変更されません。
       </div>
-      <div style="display:grid;grid-template-columns:2fr 2fr 1.5fr 1fr;gap:8px;margin-top:10px">
-        <div><label>ニックネーム</label><input type="text" id="sNick" placeholder="例: 大東" oninput="autoSaveSetup()"></div>
-        <div><label>📱 スマホの持ち手</label><select id="sHand" onchange="setHand(this.value)"><option value="left">左手持ち</option><option value="right">右手持ち</option></select></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+        <div><label>👤 ニックネーム</label><input type="text" id="sNick" placeholder="例: 大東" oninput="autoSaveSetup()"></div>
+        <div><label style="white-space:nowrap">📱 スマホ持ち方</label><button type="button" id="sHandBtn" class="hand-toggle" onclick="cycleHand()">左手持ち</button></div>
       </div>
       <!-- ▼▼ 開発者ツールパネル START（DEV_EMAIL時のみ表示・JSはdev区画と対） ▼▼ -->
       <div id="devHashTool" style="display:none;margin-top:14px;padding:10px;border:1px dashed #cbd5e0;border-radius:8px;background:#faf5ff">
@@ -1753,7 +1755,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.70";
+var APP_VERSION = "v7.71";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -2553,7 +2555,9 @@ function aibisToast(msg){
   clearTimeout(aibisToastTimer);
   aibisToastTimer=setTimeout(function(){ t.classList.remove('show'); setTimeout(function(){ if(t.parentNode) t.parentNode.removeChild(t); },320); }, 3200);
 }
-function applyHand(){ try{ document.body.classList.toggle('hand-right', uHand==='right'); }catch(_e){} }
+function applyHand(){ try{ document.body.classList.toggle('hand-right', uHand==='right'); }catch(_e){} paintHandBtn(); }
+function paintHandBtn(){ var b=document.getElementById('sHandBtn'); if(b) b.textContent=(uHand==='right')?'右手持ち':'左手持ち'; }
+function cycleHand(){ setHand(uHand==='right'?'left':'right'); }
 function setHand(v){ uHand=(v==='right')?'right':'left'; try{ localStorage.setItem(HANDK,uHand); }catch(_e){} applyHand(); }
 function autoSaveSetup(){
   // フォーム入力を即時LocalStorageに仮保存
@@ -3166,7 +3170,7 @@ function showSetup() {
   if ((el=document.getElementById('sSec')))    el.value = section||'';
   if ((el=document.getElementById('sRole')))   el.value = userRole||'';
   if ((el=document.getElementById('sNick')))   el.value = uNick||'';
-  if ((el=document.getElementById('sHand')))   el.value = uHand||'left';
+  paintHandBtn();
   if ((el=document.getElementById('sCopilotUrl'))) el.value = localStorage.getItem(CPK)||'';
   var _sm=document.getElementById('staffMailSection'); if(_sm){ _sm.style.display=isMgrUnlocked()?'block':'none'; if(typeof renderStaffMailRows==='function'){renderStaffMailRows();renderStaffMailChips();} }
   var has = !!(uName && mgrEmail && branch && section);
