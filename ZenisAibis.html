@@ -490,12 +490,10 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
   #mikomiTop .mk-email{grid-column:1/-1;order:5}
   #mikomiTop .mk-addr{grid-column:1/-1;order:6}
   #mikomiTop .mk-plan{grid-column:1/-1;order:7}
-  #mikomiTop .mk-addr,#mikomiTop .mk-plan{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
-  #mikomiTop .mk-addr>label,#mikomiTop .mk-plan>label{flex:0 0 100%;margin:0}
-  #mikomiTop .mk-addr>input,#mikomiTop .mk-plan>input{flex:1 1 0;min-width:0;margin:0}
-  #mikomiTop .mk-addr>div{flex:0 0 auto;margin-top:0!important}
-  #mikomiTop .mk-plan>.plan-btns-mob{flex:0 0 auto;margin-top:0!important;width:auto}
 }
+.addr-row{display:flex;gap:4px;align-items:center;margin-top:4px}
+.ar-btn{flex:0 0 auto;width:36px;min-height:40px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;line-height:1;border:1px solid #cbd5e0;border-radius:8px;background:white;cursor:pointer;color:#4a5568;padding:0}
+.ar-btn:active{background:#edf2f7}
 .kaiwa-btn{font-size:12px;padding:8px 2px;white-space:nowrap;text-align:center;min-width:0;overflow:hidden;text-overflow:ellipsis}
 @media(max-width:600px){
   .kaiwa-btn{font-size:11px;padding:8px 1px}
@@ -1755,7 +1753,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.69";
+var APP_VERSION = "v7.70";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -6283,10 +6281,10 @@ function mapStation(){
   // near: 計画地 + 駅 で検索し、地図上でピンをタップ→ルート案内が使える
   window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent('駅')+'&near='+encodeURIComponent(p),'_blank');
 }
-function planStreetView(){
+function planStreetView(fieldId){
   collectForm();
-  var p=(document.getElementById('f_plan')?.value||'').trim();
-  if(!p){toast('計画地を入力してください');return;}
+  var p=(document.getElementById(fieldId||'f_plan')?.value||'').trim();
+  if(!p){toast('住所を入力してください');return;}
   // スマホ: Mapsアプリが layer=c でSVに入る（実績あり）→従来どおり
   if(isMob){ window.open('https://www.google.com/maps?q='+encodeURIComponent(p)+'&layer=c','_blank'); return; }
   // PC: layer=c は住所文字列だと効かないため、座標へジオコーディングして公式のpano URLで開く
@@ -6312,6 +6310,24 @@ function copyAddrToPlan(){
   var plan=document.getElementById('f_plan');
   if(plan) plan.value=addr;
   updatePlanSvBtn();
+}
+function geoFill(id){
+  getCurrentAddress(function(addr){
+    var el=document.getElementById(id);
+    if(el) el.value=addr;
+    if(id==='f_plan'){ try{updatePlanSvBtn();}catch(e){} }
+    try{ navigator.clipboard.writeText(addr); }catch(e){}
+    toast('📍 '+addr+'（コピー済）');
+  });
+}
+function copyAddrField(id){
+  var v=(document.getElementById(id)?.value||'').trim();
+  if(!v){ toast('入力されていません'); return; }
+  navigator.clipboard.writeText(v).then(function(){ toast('📋 '+v); }).catch(function(){
+    var ta=document.createElement('textarea'); ta.value=v; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    toast('📋 コピーしました');
+  });
 }
 function copyPlanToClipboard(){
   var plan=(document.getElementById('f_plan')?.value||'').trim();
@@ -9911,29 +9927,27 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <div class="mk-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px">
         <div class="mk-addr">
           <label>住所（自宅）</label>
-          <input type="text" id="f_addr" placeholder="例: 東京都江戸川区...">
-          <div style="margin-top:4px;display:flex;gap:4px;align-items:center">
-            <button type="button" onclick="getCurrentAddress()" style="font-size:11px;padding:5px 10px;border:1px solid #cbd5e0;border-radius:6px;background:white;cursor:pointer;color:#4a5568;white-space:nowrap">📍 現在地取得</button>
-            <button type="button" id="planSvBtn" onclick="planStreetView()" disabled title="計画地のストリートビュー（計画地を入力すると押せます）" style="flex-shrink:0;font-size:14px;line-height:1;padding:4px 9px;border:1px solid #cbd5e0;border-radius:6px;background:white;cursor:pointer;color:#4a5568">🌐</button>
+          <div class="addr-row">
+            <button type="button" class="ar-btn" onclick="geoFill('f_addr')" title="現在地">📍</button>
+            <input type="text" id="f_addr" placeholder="例: 東京都江戸川区..." style="flex:1;min-width:0">
+            <button type="button" class="ar-btn" onclick="qaTenkeyOpen('f_addr')" title="番地">🔢</button>
+            <button type="button" class="ar-btn" onclick="planStreetView('f_addr')" title="ストリートビュー">🌐</button>
+            <button type="button" class="ar-btn" onclick="copyAddrField('f_addr')" title="コピー">📋</button>
           </div>
         </div>
         <div class="mk-plan">
           <label>計画地</label>
-          <input type="text" id="f_plan" placeholder="計画地の住所" oninput="updatePlanSvBtn()">
-          <!-- スマホ：ボタンを下段に -->
-          <div class="plan-btns-mob" style="display:none;gap:4px;margin-top:4px">
-            <button type="button" onclick="copyAddrToPlan()" style="flex:1;font-size:11px;padding:6px;border:1px solid #cbd5e0;border-radius:6px;background:white;cursor:pointer;color:#4a5568">同左</button>
-            <button type="button" onclick="copyPlanToClipboard()" style="flex:1;font-size:11px;padding:6px;border:1px solid #cbd5e0;border-radius:6px;background:white;cursor:pointer;color:#4a5568">📋コピー</button>
-          </div>
-          <!-- PC：ボタンを右横に -->
-          <div class="plan-btns-pc" style="display:flex;gap:4px;margin-top:4px">
-            <button type="button" onclick="copyAddrToPlan()" style="flex-shrink:0;font-size:11px;padding:6px 10px;border:1px solid #cbd5e0;border-radius:6px;background:white;cursor:pointer;color:#4a5568;white-space:nowrap">同左</button>
-            <button type="button" onclick="copyPlanToClipboard()" style="flex-shrink:0;font-size:11px;padding:6px 10px;border:1px solid #cbd5e0;border-radius:6px;background:white;cursor:pointer;color:#4a5568;white-space:nowrap">📋</button>
+          <div class="addr-row">
+            <button type="button" class="ar-btn" onclick="geoFill('f_plan')" title="現在地">📍</button>
+            <input type="text" id="f_plan" placeholder="計画地の住所" oninput="updatePlanSvBtn()" style="flex:1;min-width:0">
+            <button type="button" class="ar-btn" onclick="qaTenkeyOpen('f_plan')" title="番地">🔢</button>
+            <button type="button" class="ar-btn" onclick="planStreetView('f_plan')" title="ストリートビュー">🌐</button>
+            <button type="button" class="ar-btn" onclick="copyAddrField('f_plan')" title="コピー">📋</button>
           </div>
         </div>
       </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px">
         <button type="button" class="bc" style="padding:8px;font-size:12px" onclick="mapRoute()">🚗 計画地から自宅</button>
         <button type="button" class="bc" style="padding:8px;font-size:12px" onclick="mapStation()">🚉 計画地から最寄り駅</button>
       </div>
