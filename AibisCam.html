@@ -374,6 +374,9 @@
       <input id="cfgEmail" type="email" class="banchi" style="letter-spacing:normal;font-weight:600;width:100%" placeholder="dt0000001@kentaku.co.jp"></div>
       <div><div style="font-size:12px;color:var(--dim);font-weight:700;margin-bottom:4px">送信者名（任意）</div>
       <input id="cfgName" type="text" class="banchi" style="letter-spacing:normal;font-weight:600;width:100%" placeholder="例: 高田"></div>
+      <div id="pwaCamRow"><div style="font-size:12px;color:var(--dim);font-weight:700;margin-bottom:4px">📲 アプリとしてインストール</div>
+      <button type="button" id="pwaCamBtn" class="vbtn" style="width:100%" onclick="pwaInstall()">📲 Aibisカメラをインストール</button>
+      <div id="pwaCamHint" style="font-size:11px;color:var(--dim);margin-top:5px;line-height:1.5"></div></div>
     </div>
     <div class="kpacts">
       <button id="cfgCancel" class="kpx">閉じる</button>
@@ -395,7 +398,58 @@
    ※ prospect_cards_v1 には書き込まない（新規カード作成・PC連携は本体側）
    データ(set): {id,cardId,ts,addrType:'plan',lat,lng,acc,addr,addrPending,banchi,note,sent,photos:[{pid,full(Blob),thumb,w,h,size}]}
    ========================================================= */
-const APP_VERSION = "cam-v1.26";
+const APP_VERSION = "cam-v1.27";
+
+/* ===== PWA：単一ファイルでインストール可能化（外部ファイル不要） ===== */
+function _pwaIcon(size,maskable){
+  try{
+    var cv=document.createElement('canvas'); cv.width=cv.height=size; var x=cv.getContext('2d');
+    var pad=maskable?Math.round(size*0.12):0, o=pad, w=size-pad*2, r=Math.round(w*0.2);
+    if(maskable){ x.fillStyle='#0e4a45'; x.fillRect(0,0,size,size); }
+    var g=x.createLinearGradient(o,o,o+w,o+w); g.addColorStop(0,'#0e4a45'); g.addColorStop(1,'#159b8e');
+    x.fillStyle=g; x.beginPath();
+    x.moveTo(o+r,o); x.arcTo(o+w,o,o+w,o+w,r); x.arcTo(o+w,o+w,o,o+w,r); x.arcTo(o,o+w,o,o,r); x.arcTo(o,o,o+w,o,r); x.closePath(); x.fill();
+    x.fillStyle='#fff'; x.textAlign='center'; x.textBaseline='middle';
+    x.font='bold '+Math.round(w*0.5)+'px sans-serif'; x.fillText('📷', size/2, size*0.46);
+    x.font='bold '+Math.round(w*0.16)+'px sans-serif'; x.fillText('Aibis', size/2, o+w-Math.round(w*0.13));
+    return cv.toDataURL('image/png');
+  }catch(e){ return ''; }
+}
+(function(){
+  try{
+    var THEME='#0e4a45', BG='#0b1220';
+    var i192=_pwaIcon(192,false), i512=_pwaIcon(512,false), i512m=_pwaIcon(512,true), i180=_pwaIcon(180,false);
+    var start=location.href.split('#')[0].split('?')[0];
+    var man={ name:'Aibisカメラ', short_name:'Aibisカメラ', start_url:start, scope:start.replace(/[^/]*$/,''),
+      display:'standalone', background_color:BG, theme_color:THEME, icons:[] };
+    if(i192) man.icons.push({src:i192,sizes:'192x192',type:'image/png',purpose:'any'});
+    if(i512) man.icons.push({src:i512,sizes:'512x512',type:'image/png',purpose:'any'});
+    if(i512m) man.icons.push({src:i512m,sizes:'512x512',type:'image/png',purpose:'maskable'});
+    var lk=document.createElement('link'); lk.rel='manifest';
+    lk.href='data:application/manifest+json,'+encodeURIComponent(JSON.stringify(man));
+    document.head.appendChild(lk);
+    function meta(n,c){ var m=document.createElement('meta'); m.name=n; m.content=c; document.head.appendChild(m); }
+    meta('apple-mobile-web-app-capable','yes'); meta('mobile-web-app-capable','yes');
+    meta('apple-mobile-web-app-status-bar-style','black-translucent'); meta('apple-mobile-web-app-title','Aibisカメラ'); meta('theme-color',THEME);
+    if(i180){ var al=document.createElement('link'); al.rel='apple-touch-icon'; al.href=i180; document.head.appendChild(al); }
+  }catch(e){}
+  window._pwaPrompt=null;
+  window.addEventListener('beforeinstallprompt',function(e){ e.preventDefault(); window._pwaPrompt=e; try{ _pwaCamSync(); }catch(_e){} });
+  window.addEventListener('appinstalled',function(){ window._pwaPrompt=null; try{ _pwaCamSync(); }catch(_e){} });
+})();
+function _pwaStandalone(){ return (window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true; }
+function pwaInstall(){
+  if(window._pwaPrompt){ var p=window._pwaPrompt; p.prompt(); p.userChoice.then(function(){ window._pwaPrompt=null; try{_pwaCamSync();}catch(e){} }); return; }
+  var ua=navigator.userAgent||'', isiOS=/iPad|iPhone|iPod/.test(ua)||(/Macintosh/.test(ua)&&'ontouchend' in document);
+  toast(isiOS? '共有ボタン →「ホーム画面に追加」でインストールできます' : 'ブラウザの ⋮メニュー →「アプリをインストール／ホーム画面に追加」を選んでね');
+}
+function _pwaCamSync(){
+  var btn=document.getElementById('pwaCamBtn'), hint=document.getElementById('pwaCamHint');
+  if(_pwaStandalone()){ if(btn){ btn.textContent='✅ アプリとして起動中'; btn.disabled=true; btn.style.opacity='.6'; } if(hint) hint.textContent='ホーム画面のアイコンから起動しています。'; return; }
+  if(btn){ btn.textContent='📲 Aibisカメラをインストール'; btn.disabled=false; btn.style.opacity='1'; }
+  if(hint) hint.innerHTML=window._pwaPrompt?'ボタンを押すとホーム画面に追加できます。':'反応しない端末は ⋮メニュー →「アプリをインストール」からどうぞ。';
+}
+window.pwaInstall=pwaInstall; window._pwaCamSync=_pwaCamSync;
 const SK_CARDS = "prospect_cards_v1";
 const IDX_KEY  = "aibis_media_index_v1";
 const DB_NAME  = "aibis_media_v1";
@@ -896,7 +950,7 @@ function bindDrows(host,fromWhere){
 /* ---------- 送信設定 ---------- */
 function loadCfg(){ try{ return JSON.parse(localStorage.getItem(CFG_KEY)||"{}")||{}; }catch(e){ return {}; } }
 function cfgEmail(){ const c=loadCfg(); return (c.email||localStorage.getItem("prospect_self_v1")||"").trim(); }
-function openCfg(){ const c=loadCfg(); $("cfgEmail").value=c.email||localStorage.getItem("prospect_self_v1")||""; $("cfgName").value=c.name||""; $("camCfg").classList.remove("hide"); }
+function openCfg(){ const c=loadCfg(); $("cfgEmail").value=c.email||localStorage.getItem("prospect_self_v1")||""; $("cfgName").value=c.name||""; try{ _pwaCamSync(); }catch(e){} $("camCfg").classList.remove("hide"); }
 $("inbCfgBtn").addEventListener("click",openCfg);
 $("cfgCancel").addEventListener("click",()=>$("camCfg").classList.add("hide"));
 $("camCfg").addEventListener("click",e=>{ if(e.target===$("camCfg")) $("camCfg").classList.add("hide"); });

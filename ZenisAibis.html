@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
 <meta name="googlebot" content="noindex, nofollow">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="AIBIS">
@@ -497,6 +497,12 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 .hand-toggle{width:100%;padding:9px 11px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px;font-family:inherit;background:white;min-height:40px;color:#2D3748;cursor:pointer;text-align:left}
 .hand-toggle:active{background:#edf2f7}
 @media(max-width:768px){.hand-toggle{font-size:16px;min-height:44px}}
+.hand-seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid #cbd5e0;border-radius:8px;overflow:hidden;min-height:40px}
+.hand-seg .hand-opt{border:none;background:#fff;color:#4a5568;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;padding:9px 6px}
+.hand-seg .hand-opt+.hand-opt{border-left:1px solid #cbd5e0}
+.hand-seg .hand-opt.active{background:#2c5282;color:#fff}
+.hand-seg .hand-opt:active{filter:brightness(.95)}
+@media(max-width:768px){.hand-seg{min-height:44px}.hand-seg .hand-opt{font-size:16px}}
 .kaiwa-btn{font-size:12px;padding:8px 2px;white-space:nowrap;text-align:center;min-width:0;overflow:hidden;text-overflow:ellipsis}
 @media(max-width:600px){
   .kaiwa-btn{font-size:11px;padding:8px 1px}
@@ -1524,7 +1530,12 @@ body.is-mob .mob-menu{display:inline-block}
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
         <div><label>👤 ニックネーム</label><input type="text" id="sNick" placeholder="例: 大東" oninput="autoSaveSetup()"></div>
-        <div><label style="white-space:nowrap">📱 スマホ持ち方</label><button type="button" id="sHandBtn" class="hand-toggle" onclick="cycleHand()">左手持ち</button></div>
+        <div><label style="white-space:nowrap">📱 スマホ持ち方</label><div id="sHandSeg" class="hand-seg" role="group" aria-label="スマホ持ち方"><button type="button" class="hand-opt" data-hand="left" onclick="setHand('left')">左手持ち</button><button type="button" class="hand-opt" data-hand="right" onclick="setHand('right')">右手持ち</button></div></div>
+      </div>
+      <div id="pwaInstallRow" style="margin-top:10px;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;background:#f7fafc">
+        <div style="font-size:12px;font-weight:700;color:#2c5282;margin-bottom:6px">📲 アプリとしてインストール</div>
+        <div id="pwaBtns" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+        <div id="pwaHint" style="font-size:11px;color:#718096;margin-top:6px;line-height:1.55"></div>
       </div>
       <!-- ▼▼ 開発者ツールパネル START（DEV_EMAIL時のみ表示・JSはdev区画と対） ▼▼ -->
       <div id="devHashTool" style="display:none;margin-top:14px;padding:10px;border:1px dashed #cbd5e0;border-radius:8px;background:#faf5ff">
@@ -1757,7 +1768,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.74";
+var APP_VERSION = "v7.78";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -2558,9 +2569,75 @@ function aibisToast(msg){
   aibisToastTimer=setTimeout(function(){ t.classList.remove('show'); setTimeout(function(){ if(t.parentNode) t.parentNode.removeChild(t); },320); }, 3200);
 }
 function applyHand(){ try{ document.body.classList.toggle('hand-right', uHand==='right'); }catch(_e){} paintHandBtn(); }
-function paintHandBtn(){ var b=document.getElementById('sHandBtn'); if(b) b.textContent=(uHand==='right')?'右手持ち':'左手持ち'; }
+function paintHandBtn(){ var seg=document.getElementById('sHandSeg'); if(seg){ seg.querySelectorAll('.hand-opt').forEach(function(b){ b.classList.toggle('active', b.dataset.hand===uHand); }); } var b=document.getElementById('sHandBtn'); if(b) b.textContent=(uHand==='right')?'右手持ち':'左手持ち'; }
 function cycleHand(){ setHand(uHand==='right'?'left':'right'); }
 function setHand(v){ uHand=(v==='right')?'right':'left'; try{ localStorage.setItem(HANDK,uHand); }catch(_e){} applyHand(); }
+
+/* ===== PWA：単一ファイルでインストール可能化（マニフェスト/アイコンをHTML内生成・外部ファイル不要） v7.78 ===== */
+function _pwaIcon(size,maskable){
+  try{
+    var cv=document.createElement('canvas'); cv.width=cv.height=size; var x=cv.getContext('2d');
+    var pad=maskable?Math.round(size*0.12):0, o=pad, w=size-pad*2, r=Math.round(w*0.2);
+    if(maskable){ x.fillStyle='#1a365d'; x.fillRect(0,0,size,size); }
+    var g=x.createLinearGradient(o,o,o+w,o+w); g.addColorStop(0,'#1a365d'); g.addColorStop(1,'#2c5282');
+    x.fillStyle=g; x.beginPath();
+    x.moveTo(o+r,o); x.arcTo(o+w,o,o+w,o+w,r); x.arcTo(o+w,o+w,o,o+w,r); x.arcTo(o,o+w,o,o,r); x.arcTo(o,o,o+w,o,r); x.closePath(); x.fill();
+    x.fillStyle='#fff'; x.textAlign='center'; x.textBaseline='middle';
+    x.font='bold '+Math.round(w*0.46)+'px sans-serif'; x.fillText('Ai', size/2, size*0.5);
+    x.font='bold '+Math.round(w*0.14)+'px sans-serif'; x.fillText('z.Aibis', size/2, o+w-Math.round(w*0.12));
+    return cv.toDataURL('image/png');
+  }catch(e){ return ''; }
+}
+(function _pwaInit(){
+  try{
+    var THEME='#1a365d', BG='#0d1526';
+    var i192=_pwaIcon(192,false), i512=_pwaIcon(512,false), i512m=_pwaIcon(512,true), i180=_pwaIcon(180,false);
+    var start=location.href.split('#')[0].split('?')[0];
+    var man={ name:'z.Aibis 見込みカード', short_name:'z.Aibis', start_url:start, scope:start.replace(/[^/]*$/,''),
+      display:'standalone', background_color:BG, theme_color:THEME, icons:[] };
+    if(i192) man.icons.push({src:i192,sizes:'192x192',type:'image/png',purpose:'any'});
+    if(i512) man.icons.push({src:i512,sizes:'512x512',type:'image/png',purpose:'any'});
+    if(i512m) man.icons.push({src:i512m,sizes:'512x512',type:'image/png',purpose:'maskable'});
+    var lk=document.createElement('link'); lk.rel='manifest';
+    lk.href='data:application/manifest+json,'+encodeURIComponent(JSON.stringify(man));
+    document.head.appendChild(lk);
+    function meta(n,c){ var m=document.createElement('meta'); m.name=n; m.content=c; document.head.appendChild(m); }
+    meta('apple-mobile-web-app-capable','yes'); meta('mobile-web-app-capable','yes');
+    meta('apple-mobile-web-app-status-bar-style','black-translucent'); meta('apple-mobile-web-app-title','z.Aibis'); meta('theme-color',THEME);
+    if(i180){ var al=document.createElement('link'); al.rel='apple-touch-icon'; al.href=i180; document.head.appendChild(al); }
+  }catch(e){}
+  window._pwaPrompt=null;
+  window.addEventListener('beforeinstallprompt',function(e){ e.preventDefault(); window._pwaPrompt=e; if(window._pwaSyncBtns)window._pwaSyncBtns(); });
+  window.addEventListener('appinstalled',function(){ window._pwaPrompt=null; if(window._pwaSyncBtns)window._pwaSyncBtns(); });
+})();
+function _pwaStandalone(){ return (window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true; }
+function pwaInstall(){
+  if(window._pwaPrompt){ var p=window._pwaPrompt; p.prompt(); p.userChoice.then(function(){ window._pwaPrompt=null; if(window._pwaSyncBtns)window._pwaSyncBtns(); }); return; }
+  var ua=navigator.userAgent||'', isiOS=/iPad|iPhone|iPod/.test(ua)||(/Macintosh/.test(ua)&&'ontouchend' in document);
+  var msg=isiOS? '📲 インストール方法（iPhone/iPad）<br><br>画面下の「共有」ボタン → <b>「ホーム画面に追加」</b>を選んでね。'
+    : (isMob? '📲 インストール方法<br><br>ブラウザの <b>⋮メニュー</b> →「<b>アプリをインストール</b>」または「ホーム画面に追加」を選んでね。'
+            : '💻 インストール方法<br><br>アドレスバー右の <b>インストールアイコン（⊕／画面＋下矢印）</b>をクリックしてね。');
+  if(window.aibisAlert) aibisAlert(msg); else alert(msg.replace(/<[^>]+>/g,''));
+}
+function pwaOpenCam(){ try{ window.open('AibisCam.html','_blank'); }catch(e){ location.href='AibisCam.html'; } if(window.toast) toast('カメラ画面の ⚙ →「📲 アプリをインストール」からどうぞ'); }
+function _pwaSyncBtns(){
+  var host=document.getElementById('pwaBtns'); if(!host) return;
+  var hint=document.getElementById('pwaHint'); var html='';
+  if(_pwaStandalone()){
+    html='<span style="font-size:13px;color:#2f855a;font-weight:700">✅ アプリとして起動中です</span>';
+    if(hint) hint.textContent='ホーム画面のアイコンから起動しています。';
+  } else if(isMob){
+    html+='<button type="button" class="bp" onclick="pwaInstall()" style="font-size:12px;padding:8px 12px">📲 Aibis本体をインストール</button>';
+    html+='<button type="button" class="bp" onclick="pwaOpenCam()" style="font-size:12px;padding:8px 12px">📷 Aibisカメラをインストール</button>';
+    if(hint) hint.innerHTML='ボタンを押すと「ホーム画面に追加」できるよ。'+(window._pwaPrompt?'':'<br>※反応しない端末は ⋮メニュー →「アプリをインストール」からどうぞ。');
+  } else {
+    html+='<button type="button" class="bp" onclick="pwaInstall()" style="font-size:12px;padding:8px 12px">💻 z.AibisをPCにインストール</button>';
+    if(hint) hint.innerHTML=window._pwaPrompt?'ボタンを押すとデスクトップアプリとしてインストールできるよ。':'アドレスバー右の「インストール」アイコン（⊕）からもインストールできるよ。';
+  }
+  host.innerHTML=html;
+}
+window.pwaInstall=pwaInstall; window.pwaOpenCam=pwaOpenCam; window._pwaSyncBtns=_pwaSyncBtns;
+window.addEventListener('load',function(){ try{ _pwaSyncBtns(); }catch(e){} });
 function autoSaveSetup(){
   // フォーム入力を即時LocalStorageに仮保存
   var fields={sName:UNK,sBranch:BRK,sSelf:SEK,sMgr:MEK,sRole:RLK,sSec:SCK};
@@ -3173,6 +3250,7 @@ function showSetup() {
   if ((el=document.getElementById('sRole')))   el.value = userRole||'';
   if ((el=document.getElementById('sNick')))   el.value = uNick||'';
   paintHandBtn();
+  if(window._pwaSyncBtns) _pwaSyncBtns();
   if ((el=document.getElementById('sCopilotUrl'))) el.value = localStorage.getItem(CPK)||'';
   var _sm=document.getElementById('staffMailSection'); if(_sm){ _sm.style.display=isMgrUnlocked()?'block':'none'; if(typeof renderStaffMailRows==='function'){renderStaffMailRows();renderStaffMailChips();} }
   var has = !!(uName && mgrEmail && branch && section);
@@ -3331,8 +3409,8 @@ function _salesType(axes){
 // ===== 🎖 営業ジョブ判定エンジン（9軸／入力信頼度補正／57職） v6.04 =====
 // 軸キー：chizu現地 houbun権利 choshin傾聴 enmusubi信頼 tsuibi追客 seian提案 sakujin作戦 kiroku記録 sokko行動
 var JOB9_AXES=[
- {k:'chizu',  n:'現地', e:'🗺', d:'土地・計画地・現地を見る力'},
- {k:'houbun', n:'権利', e:'📜', d:'相続・所有者・権利関係・法的背景を読む力'},
+ {k:'chizu',  n:'現地', e:'🗺', d:'土地・計画地・現地を見る力（計画地データも少し加点）'},
+ {k:'houbun', n:'権利', e:'📜', d:'相続・所有者・権利関係・法的背景を読む力（計画地データ2件以上＝複数地スケールも加点）'},
  {k:'choshin',n:'傾聴', e:'👂', d:'本音・不安・動機を聴く力'},
  {k:'enmusubi',n:'信頼',e:'🤝', d:'家族・紹介・関係者をつなぐ信頼を築く力'},
  {k:'tsuibi', n:'追客', e:'🔥', d:'見込みを冷まさず追い続ける力'},
@@ -3424,12 +3502,15 @@ function j9Axes(cards){
   var sum={chizu:0,houbun:0,choshin:0,enmusubi:0,tsuibi:0,seian:0,sakujin:0,kiroku:0,sokko:0};
   var trustSum=0;
   var now=Date.now();
+  var _photoMap={}; try{ _photoMap=JSON.parse(localStorage.getItem("aibis_plan_photo_counts_v1")||"{}")||{}; }catch(_e){}
   var recentNew=0, recentUpd=0, visitTotal=0, revCov=0, purCov=0, cntCov=0;
   cards.forEach(function(c){
     // 現地
     var chizu=0;
     if(_j9Filled(c.plan_address))chizu+=25; if(_j9Filled(c.genjo))chizu+=15; if(_j9Filled(c.address))chizu+=15;
     if(_j9HasLand(c))chizu+=30; if(_j9Filled(c.kuushitsu_bikou))chizu+=10; if(_j9Filled(c.ekitoho))chizu+=5;
+    var _pn=_photoMap[c.id]||0; // 紐付け済み計画地データ件数（＝所有/計画の箇所数。1件=最大4枚で1箇所）
+    chizu+=(_pn>=3?10:(_pn===2?8:(_pn===1?6:0))); // 出向いた証。1件はゲート相当で低価値、件数が増えても現地は控えめ（突出させない）
     sum.chizu+=Math.min(100,chizu);
     // 権利
     var hb=0, hf=Array.isArray(c.houbun)?c.houbun:[];
@@ -3437,6 +3518,7 @@ function j9Axes(cards){
     if(_j9Fam(c).some(function(m){return m.owner;}))hb+=20;
     if(_j9Filled(c.land_asset))hb+=15; if(_j9Filled(c.shisan_kibo))hb+=10;
     if(_j9Filled(c.ryokuchi))hb+=10; if(_j9Filled(c.jitaku)||_j9Filled(c.old_rent))hb+=5;
+    hb+=(_pn>=3?18:(_pn===2?10:0)); // 計画地データ2件以上＝所有地が複数＝相続・権利スケール。3件以上＝相続税・継承領域（1件は自宅建替え程度で権利加点なし）
     sum.houbun+=Math.min(100,hb);
     // 傾聴
     // 傾聴：文章の長さではなく“中身”重視（AIランクが主7割）。構造点は会話の深さ・家族の本音・想定(不安/悩み)の把握を主に、文字数は最小限。
@@ -11813,9 +11895,12 @@ window.renderCardPhotos=renderCardPhotos;
 
 /* ---- バッジ ---- */
 function updateInboxBadge(){ mediaOpen().then(function(){ return mAll(); }).then(function(all){
-  var n=(all||[]).filter(function(s){return !s.cardId||s.cardId===MEDIA_INBOX;}).length;
+  var arr=all||[];
+  var n=arr.filter(function(s){return !s.cardId||s.cardId===MEDIA_INBOX;}).length;
   var b=document.getElementById("inbBadgePC"); if(b){ b.style.display=n?"inline-block":"none"; b.textContent=n; }
   var ml=document.getElementById("inboxBtnMobLabel"); if(ml){ ml.textContent=n?("（"+n+"）"):""; }
+  // 計画地写真の枚数マップ（カードID→紐付け済みデータ数）をlocalStorageへ。ジョブ「現地」軸が同期的に参照する。
+  try{ var m={}; arr.forEach(function(s){ if(s.cardId && s.cardId!==MEDIA_INBOX){ m[s.cardId]=(m[s.cardId]||0)+1; } }); localStorage.setItem("aibis_plan_photo_counts_v1", JSON.stringify(m)); }catch(_e){}
 }).catch(function(){}); }
 window.openInbox=openInbox; window.openInboxForCard=openInboxForCard; window.closeInbox=closeInbox;
 window.closeInboxPick=closeInboxPick; window.renderInboxPickList=renderInboxPickList;
