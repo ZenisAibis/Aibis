@@ -270,14 +270,14 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.show{opacity:1}
 #pwaBanner{display:none;position:fixed;bottom:80px;left:12px;right:12px;background:#1e3a5f;color:white;border-radius:10px;padding:12px 14px;z-index:150;box-shadow:0 4px 12px rgba(0,0,0,0.3)}
-.sortbar{background:white;border:1px solid #e2e8f0;border-radius:6px;padding:8px;margin:0 8px 8px;display:flex;gap:6px;align-items:center;flex-wrap:nowrap;overflow:hidden}
+.sortbar{background:white;border:1px solid #e2e8f0;border-radius:6px;padding:8px 10px;margin:0 8px 8px;display:flex;gap:6px;align-items:center;flex-wrap:nowrap;overflow:hidden}
 .sortbar-lab{font-size:12px;color:#4a5568;font-weight:600;white-space:nowrap;flex-shrink:0}
 .sortbar-scroll{display:flex;gap:4px;flex-wrap:nowrap;overflow-x:auto;flex:1;min-width:0;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .sortbar-scroll::-webkit-scrollbar{display:none}
 .sortbar::-webkit-scrollbar{display:none}
 #staffFilterBtns{scrollbar-width:none}
 #staffFilterBtns::-webkit-scrollbar{display:none}
-.sbtn{font-size:11px;padding:6px 8px;border-radius:6px;border:1px solid #cbd5e0;background:white;color:#4a5568;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.sbtn{font-size:11px;padding:6px 10px;border-radius:6px;border:1px solid #cbd5e0;background:white;color:#4a5568;cursor:pointer;white-space:nowrap;flex-shrink:0;min-height:32px;display:inline-flex;align-items:center;justify-content:center}
 .sbtn.active{background:#ebf4ff;color:#2c5282;border-color:#2c5282;font-weight:600}
 .prhdr{display:none}
 /* ===== 家族構成グリッド ===== */
@@ -937,7 +937,7 @@ body.is-mob .mob-menu{display:inline-block}
       <button onclick="newCard()" style="background:#c53030;color:white;border:none;border-radius:6px;padding:7px 12px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600">＋ 新規</button>
       <button class="bp" onclick="loadFile()" style="background:#3182ce">📥 読込</button>
       <button class="bs" onclick="saveAll()">💾 保存</button>
-      <button onclick="openInbox()" id="inboxBtnPC" style="background:#5a67d8;color:white;border:none;border-radius:6px;padding:7px 12px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600;position:relative;white-space:nowrap">🗃 インボックス<span id="inbBadgePC" style="display:none;position:absolute;top:-6px;right:-6px;background:#f59e0b;color:#1a1300;border-radius:9px;font-size:10px;font-weight:800;padding:0 5px;min-width:16px;text-align:center;line-height:16px">0</span></button>
+      <button onclick="openInbox()" id="inboxBtnPC" title="インボックス" style="background:#5a67d8;color:white;border:none;border-radius:6px;font-size:16px;padding:4px 8px;cursor:pointer;font-family:inherit;line-height:1.6;min-height:36px;width:36px;position:relative">🗃<span id="inbBadgePC" style="display:none;position:absolute;top:-6px;right:-6px;background:#f59e0b;color:#1a1300;border-radius:9px;font-size:10px;font-weight:800;padding:0 5px;min-width:16px;text-align:center;line-height:16px">0</span></button>
       <div class="mob-menu" style="position:relative">
         <button onclick="togglePcMenu(event)" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:6px;font-size:16px;padding:4px 8px;cursor:pointer;font-family:inherit;line-height:1.6;min-height:36px;width:36px">⋮</button>
         <div class="mob-dropdown" id="pcDropdown" style="right:0;left:auto;min-width:170px">
@@ -968,15 +968,15 @@ body.is-mob .mob-menu{display:inline-block}
       <button onclick="openAibisChat()" style="position:absolute;top:0;right:0;background:#d97706;color:white;border:none;border-radius:6px;font-size:11px;padding:4px 8px;cursor:pointer;font-family:inherit;line-height:1.2">🧚<br><span class="aibisVer" style="font-size:8px;opacity:0.8;font-weight:700">v3.3</span></button>
     </h1>
     <div class="ha" style="width:100%">
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:4px;width:100%">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto auto;gap:4px;width:100%">
         <button onclick="newCard()" style="background:#c53030;color:white;border:none;border-radius:6px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;height:36px">＋ 新規</button>
         <label for="fileInputMob" style="background:#3182ce;color:white;border-radius:6px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;height:36px;display:flex;align-items:center;justify-content:center">📥 読込</label>
         <input type="file" id="fileInputMob" accept=".json,.txt,application/json,text/plain" style="display:none" onchange="onFileImport(event)">
         <button onclick="saveAll()" style="background:#38a169;color:white;border:none;border-radius:6px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;height:36px">💾 保存</button>
+        <button onclick="openInbox()" title="インボックス" style="position:relative;background:#5a67d8;color:white;border:none;border-radius:6px;font-size:16px;font-family:inherit;cursor:pointer;height:36px;padding:0 9px">🗃<span id="inbBadgeMob" style="display:none;position:absolute;top:-5px;right:-5px;background:#f59e0b;color:#1a1300;border-radius:9px;font-size:9px;font-weight:800;padding:0 4px;min-width:14px;text-align:center;line-height:14px">0</span></button>
         <div class="mob-menu" style="position:relative">
           <button class="mob-more-btn" onclick="toggleMobMenu(event)" style="width:100%;height:36px;font-size:11px;padding:0">⋮ その他</button>
           <div class="mob-dropdown" id="mobDropdown">
-            <button onclick="closeMobMenu();openInbox()">🗃 インボックス<span id="inboxBtnMobLabel"></span></button>
             <button onclick="closeMobMenu();restoreBackup()">⏪ 1つ前に戻す</button>
             <button onclick="closeMobMenu();showSetup()">⚙ 初期設定</button>
             <button onclick="closeMobMenu();setTimeout(function(){showHelp();},50)">📖 マニュアル</button>
@@ -1109,6 +1109,7 @@ body.is-mob .mob-menu{display:inline-block}
         <input id="qaPlan" type="text" placeholder="📍で現在地、🔢で番地" style="flex:1;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:13px;font-family:inherit">
         <button type="button" onclick="qaTenkeyOpen('qaPlan')" style="flex-shrink:0;width:40px;height:40px;border:1px solid #cbd5e0;border-radius:8px;background:#f7fafc;font-size:16px;cursor:pointer">🔢</button>
       </div>
+      <button type="button" onclick="qaOpenCam()" style="width:100%;margin-bottom:10px;background:#0e4a45;color:#fff;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer">📷 計画地を撮影（カメラ）</button>
       <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">🧠 購買心理ステージ</label>
       <div id="qaStage" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px"></div>
       <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">🗣 会話状況（複数可）</label>
@@ -1768,7 +1769,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.79";
+var APP_VERSION = "v7.80";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -9303,6 +9304,11 @@ function qaSave(cont){
   c.kaiwa=qaKaiwaSel.slice();
   _stageUpLog(null,c);
   cards.push(c);
+  // カメラから持ち帰った計画地写真があれば、このカードに紐付け
+  if(qaPendingPhotoSet && typeof mGet==='function' && typeof mPut==='function'){
+    (function(sid,cid){ try{ mGet(sid).then(function(s){ if(s){ s.cardId=cid; mPut(s).then(function(){ if(typeof updateInboxBadge==='function') updateInboxBadge(); }); } }); }catch(_e){} })(qaPendingPhotoSet,c.id);
+    qaPendingPhotoSet=null;
+  }
   doSaveCards(function(ok){
     if(!ok){ toast('⚠ 保存に失敗しました'); return; }
     updateCount();
@@ -9345,6 +9351,39 @@ function qaTkKey(k){
 }
 window.openQuickAdd=openQuickAdd; window.closeQuickAdd=closeQuickAdd; window.qaSetStage=qaSetStage; window.qaToggleKaiwa=qaToggleKaiwa; window.qaSave=qaSave;
 window.qaGeo=qaGeo; window.qaTenkeyOpen=qaTenkeyOpen; window.qaTenkeyClose=qaTenkeyClose; window.qaTkKey=qaTkKey;
+/* ===== 光速入力 → カメラ連携（計画地の撮影＋住所反映＋写真紐付け） ===== */
+var qaPendingPhotoSet=null; // カメラから戻ってきた写真データID（保存時にこのカードへ紐付け）
+function qaOpenCam(){
+  try{ localStorage.removeItem('aibis_qa_return'); }catch(_e){}
+  try{ window.open('AibisCam.html?ret=qa','aibiscam'); }catch(_e){ location.href='AibisCam.html?ret=qa'; }
+  toast('カメラで計画地を撮影 →「📥 アイビスに反映して戻る」を押すと住所が入ります');
+}
+window.qaOpenCam=qaOpenCam;
+// カメラ（別タブ）が書き込んだ住所を受け取る
+window.addEventListener('storage',function(ev){
+  if(ev.key!=='aibis_qa_return'||!ev.newValue) return;
+  var d=null; try{ d=JSON.parse(ev.newValue); }catch(_e){}
+  if(!d) return;
+  try{ localStorage.removeItem('aibis_qa_return'); }catch(_e){}
+  _qaApplyCamReturn(d);
+});
+function _qaApplyCamReturn(d){
+  var ov=document.getElementById('quickAddOv');
+  if(ov && ov.style.display!=='none'){
+    var pl=document.getElementById('qaPlan');
+    if(pl){ pl.value=(d.addr||'')+(d.banchi?(' '+d.banchi):''); }
+    if(d.setId) qaPendingPhotoSet=d.setId;
+    toast('📍 計画地に住所を反映しました');
+  } else {
+    // 光速入力が閉じていても、戻ってきたら開き直して反映
+    openQuickAdd();
+    setTimeout(function(){ var pl=document.getElementById('qaPlan'); if(pl){ pl.value=(d.addr||'')+(d.banchi?(' '+d.banchi):''); } if(d.setId) qaPendingPhotoSet=d.setId; toast('📍 計画地に住所を反映しました'); },120);
+  }
+}
+// 同一タブで戻ってきたケース（フォールバック）：起動時に保留がないか確認
+window.addEventListener('load',function(){
+  try{ var raw=localStorage.getItem('aibis_qa_return'); if(raw){ localStorage.removeItem('aibis_qa_return'); var d=JSON.parse(raw); if(d) setTimeout(function(){ _qaApplyCamReturn(d); },300); } }catch(_e){}
+});
 window.newCard=newCard; window.openCard=openCard; window.saveCard=saveCard; window.saveAll=saveAll;
 window.delCard=delCard; window.doDelCard=doDelCard; window.switchTab=switchTab;
 window.clearAllCards=clearAllCards; window.clearAllCards2=clearAllCards2; window.doClearAllCards=doClearAllCards;
@@ -11905,6 +11944,7 @@ function updateInboxBadge(){ mediaOpen().then(function(){ return mAll(); }).then
   var arr=all||[];
   var n=arr.filter(function(s){return !s.cardId||s.cardId===MEDIA_INBOX;}).length;
   var b=document.getElementById("inbBadgePC"); if(b){ b.style.display=n?"inline-block":"none"; b.textContent=n; }
+  var bm=document.getElementById("inbBadgeMob"); if(bm){ bm.style.display=n?"inline-block":"none"; bm.textContent=n; }
   var ml=document.getElementById("inboxBtnMobLabel"); if(ml){ ml.textContent=n?("（"+n+"）"):""; }
   // 計画地写真の枚数マップ（カードID→紐付け済みデータ数）をlocalStorageへ。ジョブ「現地」軸が同期的に参照する。
   try{ var m={}; arr.forEach(function(s){ if(s.cardId && s.cardId!==MEDIA_INBOX){ m[s.cardId]=(m[s.cardId]||0)+1; } }); localStorage.setItem("aibis_plan_photo_counts_v1", JSON.stringify(m)); }catch(_e){}
