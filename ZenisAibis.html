@@ -1768,7 +1768,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.78";
+var APP_VERSION = "v7.79";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -11785,33 +11785,38 @@ function _cardName(id){ var c=_cardById(id); if(c) return (c.name||"無名")+"�
 function _fmtWhen(ts){ var d=new Date(ts),p=function(n){return String(n).padStart(2,"0");}; return d.getFullYear()+"/"+p(d.getMonth()+1)+"/"+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes()); }
 
 function _inrow(s){
+  var ph=Array.isArray(s.photos)?s.photos:[];
   var linked=(s.cardId && s.cardId!==MEDIA_INBOX);
   var addr=s.addr?e(s.addr+(s.banchi?(" "+s.banchi):"")):"住所未取得";
   var who=linked?'<span class="ibadge">🔗 '+e(_cardName(s.cardId))+'</span>':'<span class="ibadge un">未紐付け</span>';
-  var thumb=(s.photos[0]&&s.photos[0].thumb)?s.photos[0].thumb:"";
+  var thumb=(ph[0]&&ph[0].thumb)?ph[0].thumb:"";
   var acts="";
   if(_inboxAttach){ acts='<button class="ibtn pri" data-act="attach" data-id="'+e(s.id)+'">このカードに紐付け</button>'; if(linked) acts+='<span class="ibadge">既に紐付け済</span>'; }
   else if(linked){ acts='<button class="ibtn" data-act="unlink" data-id="'+e(s.id)+'">外す</button><button class="ibtn dn" data-act="del" data-id="'+e(s.id)+'">🗑</button>'; }
   else { acts='<button class="ibtn pri" data-act="link" data-id="'+e(s.id)+'">🔗 紐付け</button><button class="ibtn dn" data-act="del" data-id="'+e(s.id)+'">🗑</button>'; }
   return '<div class="irow">'+
-    '<div class="ith" data-act="view" data-id="'+e(s.id)+'">'+(thumb?'<img src="'+thumb+'">':'')+'<span class="ithn">'+s.photos.length+'枚</span></div>'+
+    '<div class="ith" data-act="view" data-id="'+e(s.id)+'">'+(thumb?'<img src="'+thumb+'">':'')+'<span class="ithn">'+ph.length+'枚</span></div>'+
     '<div class="ibd"><div class="iadr">'+addr+(s.sent?' <span class="ibadge sent">送信済</span>':'')+'</div>'+
     '<div class="imeta">'+who+' ・ '+_fmtWhen(s.ts)+(s.note?' ・ '+e(s.note):"")+'</div>'+
     '<div class="iacts">'+acts+'</div></div></div>';
 }
+function _inrowSafe(s){ try{ return _inrow(s); }catch(err){ return '<div class="irow"><div class="ibd"><div class="iadr">（このデータは表示できません）</div><div class="imeta">'+e(String((s&&s.id)||""))+'</div></div></div>'; } }
 function renderInboxBody(){
-  mAll().then(function(all){
-    all.sort(function(a,b){return b.ts-a.ts;});
+  var host=document.getElementById("inboxBody");
+  if(host) host.innerHTML='<div class="iempty">読み込み中…</div>';
+  mediaOpen().then(function(){ return mAll(); }).then(function(all){
+    all=all||[];
+    all.sort(function(a,b){return (b.ts||0)-(a.ts||0);});
     var unlinked=all.filter(function(s){return !s.cardId||s.cardId===MEDIA_INBOX;});
     var linked=all.filter(function(s){return s.cardId&&s.cardId!==MEDIA_INBOX;});
-    document.getElementById("inboxTitle").textContent=_inboxAttach?("📥 "+_cardName(_inboxAttach)+" に追加"):"📥 インボックス";
-    var host=document.getElementById("inboxBody");
+    var ti=document.getElementById("inboxTitle"); if(ti) ti.textContent=_inboxAttach?("📥 "+_cardName(_inboxAttach)+" に追加"):"📥 インボックス";
+    if(!host) return;
     if(!all.length){ host.innerHTML='<div class="iempty">写真データはありません。<br>アイビスカメラの「📤 PCへ送る」で書き出したJSONを、一覧の「📥 読込」で取り込めます。</div>'; updateInboxBadge(); return; }
     var html="";
     if(_inboxAttach){ html+='<div class="ihint">このカードに紐付けたい写真を選んでください。</div>'; }
-    if(unlinked.length){ html+='<div class="isec">未紐付け（'+unlinked.length+'）</div>'+unlinked.map(_inrow).join(""); }
-    if(linked.length && !_inboxAttach){ html+='<div class="isec">紐付け済み（'+linked.length+'）</div>'+linked.map(_inrow).join(""); }
-    if(_inboxAttach && linked.length){ html+='<div class="isec">紐付け済み（'+linked.length+'）</div>'+linked.map(_inrow).join(""); }
+    if(unlinked.length){ html+='<div class="isec">未紐付け（'+unlinked.length+'）</div>'+unlinked.map(_inrowSafe).join(""); }
+    if(linked.length && !_inboxAttach){ html+='<div class="isec">紐付け済み（'+linked.length+'）</div>'+linked.map(_inrowSafe).join(""); }
+    if(_inboxAttach && linked.length){ html+='<div class="isec">紐付け済み（'+linked.length+'）</div>'+linked.map(_inrowSafe).join(""); }
     host.innerHTML=html;
     host.querySelectorAll("[data-act]").forEach(function(el){
       el.addEventListener("click",function(){
@@ -11824,6 +11829,8 @@ function renderInboxBody(){
       });
     });
     updateInboxBadge();
+  }).catch(function(err){
+    if(host) host.innerHTML='<div class="iempty">表示中にエラーが発生しました。<br>一覧の「📥 読込」で取り込み直すか、再読み込みしてください。<br><span style="font-size:11px;color:#c53030">'+e(String((err&&err.message)||err))+'</span></div>';
   });
 }
 function _attachToCard(id){ if(!_inboxAttach) return; mGet(id).then(function(s){ if(!s) return; s.cardId=_inboxAttach; mPut(s).then(function(){ toast(_cardName(_inboxAttach)+" に紐付けました"); renderInboxBody(); }); }); }
