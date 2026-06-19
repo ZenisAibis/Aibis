@@ -1770,7 +1770,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.87";
+var APP_VERSION = "v7.88";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -11774,11 +11774,19 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
 /* ===== 写真インボックス（本体連携） ===== */
 var MEDIA_DB="aibis_media_v1", MEDIA_STORE="photos", MEDIA_INBOX="__inbox__";
 var _mdb=null, _inboxAttach=null, _pickSetId=null, _ivSet=null, _ivIdx=0, _ivUrl=null;
-function mediaOpen(){ return new Promise(function(res,rej){ if(_mdb){res(_mdb);return;}
-  var r=indexedDB.open(MEDIA_DB,1);
+function mediaOpen(){ return new Promise(function(res,rej){
+  if(_mdb){ res(_mdb); return; }
+  var done=false, r;
+  var to=setTimeout(function(){ if(done) return; done=true; _mdb=null; rej(new Error("DBオープンがタイムアウトしました")); }, 6000);
+  try{ r=indexedDB.open(MEDIA_DB,1); }catch(err){ clearTimeout(to); done=true; rej(err); return; }
   r.onupgradeneeded=function(){ var db=r.result; if(!db.objectStoreNames.contains(MEDIA_STORE)){ var os=db.createObjectStore(MEDIA_STORE,{keyPath:"id"}); os.createIndex("by_card","cardId",{unique:false}); os.createIndex("by_ts","ts",{unique:false}); } };
-  r.onsuccess=function(){ _mdb=r.result; res(_mdb); }; r.onerror=function(){ rej(r.error); };
+  r.onsuccess=function(){ if(done){ try{r.result.close();}catch(e){} return; } done=true; clearTimeout(to); _mdb=r.result;
+    try{ _mdb.onclose=function(){ _mdb=null; }; _mdb.onversionchange=function(){ try{_mdb.close();}catch(e){} _mdb=null; }; }catch(e){}
+    res(_mdb); };
+  r.onerror=function(){ if(done) return; done=true; clearTimeout(to); _mdb=null; rej(r.error||new Error("DBオープン失敗")); };
+  r.onblocked=function(){ if(done) return; done=true; clearTimeout(to); _mdb=null; rej(new Error("他のタブがDBを使用中です")); };
 }); }
+function _withTimeout(p,ms){ return new Promise(function(res,rej){ var done=false; var t=setTimeout(function(){ if(done) return; done=true; rej(new Error("読み込みがタイムアウトしました")); }, ms||7000); p.then(function(v){ if(done) return; done=true; clearTimeout(t); res(v); },function(e){ if(done) return; done=true; clearTimeout(t); rej(e); }); }); }
 function _mtx(mode){ return _mdb.transaction(MEDIA_STORE,mode).objectStore(MEDIA_STORE); }
 function mNormalize(rec){ if(!rec) return rec; if(Array.isArray(rec.photos)) return rec;
   rec.photos=[{pid:(rec.id||"p")+"_0",full:rec.full,thumb:rec.thumb,w:rec.w,h:rec.h,size:rec.size}];
@@ -11870,7 +11878,7 @@ function _inrowSafe(s){ try{ return _inrow(s); }catch(err){ return '<div class="
 function renderInboxBody(){
   var host=document.getElementById("inboxBody");
   if(host) host.innerHTML='<div class="iempty">読み込み中…</div>';
-  mediaOpen().then(function(){ return mAll(); }).then(function(all){
+  _withTimeout(mediaOpen().then(function(){ return mAll(); }),7000).then(function(all){
     all=all||[];
     all.sort(function(a,b){return (b.ts||0)-(a.ts||0);});
     var ti=document.getElementById("inboxTitle"); if(ti) ti.textContent=_inboxAttach?("📥 "+_cardName(_inboxAttach)+" に追加"):("📥 インボックス（"+all.length+"件）");
@@ -11895,7 +11903,8 @@ function renderInboxBody(){
     });
     updateInboxBadge();
   }).catch(function(err){
-    if(host) host.innerHTML='<div class="iempty">表示中にエラーが発生しました。<br>一覧の「📥 読込」で取り込み直すか、再読み込みしてください。<br><span style="font-size:11px;color:#c53030">'+e(String((err&&err.message)||err))+'</span></div>';
+    _mdb=null;
+    if(host) host.innerHTML='<div class="iempty">読み込みに時間がかかっています（接続を作り直します）。<br><br><button class="ibtn pri" onclick="renderInboxBody()">🔄 再読み込み</button><br><br><span style="font-size:11px;color:#c53030">'+e(String((err&&err.message)||err))+'</span></div>';
   });
 }
 function _attachToCard(id){ if(!_inboxAttach) return; mGet(id).then(function(s){ if(!s) return; s.cardId=_inboxAttach; mPut(s).then(function(){ toast(_cardName(_inboxAttach)+" に紐付けました"); renderInboxBody(); }); }); }
@@ -11958,7 +11967,7 @@ function renderCardPhotos(cardId){
   body.innerHTML='<div class="cps-load">読み込み中…</div>';
   var esc=function(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); };
   var fmtW=function(ts){ try{ var d=new Date(ts); if(isNaN(d.getTime())) return ""; var p=function(n){return ("0"+n).slice(-2);}; return d.getFullYear()+"/"+p(d.getMonth()+1)+"/"+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes()); }catch(_e){ return ""; } };
-  mediaOpen().then(function(){ return mAll(); }).then(function(all){
+  mediaOpen().then(function(){ return _withTimeout(mAll(),7000); }).then(function(all){
     try{
       var sets=(all||[]).filter(function(s){ return s && s.cardId===cardId; });
       sets.sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
@@ -11985,12 +11994,12 @@ function renderCardPhotos(cardId){
         el.addEventListener("click",function(){ openInboxPhoto(el.getAttribute("data-sid"), parseInt(el.getAttribute("data-idx"),10)||0); });
       });
     }catch(err2){ body.innerHTML='<div class="cps-empty">表示エラー：<br><span style="color:#c53030;font-size:11px">'+esc(String((err2&&err2.message)||err2))+'</span></div>'; }
-  }).catch(function(err){ body.innerHTML='<div class="cps-empty">写真領域を開けませんでした。<br><span style="color:#c53030;font-size:11px">'+esc(String((err&&err.message)||err))+'</span></div>'; });
+  }).catch(function(err){ _mdb=null; body.innerHTML='<div class="cps-empty">写真領域を開けませんでした。<br><span style="color:#c53030;font-size:11px">'+esc(String((err&&err.message)||err))+'</span></div>'; });
 }
 window.renderCardPhotos=renderCardPhotos;
 
 /* ---- バッジ ---- */
-function updateInboxBadge(){ mediaOpen().then(function(){ return mAll(); }).then(function(all){
+function updateInboxBadge(){ _withTimeout(mediaOpen().then(function(){ return mAll(); }),7000).then(function(all){
   var arr=all||[];
   var n=arr.filter(function(s){return !s.cardId||s.cardId===MEDIA_INBOX;}).length;
   var b=document.getElementById("inbBadgePC"); if(b){ b.style.display=n?"inline-block":"none"; b.textContent=n; }
@@ -11998,7 +12007,7 @@ function updateInboxBadge(){ mediaOpen().then(function(){ return mAll(); }).then
   var ml=document.getElementById("inboxBtnMobLabel"); if(ml){ ml.textContent=n?("（"+n+"）"):""; }
   // 計画地写真の枚数マップ（カードID→紐付け済みデータ数）をlocalStorageへ。ジョブ「現地」軸が同期的に参照する。
   try{ var m={}; arr.forEach(function(s){ if(s.cardId && s.cardId!==MEDIA_INBOX){ m[s.cardId]=(m[s.cardId]||0)+1; } }); localStorage.setItem("aibis_plan_photo_counts_v1", JSON.stringify(m)); }catch(_e){}
-}).catch(function(){}); }
+}).catch(function(){ _mdb=null; }); }
 window.openInbox=openInbox; window.openInboxForCard=openInboxForCard; window.closeInbox=closeInbox;
 window.closeInboxPick=closeInboxPick; window.renderInboxPickList=renderInboxPickList;
 window.openInboxPhoto=openInboxPhoto; window.inboxPhotoStep=inboxPhotoStep; window.closeInboxPhoto=closeInboxPhoto;
