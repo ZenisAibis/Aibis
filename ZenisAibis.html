@@ -60,6 +60,7 @@ html{-webkit-text-size-adjust:100%}
 }
 body{font-family:-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;background:#f0f2f5;color:#1a1a1a;line-height:1.5;padding:12px;font-size:14px;padding-bottom:80px}
 .container{max-width:900px;margin:0 auto}
+@media screen{html.pczoom{zoom:1.3}}
 /* PC版：各ビューの背景クリック領域を活用してA4幅に制限 */
 @media(min-width:769px){
   #listView,#helpView,#setupView,#editView{
@@ -1769,7 +1770,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.83";
+var APP_VERSION = "v7.85";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -1957,6 +1958,7 @@ var sortKey = 'lv'; // lv=最新, ad=住所, st=段階, dt=初訪
 var sortDir = { lv:'asc', ad:'asc', st:'desc', dt:'desc' };
 
 var isMob = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+try{ if(!isMob && document.documentElement){ document.documentElement.classList.add('pczoom'); } }catch(_e){}
 var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 // スマホは常にLocalStorage保存（FSA無効）
 var hasFSA = !isMob && (typeof window.showSaveFilePicker === 'function');
@@ -11692,10 +11694,10 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
 <!-- ===== 写真インボックス（本体連携） ここから ===== -->
 <style>
   #inboxView{display:none;position:fixed;inset:0;background:#f7fafc;z-index:1500;overflow-y:auto;-webkit-overflow-scrolling:touch}
-  #inboxView .ih{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:10px;padding:12px 14px;background:linear-gradient(135deg,#1a365d,#2c5282);color:#fff}
+  #inboxView .ih{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:10px;padding:12px 14px;background:linear-gradient(135deg,#1a365d,#2c5282);color:#fff;max-width:900px;margin:0 auto;width:100%;box-sizing:border-box}
   #inboxView .ih b{flex:1;font-size:15px}
   #inboxView .ih button{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:8px;padding:7px 12px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer}
-  #inboxBody{padding:12px 14px;max-width:760px;margin:0 auto}
+  #inboxBody{padding:12px 14px;max-width:900px;margin:0 auto}
   .isec{font-size:12px;font-weight:800;color:#2c5282;margin:14px 2px 7px}
   .ihint{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.4);color:#9a6700;border-radius:10px;padding:10px 12px;font-size:12.5px;font-weight:700;margin-bottom:10px;line-height:1.5}
   .iempty{text-align:center;color:#a0aec0;padding:40px 20px;line-height:1.9;font-size:13px}
@@ -11844,7 +11846,7 @@ function _inrow(s){
   var ph=Array.isArray(s.photos)?s.photos:[];
   var linked=(s.cardId && s.cardId!==MEDIA_INBOX);
   var addr=s.addr?e(s.addr+(s.banchi?(" "+s.banchi):"")):"住所未取得";
-  var who=linked?'<span class="ibadge">🔗 '+e(_cardName(s.cardId))+'</span>':'<span class="ibadge un">未紐付け</span>';
+  var nm=linked?('🔗 '+e(_cardName(s.cardId))):'<span style="color:#a0aec0">未紐付け</span>';
   var thumb=(ph[0]&&ph[0].thumb)?ph[0].thumb:"";
   var acts="";
   if(_inboxAttach){ acts='<button class="ibtn pri" data-act="attach" data-id="'+e(s.id)+'">このカードに紐付け</button>'; if(linked) acts+='<span class="ibadge">既に紐付け済</span>'; }
@@ -11852,8 +11854,8 @@ function _inrow(s){
   else { acts='<button class="ibtn pri" data-act="link" data-id="'+e(s.id)+'">🔗 紐付け</button><button class="ibtn dn" data-act="del" data-id="'+e(s.id)+'">🗑</button>'; }
   return '<div class="irow">'+
     '<div class="ith" data-act="view" data-id="'+e(s.id)+'">'+(thumb?'<img src="'+thumb+'">':'')+'<span class="ithn">'+ph.length+'枚</span></div>'+
-    '<div class="ibd"><div class="iadr">'+addr+(s.sent?' <span class="ibadge sent">送信済</span>':'')+'</div>'+
-    '<div class="imeta">'+who+' ・ '+_fmtWhen(s.ts)+(s.note?' ・ '+e(s.note):"")+'</div>'+
+    '<div class="ibd"><div class="iadr">'+nm+(s.sent?' <span class="ibadge sent">送信済</span>':'')+'</div>'+
+    '<div class="imeta">📍 '+addr+' ・ '+_fmtWhen(s.ts)+(s.note?' ・ '+e(s.note):"")+'</div>'+
     '<div class="iacts">'+acts+'</div></div></div>';
 }
 function _inrowSafe(s){ try{ return _inrow(s); }catch(err){ return '<div class="irow"><div class="ibd"><div class="iadr">（このデータは表示できません）</div><div class="imeta">'+e(String((s&&s.id)||""))+'</div></div></div>'; } }
@@ -11863,16 +11865,14 @@ function renderInboxBody(){
   mediaOpen().then(function(){ return mAll(); }).then(function(all){
     all=all||[];
     all.sort(function(a,b){return (b.ts||0)-(a.ts||0);});
-    var unlinked=all.filter(function(s){return !s.cardId||s.cardId===MEDIA_INBOX;});
-    var linked=all.filter(function(s){return s.cardId&&s.cardId!==MEDIA_INBOX;});
-    var ti=document.getElementById("inboxTitle"); if(ti) ti.textContent=_inboxAttach?("📥 "+_cardName(_inboxAttach)+" に追加"):"📥 インボックス";
+    var ti=document.getElementById("inboxTitle"); if(ti) ti.textContent=_inboxAttach?("📥 "+_cardName(_inboxAttach)+" に追加"):("📥 インボックス（"+all.length+"件）");
     if(!host) return;
     if(!all.length){ host.innerHTML='<div class="iempty">写真データはありません。<br>アイビスカメラの「📤 PCへ送る」で書き出したJSONを、一覧の「📥 読込」で取り込めます。</div>'; updateInboxBadge(); return; }
+    var unlinkedN=all.filter(function(s){return !s.cardId||s.cardId===MEDIA_INBOX;}).length;
     var html="";
-    if(_inboxAttach){ html+='<div class="ihint">このカードに紐付けたい写真を選んでください。</div>'; }
-    if(unlinked.length){ html+='<div class="isec">未紐付け（'+unlinked.length+'）</div>'+unlinked.map(_inrowSafe).join(""); }
-    if(linked.length && !_inboxAttach){ html+='<div class="isec">紐付け済み（'+linked.length+'）</div>'+linked.map(_inrowSafe).join(""); }
-    if(_inboxAttach && linked.length){ html+='<div class="isec">紐付け済み（'+linked.length+'）</div>'+linked.map(_inrowSafe).join(""); }
+    if(_inboxAttach){ html+='<div class="ihint">このカードに紐付けたい写真を選んでください（日付順）。</div>'; }
+    else { html+='<div class="isec">全 '+all.length+' 件（未紐付 '+unlinkedN+' 件）・日付順</div>'; }
+    html+=all.map(_inrowSafe).join("");   // 紐付け済み・未紐付けを区別せず日付順で1リスト
     host.innerHTML=html;
     host.querySelectorAll("[data-act]").forEach(function(el){
       el.addEventListener("click",function(){
@@ -11936,7 +11936,7 @@ function renderCardPhotos(cardId){
       var sets=(all||[]).filter(function(s){ return s && s.cardId===cardId; });
       sets.sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
       var total=sets.reduce(function(n,s){ return n+((s.photos&&s.photos.length)||0); },0);
-      if(cnt) cnt.textContent=total?("（"+total+"枚）"):"";
+      if(cnt) cnt.textContent=sets.length?("（"+sets.length+"件 / 計"+total+"枚）"):"";
       if(!sets.length){
         body.innerHTML='<div class="cps-empty">計画地写真はまだありません。<br><button type="button" class="cps-add" onclick="openInboxForCard()">📥 インボックスから写真を選ぶ</button></div>';
         return;
