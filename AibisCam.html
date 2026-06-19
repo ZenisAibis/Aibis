@@ -401,7 +401,7 @@
    ※ prospect_cards_v1 には書き込まない（新規カード作成・PC連携は本体側）
    データ(set): {id,cardId,ts,addrType:'plan',lat,lng,acc,addr,addrPending,banchi,note,sent,photos:[{pid,full(Blob),thumb,w,h,size}]}
    ========================================================= */
-const APP_VERSION = "cam-v1.33";
+const APP_VERSION = "cam-v1.34";
 
 /* ===== PWA：単一ファイルでインストール可能化（外部ファイル不要） ===== */
 function _pwaIcon(size,maskable){
@@ -1277,8 +1277,6 @@ boot();
 /* 古いキャッシュ対策：最新版と照合し違えば一度だけ最新URLへ読み直す */
 window.addEventListener('load',function(){
   try{
-    if(sessionStorage.getItem('aibiscam_vchecked')) return;
-    sessionStorage.setItem('aibiscam_vchecked','1');
     var cur=(typeof APP_VERSION!=='undefined')?APP_VERSION:'';
     if(!cur) return;
     fetch(location.pathname+'?_v='+Date.now(),{cache:'no-store',headers:{'Range':'bytes=0-30000'}})

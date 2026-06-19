@@ -1035,18 +1035,20 @@ body.is-mob .mob-menu{display:inline-block}
       <div id="staffFilterBtns" style="display:flex;gap:4px;flex-wrap:nowrap;overflow-x:auto;flex:1"></div>
     </div>
   </div>
-  <div class="sortbar">
-    <span class="sortbar-lab">🔀 並替：</span>
-    <div class="sortbar-scroll">
-      <button class="sbtn active" id="sb_lv" onclick="toggleSort('lv')">🚶 最新</button>
-      <button class="sbtn" id="sb_rv" onclick="toggleSort('rv')">🔁 再訪</button>
-      <button class="sbtn" id="sb_jw" onclick="toggleSort('jw')">⚖ 判定待ち</button>
-      <button class="sbtn" id="sb_ad" onclick="toggleSort('ad')">🏠 住所</button>
-      <button class="sbtn" id="sb_sc" onclick="toggleSort('sc')">⭐ スコア</button>
-      <button class="sbtn" id="sb_st" onclick="toggleSort('st')">📊 心理</button>
-      <button class="sbtn" id="sb_pj" onclick="toggleSort('pj')">🎯 ランク</button>
-      <button class="sbtn" id="sb_pace" onclick="toggleSort('pace')">⏰ 遅れ</button>
-      <button class="sbtn" id="sb_dt" onclick="toggleSort('dt')">📅 初訪</button>
+  <div style="background:white;border:1px solid #e2e8f0;border-radius:6px;padding:8px 10px;margin:0 8px 8px">
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:nowrap">
+      <span class="sortbar-lab">🔀 並替：</span>
+      <div class="sortbar-scroll">
+        <button class="sbtn active" id="sb_lv" onclick="toggleSort('lv')">🚶 最新</button>
+        <button class="sbtn" id="sb_rv" onclick="toggleSort('rv')">🔁 再訪</button>
+        <button class="sbtn" id="sb_jw" onclick="toggleSort('jw')">⚖ 判定待ち</button>
+        <button class="sbtn" id="sb_ad" onclick="toggleSort('ad')">🏠 住所</button>
+        <button class="sbtn" id="sb_sc" onclick="toggleSort('sc')">⭐ スコア</button>
+        <button class="sbtn" id="sb_st" onclick="toggleSort('st')">📊 心理</button>
+        <button class="sbtn" id="sb_pj" onclick="toggleSort('pj')">🎯 ランク</button>
+        <button class="sbtn" id="sb_pace" onclick="toggleSort('pace')">⏰ 遅れ</button>
+        <button class="sbtn" id="sb_dt" onclick="toggleSort('dt')">📅 初訪</button>
+      </div>
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:6px;margin:0 8px 6px">
@@ -1773,7 +1775,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.91";
+var APP_VERSION = "v7.92";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -12023,8 +12025,6 @@ setTimeout(function(){ try{ updateInboxBadge(); }catch(e){} }, 800);
 /* 古いキャッシュ対策：サーバ上の最新版と現在版を照合し、違えば一度だけ最新URLへ読み直す */
 window.addEventListener('load',function(){
   try{
-    if(sessionStorage.getItem('aibis_vchecked')) return;
-    sessionStorage.setItem('aibis_vchecked','1');
     var cur=(typeof APP_VERSION!=='undefined')?APP_VERSION:'';
     if(!cur) return;
     fetch(location.pathname+'?_v='+Date.now(),{cache:'no-store',headers:{'Range':'bytes=0-140000'}})
