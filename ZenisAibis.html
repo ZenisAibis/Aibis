@@ -1775,7 +1775,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.92";
+var APP_VERSION = "v7.93";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -11796,11 +11796,31 @@ function _mtx(mode){ return _mdb.transaction(MEDIA_STORE,mode).objectStore(MEDIA
 function mNormalize(rec){ if(!rec) return rec; if(Array.isArray(rec.photos)) return rec;
   rec.photos=[{pid:(rec.id||"p")+"_0",full:rec.full,thumb:rec.thumb,w:rec.w,h:rec.h,size:rec.size}];
   if(rec.sent===undefined)rec.sent=false; if(rec.banchi===undefined)rec.banchi=""; return rec; }
-function mGet(id){ return new Promise(function(res,rej){ var q=_mtx("readonly").get(id); q.onsuccess=function(){res(mNormalize(q.result));}; q.onerror=function(){rej(q.error);}; }); }
 function _mediaPing(){ try{ localStorage.setItem("aibis_media_ping", String(Date.now())); }catch(e){} }
-function mPut(rec){ return new Promise(function(res,rej){ var q=_mtx("readwrite").put(rec); q.onsuccess=function(){ _mediaPing(); res(); }; q.onerror=function(){rej(q.error);}; }); }
-function mDel(id){ return new Promise(function(res,rej){ var q=_mtx("readwrite").delete(id); q.onsuccess=function(){ _mediaPing(); res(); }; q.onerror=function(){rej(q.error);}; }); }
-function mAll(){ return new Promise(function(res,rej){ var out=[]; var q=_mtx("readonly").openCursor(); q.onsuccess=function(){ var c=q.result; if(c){ out.push(mNormalize(c.value)); c.continue(); } else res(out); }; q.onerror=function(){rej(q.error);}; }); }
+// 毎回まっさらな接続を開いて1操作だけ実行し閉じる（古い接続を掴んで固まるのを根絶）。タイムアウト付き。
+function _mediaRun(mode, fn, ms){ return new Promise(function(res,rej){
+  var done=false, db=null;
+  var to=setTimeout(function(){ if(done) return; done=true; try{ if(db) db.close(); }catch(e){} rej(new Error("DBタイムアウト")); }, ms||5000);
+  var r; try{ r=indexedDB.open(MEDIA_DB,1); }catch(e){ clearTimeout(to); done=true; rej(e); return; }
+  r.onupgradeneeded=function(){ var d=r.result; if(!d.objectStoreNames.contains(MEDIA_STORE)){ var os=d.createObjectStore(MEDIA_STORE,{keyPath:"id"}); os.createIndex("by_card","cardId",{unique:false}); os.createIndex("by_ts","ts",{unique:false}); } };
+  r.onerror=function(){ if(done) return; done=true; clearTimeout(to); rej(r.error||new Error("open失敗")); };
+  r.onsuccess=function(){
+    if(done){ try{ r.result.close(); }catch(e){} return; }
+    db=r.result;
+    var req=null;
+    try{
+      var t=db.transaction(MEDIA_STORE,mode), store=t.objectStore(MEDIA_STORE);
+      req=fn(store);
+      t.oncomplete=function(){ if(done) return; done=true; clearTimeout(to); try{ db.close(); }catch(e){} res(req?req.result:undefined); };
+      t.onerror=function(){ if(done) return; done=true; clearTimeout(to); try{ db.close(); }catch(e){} rej(t.error||new Error("tx失敗")); };
+      t.onabort=function(){ if(done) return; done=true; clearTimeout(to); try{ db.close(); }catch(e){} rej(t.error||new Error("tx中断")); };
+    }catch(e){ if(done) return; done=true; clearTimeout(to); try{ db.close(); }catch(e){} rej(e); }
+  };
+}); }
+function mGet(id){ return _mediaRun("readonly", function(s){ return s.get(id); }, 5000).then(function(v){ return mNormalize(v); }); }
+function mPut(rec){ return _mediaRun("readwrite", function(s){ return s.put(rec); }, 6000).then(function(){ _mediaPing(); }); }
+function mDel(id){ return _mediaRun("readwrite", function(s){ return s.delete(id); }, 6000).then(function(){ _mediaPing(); }); }
+function mAll(){ return _mediaRun("readonly", function(s){ return s.getAll(); }, 6000).then(function(arr){ return (arr||[]).map(mNormalize); }); }
 
 /* ---- 取り込み（読込から自動判別で呼ばれる） ---- */
 function _thumbFromDataURL(durl){ return new Promise(function(res){ if(!durl){res("");return;} var im=new Image();
@@ -11884,7 +11904,7 @@ function _inrowSafe(s){ try{ return _inrow(s); }catch(err){ return '<div class="
 function renderInboxBody(){
   var host=document.getElementById("inboxBody");
   if(host) host.innerHTML='<div class="iempty">読み込み中…</div>';
-  _withTimeout(mediaOpen().then(function(){ return mAll(); }),7000).then(function(all){
+  mAll().then(function(all){
     all=all||[];
     all.sort(function(a,b){return (b.ts||0)-(a.ts||0);});
     var ti=document.getElementById("inboxTitle"); if(ti) ti.textContent=_inboxAttach?("📥 "+_cardName(_inboxAttach)+" に追加"):("📥 インボックス（"+all.length+"件）");
@@ -11973,7 +11993,7 @@ function renderCardPhotos(cardId){
   body.innerHTML='<div class="cps-load">読み込み中…</div>';
   var esc=function(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); };
   var fmtW=function(ts){ try{ var d=new Date(ts); if(isNaN(d.getTime())) return ""; var p=function(n){return ("0"+n).slice(-2);}; return d.getFullYear()+"/"+p(d.getMonth()+1)+"/"+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes()); }catch(_e){ return ""; } };
-  mediaOpen().then(function(){ return _withTimeout(mAll(),7000); }).then(function(all){
+  mAll().then(function(all){
     try{
       var sets=(all||[]).filter(function(s){ return s && s.cardId===cardId; });
       sets.sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
@@ -12005,7 +12025,7 @@ function renderCardPhotos(cardId){
 window.renderCardPhotos=renderCardPhotos;
 
 /* ---- バッジ ---- */
-function updateInboxBadge(){ _withTimeout(mediaOpen().then(function(){ return mAll(); }),7000).then(function(all){
+function updateInboxBadge(){ mAll().then(function(all){
   var arr=all||[];
   var n=arr.filter(function(s){return !s.cardId||s.cardId===MEDIA_INBOX;}).length;
   var b=document.getElementById("inbBadgePC"); if(b){ b.style.display=n?"inline-block":"none"; b.textContent=n; }
