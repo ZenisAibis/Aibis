@@ -5,8 +5,8 @@
 <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
 <meta name="googlebot" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="no">
+<meta name="apple-mobile-web-app-capable" content="no">
 <meta name="apple-mobile-web-app-title" content="AIBIS">
 <meta name="application-name" content="AIBIS">
 <meta name="theme-color" content="#1e3a5f">
@@ -1110,7 +1110,7 @@ body.is-mob .mob-menu{display:inline-block}
         <input id="qaPlan" type="text" placeholder="📍で現在地、🔢で番地" style="flex:1;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:13px;font-family:inherit">
         <button type="button" onclick="qaTenkeyOpen('qaPlan')" style="flex-shrink:0;width:40px;height:40px;border:1px solid #cbd5e0;border-radius:8px;background:#f7fafc;font-size:16px;cursor:pointer">🔢</button>
       </div>
-      <button type="button" onclick="qaOpenCam()" style="width:100%;margin-bottom:10px;background:#0e4a45;color:#fff;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer">📷 計画地を撮影（カメラ）</button>
+      <button type="button" id="qaCamBtn" onclick="qaOpenCam()" style="width:100%;margin-bottom:10px;background:#0e4a45;color:#fff;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer">📷 計画地を撮影（カメラ）</button>
       <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">🧠 購買心理ステージ</label>
       <div id="qaStage" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px"></div>
       <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">🗣 会話状況（複数可）</label>
@@ -1532,10 +1532,10 @@ body.is-mob .mob-menu{display:inline-block}
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
         <div><label>👤 ニックネーム</label><input type="text" id="sNick" placeholder="例: 大東" oninput="autoSaveSetup()"></div>
-        <div id="setupHandCell"><label style="white-space:nowrap">📱 スマホ持ち方</label><div id="sHandSeg" class="hand-seg" role="group" aria-label="スマホ持ち方"><button type="button" class="hand-opt" data-hand="left" onclick="setHand('left')">左手持ち</button><button type="button" class="hand-opt" data-hand="right" onclick="setHand('right')">右手持ち</button></div></div>
+        <div id="setupHandCell"><label style="white-space:nowrap">📱 スマホ持ち方（タップで切替）</label><div id="sHandSeg" class="hand-seg" role="group" aria-label="スマホ持ち方"><button type="button" class="hand-opt" data-hand="left" onclick="setHand('left')">👈 左手</button><button type="button" class="hand-opt" data-hand="right" onclick="setHand('right')">右手 👉</button></div></div>
       </div>
       <div id="pwaInstallRow" style="margin-top:10px;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;background:#f7fafc">
-        <div style="font-size:12px;font-weight:700;color:#2c5282;margin-bottom:6px">📲 アプリとしてインストール</div>
+        <div style="font-size:12px;font-weight:700;color:#2c5282;margin-bottom:6px">🔗 ホーム画面ショートカット</div>
         <div id="pwaBtns" style="display:flex;gap:8px;flex-wrap:wrap"></div>
         <div id="pwaHint" style="font-size:11px;color:#718096;margin-top:6px;line-height:1.55"></div>
       </div>
@@ -1770,7 +1770,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.85";
+var APP_VERSION = "v7.87";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -2597,49 +2597,41 @@ function _pwaIcon(size,maskable){
     var i192=_pwaIcon(192,false), i512=_pwaIcon(512,false), i512m=_pwaIcon(512,true), i180=_pwaIcon(180,false);
     var start=location.href.split('#')[0].split('?')[0];
     var man={ name:'z.Aibis 見込みカード', short_name:'z.Aibis', start_url:start, scope:start.replace(/[^/]*$/,''),
-      display:'standalone', background_color:BG, theme_color:THEME, icons:[] };
+      display:'browser', background_color:BG, theme_color:THEME, icons:[] };
     if(i192) man.icons.push({src:i192,sizes:'192x192',type:'image/png',purpose:'any'});
     if(i512) man.icons.push({src:i512,sizes:'512x512',type:'image/png',purpose:'any'});
     if(i512m) man.icons.push({src:i512m,sizes:'512x512',type:'image/png',purpose:'maskable'});
     var lk=document.createElement('link'); lk.rel='manifest';
     lk.href='data:application/manifest+json,'+encodeURIComponent(JSON.stringify(man));
     document.head.appendChild(lk);
-    function meta(n,c){ var m=document.createElement('meta'); m.name=n; m.content=c; document.head.appendChild(m); }
-    meta('apple-mobile-web-app-capable','yes'); meta('mobile-web-app-capable','yes');
-    meta('apple-mobile-web-app-status-bar-style','black-translucent'); meta('apple-mobile-web-app-title','z.Aibis'); meta('theme-color',THEME);
+    var m=document.createElement('meta'); m.name='theme-color'; m.content=THEME; document.head.appendChild(m);
+    // standalone化メタ（apple-mobile-web-app-capable等）は付けない＝ホーム画面に置いても「ブラウザで開くショートカット」になる（アプリ化しない＝再起動ループ回避）
     if(i180){ var al=document.createElement('link'); al.rel='apple-touch-icon'; al.href=i180; document.head.appendChild(al); }
   }catch(e){}
-  window._pwaPrompt=null;
-  window.addEventListener('beforeinstallprompt',function(e){ e.preventDefault(); window._pwaPrompt=e; if(window._pwaSyncBtns)window._pwaSyncBtns(); });
-  window.addEventListener('appinstalled',function(){ window._pwaPrompt=null; if(window._pwaSyncBtns)window._pwaSyncBtns(); });
 })();
 function _pwaStandalone(){ return (window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true; }
-function pwaInstall(){
-  if(window._pwaPrompt){ var p=window._pwaPrompt; p.prompt(); p.userChoice.then(function(){ window._pwaPrompt=null; if(window._pwaSyncBtns)window._pwaSyncBtns(); }); return; }
+function pwaShortcut(){
   var ua=navigator.userAgent||'', isiOS=/iPad|iPhone|iPod/.test(ua)||(/Macintosh/.test(ua)&&'ontouchend' in document);
-  var msg=isiOS? '📲 インストール方法（iPhone/iPad）<br><br>画面下の「共有」ボタン → <b>「ホーム画面に追加」</b>を選んでね。'
-    : (isMob? '📲 インストール方法<br><br>ブラウザの <b>⋮メニュー</b> →「<b>アプリをインストール</b>」または「ホーム画面に追加」を選んでね。'
-            : '💻 インストール方法<br><br>アドレスバー右の <b>インストールアイコン（⊕／画面＋下矢印）</b>をクリックしてね。');
+  var msg=isiOS? '🔗 ホーム画面ショートカットの作り方（iPhone/iPad）<br><br>画面下の「共有」→ <b>「ホーム画面に追加」</b>。<br>※ブラウザで開くショートカットです（アプリ化しません）。'
+    : (isMob? '🔗 ホーム画面ショートカットの作り方<br><br>ブラウザ右上の <b>⋮メニュー</b> →「<b>ホーム画面に追加</b>」。<br>※ブラウザで開くショートカットです（アプリ化しないので再起動ループになりません）。'
+            : '🔗 ショートカットの作り方（PC）<br><br>ブラウザの <b>⋮メニュー</b> →「保存して共有」→「<b>ショートカットを作成</b>」。<br>※「ウィンドウとして開く」は<b>チェックを外す</b>とブラウザで開きます。');
   if(window.aibisAlert) aibisAlert(msg); else alert(msg.replace(/<[^>]+>/g,''));
 }
-function pwaOpenCam(){ try{ window.open('AibisCam.html','_blank'); }catch(e){ location.href='AibisCam.html'; } if(window.toast) toast('カメラ画面の ⚙ →「📲 アプリをインストール」からどうぞ'); }
+function pwaOpenCam(){ try{ window.open('AibisCam.html','_blank'); }catch(e){ location.href='AibisCam.html'; } if(window.toast) toast('カメラ画面で ⋮メニュー →「ホーム画面に追加」でショートカットを作れます'); }
 function _pwaSyncBtns(){
   var host=document.getElementById('pwaBtns'); if(!host) return;
   var hint=document.getElementById('pwaHint'); var html='';
-  if(_pwaStandalone()){
-    html='<span style="font-size:13px;color:#2f855a;font-weight:700">✅ アプリとして起動中です</span>';
-    if(hint) hint.textContent='ホーム画面のアイコンから起動しています。';
-  } else if(isMob){
-    html+='<button type="button" class="bp" onclick="pwaInstall()" style="font-size:12px;padding:8px 12px">📲 Aibis本体をインストール</button>';
-    html+='<button type="button" class="bp" onclick="pwaOpenCam()" style="font-size:12px;padding:8px 12px">📷 Aibisカメラをインストール</button>';
-    if(hint) hint.innerHTML='ボタンを押すと「ホーム画面に追加」できるよ。'+(window._pwaPrompt?'':'<br>※反応しない端末は ⋮メニュー →「アプリをインストール」からどうぞ。');
+  if(isMob){
+    html+='<button type="button" class="bp" onclick="pwaShortcut()" style="font-size:12px;padding:8px 12px">🔗 本体をホーム画面に追加</button>';
+    html+='<button type="button" class="bp" onclick="pwaOpenCam()" style="font-size:12px;padding:8px 12px">📷 カメラを開いて追加</button>';
+    if(hint) hint.innerHTML='アプリ化せず<b>ブラウザで開くショートカット</b>をホーム画面に作ります（会社スマホの再起動ループ対策）。';
   } else {
-    html+='<button type="button" class="bp" onclick="pwaInstall()" style="font-size:12px;padding:8px 12px">💻 z.AibisをPCにインストール</button>';
-    if(hint) hint.innerHTML=window._pwaPrompt?'ボタンを押すとデスクトップアプリとしてインストールできるよ。':'アドレスバー右の「インストール」アイコン（⊕）からもインストールできるよ。';
+    html+='<button type="button" class="bp" onclick="pwaShortcut()" style="font-size:12px;padding:8px 12px">🔗 デスクトップにショートカット</button>';
+    if(hint) hint.innerHTML='ブラウザのメニューから、デスクトップに<b>ブラウザで開くショートカット</b>を作成できます。';
   }
   host.innerHTML=html;
 }
-window.pwaInstall=pwaInstall; window.pwaOpenCam=pwaOpenCam; window._pwaSyncBtns=_pwaSyncBtns;
+window.pwaShortcut=pwaShortcut; window.pwaInstall=pwaShortcut; window.pwaOpenCam=pwaOpenCam; window._pwaSyncBtns=_pwaSyncBtns;
 window.addEventListener('load',function(){ try{ _pwaSyncBtns(); }catch(e){} });
 function autoSaveSetup(){
   // フォーム入力を即時LocalStorageに仮保存
@@ -11752,6 +11744,10 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   #cardPhotoBody .cps-add2{width:100%;margin-top:2px}
   #cardPhotoBody .cps-load{color:#a0aec0;font-size:12px;padding:6px 2px}
   @media print{#inboxView,#inboxViewer,#inboxPick{display:none!important}}
+  #inboxCamBtn{display:none}
+  body.is-mob #inboxCamBtn{display:inline-block}
+  #qaCamBtn{display:none}
+  body.is-mob #qaCamBtn{display:block}
 </style>
 <div id="inboxView">
   <div class="ih">
@@ -11800,21 +11796,31 @@ function _thumbFromDataURL(durl){ return new Promise(function(res){ if(!durl){re
 function importPhotoBundle(bundle){
   mediaOpen().then(function(){ return (async function(){
     var sets=(bundle&&bundle.sets)||[]; if(!sets.length){ toast("写真データが0件です"); return; }
-    var n=0;
+    var linkedN=0, unlinkedN=0, dup=0;
     for(var i=0;i<sets.length;i++){
-      var s=sets[i], photos=[];
+      var s=sets[i];
+      var existing=null; try{ if(s.id) existing=await mGet(s.id); }catch(e){}
+      if(s.id && existing){ dup++; continue; }   // 同じ set.id は再登録しない
+      var photos=[];
       for(var j=0;j<(s.photos||[]).length;j++){
         var p=s.photos[j], blob=null, thumb="";
         try{ blob=await (await fetch(p.full)).blob(); }catch(e){}
         try{ thumb=await _thumbFromDataURL(p.full); }catch(e){}
         photos.push({pid:p.pid||("p_"+Date.now()+"_"+j), full:blob, thumb:thumb, w:p.w, h:p.h, size:p.size});
       }
-      var rec={ id:s.id||("s_"+Date.now()+"_"+i), cardId:s.cardId||MEDIA_INBOX, ts:s.ts||Date.now(), addrType:"plan",
+      var cardId=(s.cardId&&s.cardId!==MEDIA_INBOX)?s.cardId:MEDIA_INBOX;
+      var rec={ id:s.id||("s_"+Date.now()+"_"+i), cardId:cardId, ts:s.ts||Date.now(), addrType:"plan",
         lat:s.lat, lng:s.lng, acc:s.acc, addr:s.addr||"", addrPending:false, banchi:s.banchi||"", note:s.note||"", sent:false, photos:photos };
-      try{ await mPut(rec); n++; }catch(e){}
+      try{ await mPut(rec); if(cardId===MEDIA_INBOX) unlinkedN++; else linkedN++; }catch(e){}
     }
-    toast(n+"件の写真データを取り込みました");
-    openInbox();
+    try{ updateInboxBadge(); }catch(e){}
+    var msg='📥 写真データを読み込みました<br><br>'
+      +'<div style="text-align:left;display:inline-block;font-size:13.5px;line-height:1.95">'
+      +'🔗 紐付け済み：<b>'+linkedN+'</b> 件<br>⚪ 未紐付け：<b>'+unlinkedN+'</b> 件<br>⏭ 重複スキップ：<b>'+dup+'</b> 件</div>'
+      +'<div style="display:flex;gap:10px;justify-content:center;margin-top:14px">'
+      +'<button class="zfa-ok" style="background:#e2e8f0;color:#2d3748;width:auto;padding:11px 16px" onclick="closeAibisAlert()">閉じる</button>'
+      +'<button class="zfa-ok" style="width:auto;padding:11px 16px" onclick="closeAibisAlert();openInbox()">📥 インボックスを開く</button></div>';
+    if(window.aibisAlert) aibisAlert(msg); else { toast("読込: 紐付"+linkedN+"/未紐付"+unlinkedN+"/重複"+dup); openInbox(); }
   })(); }).catch(function(){ toast("写真領域を開けませんでした"); });
 }
 
@@ -11836,6 +11842,8 @@ document.addEventListener('visibilitychange',function(){
   var v=document.getElementById('inboxView'); if(v && v.style.display==='block' && typeof renderInboxBody==='function') renderInboxBody();
 });
 function openInboxForCard(){ if(!curId){ toast("カードを開いてからどうぞ"); return; } _inboxAttach=curId; _showInbox(); }
+function cardOpenCam(cid){ if(!cid){ toast("カードを開いてからどうぞ"); return; } var u='AibisCam.html?cardId='+encodeURIComponent(cid); try{ window.open(u,'aibiscam'); }catch(e){ location.href=u; } toast('カメラで撮影 → 戻るとこのカードに紐付きます'); }
+window.cardOpenCam=cardOpenCam;
 function _showInbox(){ var v=document.getElementById("inboxView"); if(v) v.style.display="block"; renderInboxBody(); }
 function closeInbox(){ document.getElementById("inboxView").style.display="none"; var a=_inboxAttach; _inboxAttach=null; if(a){ openCard(a); } }
 function _cardById(id){ return (typeof cards!=="undefined"&&cards)?cards.find(function(c){return c.id===id;}):null; }
@@ -11850,7 +11858,7 @@ function _inrow(s){
   var thumb=(ph[0]&&ph[0].thumb)?ph[0].thumb:"";
   var acts="";
   if(_inboxAttach){ acts='<button class="ibtn pri" data-act="attach" data-id="'+e(s.id)+'">このカードに紐付け</button>'; if(linked) acts+='<span class="ibadge">既に紐付け済</span>'; }
-  else if(linked){ acts='<button class="ibtn" data-act="unlink" data-id="'+e(s.id)+'">外す</button><button class="ibtn dn" data-act="del" data-id="'+e(s.id)+'">🗑</button>'; }
+  else if(linked){ acts='<button class="ibtn" data-act="relink" data-id="'+e(s.id)+'">付け替え</button><button class="ibtn" data-act="unlink" data-id="'+e(s.id)+'">外す</button><button class="ibtn dn" data-act="del" data-id="'+e(s.id)+'">🗑</button>'; }
   else { acts='<button class="ibtn pri" data-act="link" data-id="'+e(s.id)+'">🔗 紐付け</button><button class="ibtn dn" data-act="del" data-id="'+e(s.id)+'">🗑</button>'; }
   return '<div class="irow">'+
     '<div class="ith" data-act="view" data-id="'+e(s.id)+'">'+(thumb?'<img src="'+thumb+'">':'')+'<span class="ithn">'+ph.length+'枚</span></div>'+
@@ -11879,6 +11887,7 @@ function renderInboxBody(){
         var act=el.getAttribute("data-act"), id=el.getAttribute("data-id");
         if(act==="view") openInboxPhoto(id);
         else if(act==="link") openInboxPick(id);
+        else if(act==="relink") openInboxPick(id);
         else if(act==="attach") _attachToCard(id);
         else if(act==="unlink") _unlinkSet(id);
         else if(act==="del") _delSet(id);
@@ -11892,9 +11901,27 @@ function renderInboxBody(){
 function _attachToCard(id){ if(!_inboxAttach) return; mGet(id).then(function(s){ if(!s) return; s.cardId=_inboxAttach; mPut(s).then(function(){ toast(_cardName(_inboxAttach)+" に紐付けました"); renderInboxBody(); }); }); }
 function _unlinkSet(id){ var go=function(){ mGet(id).then(function(s){ if(!s) return; s.cardId=MEDIA_INBOX; mPut(s).then(function(){ toast("インボックスに戻しました"); renderInboxBody(); }); }); };
   if(typeof aibisConfirm==="function") aibisConfirm("このカードから写真を外してインボックスに戻しますか？",go,"外す","やめる"); else if(confirm("インボックスに戻しますか？")) go(); }
-function _delSet(id){ mGet(id).then(function(s){ if(!s) return; var go=function(){ mDel(id).then(function(){ toast("削除しました"); renderInboxBody(); }); };
-  var msg="このデータ（写真"+s.photos.length+"枚）を削除しますか？";
-  if(typeof aibisConfirm==="function") aibisConfirm(msg,go,"削除する","やめる"); else if(confirm(msg)) go(); }); }
+function _delSet(id){ mGet(id).then(function(s){ if(!s) return;
+  var linked=(s.cardId && s.cardId!==MEDIA_INBOX);
+  var hard=function(){ mDel(id).then(function(){ toast("完全削除しました"); renderInboxBody(); }); };
+  var back=function(){ s.cardId=MEDIA_INBOX; mPut(s).then(function(){ toast("インボックスへ戻しました"); renderInboxBody(); }); };
+  if(!linked){
+    var m='この未紐付け写真データを<b>完全に削除</b>しますか？<br><span style="font-size:12px;color:#718096">写真は復元できません。</span>';
+    if(typeof aibisConfirm==="function") aibisConfirm(m,hard,"完全削除","やめる"); else if(confirm("完全に削除しますか？")) hard();
+    return;
+  }
+  // 紐付け済み → 「外す／完全削除／キャンセル」の3択（誤って完全削除しないように）
+  window._dsBack=function(){ if(typeof closeAibisAlert==="function") closeAibisAlert(); back(); };
+  window._dsHard=function(){ if(typeof closeAibisAlert==="function") closeAibisAlert();
+    var m2='本当に<b>完全削除</b>しますか？<br><span style="font-size:12px;color:#718096">写真は復元できません（「外す」ならインボックスに残ります）。</span>';
+    if(typeof aibisConfirm==="function") aibisConfirm(m2,hard,"完全削除","やめる"); else if(confirm("完全に削除しますか？")) hard(); };
+  var msg='「'+e(_cardName(s.cardId))+'」に紐付いた写真データです。<br>どうしますか？'
+    +'<div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">'
+    +'<button class="zfa-ok" style="background:#2c5282" onclick="_dsBack()">↩ カードから外してインボックスへ戻す</button>'
+    +'<button class="zfa-ok" style="background:#e53e3e" onclick="_dsHard()">🗑 写真データを完全削除</button>'
+    +'<button class="zfa-ok" style="background:#e2e8f0;color:#2d3748" onclick="closeAibisAlert()">キャンセル</button></div>';
+  if(window.aibisAlert) aibisAlert(msg); else { if(confirm("OK=外す / キャンセル=完全削除")) back(); else hard(); }
+}); }
 
 /* ---- 紐付けピッカー ---- */
 function openInboxPick(setId){ _pickSetId=setId; document.getElementById("inboxPickSearch").value=""; document.getElementById("inboxPick").style.display="flex"; renderInboxPickList(); }
@@ -11938,7 +11965,7 @@ function renderCardPhotos(cardId){
       var total=sets.reduce(function(n,s){ return n+((s.photos&&s.photos.length)||0); },0);
       if(cnt) cnt.textContent=sets.length?("（"+sets.length+"件 / 計"+total+"枚）"):"";
       if(!sets.length){
-        body.innerHTML='<div class="cps-empty">計画地写真はまだありません。<br><button type="button" class="cps-add" onclick="openInboxForCard()">📥 インボックスから写真を選ぶ</button></div>';
+        body.innerHTML='<div class="cps-empty">計画地写真はまだありません。'+(isMob?'<br><button type="button" class="cps-add" style="background:#0e4a45;color:#fff;border-color:#0e4a45" onclick="cardOpenCam(\''+esc(cardId)+'\')">📷 カメラで撮影</button>':'')+'<br><button type="button" class="cps-add" onclick="openInboxForCard()">📥 インボックスから選ぶ</button></div>';
         return;
       }
       var html=sets.map(function(s){
@@ -11951,6 +11978,7 @@ function renderCardPhotos(cardId){
         var meta=[]; if(s.addr) meta.push(esc(s.addr+(s.banchi?(" "+s.banchi):""))); var w=fmtW(s.ts); if(w) meta.push(w); if(s.note) meta.push(esc(s.note));
         return '<div class="cps-set"><div class="cps-grid g'+g+'">'+thumbs+'</div><div class="cps-meta">'+meta.join(" ・ ")+'</div></div>';
       }).join("");
+      if(isMob) html+='<button type="button" class="cps-add2" style="background:#0e4a45;color:#fff;border-color:#0e4a45;margin-bottom:6px" onclick="cardOpenCam(\''+esc(cardId)+'\')">📷 カメラで撮影（このカードに紐付く）</button>';
       html+='<button type="button" class="cps-add2" onclick="openInboxForCard()">📥 写真を追加・管理</button>';
       body.innerHTML=html;
       body.querySelectorAll(".cps-th").forEach(function(el){
