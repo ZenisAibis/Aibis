@@ -2,6 +2,9 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="theme-color" content="#0f1b2d">
 <title>z.Aibis カメラ</title>
@@ -398,7 +401,7 @@
    ※ prospect_cards_v1 には書き込まない（新規カード作成・PC連携は本体側）
    データ(set): {id,cardId,ts,addrType:'plan',lat,lng,acc,addr,addrPending,banchi,note,sent,photos:[{pid,full(Blob),thumb,w,h,size}]}
    ========================================================= */
-const APP_VERSION = "cam-v1.30";
+const APP_VERSION = "cam-v1.32";
 
 /* ===== PWA：単一ファイルでインストール可能化（外部ファイル不要） ===== */
 function _pwaIcon(size,maskable){
@@ -992,22 +995,26 @@ async function sendInbox(){
   toast("データをまとめています…");
   let bundle; try{ bundle=await buildBundle(targets); }catch(e){ toast("まとめに失敗しました"); return; }
   const file=new File([JSON.stringify(bundle)],"aibis_photos_"+stamp()+".json",{type:"application/json"});
-  let done=false;
+  const to=cfgEmail();
+  // 本体と同じ方式：宛先メアドをクリップボードへコピー（メール作成画面で貼り付け）
+  try{ if(to && navigator.clipboard && navigator.clipboard.writeText){ await navigator.clipboard.writeText(to); } }catch(e){}
+  const shareText="z.Aibisの計画地写真データです。PCのアイビスで「📥 読込」してください。"+(to?("\n宛先: "+to):"");
+  let done=false, shared=false;
   try{
     if(navigator.canShare && navigator.canShare({files:[file]})){
-      await navigator.share({files:[file], title:"z.Aibis 計画地写真", text:"z.Aibisの写真データです。PCのアイビスで「📥 読込」してください。"});
-      done=true;
+      await navigator.share({files:[file], title:"z.Aibis 計画地写真", text:shareText});
+      done=true; shared=true;
     }
   }catch(e){ if(e&&e.name==="AbortError") return; }
   if(!done){
     try{ const url=URL.createObjectURL(file); const a=document.createElement("a"); a.href=url; a.download=file.name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),4000); }
     catch(e){ toast("書き出しに失敗しました"); return; }
-    const to=cfgEmail();
-    toast("ファイルを書き出しました"+(to?("。メールで "+to+" へ添付してPCへ"):"。メールに添付してPCへ"));
   }
   for(const s of targets){ const cur=await idbGet(s.id); if(cur){ cur.sent=true; await idbPut(cur); } }
   unlinkedSel.forEach(s=>sendSel.delete(s.id));   // 送ったぶんは選択解除
   await renderInbox(); showStorage("inbStore");
+  if(to) toast("📋 メアド("+to+")をコピー。メールに貼付→ファイルを添付して送信");
+  else toast(shared?"共有からメールアプリを選んで送信":"ファイルを書き出しました。メールに添付してPCへ");
 }
 $("inbSendBtn").addEventListener("click",sendInbox);
 
@@ -1250,7 +1257,17 @@ function fmtWhen(ts){ const d=new Date(ts), p=n=>String(n).padStart(2,"0"); retu
 
 document.addEventListener("visibilitychange",()=>{
   if(document.hidden){ stopCamera(); }
-  else if(!screens.cam.classList.contains("hide")){ startCamera(); }
+  else {
+    if(!screens.cam.classList.contains("hide")) startCamera();
+    try{ if(!screens.inbox.classList.contains("hide")) renderInbox(); }catch(e){}
+    try{ updateRightCount(); }catch(e){}
+  }
+});
+// 本体（別タブ）で追加/削除/紐付け変更があったら即反映（同一オリジン連携）
+window.addEventListener("storage",(ev)=>{
+  if(ev.key!=="aibis_media_ping") return;
+  try{ if(!screens.inbox.classList.contains("hide")) renderInbox(); }catch(e){}
+  try{ updateRightCount(); }catch(e){}
 });
 window.addEventListener("pagehide",stopCamera);
 

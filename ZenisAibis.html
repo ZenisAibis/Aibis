@@ -2,6 +2,9 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
 <meta name="googlebot" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
@@ -1770,7 +1773,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.88";
+var APP_VERSION = "v7.90";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -11792,8 +11795,9 @@ function mNormalize(rec){ if(!rec) return rec; if(Array.isArray(rec.photos)) ret
   rec.photos=[{pid:(rec.id||"p")+"_0",full:rec.full,thumb:rec.thumb,w:rec.w,h:rec.h,size:rec.size}];
   if(rec.sent===undefined)rec.sent=false; if(rec.banchi===undefined)rec.banchi=""; return rec; }
 function mGet(id){ return new Promise(function(res,rej){ var q=_mtx("readonly").get(id); q.onsuccess=function(){res(mNormalize(q.result));}; q.onerror=function(){rej(q.error);}; }); }
-function mPut(rec){ return new Promise(function(res,rej){ var q=_mtx("readwrite").put(rec); q.onsuccess=function(){res();}; q.onerror=function(){rej(q.error);}; }); }
-function mDel(id){ return new Promise(function(res,rej){ var q=_mtx("readwrite").delete(id); q.onsuccess=function(){res();}; q.onerror=function(){rej(q.error);}; }); }
+function _mediaPing(){ try{ localStorage.setItem("aibis_media_ping", String(Date.now())); }catch(e){} }
+function mPut(rec){ return new Promise(function(res,rej){ var q=_mtx("readwrite").put(rec); q.onsuccess=function(){ _mediaPing(); res(); }; q.onerror=function(){rej(q.error);}; }); }
+function mDel(id){ return new Promise(function(res,rej){ var q=_mtx("readwrite").delete(id); q.onsuccess=function(){ _mediaPing(); res(); }; q.onerror=function(){rej(q.error);}; }); }
 function mAll(){ return new Promise(function(res,rej){ var out=[]; var q=_mtx("readonly").openCursor(); q.onsuccess=function(){ var c=q.result; if(c){ out.push(mNormalize(c.value)); c.continue(); } else res(out); }; q.onerror=function(){rej(q.error);}; }); }
 
 /* ---- 取り込み（読込から自動判別で呼ばれる） ---- */
