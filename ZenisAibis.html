@@ -277,7 +277,7 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 .sortbar::-webkit-scrollbar{display:none}
 #staffFilterBtns{scrollbar-width:none}
 #staffFilterBtns::-webkit-scrollbar{display:none}
-.sbtn{font-size:11px;padding:6px 10px;border-radius:6px;border:1px solid #cbd5e0;background:white;color:#4a5568;cursor:pointer;white-space:nowrap;flex-shrink:0;min-height:32px;display:inline-flex;align-items:center;justify-content:center}
+.sbtn{font-size:12px;padding:7px 11px;border-radius:6px;border:1px solid #cbd5e0;background:white;color:#4a5568;cursor:pointer;white-space:nowrap;flex-shrink:0;min-height:38px;display:inline-flex;align-items:center;justify-content:center;align-self:center;box-sizing:border-box}
 .sbtn.active{background:#ebf4ff;color:#2c5282;border-color:#2c5282;font-weight:600}
 .prhdr{display:none}
 /* ===== 家族構成グリッド ===== */
@@ -1531,7 +1531,7 @@ body.is-mob .mob-menu{display:inline-block}
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
         <div><label>👤 ニックネーム</label><input type="text" id="sNick" placeholder="例: 大東" oninput="autoSaveSetup()"></div>
-        <div><label style="white-space:nowrap">📱 スマホ持ち方</label><div id="sHandSeg" class="hand-seg" role="group" aria-label="スマホ持ち方"><button type="button" class="hand-opt" data-hand="left" onclick="setHand('left')">左手持ち</button><button type="button" class="hand-opt" data-hand="right" onclick="setHand('right')">右手持ち</button></div></div>
+        <div id="setupHandCell"><label style="white-space:nowrap">📱 スマホ持ち方</label><div id="sHandSeg" class="hand-seg" role="group" aria-label="スマホ持ち方"><button type="button" class="hand-opt" data-hand="left" onclick="setHand('left')">左手持ち</button><button type="button" class="hand-opt" data-hand="right" onclick="setHand('right')">右手持ち</button></div></div>
       </div>
       <div id="pwaInstallRow" style="margin-top:10px;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;background:#f7fafc">
         <div style="font-size:12px;font-weight:700;color:#2c5282;margin-bottom:6px">📲 アプリとしてインストール</div>
@@ -1769,7 +1769,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.80";
+var APP_VERSION = "v7.83";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -3251,6 +3251,7 @@ function showSetup() {
   if ((el=document.getElementById('sRole')))   el.value = userRole||'';
   if ((el=document.getElementById('sNick')))   el.value = uNick||'';
   paintHandBtn();
+  var _hc=document.getElementById('setupHandCell'); if(_hc) _hc.style.display=isMob?'':'none';
   if(window._pwaSyncBtns) _pwaSyncBtns();
   if ((el=document.getElementById('sCopilotUrl'))) el.value = localStorage.getItem(CPK)||'';
   var _sm=document.getElementById('staffMailSection'); if(_sm){ _sm.style.display=isMgrUnlocked()?'block':'none'; if(typeof renderStaffMailRows==='function'){renderStaffMailRows();renderStaffMailChips();} }
@@ -11754,6 +11755,7 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   <div class="ih">
     <button onclick="closeInbox()">← 戻る</button>
     <b id="inboxTitle">📥 インボックス</b>
+    <button onclick="inboxOpenCam()" id="inboxCamBtn" title="カメラで計画地を撮影">📷 カメラ</button>
   </div>
   <div id="inboxBody"></div>
 </div>
@@ -11816,8 +11818,23 @@ function importPhotoBundle(bundle){
 
 /* ---- 画面遷移 ---- */
 function openInbox(){ _inboxAttach=null; _showInbox(); }
+function inboxOpenCam(){ try{ window.open('AibisCam.html','aibiscam'); }catch(e){ location.href='AibisCam.html'; } toast('カメラで撮影 → アイビスに戻ると、ここに表示されます'); }
+window.inboxOpenCam=inboxOpenCam;
+function _inboxIsOpen(){ var v=document.getElementById('inboxView'); return v && v.style.display!=='none' && v.style.display!==''; }
+// カメラ（別タブ）で写真が増減したら、本体インボックスを即時反映（同一オリジン連携）
+window.addEventListener('storage',function(ev){
+  if(ev.key!=='aibis_media_ping') return;
+  if(typeof updateInboxBadge==='function') updateInboxBadge();
+  var v=document.getElementById('inboxView'); if(v && v.style.display==='block' && typeof renderInboxBody==='function') renderInboxBody();
+});
+// カメラタブから戻ってきたときも更新
+document.addEventListener('visibilitychange',function(){
+  if(document.visibilityState!=='visible') return;
+  if(typeof updateInboxBadge==='function') updateInboxBadge();
+  var v=document.getElementById('inboxView'); if(v && v.style.display==='block' && typeof renderInboxBody==='function') renderInboxBody();
+});
 function openInboxForCard(){ if(!curId){ toast("カードを開いてからどうぞ"); return; } _inboxAttach=curId; _showInbox(); }
-function _showInbox(){ mediaOpen().then(function(){ document.getElementById("inboxView").style.display="block"; renderInboxBody(); }).catch(function(){ document.getElementById("inboxView").style.display="block"; renderInboxBody(); }); }
+function _showInbox(){ var v=document.getElementById("inboxView"); if(v) v.style.display="block"; renderInboxBody(); }
 function closeInbox(){ document.getElementById("inboxView").style.display="none"; var a=_inboxAttach; _inboxAttach=null; if(a){ openCard(a); } }
 function _cardById(id){ return (typeof cards!=="undefined"&&cards)?cards.find(function(c){return c.id===id;}):null; }
 function _cardName(id){ var c=_cardById(id); if(c) return (c.name||"無名")+"様"; return "カード "+String(id).slice(0,8)+"…"; }
@@ -11912,30 +11929,35 @@ function renderCardPhotos(cardId){
   if(!cardId){ sec.style.display="none"; return; }
   sec.style.display="block"; if(cnt) cnt.textContent="";
   body.innerHTML='<div class="cps-load">読み込み中…</div>';
+  var esc=function(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); };
+  var fmtW=function(ts){ try{ var d=new Date(ts); if(isNaN(d.getTime())) return ""; var p=function(n){return ("0"+n).slice(-2);}; return d.getFullYear()+"/"+p(d.getMonth()+1)+"/"+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes()); }catch(_e){ return ""; } };
   mediaOpen().then(function(){ return mAll(); }).then(function(all){
-    var sets=(all||[]).filter(function(s){ return s.cardId===cardId; });
-    sets.sort(function(a,b){ return b.ts-a.ts; });
-    var total=sets.reduce(function(n,s){ return n+s.photos.length; },0);
-    if(cnt) cnt.textContent=total?("（"+total+"枚）"):"";
-    if(!sets.length){
-      body.innerHTML='<div class="cps-empty">計画地写真はまだありません。<br><button type="button" class="cps-add" onclick="openInboxForCard()">📥 インボックスから写真を選ぶ</button></div>';
-      return;
-    }
-    var html=sets.map(function(s){
-      var g=Math.min(s.photos.length,4)||1;
-      var thumbs=s.photos.map(function(p,i){
-        var src=p.thumb||(typeof p.full==="string"?p.full:"");
-        return '<div class="cps-th" data-sid="'+e(s.id)+'" data-idx="'+i+'">'+(src?'<img src="'+src+'" alt="">':'<span class="cps-noimg">📷</span>')+'</div>';
+    try{
+      var sets=(all||[]).filter(function(s){ return s && s.cardId===cardId; });
+      sets.sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
+      var total=sets.reduce(function(n,s){ return n+((s.photos&&s.photos.length)||0); },0);
+      if(cnt) cnt.textContent=total?("（"+total+"枚）"):"";
+      if(!sets.length){
+        body.innerHTML='<div class="cps-empty">計画地写真はまだありません。<br><button type="button" class="cps-add" onclick="openInboxForCard()">📥 インボックスから写真を選ぶ</button></div>';
+        return;
+      }
+      var html=sets.map(function(s){
+        var ph=(s.photos&&s.photos.length)?s.photos:[];
+        var g=Math.min(ph.length,4)||1;
+        var thumbs=ph.map(function(p,i){
+          var src=(p&&p.thumb)||(p&&typeof p.full==="string"?p.full:"");
+          return '<div class="cps-th" data-sid="'+esc(s.id)+'" data-idx="'+i+'">'+(src?'<img src="'+src+'" alt="">':'<span class="cps-noimg">📷</span>')+'</div>';
+        }).join("");
+        var meta=[]; if(s.addr) meta.push(esc(s.addr+(s.banchi?(" "+s.banchi):""))); var w=fmtW(s.ts); if(w) meta.push(w); if(s.note) meta.push(esc(s.note));
+        return '<div class="cps-set"><div class="cps-grid g'+g+'">'+thumbs+'</div><div class="cps-meta">'+meta.join(" ・ ")+'</div></div>';
       }).join("");
-      var meta=[]; if(s.addr) meta.push(e(s.addr+(s.banchi?(" "+s.banchi):""))); meta.push(_fmtWhen(s.ts)); if(s.note) meta.push(e(s.note));
-      return '<div class="cps-set"><div class="cps-grid g'+g+'">'+thumbs+'</div><div class="cps-meta">'+meta.join(" ・ ")+'</div></div>';
-    }).join("");
-    html+='<button type="button" class="cps-add2" onclick="openInboxForCard()">📥 写真を追加・管理</button>';
-    body.innerHTML=html;
-    body.querySelectorAll(".cps-th").forEach(function(el){
-      el.addEventListener("click",function(){ openInboxPhoto(el.getAttribute("data-sid"), parseInt(el.getAttribute("data-idx"),10)||0); });
-    });
-  }).catch(function(){ body.innerHTML='<div class="cps-empty">写真領域を開けませんでした。</div>'; });
+      html+='<button type="button" class="cps-add2" onclick="openInboxForCard()">📥 写真を追加・管理</button>';
+      body.innerHTML=html;
+      body.querySelectorAll(".cps-th").forEach(function(el){
+        el.addEventListener("click",function(){ openInboxPhoto(el.getAttribute("data-sid"), parseInt(el.getAttribute("data-idx"),10)||0); });
+      });
+    }catch(err2){ body.innerHTML='<div class="cps-empty">表示エラー：<br><span style="color:#c53030;font-size:11px">'+esc(String((err2&&err2.message)||err2))+'</span></div>'; }
+  }).catch(function(err){ body.innerHTML='<div class="cps-empty">写真領域を開けませんでした。<br><span style="color:#c53030;font-size:11px">'+esc(String((err&&err.message)||err))+'</span></div>'; });
 }
 window.renderCardPhotos=renderCardPhotos;
 
