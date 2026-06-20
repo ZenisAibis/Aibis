@@ -1776,7 +1776,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.96";
+var APP_VERSION = "v7.97";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -3252,7 +3252,7 @@ function showSetup() {
   if ((el=document.getElementById('sRole')))   el.value = userRole||'';
   if ((el=document.getElementById('sNick')))   el.value = uNick||'';
   paintHandBtn();
-  var _hc=document.getElementById('setupHandCell'); if(_hc) _hc.style.display='';
+  var _hc=document.getElementById('setupHandCell'); if(_hc) _hc.style.display=isMob?'':'none';
   if(window._pwaSyncBtns) _pwaSyncBtns();
   if ((el=document.getElementById('sCopilotUrl'))) el.value = localStorage.getItem(CPK)||'';
   var _sm=document.getElementById('staffMailSection'); if(_sm){ _sm.style.display=isMgrUnlocked()?'block':'none'; if(typeof renderStaffMailRows==='function'){renderStaffMailRows();renderStaffMailChips();} }
