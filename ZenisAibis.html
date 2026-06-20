@@ -1767,7 +1767,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.34";
+var APP_VERSION = "v8.36";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -5350,8 +5350,8 @@ function _undoDelToast(name){
   try{
     if(window._undoDelEl){ window._undoDelEl.remove(); window._undoDelEl=null; }
     var d=document.createElement('div');
-    d.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:78px;background:#2d3748;color:#fff;padding:10px 14px;border-radius:10px;z-index:9999;display:flex;gap:12px;align-items:center;box-shadow:0 6px 24px rgba(0,0,0,.35);font-size:13px;max-width:92vw';
-    d.innerHTML='「'+e(name||'無名')+'」を削除しました<button onclick="undoDelCard()" style="background:#34e3d0;color:#1a202c;border:none;border-radius:6px;padding:6px 12px;font-weight:800;cursor:pointer;font-family:inherit;font-size:12.5px;white-space:nowrap">\u21a9 元に戻す</button>';
+    d.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:84px;background:#2d3748;color:#fff;padding:7px 7px 7px 16px;border-radius:999px;z-index:9999;display:flex;gap:10px;align-items:center;box-shadow:0 8px 28px rgba(0,0,0,.4);font-size:13px;max-width:94vw';
+    d.innerHTML='<span style="flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🗑 「'+e(name||'無名')+'」を削除しました</span><button onclick="undoDelCard()" style="flex:0 0 auto;background:#34e3d0;color:#1a202c;border:none;border-radius:999px;padding:7px 15px;font-weight:800;cursor:pointer;font-family:inherit;font-size:12.5px;white-space:nowrap">\u21a9 元に戻す</button>';
     document.body.appendChild(d); window._undoDelEl=d;
     setTimeout(function(){ try{ if(window._undoDelEl===d){ d.remove(); window._undoDelEl=null; } }catch(_e){} },8000);
   }catch(_e){ toast('「'+name+'」を見込みから外しました'); }
@@ -11758,6 +11758,7 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   .iacts3 .ibtn.dn{flex:0 0 auto;padding:7px 10px}
   .ibtn.big{width:100%;padding:13px;font-size:14px;border-radius:12px}
   .irow2{display:flex;gap:10px;padding:10px;border-radius:12px;background:#fff;border:1px solid #e2e8f0;margin-bottom:9px;align-items:center}
+  .irow2.on{border-color:#9ae6b4;background:#f0fff4}
   .irow2 .ith{flex:0 0 auto;width:60px;height:60px;border-radius:10px;overflow:hidden;background:#edf2f7;position:relative;cursor:pointer}
   .irow2 .ith img{width:100%;height:100%;object-fit:cover;display:block}
   .irow2 .ith .ithn{position:absolute;right:3px;bottom:3px;background:rgba(26,54,93,.85);color:#fff;font-size:10px;font-weight:800;padding:1px 6px;border-radius:7px}
@@ -11967,21 +11968,19 @@ function _fmtWhen(ts){ var d=new Date(ts),p=function(n){return String(n).padStar
 function _inrow(s){
   var ph=Array.isArray(s.photos)?s.photos:[];
   var linked=(s.cardId && s.cardId!==MEDIA_INBOX);
-  var addr=s.addr?e(s.addr+(s.banchi?(" "+s.banchi):"")):"住所未取得";
-  var nm=linked?('🔗 '+e(_cardName(s.cardId))):'<span style="color:#a0aec0">未紐付け</span>';
-  var thumb=(ph[0]&&ph[0].thumb)?ph[0].thumb:"";
-  var acts="";
-  if(_inboxAttach){
-    if(s.cardId===_inboxAttach){ acts='<button class="ibtn ok" data-act="detach" data-id="'+e(s.id)+'">✓ 紐付け済み（タップで外す）</button>'; }
-    else if(linked){ acts='<button class="ibtn pri" data-act="attach" data-id="'+e(s.id)+'">🔗 このカードに付け替え</button>'; }
-    else { acts='<button class="ibtn pri" data-act="attach" data-id="'+e(s.id)+'">＋ このカードに紐付け</button>'; }
-  }
-  else if(linked){ acts='<button class="ibtn" data-act="relink" data-id="'+e(s.id)+'">付け替え</button><button class="ibtn" data-act="unlink" data-id="'+e(s.id)+'">外す</button><button class="ibtn dn" data-act="del" data-id="'+e(s.id)+'">🗑</button>'; }
-  else { acts='<button class="ibtn pri" data-act="link" data-id="'+e(s.id)+'">🔗 紐付け</button><button class="ibtn dn" data-act="del" data-id="'+e(s.id)+'">🗑</button>'; }
-  return '<div class="irow">'+
-    '<div class="ith" data-act="view" data-id="'+e(s.id)+'">'+(thumb?'<img src="'+thumb+'">':'')+'<span class="ithn">'+ph.length+'枚</span></div>'+
-    '<div class="ibd"><div class="iadr">'+nm+(s.sent?' <span class="ibadge sent">書き出し済</span>':'')+'</div>'+
-    '<div class="imeta">📍 '+addr+' ・ '+_fmtWhen(s.ts)+'</div>'+
+  var isThis=(_inboxAttach && s.cardId===_inboxAttach);
+  var addr=s.addr?e(s.addr+(s.banchi?(" "+s.banchi):"")):"位置情報なし";
+  var thumb=_inboxThumb(s);
+  var thn=ph.length?('<span class="ithn">'+ph.length+'枚</span>'):"";
+  var th='<div class="ith" data-act="view" data-id="'+e(s.id)+'">'+(thumb?'<img src="'+thumb+'">':'<span class="cps-noimg" style="display:flex;align-items:center;justify-content:center;height:100%">📷</span>')+thn+'</div>';
+  var sent=s.sent?' <span class="ibadge sent">書き出し済</span>':"";
+  var badge=isThis?'<span class="ibadge sent">🔗 このカード</span>':(linked?('<span class="ibadge un">🔗 '+_linkName(s)+'</span>'):'<span class="ibadge un">未紐付け</span>');
+  var acts;
+  if(isThis) acts='<button class="ibtn ret" data-act="detach" data-id="'+e(s.id)+'" title="このカードから外す">📥 外す</button>';
+  else if(linked) acts='<button class="ibtn pri" data-act="attach" data-id="'+e(s.id)+'">🔗 付け替え</button>';
+  else acts='<button class="ibtn pri" data-act="attach" data-id="'+e(s.id)+'">🔗 紐付け</button>';
+  return '<div class="irow2'+(isThis?' on':'')+'">'+th+'<div class="ibd"><div class="iadr">'+addr+'</div>'+
+    '<div class="imeta">'+badge+sent+' ・ '+_fmtWhen(s.ts)+'</div>'+
     '<div class="iacts">'+acts+'</div></div></div>';
 }
 function _inrowSafe(s){ try{ return _inrow(s); }catch(err){ return '<div class="irow"><div class="ibd"><div class="iadr">（このデータは表示できません）</div><div class="imeta">'+e(String((s&&s.id)||""))+'</div></div></div>'; } }
@@ -12038,7 +12037,12 @@ function _wireInbox(host){
       else if(act==="detach") _detachFromCard(id);
       else if(act==="gotocard") _gotoCard(id);
       else if(act==="unlink") _unlinkSet(id);
-      else if(act==="del") _delSet(id);
+      else if(act==="del"){
+        var _selIds=_inbUnlinkedIds.filter(function(x){return _inbSel[x];});
+        if(_inbUnlinkedIds.length>1 && _selIds.length===_inbUnlinkedIds.length){
+          aibisConfirm('全選択中です。選択した <b>'+_selIds.length+'件</b> をすべて完全削除しますか？<br><span style="font-size:12px;color:#718096">写真は復元できません。</span>', function(){ _bulkDelSets(_selIds); }, '全件削除', 'やめる');
+        } else { _delSet(id); }
+      }
     });
   });
 }
@@ -12159,7 +12163,11 @@ function renderInboxBody(){
     if(_inboxAttach){
       html+='<div class="isend"><button class="ibtn pri big" onclick="closeInbox()">✓ 完了して「'+e(_cardName(_inboxAttach))+'」へ戻る</button></div>';
       html+='<div class="ihint">🔗 紐付けたい写真を選択（複数OK）→ 即このカードへ反映。</div>';
-      html+=unlinked.concat(linked).map(_inrowSafe).join("");
+      var _att=all.filter(function(s){return s.cardId===_inboxAttach;}).sort(byTs);
+      var _oth=all.filter(function(s){return !s.cardId||s.cardId!==_inboxAttach;}).sort(byTs);
+      if(_att.length){ html+='<div class="isec2">このカードの写真（'+_att.length+'）</div>'+_att.map(_inrowSafe).join(""); }
+      if(_oth.length){ html+='<div class="isec2">追加できる写真（'+_oth.length+'）</div>'+_oth.map(_inrowSafe).join(""); }
+      if(!_att.length && !_oth.length){ html+='<div class="iempty">写真がありません。</div>'; }
       host.innerHTML=html; _wireInbox(host); _applyInboxBadge(all); return;
     }
     html+='<div style="font-size:11.5px;color:#94a3b8;text-align:center;padding:2px 0 10px;line-height:1.5">📷 カメラ・本体の写真は1箱に集約 → 紐付け → 📤 でPCへ。</div>';
@@ -12193,6 +12201,13 @@ function _unlinkSet(id){ var go=function(){ mGet(id).then(function(s){ if(!s) re
 function _afterPhotoChange(){ try{ renderInboxBody(); }catch(e){} try{ if(typeof curId!=="undefined" && curId) renderCardPhotos(curId); }catch(e){} try{ updateInboxBadge(); }catch(e){} }
 function _detachFromCard(id){ mGet(id).then(function(s){ if(!s) return; s.cardId=MEDIA_INBOX; mPut(s).then(function(){ try{ toast("カードから外しました"); }catch(e){} _afterPhotoChange(); }); }); }
 function _gotoCard(id){ mGet(id).then(function(s){ if(!s||!s.cardId||s.cardId===MEDIA_INBOX){ try{ toast("紐付け先カードがありません"); }catch(e){} return; } var cid=s.cardId; try{ closeInbox(); }catch(e){} try{ if(typeof openCard==="function") openCard(cid); }catch(e){} }); }
+function _bulkDelSets(ids){
+  var list=(ids||[]).slice(); var n=list.length; if(!n) return;
+  (function next(){
+    if(!list.length){ try{ ids.forEach(function(x){ delete _inbSel[x]; }); }catch(e){} toast('🗑 '+n+'件を削除しました'); try{ _afterPhotoChange(); }catch(e){} try{ updateInboxBadge(); }catch(e){} return; }
+    var id=list.shift(); mDel(id).then(next,next);
+  })();
+}
 function _delSet(id){ mGet(id).then(function(s){ if(!s) return;
   var linked=(s.cardId && s.cardId!==MEDIA_INBOX);
   var hard=function(){ mDel(id).then(function(){ toast("完全削除しました"); _afterPhotoChange(); }); };
@@ -12351,6 +12366,17 @@ function _applyInboxBadge(arr){
   try{ var m={}; arr.forEach(function(s){ if(s.cardId && s.cardId!==MEDIA_INBOX){ m[s.cardId]=(m[s.cardId]||0)+1; } }); localStorage.setItem("aibis_plan_photo_counts_v1", JSON.stringify(m)); }catch(_e){}
 }
 function updateInboxBadge(){ mAll().then(function(all){ _applyInboxBadge(all); }).catch(function(){ _mdb=null; }); }
+window.addEventListener("storage",function(ev){
+  if(!ev||ev.key!=="aibis_media_ping") return;
+  try{ updateInboxBadge(); }catch(e){}
+  try{ var iv=document.getElementById("inboxView"); if(iv && iv.style.display!=="none") renderInboxBody(); }catch(e){}
+  try{ if(typeof curId!=="undefined" && curId) renderCardPhotos(curId); }catch(e){}
+});
+document.addEventListener("visibilitychange",function(){
+  if(document.hidden) return;
+  try{ updateInboxBadge(); }catch(e){}
+  try{ if(typeof curId!=="undefined" && curId) renderCardPhotos(curId); }catch(e){}
+});
 window.openInbox=openInbox; window.openInboxForCard=openInboxForCard; window.closeInbox=closeInbox;
 window.closeInboxPick=closeInboxPick; window.renderInboxPickList=renderInboxPickList;
 window.openInboxPhoto=openInboxPhoto; window.inboxPhotoStep=inboxPhotoStep; window.closeInboxPhoto=closeInboxPhoto;

@@ -409,7 +409,7 @@
    ※ prospect_cards_v1 には書き込まない（新規カード作成・PC連携は本体側）
    データ(set): {id,cardId,ts,addrType:'plan',lat,lng,acc,addr,addrPending,banchi,note,sent,photos:[{pid,full(Blob),thumb,w,h,size}]}
    ========================================================= */
-const APP_VERSION = "cam-v1.52";
+const APP_VERSION = "cam-v1.53";
 
 /* ===== PWA：単一ファイルでインストール可能化（外部ファイル不要） ===== */
 function _pwaIcon(size,maskable){
@@ -808,19 +808,29 @@ async function _ensureAddr(id){
   if(s && !s.addr && s.lat!=null){ try{ await resolveAddr(id); s=await idbGet(id); }catch(e){} }
   return s;
 }
+function _finishAndClose(){
+  try{ stopCamera(); }catch(e){}
+  try{ mediaPing(); }catch(e){}
+  var go=function(){ try{
+    if(qaReturnMode){ location.href="ZenisAibis.html"; return; }
+    if(targetCard && targetCard!==INBOX){ location.href="ZenisAibis.html?card="+encodeURIComponent(targetCard)+"&from=cam"; return; }
+    location.href="ZenisAibis.html?inbox";
+  }catch(e){} };
+  try{ window.close(); }catch(e){}
+  setTimeout(function(){ if(!document.hidden) go(); }, 250);
+}
 $("doneBtn").addEventListener("click",async()=>{
   if(!curSet){ toast("先に撮影してください"); return; }
   const sid=curSet;
+  let s=null;
+  try{ s=await Promise.race([_ensureAddr(sid), new Promise(function(r){ setTimeout(function(){ r(null); },2000); })]); }catch(e){}
+  if(!s){ try{ s=await idbGet(sid); }catch(e){} }
   if(qaReturnMode){
-    const s=await _ensureAddr(sid);
     const payload={ addr:(s&&s.addr)||"", banchi:(s&&s.banchi)||"", lat:s&&s.lat, lng:s&&s.lng, setId:sid, ts:Date.now() };
     try{ localStorage.setItem("aibis_qa_return", JSON.stringify(payload)); }catch(e){}
-    curSet=null; renderSetPanel(); await updateRightCount();
-    aibisConfirm("📥 計画地の住所をアイビスに反映しました。<br>カメラを閉じてアイビスに戻りますか？", function(){ try{ window.close(); }catch(e){} setTimeout(function(){ toast("アイビスのタブに戻ってください"); }, 400); }, "アイビスに戻る", "撮影を続ける");
-    return;
   }
-  curSet=null; renderSetPanel(); await updateRightCount();
-  toast("保存しました。次のデータへ");
+  curSet=null;
+  _finishAndClose();
 });
 
 /* ---------- 仕分けパネル ---------- */
