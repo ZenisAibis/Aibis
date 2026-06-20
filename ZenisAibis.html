@@ -1785,7 +1785,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.28";
+var APP_VERSION = "v8.29";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -11754,7 +11754,7 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   .irow2 .ith .ithn{position:absolute;right:3px;bottom:3px;background:rgba(26,54,93,.85);color:#fff;font-size:10px;font-weight:800;padding:1px 6px;border-radius:7px}
   .irow2 .ibd{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
   .irow2 .iadr{font-size:13.5px;font-weight:700;color:#2d3748;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .irow2 .imeta{font-size:11px;color:#718096;line-height:1.5}
+  .irow2 .imeta{font-size:11px;color:#718096;line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .irow2 .imeta .ibadge{vertical-align:middle}
   .irow2 .iacts{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
   .icheck{flex:0 0 auto;width:26px;height:26px;border-radius:7px;border:2px solid #cbd5e0;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;color:#fff;cursor:pointer}
@@ -12014,7 +12014,7 @@ function _inrow2(s, isUnlinked){
   var lnm=_linkName(s);
   return '<div class="irow2"><div class="istar" aria-hidden="true">★</div>'+th+'<div class="ibd"><div class="iadr">'+addr+'</div>'+
     '<div class="imeta">'+(s.sent?'<span class="ibadge sent">書き出し済</span> ・ ':'')+_fmtWhen(s.ts)+'</div>'+
-    '<div class="iacts iacts-lr"><button class="ibtn" data-act="gotocard" data-id="'+e(s.id)+'">🪪 カード遷移</button>'+(lnm?'<span class="ilinkname">'+lnm+'</span>':'')+'<button class="ibtn ret" data-act="unlink" data-id="'+e(s.id)+'" title="インボックスへ戻す">📥</button></div></div></div>';
+    '<div class="iacts iacts-lr"><button class="ibtn" data-act="gotocard" data-id="'+e(s.id)+'">🪪 遷移</button>'+(lnm?'<span class="ilinkname">'+lnm+'</span>':'')+'<button class="ibtn ret" data-act="unlink" data-id="'+e(s.id)+'" title="インボックスへ戻す">📥</button></div></div></div>';
 }
 function _wireInbox(host){
   host.querySelectorAll("[data-act]").forEach(function(el){
