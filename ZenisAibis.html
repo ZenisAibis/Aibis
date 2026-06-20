@@ -1785,7 +1785,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.20";
+var APP_VERSION = "v8.21";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -11756,6 +11756,7 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   .irow2 .iacts{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
   .icheck{flex:0 0 auto;width:26px;height:26px;border-radius:7px;border:2px solid #cbd5e0;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;color:#fff;cursor:pointer}
   .icheck.on{background:#f59e0b;border-color:#f59e0b}
+  .istar{flex:0 0 auto;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#f59e0b;cursor:default;user-select:none}
   .isec2{font-size:13px;font-weight:800;color:#b7791f;margin:16px 2px 9px;display:flex;align-items:center;justify-content:space-between}
   .seltools button{border:none;background:none;color:#2c5282;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;margin-left:10px}
   .isend{margin:2px 0 8px}
@@ -12006,7 +12007,7 @@ function _inrow2(s, isUnlinked){
       '<div class="imeta">'+badge+sent+' ・ '+_fmtWhen(s.ts)+'</div>'+
       '<div class="iacts">'+acts+'</div></div></div>';
   }
-  return '<div class="irow2">'+th+'<div class="ibd"><div class="iadr">'+addr+'</div>'+
+  return '<div class="irow2"><div class="istar" aria-hidden="true">★</div>'+th+'<div class="ibd"><div class="iadr">'+addr+'</div>'+
     '<div class="imeta">🔗'+sent+' '+e(_cardName(s.cardId))+' ・ '+_fmtWhen(s.ts)+'</div>'+
     '<div class="iacts iacts-lr"><button class="ibtn" data-act="gotocard" data-id="'+e(s.id)+'">🪪 カード遷移</button><button class="ibtn ret" data-act="unlink" data-id="'+e(s.id)+'" title="インボックスへ戻す">📥</button></div></div></div>';
 }
