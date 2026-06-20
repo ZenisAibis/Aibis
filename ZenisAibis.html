@@ -1786,7 +1786,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.01";
+var APP_VERSION = "v8.02";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -2634,13 +2634,11 @@ function pwaShortcut(){
             : '🔗 ショートカットの作り方（PC）<br><br>ブラウザの <b>⋮メニュー</b> →「保存して共有」→「<b>ショートカットを作成</b>」。<br>※「ウィンドウとして開く」は<b>チェックを外す</b>とブラウザで開きます。');
   if(window.aibisAlert) aibisAlert(msg); else alert(msg.replace(/<[^>]+>/g,''));
 }
-function pwaOpenCam(){ try{ window.open('AibisCam.html','_blank'); }catch(e){ location.href='AibisCam.html'; } if(window.toast) toast('カメラ画面で ⋮メニュー →「ホーム画面に追加」でショートカットを作れます'); }
 function _pwaSyncBtns(){
   var host=document.getElementById('pwaBtns'); if(!host) return;
   var hint=document.getElementById('pwaHint'); var html='';
   if(isMob){
     html+='<button type="button" class="bp" onclick="pwaShortcut()" style="font-size:12px;padding:8px 12px">🔗 本体をホーム画面に追加</button>';
-    html+='<button type="button" class="bp" onclick="pwaOpenCam()" style="font-size:12px;padding:8px 12px">📷 カメラを開いて追加</button>';
     if(hint) hint.innerHTML='アプリ化せず<b>ブラウザで開くショートカット</b>をホーム画面に作ります（会社スマホの再起動ループ対策）。';
   } else {
     html+='<button type="button" class="bp" onclick="pwaShortcut()" style="font-size:12px;padding:8px 12px">🔗 デスクトップにショートカット</button>';
@@ -2648,7 +2646,7 @@ function _pwaSyncBtns(){
   }
   host.innerHTML=html;
 }
-window.pwaShortcut=pwaShortcut; window.pwaInstall=pwaShortcut; window.pwaOpenCam=pwaOpenCam; window._pwaSyncBtns=_pwaSyncBtns;
+window.pwaShortcut=pwaShortcut; window.pwaInstall=pwaShortcut; window._pwaSyncBtns=_pwaSyncBtns;
 window.addEventListener('load',function(){ try{ _pwaSyncBtns(); }catch(e){} });
 function autoSaveSetup(){
   // フォーム入力を即時LocalStorageに仮保存
@@ -6452,20 +6450,6 @@ function copyAddrField(id){
     } else { fallback(); }
   }catch(_e){ fallback(); }
 }
-function copyPlanToClipboard(){
-  var plan=(document.getElementById('f_plan')?.value||'').trim();
-  if(!plan){toast('計画地が入力されていません');return;}
-  navigator.clipboard.writeText(plan).then(function(){
-    toast('📋 計画地をコピーしました');
-  }).catch(function(){
-    // fallback
-    var ta=document.createElement('textarea');
-    ta.value=plan; document.body.appendChild(ta);
-    ta.select(); document.execCommand('copy');
-    document.body.removeChild(ta);
-    toast('📋 計画地をコピーしました');
-  });
-}
 function closeMap(){ document.getElementById('mapModal').classList.remove('show'); document.getElementById('mapFrame').src=''; }
 
 // ===== 印刷 =====
@@ -9789,7 +9773,7 @@ function openBook(){
 }
 function closeBook(){var o=document.getElementById("bookOverlay");if(o)o.remove();document.body.style.overflow="";}
 window.openBook=openBook;window.closeBook=closeBook;
-window.mapRoute=mapRoute; window.mapStation=mapStation; window.copyAddrToPlan=copyAddrToPlan; window.copyPlanToClipboard=copyPlanToClipboard; window.closeMap=closeMap;
+window.mapRoute=mapRoute; window.mapStation=mapStation; window.copyAddrToPlan=copyAddrToPlan; window.closeMap=closeMap;
 
 function getCurrentAddress(cb){
   if(!navigator.geolocation){ toast('お使いのブラウザは位置情報に対応していません'); return; }
@@ -11778,11 +11762,7 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   /* 計画地写真（カード内・表示専用） */
   #cardPhotoBody .cps-set{margin-bottom:12px}
   #cardPhotoBody .cps-grid{display:grid;gap:4px}
-  #cardPhotoBody .cps-grid.g1{grid-template-columns:1fr}
-  #cardPhotoBody .cps-grid.g2{grid-template-columns:1fr 1fr}
-  #cardPhotoBody .cps-grid.g3,#cardPhotoBody .cps-grid.g4{grid-template-columns:1fr 1fr}
   #cardPhotoBody .cps-th{position:relative;aspect-ratio:4/3;background:#edf2f7;border-radius:8px;overflow:hidden;cursor:pointer}
-  #cardPhotoBody .cps-grid.g1 .cps-th{aspect-ratio:16/10}
   #cardPhotoBody .cps-grid.fix4{grid-template-columns:1fr 1fr;gap:5px;max-width:300px}
   #cardPhotoBody .cps-grid.fix4 .cps-th{aspect-ratio:4/3}
   #cardPhotoBody .cps-th.empty{background:#f1f5f9;border:1px dashed #cbd5e0;cursor:default;display:flex;align-items:center;justify-content:center}
@@ -11792,13 +11772,10 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   #cardPhotoBody .cps-noimg{display:flex;align-items:center;justify-content:center;height:100%;color:#a0aec0;font-size:20px}
   #cardPhotoBody .cps-meta{font-size:11px;color:#718096;margin-top:5px;line-height:1.5;word-break:break-all}
   #cardPhotoBody .cps-empty{text-align:center;color:#a0aec0;font-size:12.5px;padding:12px 8px;line-height:1.9}
-  #cardPhotoBody .cps-add,#cardPhotoBody .cps-add2{border:1px solid #cbd5e0;background:#fff;color:#2c5282;border-radius:8px;padding:9px 14px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer}
-  #cardPhotoBody .cps-add{margin-top:6px}
+  #cardPhotoBody .cps-add2{border:1px solid #cbd5e0;background:#fff;color:#2c5282;border-radius:8px;padding:9px 14px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer}
   #cardPhotoBody .cps-add2{width:100%;margin-top:2px}
   #cardPhotoBody .cps-load{color:#a0aec0;font-size:12px;padding:6px 2px}
   @media print{#inboxView,#inboxViewer,#inboxPick{display:none!important}}
-  #inboxCamBtn{display:none}
-  body.is-mob #inboxCamBtn{display:inline-block}
   #qaCamBtn{display:none}
   body.is-mob #qaCamBtn{display:block}
 </style>
@@ -11806,7 +11783,6 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   <div class="ih">
     <button onclick="closeInbox()">← 戻る</button>
     <b id="inboxTitle">📥 インボックス</b>
-    <button onclick="inboxOpenCam()" id="inboxCamBtn" title="カメラで計画地を撮影">📷 カメラ</button>
   </div>
   <div id="inboxBody"></div>
 </div>
@@ -11912,8 +11888,6 @@ function importPhotoBundle(bundle){
 
 /* ---- 画面遷移 ---- */
 function openInbox(){ _inboxAttach=null; _showInbox(); }
-function inboxOpenCam(){ try{ window.open('AibisCam.html','aibiscam'); }catch(e){ location.href='AibisCam.html'; } toast('カメラで撮影 → アイビスに戻ると、ここに表示されます'); }
-window.inboxOpenCam=inboxOpenCam;
 function _inboxIsOpen(){ var v=document.getElementById('inboxView'); return v && v.style.display!=='none' && v.style.display!==''; }
 // カメラ（別タブ）で写真が増減したら、本体インボックスを即時反映（同一オリジン連携）
 window.addEventListener('storage',function(ev){
@@ -11963,7 +11937,6 @@ function _paintSendMailHint(){ var sel=document.getElementById('sSendMail'); if(
 function saveSendMail(v){ try{ localStorage.setItem(SMK,v||'auto'); }catch(e){} _paintSendMailHint(); }
 window.saveSendMail=saveSendMail;
 function _inbStamp(){ var d=new Date(),p=function(n){return ("0"+n).slice(-2);}; return ""+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+"_"+p(d.getHours())+p(d.getMinutes()); }
-function _blobToDataURL(b){ return new Promise(function(res,rej){ try{ var r=new FileReader(); r.onload=function(){res(r.result);}; r.onerror=function(){rej(r.error);}; r.readAsDataURL(b); }catch(e){ rej(e); } }); }
 function _inboxThumb(s){ var ph=Array.isArray(s.photos)?s.photos:[]; return (ph[0]&&ph[0].thumb)?ph[0].thumb:""; }
 function _inrow2(s, isUnlinked){
   var ph=Array.isArray(s.photos)?s.photos:[];
