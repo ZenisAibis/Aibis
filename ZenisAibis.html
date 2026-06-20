@@ -1785,7 +1785,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.25";
+var APP_VERSION = "v8.26";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -11896,11 +11896,10 @@ function _thumbFromDataURL(durl){ return new Promise(function(res){ if(!durl){re
 function importPhotoBundle(bundle){
   mediaOpen().then(function(){ return (async function(){
     var sets=(bundle&&bundle.sets)||[]; if(!sets.length){ toast("写真データが0件です"); return; }
-    var linkedN=0, unlinkedN=0, dup=0;
+    var linkedN=0, unlinkedN=0, updated=0;
     for(var i=0;i<sets.length;i++){
       var s=sets[i];
       var existing=null; try{ if(s.id) existing=await mGet(s.id); }catch(e){}
-      if(s.id && existing){ dup++; continue; }   // 同じ set.id は再登録しない
       var photos=[];
       for(var j=0;j<(s.photos||[]).length;j++){
         var p=s.photos[j], blob=null, thumb="";
@@ -11911,20 +11910,21 @@ function importPhotoBundle(bundle){
         photos.push({pid:p.pid||("p_"+Date.now()+"_"+j), full:blob||src, thumb:thumb||src, w:p.w, h:p.h, size:p.size});
       }
       var cardId=_resolveCardIdOnImport(s)||MEDIA_INBOX;
+      if(existing && existing.cardId && existing.cardId!==MEDIA_INBOX && cardId===MEDIA_INBOX){ cardId=existing.cardId; } // 既存の紐付けは維持（誤って未紐付けに戻さない）
       var rec={ id:s.id||("s_"+Date.now()+"_"+i), cardId:cardId, ts:s.ts||Date.now(), addrType:"plan",
         lat:s.lat, lng:s.lng, acc:s.acc, addr:s.addr||"", addrPending:false, banchi:s.banchi||"", note:s.note||"", sent:false,
-        cardName:s.cardName||"", homeAddr:s.homeAddr||"", planAddr:s.planAddr||(s.addr||""), photos:photos };
-      try{ await mPut(rec); if(cardId===MEDIA_INBOX) unlinkedN++; else linkedN++; }catch(e){}
+        cardName:s.cardName||((existing&&existing.cardName)||""), homeAddr:s.homeAddr||"", planAddr:s.planAddr||(s.addr||""), photos:photos };
+      try{ await mPut(rec); if(existing){ updated++; } else if(cardId===MEDIA_INBOX){ unlinkedN++; } else { linkedN++; } }catch(e){}
     }
     try{ updateInboxBadge(); }catch(e){}
     var msg='📥 写真データを読み込みました<br><br>'
       +'<div style="text-align:left;display:inline-block;font-size:13.5px;line-height:1.95">'
-      +'🔗 紐付け済み：<b>'+linkedN+'</b> 件<br>⚪ 未紐付け（保留）：<b>'+unlinkedN+'</b> 件<br>⏭ 重複スキップ：<b>'+dup+'</b> 件</div>'
+      +'🔗 紐付け済み：<b>'+linkedN+'</b> 件<br>⚪ 未紐付け（保留）：<b>'+unlinkedN+'</b> 件<br>🔄 更新（紐付け・写真）：<b>'+updated+'</b> 件</div>'
       +(unlinkedN?'<div style="font-size:11.5px;color:#718096;margin-top:8px;line-height:1.6">保留分はインボックスで「🔗 紐付け先」または「➕ 新規カード」で処理できます。</div>':'')
       +'<div style="display:flex;gap:10px;justify-content:center;margin-top:14px">'
       +'<button class="zfa-ok" style="background:#e2e8f0;color:#2d3748;width:auto;padding:11px 16px" onclick="closeAibisAlert()">閉じる</button>'
       +'<button class="zfa-ok" style="width:auto;padding:11px 16px" onclick="closeAibisAlert();openInbox()">📥 インボックスを開く</button></div>';
-    if(window.aibisAlert) aibisAlert(msg); else { toast("読込: 紐付"+linkedN+"/未紐付"+unlinkedN+"/重複"+dup); openInbox(); }
+    if(window.aibisAlert) aibisAlert(msg); else { toast("読込: 紐付"+linkedN+"/未紐付"+unlinkedN+"/更新"+updated); openInbox(); }
   })(); }).catch(function(){ toast("写真領域を開けませんでした"); });
 }
 
