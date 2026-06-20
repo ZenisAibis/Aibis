@@ -1776,7 +1776,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.95";
+var APP_VERSION = "v7.96";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -2580,7 +2580,8 @@ function aibisToast(msg){
 function applyHand(){ try{ document.body.classList.toggle('hand-right', uHand==='right'); }catch(_e){} paintHandBtn(); }
 function paintHandBtn(){ var seg=document.getElementById('sHandSeg'); if(seg){ seg.querySelectorAll('.hand-opt').forEach(function(b){ b.classList.toggle('active', b.dataset.hand===uHand); }); } var b=document.getElementById('sHandBtn'); if(b) b.textContent=(uHand==='right')?'右手持ち':'左手持ち'; }
 function cycleHand(){ setHand(uHand==='right'?'left':'right'); }
-function setHand(v){ uHand=(v==='right')?'right':'left'; try{ localStorage.setItem(HANDK,uHand); }catch(_e){} applyHand(); }
+function setHand(v){ uHand=(v==='right')?'right':'left'; try{ localStorage.setItem(HANDK,uHand); }catch(_e){} applyHand(); try{ if(typeof toast==='function') toast(uHand==='right'?'右手持ちに設定しました 👉（マイクが右側へ）':'👈 左手持ちに設定しました（マイクが左側へ）'); }catch(_e){} }
+window.setHand=setHand; window.cycleHand=cycleHand; window.applyHand=applyHand; window.paintHandBtn=paintHandBtn;
 
 /* ===== PWA：単一ファイルでインストール可能化（マニフェスト/アイコンをHTML内生成・外部ファイル不要） v7.78 ===== */
 function _pwaIcon(size,maskable){
@@ -3251,7 +3252,7 @@ function showSetup() {
   if ((el=document.getElementById('sRole')))   el.value = userRole||'';
   if ((el=document.getElementById('sNick')))   el.value = uNick||'';
   paintHandBtn();
-  var _hc=document.getElementById('setupHandCell'); if(_hc) _hc.style.display=isMob?'':'none';
+  var _hc=document.getElementById('setupHandCell'); if(_hc) _hc.style.display='';
   if(window._pwaSyncBtns) _pwaSyncBtns();
   if ((el=document.getElementById('sCopilotUrl'))) el.value = localStorage.getItem(CPK)||'';
   var _sm=document.getElementById('staffMailSection'); if(_sm){ _sm.style.display=isMgrUnlocked()?'block':'none'; if(typeof renderStaffMailRows==='function'){renderStaffMailRows();renderStaffMailChips();} }
