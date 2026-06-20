@@ -1785,7 +1785,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.22";
+var APP_VERSION = "v8.23";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -2628,20 +2628,20 @@ function _pwaIcon(size,maskable){
 function _pwaStandalone(){ return (window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true; }
 function pwaShortcut(){
   var ua=navigator.userAgent||'', isiOS=/iPad|iPhone|iPod/.test(ua)||(/Macintosh/.test(ua)&&'ontouchend' in document);
-  var msg=isiOS? '🔗 ホーム画面ショートカットの作り方（iPhone/iPad）<br><br>画面下の「共有」→ <b>「ホーム画面に追加」</b>。<br>※ブラウザで開くショートカットです（アプリ化しません）。'
-    : (isMob? '🔗 ホーム画面ショートカットの作り方<br><br>ブラウザ右上の <b>⋮メニュー</b> →「<b>ホーム画面に追加</b>」。<br>※ブラウザで開くショートカットです（アプリ化しないので再起動ループになりません）。'
-            : '🔗 ショートカットの作り方（PC）<br><br>ブラウザの <b>⋮メニュー</b> →「保存して共有」→「<b>ショートカットを作成</b>」。<br>※「ウィンドウとして開く」は<b>チェックを外す</b>とブラウザで開きます。');
+  var msg=isiOS? '🔗 ホーム画面ショートカットの作り方（iPhone/iPad）<br><br>画面下の「共有」→ <b>「ホーム画面に追加」</b>。'
+    : (isMob? '🔗 ホーム画面ショートカットの作り方<br><br>ブラウザ右上の <b>⋮メニュー</b> →「<b>ホーム画面に追加</b>」。'
+            : '🔗 ショートカットの作り方（PC）<br><br>ブラウザの <b>⋮メニュー</b> →「保存して共有」→「<b>ショートカットを作成</b>」。');
   if(window.aibisAlert) aibisAlert(msg); else alert(msg.replace(/<[^>]+>/g,''));
 }
 function _pwaSyncBtns(){
   var host=document.getElementById('pwaBtns'); if(!host) return;
   var hint=document.getElementById('pwaHint'); var html='';
   if(isMob){
-    html+='<button type="button" class="bp" onclick="pwaShortcut()" style="font-size:12px;padding:8px 12px">🔗 本体をホーム画面に追加</button>';
-    if(hint) hint.innerHTML='アプリ化せず<b>ブラウザで開くショートカット</b>をホーム画面に作ります（会社スマホの再起動ループ対策）。';
+    html+='<button type="button" class="bp" onclick="pwaShortcut()" style="font-size:12px;padding:8px 12px">🔗 ショートカット作成の手順</button>';
+    if(hint) hint.innerHTML='ブラウザの <b>⋮メニュー</b> →「<b>ホーム画面に追加</b>」でショートカットを作成できます。';
   } else {
-    html+='<button type="button" class="bp" onclick="pwaShortcut()" style="font-size:12px;padding:8px 12px">🔗 デスクトップにショートカット</button>';
-    if(hint) hint.innerHTML='ブラウザのメニューから、デスクトップに<b>ブラウザで開くショートカット</b>を作成できます。';
+    html+='<button type="button" class="bp" onclick="pwaShortcut()" style="font-size:12px;padding:8px 12px">🔗 ショートカット作成の手順</button>';
+    if(hint) hint.innerHTML='ブラウザのメニューから、デスクトップにショートカットを作成できます。';
   }
   host.innerHTML=html;
 }

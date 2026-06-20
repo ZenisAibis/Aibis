@@ -232,10 +232,10 @@
 <!-- ===== 撮影＝仕分け画面 ===== -->
 <div id="scrCam" class="scr hide">
   <div class="top">
-    <button class="tbtn" id="leftBtn">📥 <span class="cnt" id="leftCount">0</span></button>
+    <button class="tbtn" id="leftBtnSpacer" style="visibility:hidden;pointer-events:none">📥</button>
     <div class="cardchip grow"><b id="camTitle">z.AibisCam</b><span class="sub" id="camSub">シャッターで撮影・1データ最大4枚</span></div>
     <span class="vertag" id="verTag"></span>
-    <button class="tbtn" id="rightBtn">🗂 一覧</button>
+    <button class="tbtn" id="rightBtn">📥 <span class="cnt" id="leftCount">0</span></button>
   </div>
 
   <div id="camWrap">
@@ -282,7 +282,7 @@
 <!-- ===== インボックス ===== -->
 <div id="scrInbox" class="scr hide">
   <div class="top">
-    <button class="tbtn" id="inbList">🗂 一覧</button>
+    <button class="tbtn" id="inbListSpacer" style="visibility:hidden;pointer-events:none">📷</button>
     <div class="cardchip grow"><b id="inbTitle">📥 インボックス</b><span class="sub">本体と同じ箱・紐付け→📤PCへ</span></div>
     <button class="tbtn" id="inbBack">📷</button>
   </div>
@@ -377,12 +377,12 @@
   <div class="kpcard">
     <div class="kphead"><span>⚙ 送信設定</span><span></span></div>
     <div style="display:flex;flex-direction:column;gap:10px">
-      <div><div style="font-size:12px;color:var(--dim);font-weight:700;margin-bottom:4px">PCで受け取るメールアドレス</div>
+      <div><div style="font-size:12px;color:var(--dim);font-weight:700;margin-bottom:4px">送信先メールアドレス</div>
       <input id="cfgEmail" type="email" class="banchi" style="letter-spacing:normal;font-weight:600;width:100%" placeholder="dt0000001@kentaku.co.jp"></div>
       <div><div style="font-size:12px;color:var(--dim);font-weight:700;margin-bottom:4px">送信者名（任意）</div>
       <input id="cfgName" type="text" class="banchi" style="letter-spacing:normal;font-weight:600;width:100%" placeholder="例: 高田"></div>
-      <div id="pwaCamRow"><div style="font-size:12px;color:var(--dim);font-weight:700;margin-bottom:4px">📲 アプリとしてインストール</div>
-      <button type="button" id="pwaCamBtn" class="vbtn" style="width:100%" onclick="pwaInstall()">🔗 ホーム画面に追加</button>
+      <div id="pwaCamRow"><div style="font-size:12px;color:var(--dim);font-weight:700;margin-bottom:4px">🔗 ホーム画面ショートカット</div>
+      <button type="button" id="pwaCamBtn" class="vbtn" style="width:100%" onclick="pwaInstall()">🔗 ショートカット作成の手順</button>
       <div id="pwaCamHint" style="font-size:11px;color:var(--dim);margin-top:5px;line-height:1.5"></div></div>
     </div>
     <div class="kpacts">
@@ -405,7 +405,7 @@
    ※ prospect_cards_v1 には書き込まない（新規カード作成・PC連携は本体側）
    データ(set): {id,cardId,ts,addrType:'plan',lat,lng,acc,addr,addrPending,banchi,note,sent,photos:[{pid,full(Blob),thumb,w,h,size}]}
    ========================================================= */
-const APP_VERSION = "cam-v1.41";
+const APP_VERSION = "cam-v1.43";
 
 /* ===== PWA：単一ファイルでインストール可能化（外部ファイル不要） ===== */
 function _pwaIcon(size,maskable){
@@ -443,12 +443,12 @@ function _pwaIcon(size,maskable){
 function _pwaStandalone(){ return (window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true; }
 function pwaInstall(){
   var ua=navigator.userAgent||'', isiOS=/iPad|iPhone|iPod/.test(ua)||(/Macintosh/.test(ua)&&'ontouchend' in document);
-  toast(isiOS? '共有 →「ホーム画面に追加」でショートカットを作れます（ブラウザで開きます）' : 'ブラウザの ⋮メニュー →「ホーム画面に追加」でショートカットを作れます（ブラウザで開きます）');
+  toast(isiOS? '共有 →「ホーム画面に追加」でショートカットを作成できます' : 'ブラウザの ⋮メニュー →「ホーム画面に追加」でショートカットを作成できます');
 }
 function _pwaCamSync(){
   var btn=document.getElementById('pwaCamBtn'), hint=document.getElementById('pwaCamHint');
-  if(btn){ btn.textContent='🔗 ホーム画面に追加'; btn.disabled=false; btn.style.opacity='1'; }
-  if(hint) hint.innerHTML='アプリ化せず<b>ブラウザで開くショートカット</b>を作ります。⋮メニュー →「ホーム画面に追加」。';
+  if(btn){ btn.textContent='🔗 ショートカット作成の手順'; btn.disabled=false; btn.style.opacity='1'; }
+  if(hint) hint.innerHTML='ブラウザの <b>⋮メニュー</b> →「<b>ホーム画面に追加</b>」でショートカットを作成できます。';
 }
 window.pwaInstall=pwaInstall; window._pwaCamSync=_pwaCamSync;
 const SK_CARDS = "prospect_cards_v1";
@@ -481,7 +481,7 @@ let DB=null, stream=null, track=null, geoWatch=null, lastPos=null;
 let mode="quick", targetCard=INBOX, curSet=null, fromAibis=false, facing="environment", torchOn=false, capturing=false;
 let sendSel=new Set(), sendSeen=new Set();   // 未紐付けの送信選択（idのSet）
 let qaReturnMode=false;                       // 光速入力から ?ret=qa で来たとき true（完了で住所をアイビスへ返す）
-let viewPhoto=null, pickMode="open", linkTargetId=null, MUNI=null, micRec=null, kpVal="";
+let viewPhoto=null, pickMode="open", linkTargetId=null, linkFromInbox=false, MUNI=null, micRec=null, kpVal="";
 let leafMap=null, meTargetId=null;
 
 const $ = id => document.getElementById(id);
@@ -585,8 +585,7 @@ async function boot(){
 
 /* ---------- 画面遷移 ---------- */
 function configureHeader(){
-  $("leftBtn").innerHTML='📥 <span class="cnt" id="leftCount">0</span>';
-  $("rightBtn").textContent="🗂 一覧";
+  $("rightBtn").innerHTML='📥 <span class="cnt" id="leftCount">0</span>';
   if(mode==="card"){
     $("camTitle").textContent=cardLabel(targetCard);
     $("camSub").textContent=cardMeta(targetCard)||"このカードに撮影";
@@ -604,8 +603,7 @@ async function openSet(id){
   configureHeader(); show("cam"); await startCamera(); renderSetPanel(); await updateRightCount();
 }
 
-$("leftBtn").addEventListener("click",()=>{ stopCamera(); openInbox(); });
-$("rightBtn").addEventListener("click",()=>{ stopCamera(); openPick("open"); });
+$("rightBtn").addEventListener("click",()=>{ stopCamera(); openInbox(); });
 async function updateRightCount(){
   const n=await idbCountByCard(INBOX); const el=$("leftCount"); if(!el) return;
   el.textContent=n; el.classList.remove("warn","over");
@@ -850,7 +848,7 @@ $("vMic").addEventListener("click",()=>{
   rec.onend=()=>{ micRec=null; btn.classList.remove("rec"); btn.textContent="🎤"; };
   try{ rec.start(); }catch(e){ micRec=null; btn.classList.remove("rec"); btn.textContent="🎤"; }
 });
-$("vLink").addEventListener("click",()=>{ if(!curSet) return; linkTargetId=curSet; openPick("link"); });
+$("vLink").addEventListener("click",()=>{ if(!curSet) return; linkTargetId=curSet; linkFromInbox=false; openPick("link"); });
 /* 紐付け済み＝インボックスに戻す / インボックス＝完全削除 */
 async function destroyOrReturn(id){
   const s=await idbGet(id); if(!s) return;
@@ -896,7 +894,6 @@ $("keypad").addEventListener("click",e=>{ if(e.target===$("keypad")) $("keypad")
 /* ---------- インボックス ---------- */
 async function openInbox(){ stopCamera(); show("inbox"); await renderInbox(); showStorage("inbStore"); }
 $("inbBack").addEventListener("click",()=>{ enterQuick(); });
-$("inbList").addEventListener("click",()=>{ openPick("open"); });
 async function renderInbox(){
   const all=(await idbAll()).sort((a,b)=>b.ts-a.ts);
   const unlinked=all.filter(s=>!s.cardId||s.cardId===INBOX);
@@ -952,7 +949,7 @@ function drowHtml(s, kind){
   const lead = (kind==="sel") ? '<div class="selbox" data-sel="'+esc(s.id)+'"><span class="cbx'+(on?' on':'')+'">'+(on?'✓':'')+'</span></div>' : '<div class="drowstar" aria-hidden="true">★</div>';
   const jump = linked
     ? '<button class="drowbtn" data-gotomain="card:'+esc(s.cardId)+'">🪪 カード遷移</button>'
-    : '<button class="drowbtn pri" data-gotomain="inbox">🔗 紐付け</button>';
+    : '<button class="drowbtn pri" data-link="'+esc(s.id)+'">🔗 紐付け</button>';
   return '<div class="drow'+(kind==="sel"?' selrow':'')+'" data-id="'+esc(s.id)+'">'+lead+
     '<div class="th"><img src="'+(s.photos[0]?s.photos[0].thumb:"")+'"><span class="n">'+s.photos.length+'枚</span></div>'+
     '<div class="bd"><div class="'+cls+'">'+full+'</div>'+
@@ -967,6 +964,7 @@ function bindDrows(host,fromWhere){
   }));
   host.querySelectorAll(".delbtn").forEach(b=>b.addEventListener("click",()=>{ destroyOrReturn(b.dataset.del); }));
   host.querySelectorAll("[data-gotomain]").forEach(b=>b.addEventListener("click",e=>{ e.stopPropagation(); gotoMain(b.dataset.gotomain); }));
+  host.querySelectorAll("[data-link]").forEach(b=>b.addEventListener("click",e=>{ e.stopPropagation(); linkTargetId=b.dataset.link; linkFromInbox=true; openPick("link"); }));
 }
 function gotoMain(spec){
   var qs = spec==="inbox" ? "?inbox=1&from=cam" : (spec&&spec.indexOf("card:")===0 ? "?card="+encodeURIComponent(spec.slice(5)) : "");
@@ -1053,7 +1051,7 @@ function openPick(m){
 async function updatePickInbox(){ const n=await idbCountByCard(INBOX), el=$("pickInboxCount"); if(el) el.textContent=n; }
 $("pickInbox").addEventListener("click",()=>openInbox());
 $("pickBack").addEventListener("click",()=>{
-  if(pickMode==="link"){ openSet(linkTargetId); } else { enterQuick(); }
+  if(pickMode==="link"){ if(linkFromInbox){ linkFromInbox=false; openInbox(); } else { openSet(linkTargetId); } } else { enterQuick(); }
 });
 
 /* ===== 本体「一覧」と同じ並び替え（移植・配点/ペースは2026-06確定値） ===== */
@@ -1164,7 +1162,7 @@ async function onPickCard(cardId){
     aibisConfirm(cardLabel(cardId)+" を紐付けしますか？", async()=>{
       const old=s.cardId; s.cardId=cardId; await idbPut(s);
       await refreshIndex(cardId); await refreshIndex(old);
-      toast(cardLabel(cardId)+" に紐付けました"); pickMode="open"; openSet(linkTargetId);
+      toast(cardLabel(cardId)+" に紐付けました"); pickMode="open"; if(linkFromInbox){ linkFromInbox=false; openInbox(); } else { openSet(linkTargetId); }
     }, "紐付ける", "やめる");
   } else { fromAibis=false; enterCamera(cardId); }
 }
