@@ -140,6 +140,7 @@
   .drowbtn.pri{background:#2c5282;border-color:#2c5282;color:#fff}
   .drow .delbtn:active{background:rgba(255,93,125,.28)}
   .drow .selbox{flex:0 0 auto;width:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;align-self:stretch}
+  .drow .drowstar{flex:0 0 auto;width:28px;display:flex;align-items:center;justify-content:center;font-size:17px;color:var(--gold);align-self:stretch;user-select:none}
   .drow .selbox .cbx{width:24px;height:24px;border-radius:7px;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#1a1300;background:transparent}
   .drow .selbox .cbx.on{background:var(--gold);border-color:var(--gold)}
   .drow.selrow{border-color:rgba(245,158,11,.32)}
@@ -404,7 +405,7 @@
    ※ prospect_cards_v1 には書き込まない（新規カード作成・PC連携は本体側）
    データ(set): {id,cardId,ts,addrType:'plan',lat,lng,acc,addr,addrPending,banchi,note,sent,photos:[{pid,full(Blob),thumb,w,h,size}]}
    ========================================================= */
-const APP_VERSION = "cam-v1.40";
+const APP_VERSION = "cam-v1.41";
 
 /* ===== PWA：単一ファイルでインストール可能化（外部ファイル不要） ===== */
 function _pwaIcon(size,maskable){
@@ -948,7 +949,7 @@ function drowHtml(s, kind){
   const linked=(s.cardId&&s.cardId!==INBOX);
   const who=linked?'<span class="linkbadge">🔗 '+esc(cardLabel(s.cardId))+'</span>':'<span class="linkbadge un">未紐付け</span>';
   const on=sendSel.has(s.id);
-  const lead = (kind==="sel") ? '<div class="selbox" data-sel="'+esc(s.id)+'"><span class="cbx'+(on?' on':'')+'">'+(on?'✓':'')+'</span></div>' : '';
+  const lead = (kind==="sel") ? '<div class="selbox" data-sel="'+esc(s.id)+'"><span class="cbx'+(on?' on':'')+'">'+(on?'✓':'')+'</span></div>' : '<div class="drowstar" aria-hidden="true">★</div>';
   const jump = linked
     ? '<button class="drowbtn" data-gotomain="card:'+esc(s.cardId)+'">🪪 カード遷移</button>'
     : '<button class="drowbtn pri" data-gotomain="inbox">🔗 紐付け</button>';

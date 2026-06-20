@@ -1785,7 +1785,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.21";
+var APP_VERSION = "v8.22";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -9988,6 +9988,7 @@ window.toast=toast; window.disBan=disBan; window.closePwa=closePwa;
 
 // 写真/インボックス用スクリプト(別script)から本体内部を参照できるよう公開
 window.isMob=isMob; window.e=e;
+window.getLastVD=getLastVD; window.getArea=getArea; window.calcScore=calcScore; window.calcPaceOverrate=calcPaceOverrate; window._judgeMissing=_judgeMissing; window._hasPursuitActivity=_hasPursuitActivity; window._revisitCount=_revisitCount;
 window.mkBlank=mkBlank; window.doSaveCards=doSaveCards; window.renderCards=renderCards; window._stageUpLog=_stageUpLog;
 try{ Object.defineProperty(window,'cards',{configurable:true,get:function(){return cards;}}); }catch(_x){}
 try{ Object.defineProperty(window,'curId',{configurable:true,get:function(){return curId;}}); }catch(_x){}
@@ -12224,7 +12225,7 @@ function renderInboxPickList(){
   var list=(typeof cards!=="undefined"&&cards)?cards.slice():[];
   var f=(document.getElementById("inboxPickSearch").value||"").trim().toLowerCase();
   if(f){ list=list.filter(function(c){ return ((c.name||"")+(c.manager||"")+(c.address||"")+(c.plan_address||"")).toLowerCase().indexOf(f)>=0; }); }
-  list=_pickSortArr(list);
+  try{ list=_pickSortArr(list); }catch(_e){}
   ['lv','rv','jw','ad','sc','st','pj','pace','dt'].forEach(function(k){ var b=document.getElementById('psk_'+k); if(b) b.classList.toggle('active', k===_pickSortKey); });
   var host=document.getElementById("inboxPickList");
   if(!list.length){ host.innerHTML='<div class="iempty">該当するカードがありません。</div>'; return; }
