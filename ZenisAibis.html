@@ -1785,7 +1785,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.12";
+var APP_VERSION = "v8.13";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -11769,7 +11769,10 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   #inboxPick .iph{display:flex;align-items:center;gap:8px;margin-bottom:10px}
   #inboxPick .iph b{flex:1;font-size:14px}
   #inboxPick .iph button{background:#edf2f7;border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer}
-  #inboxPickSearch{width:100%;padding:11px 13px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:inherit;margin-bottom:10px}
+  #inboxPickSearch{width:100%;padding:11px 13px 11px 32px;border:1px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:inherit}
+  #inboxPick .ipsort{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+  #inboxPick .ipsearchrow{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+  #inboxPick .ipsicon{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:#a0aec0;font-size:14px;pointer-events:none}
   #inboxPickList{overflow-y:auto;flex:1}
   #inboxPickList .ipr{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:8px;cursor:pointer}
   #inboxPickList .ipr:active{background:#edf2f7}
@@ -11824,7 +11827,8 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
 <div id="inboxPick">
   <div class="ipc">
     <div class="iph"><b>🔗 紐付け先のカードを選択</b><button onclick="closeInboxPick()">閉じる</button></div>
-    <input id="inboxPickSearch" placeholder="名前・担当・住所で検索" oninput="renderInboxPickList()">
+    <div class="ipsort"><span class="sortbar-lab">🔀 並替：</span><div class="sortbar-scroll"><button class="sbtn active" id="ps_recent" onclick="pickSort('recent')">🕒 最新</button><button class="sbtn" id="ps_name" onclick="pickSort('name')">🧑 名前</button><button class="sbtn" id="ps_addr" onclick="pickSort('addr')">🏠 住所</button></div></div>
+    <div class="ipsearchrow"><button type="button" class="mic-btn hb" onclick="micStart('inboxPickSearch',this)" title="音声で検索" style="flex-shrink:0;margin-top:0">🎤</button><div style="position:relative;flex:1"><span class="ipsicon">🔍</span><input id="inboxPickSearch" placeholder="名前・担当・住所で検索" oninput="renderInboxPickList()"></div></div>
     <div id="inboxPickList"></div>
   </div>
 </div>
@@ -12193,10 +12197,18 @@ function _delSet(id){ mGet(id).then(function(s){ if(!s) return;
 /* ---- 紐付けピッカー ---- */
 function openInboxPick(setId){ _pickSetId=setId; document.getElementById("inboxPickSearch").value=""; document.getElementById("inboxPick").style.display="flex"; renderInboxPickList(); }
 function closeInboxPick(){ document.getElementById("inboxPick").style.display="none"; _pickSetId=null; }
+var _pickSort='recent';
+function pickSort(key){ _pickSort=key; renderInboxPickList(); }
+window.pickSort=pickSort;
 function renderInboxPickList(){
   var list=(typeof cards!=="undefined"&&cards)?cards.slice():[];
   var f=(document.getElementById("inboxPickSearch").value||"").trim().toLowerCase();
   if(f){ list=list.filter(function(c){ return ((c.name||"")+(c.manager||"")+(c.address||"")+(c.plan_address||"")).toLowerCase().indexOf(f)>=0; }); }
+  var sk=_pickSort||'recent';
+  if(sk==='name'){ list.sort(function(a,b){ return (a.name||"").localeCompare((b.name||""),"ja"); }); }
+  else if(sk==='addr'){ list.sort(function(a,b){ return ((a.address||a.plan_address||"")).localeCompare((b.address||b.plan_address||""),"ja"); }); }
+  else { list.sort(function(a,b){ var ta=new Date(a.updated_at||a.created_at||0).getTime()||0, tb=new Date(b.updated_at||b.created_at||0).getTime()||0; return tb-ta; }); }
+  ['recent','name','addr'].forEach(function(k){ var b=document.getElementById('ps_'+k); if(b) b.classList.toggle('active', k===sk); });
   var host=document.getElementById("inboxPickList");
   if(!list.length){ host.innerHTML='<div class="iempty">該当するカードがありません。</div>'; return; }
   host.innerHTML=list.slice(0,200).map(function(c){ var meta=[c.manager,(c.address||c.plan_address)].filter(Boolean).join("・");
