@@ -1785,7 +1785,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.05";
+var APP_VERSION = "v8.06";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -9862,6 +9862,11 @@ function scopedReportCSS(){
   });
   return out+'#browserPrintRoot .prhdr-left,#browserPrintRoot .prhdr-right{color:#fff !important}';
 }
+function buildPlanPhotosHTML(thumbs){
+  if(!thumbs||!thumbs.length) return '';
+  var cells=thumbs.slice(0,4).map(function(t){ return '<div style="border:0.5pt solid #888;border-radius:2mm;overflow:hidden;background:#fff"><img src="'+t+'" style="width:100%;height:auto;display:block"></div>'; }).join('');
+  return '<div style="page-break-inside:avoid"><div class="h2 init">📷 計画地写真</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:4mm;margin-top:2mm">'+cells+'</div></div>';
+}
 function buildBrowserPrintReport(c){
   var e2=function(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
   var dateStr=new Date().toISOString().slice(0,10);
@@ -9872,6 +9877,7 @@ function buildBrowserPrintReport(c){
   function prh(){return '<div class="prhdr"><div class="prhdr-left">z.Aibis</div><div class="prhdr-right">'+hdrTxt+'</div>'+(pj?'<div class="prhdr-rank" style="color:'+pjColor+'">'+pj+'</div>':'')+'</div>';}
   function addPage(content){ if(firstPage){html+=prh();firstPage=false;} else {html+='<div class="pgbrk"></div>'+prh();} html+=content; }
   addPage(buildInitVisitHTML(c));
+  try{ var _ppt=(window._curCardPhotoThumbs && window._curCardPhotoThumbs.cardId===c.id)?(window._curCardPhotoThumbs.thumbs||[]):[]; if(_ppt.length){ addPage(buildPlanPhotosHTML(_ppt)); } }catch(_e){}
   addPage(buildRevisitHTML(c));
   var pp=c.pursuits||[];
   if(pp.some(function(x){return x.content||x.date||x.rec||x.interviewer||x.appo||x.next_appo_date||x.visit_type||x.instruction;})){ html+=buildPursuitHTML(c); }
@@ -11770,6 +11776,7 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   #cardPhotoBody .cps-grid{display:grid;gap:4px}
   #cardPhotoBody .cps-th{position:relative;aspect-ratio:4/3;background:#edf2f7;border-radius:8px;overflow:hidden;cursor:pointer}
   #cardPhotoBody .cps-grid.fix4{grid-template-columns:1fr 1fr;gap:5px;max-width:300px}
+  body.is-mob #cardPhotoBody .cps-grid.fix4{max-width:none;gap:8px}
   #cardPhotoBody .cps-grid.fix4 .cps-th{aspect-ratio:4/3}
   #cardPhotoBody .cps-th.empty{background:#f1f5f9;border:1px dashed #cbd5e0;cursor:default;display:flex;align-items:center;justify-content:center}
   #cardPhotoBody .cps-th.empty .cps-noimg{color:#cbd5e0;font-size:22px}
@@ -12198,6 +12205,7 @@ function renderCardPhotos(cardId){
   mAll().then(function(all){
     try{
       var sets=(all||[]).filter(function(s){ return s && s.cardId===cardId; });
+      try{ var _pt=[]; sets.forEach(function(s){ (s.photos||[]).forEach(function(p){ var t=(p&&p.thumb)||(p&&typeof p.full==="string"?p.full:""); if(t) _pt.push(t); }); }); window._curCardPhotoThumbs={cardId:cardId, thumbs:_pt}; }catch(_e){}
       sets.sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
       var total=sets.reduce(function(n,s){ return n+((s.photos&&s.photos.length)||0); },0);
       if(cnt) cnt.textContent=sets.length?("（"+sets.length+"件 / 計"+total+"枚）"):"";
