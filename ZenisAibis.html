@@ -1785,7 +1785,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.27";
+var APP_VERSION = "v8.28";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -11742,7 +11742,8 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   .ibtn.un{background:#718096;border-color:#718096;color:#fff}
   .ibtn.ret{background:rgba(90,103,216,.10);border-color:rgba(90,103,216,.32);color:#5a67d8;padding:7px 10px;font-size:15px}
   #inboxBody .iacts-lr{display:flex;align-items:center;justify-content:space-between;width:100%;gap:8px}
-  #inboxBody .iacts-lr .ilinkname{flex:1 1 auto;text-align:center;font-size:12.5px;font-weight:700;color:#4a5568;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px}
+  #inboxBody .iacts-lr .ilinkname{flex:1 1 auto;min-width:0;text-align:center;font-size:12.5px;font-weight:700;color:#4a5568;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px}
+  #inboxBody .iacts-lr .ibtn{white-space:nowrap;flex:0 0 auto}
   .iacts3{display:flex;gap:6px;flex-wrap:nowrap;width:100%}
   .iacts3 .ibtn{flex:0 1 auto;min-width:0;white-space:nowrap;padding:7px 10px;overflow:visible;text-overflow:clip}
   .iacts3 .ibtn.dn{flex:0 0 auto;padding:7px 10px}
