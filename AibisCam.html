@@ -407,7 +407,7 @@
    ※ prospect_cards_v1 には書き込まない（新規カード作成・PC連携は本体側）
    データ(set): {id,cardId,ts,addrType:'plan',lat,lng,acc,addr,addrPending,banchi,note,sent,photos:[{pid,full(Blob),thumb,w,h,size}]}
    ========================================================= */
-const APP_VERSION = "cam-v1.47";
+const APP_VERSION = "cam-v1.48";
 
 /* ===== PWA：単一ファイルでインストール可能化（外部ファイル不要） ===== */
 function _pwaIcon(size,maskable){
@@ -580,6 +580,7 @@ async function refreshIndex(cardId){
 function loadCards(){ try{ const a=JSON.parse(localStorage.getItem(SK_CARDS)||"[]"); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
 function findCard(id){ return loadCards().find(c=>c.id===id)||null; }
 function cardLabel(id){ const c=findCard(id); return c?(c.name||"無名")+"様":"カード "+String(id).slice(0,8)+"…"; }
+function linkLabel(s){ const c=findCard(s.cardId); if(c) return (c.name||"無名")+"様"; if(s&&s.cardName) return String(s.cardName)+"様"; return "紐付け済み"; }
 function cardMeta(id){ const c=findCard(id); return c?[c.manager,c.address||c.plan_address].filter(Boolean).join("・"):""; }
 
 /* ---------- 起動 ---------- */
@@ -922,9 +923,9 @@ async function renderInbox(){
   else if(unlinked.length>=WARN_SOFT){ warn.className="warnbar soft"; warn.textContent="そろそろ"+unlinked.length+"件です。区切りで紐付け＆PCへ書き出すのがおすすめです。"; }
   else warn.className="warnbar hide";
 
-  const linkedUnsent=linked.filter(s=>!s.sent).length;
+  const linkedCount=linked.length;
   const selCount=unlinked.filter(s=>sendSel.has(s.id)).length;
-  const sendN=linkedUnsent+selCount;
+  const sendN=linkedCount+selCount;
   const sb=$("inbSendBtn"); if(sb){ sb.textContent="📤 PCへ書き出す（"+sendN+"件）"; sb.disabled=(sendN===0); }
 
   const host=$("inbBody");
@@ -956,7 +957,7 @@ function drowHtml(s, kind){
   const cls=s.addr?"ad":"ad pend";
   const sent=s.sent?'<span class="sentbadge">書き出し済</span>':"";
   const linked=(s.cardId&&s.cardId!==INBOX);
-  const who=linked?'<span class="linkbadge">🔗 '+esc(cardLabel(s.cardId))+'</span>':'<span class="linkbadge un">未紐付け</span>';
+  const who=linked?'<span class="linkbadge">🔗 '+esc(linkLabel(s))+'</span>':'<span class="linkbadge un">未紐付け</span>';
   const on=sendSel.has(s.id);
   const lead = (kind==="sel") ? '<div class="selbox" data-sel="'+esc(s.id)+'"><span class="cbx'+(on?' on':'')+'">'+(on?'✓':'')+'</span></div>' : '<div class="drowstar" aria-hidden="true">★</div>';
   const jump = linked
@@ -1021,7 +1022,7 @@ async function buildBundle(sets){
 }
 async function sendInbox(){
   const all=await idbAll();
-  const linkedUnsent=all.filter(s=>s.cardId&&s.cardId!==INBOX&&!s.sent);
+  const linkedUnsent=all.filter(s=>s.cardId&&s.cardId!==INBOX);
   const unlinkedSel=all.filter(s=>(!s.cardId||s.cardId===INBOX)&&sendSel.has(s.id));
   const targets=linkedUnsent.concat(unlinkedSel);
   if(!targets.length){ toast("書き出すデータがありません（未紐付けは✓で選択）"); return; }
@@ -1172,7 +1173,7 @@ async function onPickCard(cardId){
   if(pickMode==="link"){
     const s=await idbGet(linkTargetId); if(!s){ toast("データが見つかりません"); return; }
     aibisConfirm(cardLabel(cardId)+" を紐付けしますか？", async()=>{
-      const old=s.cardId; s.cardId=cardId; await idbPut(s);
+      const old=s.cardId; s.cardId=cardId; s.cardName=(findCard(cardId)||{}).name||""; await idbPut(s);
       await refreshIndex(cardId); await refreshIndex(old);
       toast(cardLabel(cardId)+" に紐付けました"); pickMode="open"; if(linkFromInbox){ linkFromInbox=false; openInbox(); } else { openSet(linkTargetId); }
     }, "紐付ける", "やめる");

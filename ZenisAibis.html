@@ -1785,7 +1785,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.24";
+var APP_VERSION = "v8.25";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -12035,7 +12035,7 @@ window.inboxSelAll=inboxSelAll; window.inboxSelNone=inboxSelNone;
 function _findCardById(id){ if(!id||typeof cards==="undefined") return null; for(var i=0;i<cards.length;i++){ if(cards[i]&&String(cards[i].id)===String(id)) return cards[i]; } return null; }
 function _findCardIdByName(nm){ nm=(nm||'').trim(); if(!nm||typeof cards==="undefined") return ''; for(var i=0;i<cards.length;i++){ if(cards[i]&&(cards[i].name||'').trim()===nm) return cards[i].id; } return ''; }
 function _resolveCardIdOnImport(s){ if(s && s.cardId && s.cardId!==MEDIA_INBOX && _findCardById(s.cardId)) return s.cardId; return null; }
-function _linkSetToCard(setId,cardId){ if(!cardId) return; mGet(setId).then(function(s){ if(!s) return; s.cardId=cardId; mPut(s).then(function(){ try{ toast(_cardName(cardId)+" に紐付けました"); }catch(e){} renderInboxBody(); }); }); }
+function _linkSetToCard(setId,cardId){ if(!cardId) return; mGet(setId).then(function(s){ if(!s) return; s.cardId=cardId; s.cardName=_cardName(cardId); mPut(s).then(function(){ try{ toast(_cardName(cardId)+" に紐付けました"); }catch(e){} renderInboxBody(); }); }); }
 window._linkSetToCard=_linkSetToCard;
 function _seedCardFromSet(setId){
   if(typeof mkBlank!=="function"||typeof cards==="undefined"){ toast("このアプリではカード作成ができません"); return; }
@@ -12047,7 +12047,7 @@ function _seedCardFromSet(setId){
     var plan=s.planAddr||s.addr||""; if(plan) c.plan_address=plan;
     try{ if(typeof _stageUpLog==="function") _stageUpLog(null,c); }catch(e){}
     cards.push(c);
-    s.cardId=c.id;
+    s.cardId=c.id; s.cardName=c.name;
     mPut(s).then(function(){
       doSaveCards(function(ok){
         if(!ok){ toast("⚠ 保存に失敗しました"); return; }
@@ -12096,7 +12096,7 @@ function _inbDl(file){ try{ var url=URL.createObjectURL(file); var a=document.cr
 function inboxSendToPC(){
   mAll().then(function(all){
     all=all||[];
-    var linkedUnsent=all.filter(function(s){return s.cardId&&s.cardId!==MEDIA_INBOX&&!s.sent;});
+    var linkedUnsent=all.filter(function(s){return s.cardId&&s.cardId!==MEDIA_INBOX;});
     var unlinkedSel=all.filter(function(s){return (!s.cardId||s.cardId===MEDIA_INBOX)&&_inbSel[s.id];});
     var targets=linkedUnsent.concat(unlinkedSel);
     if(!targets.length){ toast("書き出すデータがありません（未紐付けは✓で選択）"); return; }
@@ -12150,7 +12150,7 @@ function renderInboxBody(){
       host.innerHTML=html; _wireInbox(host); _applyInboxBadge(all); return;
     }
     html+='<div style="font-size:11.5px;color:#94a3b8;text-align:center;padding:2px 0 10px;line-height:1.5">📷 カメラ・本体の写真は1箱に集約 → 紐付け → 📤 でPCへ。</div>';
-    var linkedUnsent=linked.filter(function(s){return !s.sent;}).length;
+    var linkedUnsent=linked.length;
     var selCount=unlinked.filter(function(s){return _inbSel[s.id];}).length;
     if(isMob){
       html+='<div class="isend"><button class="ibtn pri big" onclick="inboxSendToPC()">📤 PCへ書き出す（'+(linkedUnsent+selCount)+'件）</button></div>';
@@ -12174,7 +12174,7 @@ function renderInboxBody(){
     if(host) host.innerHTML='<div class="iempty">読み込みに時間がかかっています（接続を作り直します）。<br><br><button class="ibtn pri" onclick="renderInboxBody()">🔄 再読み込み</button><br><br><span style="font-size:11px;color:#c53030">'+e(String((err&&err.message)||err))+'</span></div>';
   });
 }
-function _attachToCard(id){ if(!_inboxAttach) return; var cid=_inboxAttach; mGet(id).then(function(s){ if(!s) return; s.cardId=cid; mPut(s).then(function(){ try{ toast("✓ "+_cardName(cid)+" の計画地写真に追加"); }catch(e){} renderInboxBody(); try{ if(typeof renderCardPhotos==="function" && typeof curId!=="undefined" && curId===cid) renderCardPhotos(cid); }catch(e){} try{ updateInboxBadge(); }catch(e){} }); }); }
+function _attachToCard(id){ if(!_inboxAttach) return; var cid=_inboxAttach; mGet(id).then(function(s){ if(!s) return; s.cardId=cid; s.cardName=_cardName(cid); mPut(s).then(function(){ try{ toast("✓ "+_cardName(cid)+" の計画地写真に追加"); }catch(e){} renderInboxBody(); try{ if(typeof renderCardPhotos==="function" && typeof curId!=="undefined" && curId===cid) renderCardPhotos(cid); }catch(e){} try{ updateInboxBadge(); }catch(e){} }); }); }
 function _unlinkSet(id){ var go=function(){ mGet(id).then(function(s){ if(!s) return; s.cardId=MEDIA_INBOX; mPut(s).then(function(){ toast("インボックスに戻しました"); renderInboxBody(); }); }); };
   if(typeof aibisConfirm==="function") aibisConfirm("このカードから写真を外してインボックスに戻しますか？",go,"外す","やめる"); else if(confirm("インボックスに戻しますか？")) go(); }
 function _afterPhotoChange(){ try{ renderInboxBody(); }catch(e){} try{ if(typeof curId!=="undefined" && curId) renderCardPhotos(curId); }catch(e){} try{ updateInboxBadge(); }catch(e){} }
@@ -12233,7 +12233,7 @@ function renderInboxPickList(){
     return '<div class="ipr" data-id="'+e(c.id)+'"><div style="flex:1;min-width:0"><div class="nm">'+e(c.name||"無名")+'様</div><div class="mt">'+e(meta||"—")+'</div></div><span style="color:#2c5282;font-weight:800">›</span></div>'; }).join("");
   host.querySelectorAll(".ipr").forEach(function(el){ el.addEventListener("click",function(){ _doLink(el.getAttribute("data-id")); }); });
 }
-function _doLink(cardId){ if(!_pickSetId) return; var sid=_pickSetId; mGet(sid).then(function(s){ if(!s) return; s.cardId=cardId; mPut(s).then(function(){ closeInboxPick(); toast(_cardName(cardId)+" に紐付けました"); renderInboxBody(); }); }); }
+function _doLink(cardId){ if(!_pickSetId) return; var sid=_pickSetId; mGet(sid).then(function(s){ if(!s) return; s.cardId=cardId; s.cardName=_cardName(cardId); mPut(s).then(function(){ closeInboxPick(); toast(_cardName(cardId)+" に紐付けました"); renderInboxBody(); }); }); }
 
 /* ---- 写真ビューア ---- */
 function openInboxPhoto(setId,startIdx){ mGet(setId).then(function(s){ if(!s||!s.photos.length) return; _ivSet=s; _ivIdx=(startIdx>0&&startIdx<s.photos.length)?startIdx:0; _showIv(); document.getElementById("inboxViewer").style.display="flex"; }); }
