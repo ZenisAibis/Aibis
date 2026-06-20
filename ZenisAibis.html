@@ -1775,7 +1775,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.93";
+var APP_VERSION = "v7.94";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -11712,6 +11712,21 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   .ibtn{border:1px solid #cbd5e0;background:#fff;color:#2d3748;border-radius:8px;padding:7px 11px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer}
   .ibtn.pri{background:#2c5282;border-color:#2c5282;color:#fff}
   .ibtn.dn{background:rgba(197,48,48,.1);border-color:rgba(197,48,48,.25);color:#c53030}
+  .ibtn.big{width:100%;padding:13px;font-size:14px;border-radius:12px}
+  .irow2{display:flex;gap:10px;padding:10px;border-radius:12px;background:#fff;border:1px solid #e2e8f0;margin-bottom:9px;align-items:center}
+  .irow2 .ith{flex:0 0 auto;width:60px;height:60px;border-radius:10px;overflow:hidden;background:#edf2f7;position:relative;cursor:pointer}
+  .irow2 .ith img{width:100%;height:100%;object-fit:cover;display:block}
+  .irow2 .ith .ithn{position:absolute;right:3px;bottom:3px;background:rgba(26,54,93,.85);color:#fff;font-size:10px;font-weight:800;padding:1px 6px;border-radius:7px}
+  .irow2 .ibd{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+  .irow2 .iadr{font-size:13.5px;font-weight:700;color:#2d3748;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .irow2 .imeta{font-size:11px;color:#718096;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .irow2 .iacts{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+  .icheck{flex:0 0 auto;width:26px;height:26px;border-radius:7px;border:2px solid #cbd5e0;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;color:#fff;cursor:pointer}
+  .icheck.on{background:#f59e0b;border-color:#f59e0b}
+  .isec2{font-size:13px;font-weight:800;color:#b7791f;margin:16px 2px 9px;display:flex;align-items:center;justify-content:space-between}
+  .seltools button{border:none;background:none;color:#2c5282;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;margin-left:10px}
+  .isend{margin:2px 0 8px}
+  .istore{text-align:center;color:#a0aec0;font-size:12px;padding:14px 0 6px}
   #inboxViewer{display:none;position:fixed;inset:0;background:rgba(7,12,20,.97);z-index:1600;flex-direction:column}
   #inboxViewer .ivt{display:flex;align-items:center;gap:10px;padding:12px 14px;color:#fff}
   #inboxViewer .ivt b{flex:1;font-size:13px;color:#cbd5e0;font-weight:600}
@@ -11901,32 +11916,140 @@ function _inrow(s){
     '<div class="iacts">'+acts+'</div></div></div>';
 }
 function _inrowSafe(s){ try{ return _inrow(s); }catch(err){ return '<div class="irow"><div class="ibd"><div class="iadr">（このデータは表示できません）</div><div class="imeta">'+e(String((s&&s.id)||""))+'</div></div></div>'; } }
+var _inbSel={}, _inbSeen={}, _inbUnlinkedIds=[];
+function _selfEmail(){ try{ return localStorage.getItem(SEK)||""; }catch(e){ return ""; } }
+function _inbStamp(){ var d=new Date(),p=function(n){return ("0"+n).slice(-2);}; return ""+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+"_"+p(d.getHours())+p(d.getMinutes()); }
+function _blobToDataURL(b){ return new Promise(function(res,rej){ try{ var r=new FileReader(); r.onload=function(){res(r.result);}; r.onerror=function(){rej(r.error);}; r.readAsDataURL(b); }catch(e){ rej(e); } }); }
+function _inboxThumb(s){ var ph=Array.isArray(s.photos)?s.photos:[]; return (ph[0]&&ph[0].thumb)?ph[0].thumb:""; }
+function _inrow2(s, isUnlinked){
+  var ph=Array.isArray(s.photos)?s.photos:[];
+  var addr=s.addr?e(s.addr+(s.banchi?(" "+s.banchi):"")):(isUnlinked?"位置情報なし":"住所未取得");
+  var thumb=_inboxThumb(s);
+  var sent=s.sent?' <span class="ibadge sent">送信済</span>':"";
+  var thn=ph.length?('<span class="ithn">'+ph.length+'枚</span>'):"";
+  var th='<div class="ith" data-act="view" data-id="'+e(s.id)+'">'+(thumb?'<img src="'+thumb+'">':'<span class="cps-noimg" style="display:flex;align-items:center;justify-content:center;height:100%">📷</span>')+thn+'</div>';
+  if(isUnlinked){
+    var on=_inbSel[s.id]?" on":"";
+    var chk='<div class="icheck'+on+'" data-act="togsel" data-id="'+e(s.id)+'">'+(_inbSel[s.id]?"✓":"")+'</div>';
+    return '<div class="irow2">'+chk+th+'<div class="ibd"><div class="iadr">'+addr+sent+'</div>'+
+      '<div class="imeta"><span class="ibadge un">未紐付け</span> ・ '+_fmtWhen(s.ts)+(s.note?" ・ "+e(s.note):"")+'</div>'+
+      '<div class="iacts"><button class="ibtn pri" data-act="link" data-id="'+e(s.id)+'">🔗 カードに紐付け</button><button class="ibtn dn" data-act="del" data-id="'+e(s.id)+'">🗑 完全削除</button></div></div></div>';
+  }
+  return '<div class="irow2">'+th+'<div class="ibd"><div class="iadr">'+addr+sent+'</div>'+
+    '<div class="imeta">🔗 '+e(_cardName(s.cardId))+' ・ '+_fmtWhen(s.ts)+(s.note?" ・ "+e(s.note):"")+'</div>'+
+    '<div class="iacts"><button class="ibtn" data-act="relink" data-id="'+e(s.id)+'">付け替え</button><button class="ibtn" data-act="unlink" data-id="'+e(s.id)+'">↩ インボックスへ戻す</button><button class="ibtn dn" data-act="del" data-id="'+e(s.id)+'">🗑</button></div></div></div>';
+}
+function _wireInbox(host){
+  host.querySelectorAll("[data-act]").forEach(function(el){
+    el.addEventListener("click",function(){
+      var act=el.getAttribute("data-act"), id=el.getAttribute("data-id");
+      if(act==="view") openInboxPhoto(id);
+      else if(act==="togsel"){ if(_inbSel[id]) delete _inbSel[id]; else _inbSel[id]=1; renderInboxBody(); }
+      else if(act==="link"||act==="relink") openInboxPick(id);
+      else if(act==="attach") _attachToCard(id);
+      else if(act==="unlink") _unlinkSet(id);
+      else if(act==="del") _delSet(id);
+    });
+  });
+}
+function inboxSelAll(){ _inbUnlinkedIds.forEach(function(id){ _inbSel[id]=1; }); renderInboxBody(); }
+function inboxSelNone(){ _inbUnlinkedIds.forEach(function(id){ delete _inbSel[id]; }); renderInboxBody(); }
+window.inboxSelAll=inboxSelAll; window.inboxSelNone=inboxSelNone;
+function _updateInbStore(all){
+  var el=document.getElementById("inbStoreMeter"); if(!el) return;
+  var bytes=0,n=0; (all||[]).forEach(function(s){ (s.photos||[]).forEach(function(p){ n++; if(typeof p.size==="number") bytes+=p.size; else if(p.full&&p.full.size) bytes+=p.full.size; }); });
+  var mb=bytes/1048576;
+  el.textContent="使用容量 "+(mb<0.1?"<0.1":(mb<10?mb.toFixed(1):Math.round(mb)))+"MB / 上限目安 10.0GB ・ 写真"+n+"枚";
+}
+function _buildPhotoBundle(targets){ return (async function(){
+  var sets=[];
+  for(var i=0;i<targets.length;i++){
+    var s=targets[i], photos=[];
+    for(var j=0;j<(s.photos||[]).length;j++){
+      var p=s.photos[j], durl="";
+      if(typeof p.full==="string") durl=p.full;
+      else if(p.full instanceof Blob){ try{ durl=await _blobToDataURL(p.full); }catch(e){ durl=p.thumb||""; } }
+      else if(p.thumb) durl=p.thumb;
+      photos.push({pid:p.pid||("p_"+i+"_"+j), full:durl, w:p.w, h:p.h, size:p.size});
+    }
+    var linked=(s.cardId&&s.cardId!==MEDIA_INBOX);
+    sets.push({id:s.id, cardId:linked?s.cardId:MEDIA_INBOX, cardName:linked?_cardName(s.cardId):"", ts:s.ts, lat:s.lat, lng:s.lng, acc:s.acc, addr:s.addr||"", banchi:s.banchi||"", note:s.note||"", photos:photos});
+  }
+  return {type:"aibis_photos", v:1, exported:Date.now(), sender:(typeof uName!=="undefined"?uName:""), email:_selfEmail(), sets:sets};
+})(); }
+function _inbDl(file){ try{ var url=URL.createObjectURL(file); var a=document.createElement("a"); a.href=url; a.download=file.name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){URL.revokeObjectURL(url);},4000); }catch(e){ toast("書き出しに失敗しました"); } }
+function inboxSendToPC(){
+  mAll().then(function(all){
+    all=all||[];
+    var linkedUnsent=all.filter(function(s){return s.cardId&&s.cardId!==MEDIA_INBOX&&!s.sent;});
+    var unlinkedSel=all.filter(function(s){return (!s.cardId||s.cardId===MEDIA_INBOX)&&_inbSel[s.id];});
+    var targets=linkedUnsent.concat(unlinkedSel);
+    if(!targets.length){ toast("送信するデータがありません（未紐付けは✓で選択）"); return; }
+    toast("データをまとめています…");
+    _buildPhotoBundle(targets).then(function(bundle){
+      var file=new File([JSON.stringify(bundle)],"aibis_photos_"+_inbStamp()+".json",{type:"application/json"});
+      var to=_selfEmail();
+      try{ if(to && navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(to); }catch(e){}
+      var shareText="z.Aibisの計画地写真データです。PCのアイビスで「📥 読込」してください。"+(to?("\n宛先: "+to):"");
+      var markSentAndDone=function(shared){
+        var chain=Promise.resolve();
+        targets.forEach(function(s){ chain=chain.then(function(){ return mGet(s.id).then(function(cur){ if(cur){ cur.sent=true; return mPut(cur); } }); }); });
+        chain.then(function(){ unlinkedSel.forEach(function(s){ delete _inbSel[s.id]; }); renderInboxBody();
+          toast(to?("📋 メアド("+to+")をコピー。メールに貼付→ファイルを添付して送信"):(shared?"共有からメールアプリを選んで送信":"ファイルを書き出しました。メールに添付してPCへ"));
+        });
+      };
+      try{
+        if(navigator.canShare && navigator.canShare({files:[file]})){
+          navigator.share({files:[file],title:"z.Aibis 計画地写真",text:shareText}).then(function(){ markSentAndDone(true); },function(err){ if(err&&err.name==="AbortError") return; _inbDl(file); markSentAndDone(false); });
+          return;
+        }
+      }catch(e){}
+      _inbDl(file); markSentAndDone(false);
+    });
+  });
+}
+window.inboxSendToPC=inboxSendToPC;
 function renderInboxBody(){
   var host=document.getElementById("inboxBody");
   if(host) host.innerHTML='<div class="iempty">読み込み中…</div>';
   mAll().then(function(all){
     all=all||[];
-    all.sort(function(a,b){return (b.ts||0)-(a.ts||0);});
-    var ti=document.getElementById("inboxTitle"); if(ti) ti.textContent=_inboxAttach?("📥 "+_cardName(_inboxAttach)+" に追加"):("📥 インボックス（"+all.length+"件）");
+    var byTs=function(a,b){return (b.ts||0)-(a.ts||0);};
+    var unlinked=all.filter(function(s){return !s.cardId||s.cardId===MEDIA_INBOX;}).sort(byTs);
+    var linked=all.filter(function(s){return s.cardId&&s.cardId!==MEDIA_INBOX;}).sort(byTs);
+    _inbUnlinkedIds=unlinked.map(function(s){return s.id;});
+    var ti=document.getElementById("inboxTitle"); if(ti) ti.textContent=_inboxAttach?("📥 "+_cardName(_inboxAttach)+" に追加"):("📥 インボックス（未紐付 "+unlinked.length+"）");
     if(!host) return;
-    if(!all.length){ host.innerHTML='<div class="iempty">写真データはありません。<br>アイビスカメラの「📤 PCへ送る」で書き出したJSONを、一覧の「📥 読込」で取り込めます。</div>'; updateInboxBadge(); return; }
-    var unlinkedN=all.filter(function(s){return !s.cardId||s.cardId===MEDIA_INBOX;}).length;
+    if(!all.length){ host.innerHTML='<div class="iempty">写真データはありません。<br>「📷 カメラ」で撮影するか、一覧の「📥 読込」でJSONを取り込めます。</div>'; updateInboxBadge(); return; }
+    // 送信選択の整合（未送信の未紐付けは既定チェック）
+    var uids={}; unlinked.forEach(function(s){ uids[s.id]=1; });
+    Object.keys(_inbSel).forEach(function(id){ if(!uids[id]) delete _inbSel[id]; });
+    Object.keys(_inbSeen).forEach(function(id){ if(!uids[id]) delete _inbSeen[id]; });
+    unlinked.forEach(function(s){ if(!_inbSeen[s.id]){ _inbSeen[s.id]=1; if(!s.sent) _inbSel[s.id]=1; } });
     var html="";
-    if(_inboxAttach){ html+='<div class="ihint">このカードに紐付けたい写真を選んでください（日付順）。</div>'; }
-    else { html+='<div class="isec">全 '+all.length+' 件（未紐付 '+unlinkedN+' 件）・日付順</div>'; }
-    html+=all.map(_inrowSafe).join("");   // 紐付け済み・未紐付けを区別せず日付順で1リスト
+    if(_inboxAttach){
+      html+='<div class="ihint">このカードに紐付けたい写真を選んでください（「このカードに紐付け」を押す）。</div>';
+      html+=unlinked.concat(linked).map(_inrowSafe).join("");
+      host.innerHTML=html; _wireInbox(host); updateInboxBadge(); return;
+    }
+    var linkedUnsent=linked.filter(function(s){return !s.sent;}).length;
+    var selCount=unlinked.filter(function(s){return _inbSel[s.id];}).length;
+    if(isMob){
+      html+='<div class="isend"><button class="ibtn pri big" onclick="inboxSendToPC()">📤 PCへ送る（'+(linkedUnsent+selCount)+'件）</button></div>';
+      html+='<div class="ihint">📤 を押すと、🔗紐付け済みは自動で送信。未紐付けは下の✓で選んだぶんだけ送ります。</div>';
+    }
+    if(unlinked.length){
+      html+='<div class="isec2">未紐付け（'+unlinked.length+'）<span class="seltools"><button onclick="inboxSelAll()">☑ 全選択</button><button onclick="inboxSelNone()">解除</button></span></div>';
+      html+=unlinked.map(function(s){return _inrow2(s,true);}).join("");
+    }
+    if(linked.length){
+      html+='<div class="isec2">紐付け済み（'+linked.length+'）</div>';
+      html+=linked.map(function(s){return _inrow2(s,false);}).join("");
+    }
+    html+='<div class="istore" id="inbStoreMeter">使用容量を計算中…</div>';
     host.innerHTML=html;
-    host.querySelectorAll("[data-act]").forEach(function(el){
-      el.addEventListener("click",function(){
-        var act=el.getAttribute("data-act"), id=el.getAttribute("data-id");
-        if(act==="view") openInboxPhoto(id);
-        else if(act==="link") openInboxPick(id);
-        else if(act==="relink") openInboxPick(id);
-        else if(act==="attach") _attachToCard(id);
-        else if(act==="unlink") _unlinkSet(id);
-        else if(act==="del") _delSet(id);
-      });
-    });
+    _wireInbox(host);
+    _updateInbStore(all);
     updateInboxBadge();
   }).catch(function(err){
     _mdb=null;
