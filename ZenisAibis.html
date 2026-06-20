@@ -1785,7 +1785,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.11";
+var APP_VERSION = "v8.12";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -11739,7 +11739,7 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   .ibtn.dn{background:rgba(197,48,48,.1);border-color:rgba(197,48,48,.25);color:#c53030}
   .ibtn.ok{background:#38a169;border-color:#38a169;color:#fff}
   .iacts3{display:flex;gap:6px;flex-wrap:nowrap;width:100%}
-  .iacts3 .ibtn{flex:1 1 0;min-width:0;white-space:nowrap;padding:7px 6px;text-align:center;overflow:hidden;text-overflow:ellipsis}
+  .iacts3 .ibtn{flex:0 1 auto;min-width:0;white-space:nowrap;padding:7px 10px;overflow:visible;text-overflow:clip}
   .iacts3 .ibtn.dn{flex:0 0 auto;padding:7px 10px}
   .ibtn.big{width:100%;padding:13px;font-size:14px;border-radius:12px}
   .irow2{display:flex;gap:10px;padding:10px;border-radius:12px;background:#fff;border:1px solid #e2e8f0;margin-bottom:9px;align-items:center}
@@ -11958,7 +11958,7 @@ function _inrow(s){
   else { acts='<button class="ibtn pri" data-act="link" data-id="'+e(s.id)+'">🔗 紐付け</button><button class="ibtn dn" data-act="del" data-id="'+e(s.id)+'">🗑</button>'; }
   return '<div class="irow">'+
     '<div class="ith" data-act="view" data-id="'+e(s.id)+'">'+(thumb?'<img src="'+thumb+'">':'')+'<span class="ithn">'+ph.length+'枚</span></div>'+
-    '<div class="ibd"><div class="iadr">'+nm+(s.sent?' <span class="ibadge sent">送信済</span>':'')+'</div>'+
+    '<div class="ibd"><div class="iadr">'+nm+(s.sent?' <span class="ibadge sent">書き出し済</span>':'')+'</div>'+
     '<div class="imeta">📍 '+addr+' ・ '+_fmtWhen(s.ts)+(s.note?' ・ '+e(s.note):"")+'</div>'+
     '<div class="iacts">'+acts+'</div></div></div>';
 }
@@ -11978,7 +11978,7 @@ function _inrow2(s, isUnlinked){
   var ph=Array.isArray(s.photos)?s.photos:[];
   var addr=s.addr?e(s.addr+(s.banchi?(" "+s.banchi):"")):(isUnlinked?"位置情報なし":"住所未取得");
   var thumb=_inboxThumb(s);
-  var sent=s.sent?' <span class="ibadge sent">送信済</span>':"";
+  var sent=s.sent?' <span class="ibadge sent">書き出し済</span>':"";
   var thn=ph.length?('<span class="ithn">'+ph.length+'枚</span>'):"";
   var th='<div class="ith" data-act="view" data-id="'+e(s.id)+'">'+(thumb?'<img src="'+thumb+'">':'<span class="cps-noimg" style="display:flex;align-items:center;justify-content:center;height:100%">📷</span>')+thn+'</div>';
   if(isUnlinked){
@@ -11990,7 +11990,7 @@ function _inrow2(s, isUnlinked){
     var acts='';
     if(matchId) acts+='<button class="ibtn pri" data-act="linkmatch" data-id="'+e(s.id)+'" data-cardid="'+e(matchId)+'">🔗 '+e(snapName)+'様に紐付け</button>';
     acts+='<div class="iacts3">';
-    acts+='<button class="ibtn'+(matchId?'':' pri')+'" data-act="link" data-id="'+e(s.id)+'">🔗 紐付け先</button>';
+    acts+='<button class="ibtn'+(matchId?'':' pri')+'" data-act="link" data-id="'+e(s.id)+'">🔗 紐付け</button>';
     acts+='<button class="ibtn" style="background:#ebf8ff;border-color:#90cdf4;color:#2b6cb0" data-act="seed" data-id="'+e(s.id)+'">➕ 新規カード</button>';
     acts+='<button class="ibtn dn" data-act="del" data-id="'+e(s.id)+'">🗑</button>';
     acts+='</div>';
@@ -12000,7 +12000,7 @@ function _inrow2(s, isUnlinked){
   }
   return '<div class="irow2">'+th+'<div class="ibd"><div class="iadr">'+addr+sent+'</div>'+
     '<div class="imeta">🔗 '+e(_cardName(s.cardId))+' ・ '+_fmtWhen(s.ts)+(s.note?" ・ "+e(s.note):"")+'</div>'+
-    '<div class="iacts"><button class="ibtn" data-act="relink" data-id="'+e(s.id)+'">付け替え</button><button class="ibtn" data-act="unlink" data-id="'+e(s.id)+'">↩ インボックスへ戻す</button><button class="ibtn dn" data-act="del" data-id="'+e(s.id)+'">🗑</button></div></div></div>';
+    '<div class="iacts"><button class="ibtn" data-act="unlink" data-id="'+e(s.id)+'">↩ インボックスへ</button><button class="ibtn dn" data-act="del" data-id="'+e(s.id)+'">🗑</button></div></div></div>';
 }
 function _wireInbox(host){
   host.querySelectorAll("[data-act]").forEach(function(el){
@@ -12088,7 +12088,7 @@ function inboxSendToPC(){
     var linkedUnsent=all.filter(function(s){return s.cardId&&s.cardId!==MEDIA_INBOX&&!s.sent;});
     var unlinkedSel=all.filter(function(s){return (!s.cardId||s.cardId===MEDIA_INBOX)&&_inbSel[s.id];});
     var targets=linkedUnsent.concat(unlinkedSel);
-    if(!targets.length){ toast("送信するデータがありません（未紐付けは✓で選択）"); return; }
+    if(!targets.length){ toast("書き出すデータがありません（未紐付けは✓で選択）"); return; }
     toast("データをまとめています…");
     _buildPhotoBundle(targets).then(function(bundle){
       var file=new File([JSON.stringify(bundle)],"aibis_photos_"+_inbStamp()+".json",{type:"application/json"});
@@ -12142,8 +12142,8 @@ function renderInboxBody(){
     var linkedUnsent=linked.filter(function(s){return !s.sent;}).length;
     var selCount=unlinked.filter(function(s){return _inbSel[s.id];}).length;
     if(isMob){
-      html+='<div class="isend"><button class="ibtn pri big" onclick="inboxSendToPC()">📤 PCへ送る（'+(linkedUnsent+selCount)+'件）</button></div>';
-      html+='<div class="ihint">📤 紐付け済みは自動送信／未紐付けは✓選択分のみ送信。</div>';
+      html+='<div class="isend"><button class="ibtn pri big" onclick="inboxSendToPC()">📤 PCへ書き出す（'+(linkedUnsent+selCount)+'件）</button></div>';
+      html+='<div class="ihint">📤 紐付け済みは自動で書き出し／未紐付けは✓選択分のみ。</div>';
     }
     if(unlinked.length){
       html+='<div class="isec2">未紐付け（'+unlinked.length+'）<span class="seltools"><button onclick="inboxSelAll()">☑ 全選択</button><button onclick="inboxSelNone()">解除</button></span></div>';
@@ -12184,8 +12184,8 @@ function _delSet(id){ mGet(id).then(function(s){ if(!s) return;
     if(typeof aibisConfirm==="function") aibisConfirm(m2,hard,"完全削除","やめる"); else if(confirm("完全に削除しますか？")) hard(); };
   var msg='「'+e(_cardName(s.cardId))+'」に紐付いた写真データです。<br>どうしますか？'
     +'<div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">'
-    +'<button class="zfa-ok" style="background:#2c5282" onclick="_dsBack()">↩ カードから外してインボックスへ戻す</button>'
-    +'<button class="zfa-ok" style="background:#e53e3e" onclick="_dsHard()">🗑 写真データを完全削除</button>'
+    +'<button class="zfa-ok" style="background:#2c5282" onclick="_dsBack()">↩ インボックスへ戻す</button>'
+    +'<button class="zfa-ok" style="background:#e53e3e" onclick="_dsHard()">🗑 写真を完全削除</button>'
     +'<button class="zfa-ok" style="background:#e2e8f0;color:#2d3748" onclick="closeAibisAlert()">キャンセル</button></div>';
   if(window.aibisAlert) aibisAlert(msg); else { if(confirm("OK=外す / キャンセル=完全削除")) back(); else hard(); }
 }); }
