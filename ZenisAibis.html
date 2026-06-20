@@ -1786,7 +1786,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.02";
+var APP_VERSION = "v8.03";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -11822,7 +11822,8 @@ function mNormalize(rec){ if(!rec) return rec; if(Array.isArray(rec.photos)) ret
   if(rec.sent===undefined)rec.sent=false; if(rec.banchi===undefined)rec.banchi=""; return rec; }
 function _mediaPing(){ try{ localStorage.setItem("aibis_media_ping", String(Date.now())); }catch(e){} }
 // 毎回まっさらな接続を開いて1操作だけ実行し閉じる（古い接続を掴んで固まるのを根絶）。タイムアウト付き。
-function _mediaRun(mode, fn, ms){ return new Promise(function(res,rej){
+var _mediaChain=Promise.resolve();
+function _mediaRunRaw(mode, fn, ms){ return new Promise(function(res,rej){
   var done=false, db=null;
   var to=setTimeout(function(){ if(done) return; done=true; try{ if(db) db.close(); }catch(e){} rej(new Error("DBタイムアウト")); }, ms||5000);
   var r; try{ r=indexedDB.open(MEDIA_DB,1); }catch(e){ clearTimeout(to); done=true; rej(e); return; }
@@ -11841,6 +11842,7 @@ function _mediaRun(mode, fn, ms){ return new Promise(function(res,rej){
     }catch(e){ if(done) return; done=true; clearTimeout(to); try{ db.close(); }catch(e){} rej(e); }
   };
 }); }
+function _mediaRun(mode,fn,ms){ var run=function(){ return _mediaRunRaw(mode,fn,ms); }; var p=_mediaChain.then(run,run); _mediaChain=p.then(function(){},function(){}); return p; }
 function mGet(id){ return _mediaRun("readonly", function(s){ return s.get(id); }, 5000).then(function(v){ return mNormalize(v); }); }
 function mPut(rec){ return _mediaRun("readwrite", function(s){ return s.put(rec); }, 6000).then(function(){ _mediaPing(); }); }
 function mDel(id){ return _mediaRun("readwrite", function(s){ return s.delete(id); }, 6000).then(function(){ _mediaPing(); }); }
@@ -12086,7 +12088,7 @@ function renderInboxBody(){
     _inbUnlinkedIds=unlinked.map(function(s){return s.id;});
     var ti=document.getElementById("inboxTitle"); if(ti) ti.textContent=_inboxAttach?("📥 "+_cardName(_inboxAttach)+" に追加"):("📥 インボックス（未紐付 "+unlinked.length+"）");
     if(!host) return;
-    if(!all.length){ host.innerHTML='<div class="iempty">写真データはありません。<br>「📷 カメラ」で撮影するか、一覧の「📥 読込」でJSONを取り込めます。</div>'; updateInboxBadge(); return; }
+    if(!all.length){ host.innerHTML='<div class="iempty">写真データはありません。<br>「📷 カメラ」で撮影するか、一覧の「📥 読込」でJSONを取り込めます。</div>'; _applyInboxBadge(all); return; }
     // 送信選択の整合（未送信の未紐付けは既定チェック）
     var uids={}; unlinked.forEach(function(s){ uids[s.id]=1; });
     Object.keys(_inbSel).forEach(function(id){ if(!uids[id]) delete _inbSel[id]; });
@@ -12097,7 +12099,7 @@ function renderInboxBody(){
       html+='<div class="isend"><button class="ibtn pri big" onclick="closeInbox()">✓ 完了して「'+e(_cardName(_inboxAttach))+'」へ戻る</button></div>';
       html+='<div class="ihint">このカードに紐付けたい写真の「このカードに紐付け」を押してください（複数OK）。押すたびにカードの計画地写真へ即反映します。</div>';
       html+=unlinked.concat(linked).map(_inrowSafe).join("");
-      host.innerHTML=html; _wireInbox(host); updateInboxBadge(); return;
+      host.innerHTML=html; _wireInbox(host); _applyInboxBadge(all); return;
     }
     html+='<div style="font-size:11.5px;color:#94a3b8;text-align:center;padding:2px 0 10px;line-height:1.5">📷 カメラも本体も、写真は同じこの箱に入ります。ここで紐付け → 📤 でPCへ。</div>';
     var linkedUnsent=linked.filter(function(s){return !s.sent;}).length;
@@ -12118,7 +12120,7 @@ function renderInboxBody(){
     host.innerHTML=html;
     _wireInbox(host);
     _updateInbStore(all);
-    updateInboxBadge();
+    _applyInboxBadge(all);
   }).catch(function(err){
     _mdb=null;
     if(host) host.innerHTML='<div class="iempty">読み込みに時間がかかっています（接続を作り直します）。<br><br><button class="ibtn pri" onclick="renderInboxBody()">🔄 再読み込み</button><br><br><span style="font-size:11px;color:#c53030">'+e(String((err&&err.message)||err))+'</span></div>';
@@ -12223,15 +12225,15 @@ function renderCardPhotos(cardId){
 window.renderCardPhotos=renderCardPhotos;
 
 /* ---- バッジ ---- */
-function updateInboxBadge(){ mAll().then(function(all){
-  var arr=all||[];
+function _applyInboxBadge(arr){
+  arr=arr||[];
   var n=arr.filter(function(s){return !s.cardId||s.cardId===MEDIA_INBOX;}).length;
   var b=document.getElementById("inbBadgePC"); if(b){ b.style.display=n?"inline-block":"none"; b.textContent=n; }
   var bm=document.getElementById("inbBadgeMob"); if(bm){ bm.style.display=n?"inline-block":"none"; bm.textContent=n; }
   var ml=document.getElementById("inboxBtnMobLabel"); if(ml){ ml.textContent=n?("（"+n+"）"):""; }
-  // 計画地写真の枚数マップ（カードID→紐付け済みデータ数）をlocalStorageへ。ジョブ「現地」軸が同期的に参照する。
   try{ var m={}; arr.forEach(function(s){ if(s.cardId && s.cardId!==MEDIA_INBOX){ m[s.cardId]=(m[s.cardId]||0)+1; } }); localStorage.setItem("aibis_plan_photo_counts_v1", JSON.stringify(m)); }catch(_e){}
-}).catch(function(){ _mdb=null; }); }
+}
+function updateInboxBadge(){ mAll().then(function(all){ _applyInboxBadge(all); }).catch(function(){ _mdb=null; }); }
 window.openInbox=openInbox; window.openInboxForCard=openInboxForCard; window.closeInbox=closeInbox;
 window.closeInboxPick=closeInboxPick; window.renderInboxPickList=renderInboxPickList;
 window.openInboxPhoto=openInboxPhoto; window.inboxPhotoStep=inboxPhotoStep; window.closeInboxPhoto=closeInboxPhoto;
