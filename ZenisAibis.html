@@ -1776,7 +1776,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.97";
+var APP_VERSION = "v7.98";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -11875,13 +11875,16 @@ function importPhotoBundle(bundle){
       var photos=[];
       for(var j=0;j<(s.photos||[]).length;j++){
         var p=s.photos[j], blob=null, thumb="";
-        try{ blob=await (await fetch(p.full)).blob(); }catch(e){}
-        try{ thumb=await _thumbFromDataURL(p.full); }catch(e){}
-        photos.push({pid:p.pid||("p_"+Date.now()+"_"+j), full:blob, thumb:thumb, w:p.w, h:p.h, size:p.size});
+        var src=(typeof p.full==="string"&&p.full)?p.full:((typeof p.thumb==="string"&&p.thumb)?p.thumb:"");
+        try{ if(src) blob=await (await fetch(src)).blob(); }catch(e){}
+        thumb=(typeof p.thumb==="string"&&p.thumb)?p.thumb:"";
+        if(!thumb && src){ try{ thumb=await _thumbFromDataURL(src); }catch(e){} }
+        photos.push({pid:p.pid||("p_"+Date.now()+"_"+j), full:blob||src, thumb:thumb||src, w:p.w, h:p.h, size:p.size});
       }
       var cardId=(s.cardId&&s.cardId!==MEDIA_INBOX)?s.cardId:MEDIA_INBOX;
       var rec={ id:s.id||("s_"+Date.now()+"_"+i), cardId:cardId, ts:s.ts||Date.now(), addrType:"plan",
-        lat:s.lat, lng:s.lng, acc:s.acc, addr:s.addr||"", addrPending:false, banchi:s.banchi||"", note:s.note||"", sent:false, photos:photos };
+        lat:s.lat, lng:s.lng, acc:s.acc, addr:s.addr||"", addrPending:false, banchi:s.banchi||"", note:s.note||"", sent:false,
+        cardName:s.cardName||"", homeAddr:s.homeAddr||"", planAddr:s.planAddr||(s.addr||""), photos:photos };
       try{ await mPut(rec); if(cardId===MEDIA_INBOX) unlinkedN++; else linkedN++; }catch(e){}
     }
     try{ updateInboxBadge(); }catch(e){}
@@ -11983,22 +11986,31 @@ function _updateInbStore(all){
   var mb=bytes/1048576;
   el.textContent="使用容量 "+(mb<0.1?"<0.1":(mb<10?mb.toFixed(1):Math.round(mb)))+"MB / 上限目安 10.0GB ・ 写真"+n+"枚";
 }
-function _buildPhotoBundle(targets){ return (async function(){
+function _cardSnap(cardId){
+  if(!cardId||cardId===MEDIA_INBOX) return {name:"",home:"",plan:""};
+  try{
+    var arr=(typeof cards!=="undefined"&&cards&&cards.length)?cards:JSON.parse(localStorage.getItem('prospect_cards_v1')||'[]');
+    for(var i=0;i<arr.length;i++){ if(arr[i] && String(arr[i].id)===String(cardId)) return {name:arr[i].name||"",home:arr[i].address||"",plan:arr[i].plan_address||""}; }
+  }catch(e){}
+  return {name:(typeof _cardName==="function"?_cardName(cardId):""),home:"",plan:""};
+}
+function _buildPhotoBundle(targets){
   var sets=[];
   for(var i=0;i<targets.length;i++){
     var s=targets[i], photos=[];
     for(var j=0;j<(s.photos||[]).length;j++){
-      var p=s.photos[j], durl="";
-      if(typeof p.full==="string") durl=p.full;
-      else if(p.full instanceof Blob){ try{ durl=await _blobToDataURL(p.full); }catch(e){ durl=p.thumb||""; } }
-      else if(p.thumb) durl=p.thumb;
-      photos.push({pid:p.pid||("p_"+i+"_"+j), full:durl, w:p.w, h:p.h, size:p.size});
+      var p=s.photos[j];
+      var th=(typeof p.thumb==="string"&&p.thumb)?p.thumb:(typeof p.full==="string"?p.full:"");
+      photos.push({pid:p.pid||("p_"+i+"_"+j), thumb:th, w:p.w, h:p.h});
     }
     var linked=(s.cardId&&s.cardId!==MEDIA_INBOX);
-    sets.push({id:s.id, cardId:linked?s.cardId:MEDIA_INBOX, cardName:linked?_cardName(s.cardId):"", ts:s.ts, lat:s.lat, lng:s.lng, acc:s.acc, addr:s.addr||"", banchi:s.banchi||"", note:s.note||"", photos:photos});
+    var snap=_cardSnap(linked?s.cardId:"");
+    sets.push({ id:s.id, cardId:linked?s.cardId:MEDIA_INBOX,
+      cardName:snap.name||(linked?_cardName(s.cardId):""), homeAddr:snap.home||"", planAddr:snap.plan||s.addr||"",
+      ts:s.ts, lat:s.lat, lng:s.lng, acc:s.acc, addr:s.addr||"", banchi:s.banchi||"", note:s.note||"", photos:photos });
   }
-  return {type:"aibis_photos", v:1, exported:Date.now(), sender:(typeof uName!=="undefined"?uName:""), email:_selfEmail(), sets:sets};
-})(); }
+  return Promise.resolve({type:"aibis_photos", v:2, mode:"thumb", exported:Date.now(), sender:(typeof uName!=="undefined"?uName:""), email:_selfEmail(), sets:sets});
+}
 function _inbDl(file){ try{ var url=URL.createObjectURL(file); var a=document.createElement("a"); a.href=url; a.download=file.name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){URL.revokeObjectURL(url);},4000); }catch(e){ toast("書き出しに失敗しました"); } }
 function inboxSendToPC(){
   mAll().then(function(all){

@@ -401,7 +401,7 @@
    ※ prospect_cards_v1 には書き込まない（新規カード作成・PC連携は本体側）
    データ(set): {id,cardId,ts,addrType:'plan',lat,lng,acc,addr,addrPending,banchi,note,sent,photos:[{pid,full(Blob),thumb,w,h,size}]}
    ========================================================= */
-const APP_VERSION = "cam-v1.34";
+const APP_VERSION = "cam-v1.35";
 
 /* ===== PWA：単一ファイルでインストール可能化（外部ファイル不要） ===== */
 function _pwaIcon(size,maskable){
@@ -977,14 +977,21 @@ $("cfgSave").addEventListener("click",()=>{
 /* ---------- PCへ送る（共有/ダウンロード） ---------- */
 function blobToDataURL(blob){ return new Promise((res,rej)=>{ if(!blob){ res(""); return; } const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(blob); }); }
 function stamp(){ const d=new Date(),p=n=>String(n).padStart(2,"0"); return ""+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+"_"+p(d.getHours())+p(d.getMinutes()); }
+function camSnap(id){
+  if(!id||id===INBOX) return {name:"",home:"",plan:""};
+  const c=findCard(id); if(!c) return {name:(typeof cardLabel==="function"?cardLabel(id):""),home:"",plan:""};
+  return {name:c.name||"",home:c.address||"",plan:c.plan_address||""};
+}
 async function buildBundle(sets){
   const out=[];
   for(const s of sets){
     const photos=[];
-    for(const p of (s.photos||[])){ let durl=""; try{ durl=await blobToDataURL(p.full); }catch(e){} photos.push({pid:p.pid, full:durl, w:p.w, h:p.h, size:p.size}); }
-    out.push({ id:s.id, cardId:s.cardId, cardName:(s.cardId&&s.cardId!==INBOX)?cardLabel(s.cardId):"", ts:s.ts, lat:s.lat, lng:s.lng, acc:s.acc, addr:s.addr||"", banchi:s.banchi||"", note:s.note||"", photos });
+    for(const p of (s.photos||[])){ const th=(typeof p.thumb==="string"&&p.thumb)?p.thumb:(typeof p.full==="string"?p.full:""); photos.push({pid:p.pid, thumb:th, w:p.w, h:p.h}); }
+    const linked=(s.cardId&&s.cardId!==INBOX);
+    const snap=camSnap(linked?s.cardId:"");
+    out.push({ id:s.id, cardId:linked?s.cardId:INBOX, cardName:snap.name||(linked?cardLabel(s.cardId):""), homeAddr:snap.home||"", planAddr:snap.plan||s.addr||"", ts:s.ts, lat:s.lat, lng:s.lng, acc:s.acc, addr:s.addr||"", banchi:s.banchi||"", note:s.note||"", photos });
   }
-  return { type:"aibis_photos", v:1, exported:Date.now(), sender:(loadCfg().name||""), email:cfgEmail(), sets:out };
+  return { type:"aibis_photos", v:2, mode:"thumb", exported:Date.now(), sender:(loadCfg().name||""), email:cfgEmail(), sets:out };
 }
 async function sendInbox(){
   const all=await idbAll();
