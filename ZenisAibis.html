@@ -1785,7 +1785,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.23";
+var APP_VERSION = "v8.24";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -11737,10 +11737,10 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   .iacts{display:flex;gap:6px;flex-wrap:wrap}
   .ibtn{border:1px solid #cbd5e0;background:#fff;color:#2d3748;border-radius:8px;padding:7px 11px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer}
   .ibtn.pri{background:#2c5282;border-color:#2c5282;color:#fff}
-  .ibtn.dn{background:rgba(197,48,48,.1);border-color:rgba(197,48,48,.25);color:#c53030}
+  .ibtn.dn{background:rgba(197,48,48,.1);border-color:rgba(197,48,48,.25);color:#c53030;font-size:15px}
   .ibtn.ok{background:#38a169;border-color:#38a169;color:#fff}
   .ibtn.un{background:#718096;border-color:#718096;color:#fff}
-  .ibtn.ret{background:rgba(90,103,216,.10);border-color:rgba(90,103,216,.32);color:#5a67d8;padding:7px 12px;font-size:15px}
+  .ibtn.ret{background:rgba(90,103,216,.10);border-color:rgba(90,103,216,.32);color:#5a67d8;padding:7px 10px;font-size:15px}
   #inboxBody .iacts-lr{display:flex;align-items:center;justify-content:space-between;width:100%;gap:8px}
   .iacts3{display:flex;gap:6px;flex-wrap:nowrap;width:100%}
   .iacts3 .ibtn{flex:0 1 auto;min-width:0;white-space:nowrap;padding:7px 10px;overflow:visible;text-overflow:clip}
