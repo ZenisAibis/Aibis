@@ -1785,7 +1785,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.07";
+var APP_VERSION = "v8.08";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -11790,7 +11790,10 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   .cps-hdr-btn{flex-shrink:0;width:42px;height:38px;border:1px solid #cbd5e0;border-radius:8px;background:#fff;cursor:pointer;font-size:17px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0}
   .cps-hdr-btn:active{background:#edf2f7}
   body:not(.is-mob) .cps-hdr-cam{display:none}
-  #cardPhotoBody .cps-pager{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:8px}
+  #cardPhotoBody .cps-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px}
+  #cardPhotoBody .cps-pager{display:flex;align-items:center;gap:10px}
+  #cardPhotoBody .cps-date{font-size:11px;color:#718096;text-align:right;white-space:nowrap}
+  #cardPhotoBody .cps-slide{will-change:transform,opacity}
   #cardPhotoBody .cps-nav{width:44px;height:36px;border:1px solid #cbd5e0;border-radius:8px;background:#fff;cursor:pointer;font-size:15px;color:#2c5282;display:flex;align-items:center;justify-content:center;padding:0}
   #cardPhotoBody .cps-nav:active{background:#edf2f7}
   #cardPhotoBody .cps-pg{font-size:13px;font-weight:700;color:#4a5568;min-width:60px;text-align:center}
@@ -12199,7 +12202,7 @@ function closeInboxPhoto(){ document.getElementById("inboxViewer").style.display
 
 /* ---- カード内の計画地写真表示（表示専用） ---- */
 var _cpSets=[], _cpIdx=0, _cpCard=null;
-function _cpRender(){
+function _cpRender(dir){
   var body=document.getElementById("cardPhotoBody"); if(!body) return;
   var esc=function(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
   var fmtW=function(ts){ try{ var d=new Date(ts); if(isNaN(d.getTime())) return ""; var p=function(n){return ("0"+n).slice(-2);}; return d.getFullYear()+"/"+p(d.getMonth()+1)+"/"+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes()); }catch(_e){ return ""; } };
@@ -12213,15 +12216,18 @@ function _cpRender(){
   var ph=(s&&s.photos&&s.photos.length)?s.photos:[];
   var cells="";
   for(var i=0;i<4;i++){ var p=ph[i]; if(p){ var src=(p&&p.thumb)||(p&&typeof p.full==="string"?p.full:""); cells+='<div class="cps-th" data-sid="'+esc((s&&s.id)||"")+'" data-idx="'+i+'">'+(src?'<img src="'+src+'" alt="">':'<span class="cps-noimg">📷</span>')+'</div>'; } else { cells+='<div class="cps-th empty"><span class="cps-noimg">＋</span></div>'; } }
-  var meta=[]; if(s.addr) meta.push(esc(s.addr+(s.banchi?(" "+s.banchi):""))); var w=fmtW(s.ts); if(w) meta.push(w); if(s.note) meta.push(esc(s.note));
-  var pager=sets.length>1?('<div class="cps-pager"><button type="button" class="cps-nav" data-cp="prev">◀</button><span class="cps-pg">'+(_cpIdx+1)+' / '+sets.length+'</span><button type="button" class="cps-nav" data-cp="next">▶</button></div>'):'';
-  body.innerHTML='<div class="cps-stage">'+pager+'<div class="cps-grid fix4">'+cells+'</div><div class="cps-meta">'+(meta.join(" ・ ")||"計画地写真")+'</div></div>';
+  var info=[]; if(s.addr) info.push(esc(s.addr+(s.banchi?(" "+s.banchi):""))); if(s.note) info.push(esc(s.note));
+  var dateTxt=esc(fmtW(s.ts));
+  var pager=sets.length>1?('<div class="cps-pager"><button type="button" class="cps-nav" data-cp="prev">◀</button><span class="cps-pg">'+(_cpIdx+1)+' / '+sets.length+'</span><button type="button" class="cps-nav" data-cp="next">▶</button></div>'):'<span></span>';
+  var metaLine=info.length?('<div class="cps-meta">'+info.join(" ・ ")+'</div>'):'';
+  body.innerHTML='<div class="cps-stage"><div class="cps-slide"><div class="cps-grid fix4">'+cells+'</div>'+metaLine+'</div><div class="cps-bottom">'+pager+'<div class="cps-date">'+dateTxt+'</div></div></div>';
   body.querySelectorAll(".cps-th[data-sid]").forEach(function(el){ el.addEventListener("click",function(){ openInboxPhoto(el.getAttribute("data-sid"), parseInt(el.getAttribute("data-idx"),10)||0); }); });
   body.querySelectorAll("[data-cp]").forEach(function(el){ el.addEventListener("click",function(){ cardPhotoStep(el.getAttribute("data-cp")==="next"?1:-1); }); });
   var stage=body.querySelector(".cps-stage");
   if(stage && sets.length>1){ var x0=null; stage.addEventListener("touchstart",function(ev){ x0=ev.touches[0].clientX; },{passive:true}); stage.addEventListener("touchend",function(ev){ if(x0==null) return; var dx=ev.changedTouches[0].clientX-x0; x0=null; if(Math.abs(dx)>40) cardPhotoStep(dx<0?1:-1); },{passive:true}); }
+  if(dir){ var sl=body.querySelector(".cps-slide"); if(sl){ sl.style.transform="translateX("+(dir>0?"28px":"-28px")+")"; sl.style.opacity="0"; requestAnimationFrame(function(){ requestAnimationFrame(function(){ sl.style.transition="transform .22s ease, opacity .22s ease"; sl.style.transform="translateX(0)"; sl.style.opacity="1"; }); }); } }
 }
-function cardPhotoStep(d){ if(!_cpSets||!_cpSets.length) return; _cpIdx=((_cpIdx+d)%_cpSets.length+_cpSets.length)%_cpSets.length; _cpRender(); }
+function cardPhotoStep(d){ if(!_cpSets||!_cpSets.length) return; _cpIdx=((_cpIdx+d)%_cpSets.length+_cpSets.length)%_cpSets.length; _cpRender(d); }
 window.cardPhotoStep=cardPhotoStep;
 function renderCardPhotos(cardId){
   var sec=document.getElementById("cardPhotoSec"), body=document.getElementById("cardPhotoBody"), cnt=document.getElementById("cardPhotoCount");
