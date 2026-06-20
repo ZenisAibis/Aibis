@@ -83,7 +83,6 @@ body{font-family:-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-seri
 #listHeaderMob{display:none}
 body.is-mob #listHeaderPC{display:none!important}
 body.is-mob #listHeaderMob{display:block!important}
-body.is-mob #doukouBtn{min-width:42px!important;padding:7px 3px!important;font-size:10px!important}
 body.is-mob #actCols{grid-template-columns:1fr!important}
 body.is-mob #houbunPills{flex-wrap:nowrap!important}
 body.is-mob #houbunPills .pbtn{flex:1 1 0;min-width:0;padding:8px 2px;font-size:12.5px;white-space:nowrap}
@@ -1786,7 +1785,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.04";
+var APP_VERSION = "v8.05";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -10054,7 +10053,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <div id="mikomiTop">
       <!-- 上段：氏名50%・ソーシャル25%・現状25% -->
       <div class="mk-row" style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:8px">
-        <div class="mk-name"><label>氏名 <span class="req">*</span></label><div style="display:flex;gap:6px;align-items:center"><input type="text" id="f_name" placeholder="お客様名" style="flex:1"><button type="button" id="doukouBtn" onclick="toggleDoukou()" style="flex-shrink:0;padding:8px 10px;border:2px solid #e2e8f0;border-radius:6px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;color:#718096;white-space:nowrap;min-height:38px;min-width:78px;text-align:center">単独</button><button type="button" id="cardInboxBtn" onclick="openInboxForCard()" title="インボックスから写真を選ぶ" style="flex-shrink:0;padding:8px 10px;border:2px solid #e2e8f0;border-radius:6px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:15px;min-height:38px">📥</button></div></div>
+        <div class="mk-name"><label>氏名 <span class="req">*</span></label><div style="display:flex;gap:6px;align-items:center"><input type="text" id="f_name" placeholder="お客様名" style="flex:1"><button type="button" id="doukouBtn" onclick="toggleDoukou()" style="flex-shrink:0;padding:8px 10px;border:2px solid #e2e8f0;border-radius:6px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;color:#718096;white-space:nowrap;min-height:38px;min-width:78px;text-align:center">単独</button></div></div>
         <div class="mk-social">
           <label>ソーシャル</label>
           <select id="f_social">
@@ -10114,7 +10113,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
     </div>
     <!-- 📷 計画地写真（アイビスカメラ連携・表示専用） -->
     <div class="sec no-print" id="cardPhotoSec" style="display:none">
-      <div class="stitle">📷 計画地写真 <span id="cardPhotoCount" style="font-weight:600;color:#718096;font-size:12px"></span></div>
+      <div class="stitle" style="display:flex;align-items:center;gap:8px"><span style="flex:1">📷 計画地写真 <span id="cardPhotoCount" style="font-weight:600;color:#718096;font-size:12px"></span></span><button type="button" id="cardCamBtn" class="cps-hdr-btn cps-hdr-cam" onclick="cardOpenCam(curId)" title="カメラで撮影（このカードに紐付く）">📷</button><button type="button" id="cardInbBtn" class="cps-hdr-btn" onclick="openInboxForCard()" title="インボックスから写真を選ぶ・管理">📥</button></div>
       <div id="cardPhotoBody"></div>
     </div>
     <!-- 購買ステージ + 資産背景 -->
@@ -11781,6 +11780,9 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   #cardPhotoBody .cps-empty{text-align:center;color:#a0aec0;font-size:12.5px;padding:12px 8px;line-height:1.9}
   #cardPhotoBody .cps-add2{border:1px solid #cbd5e0;background:#fff;color:#2c5282;border-radius:8px;padding:9px 14px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer}
   #cardPhotoBody .cps-add2{width:100%;margin-top:2px}
+  .cps-hdr-btn{flex-shrink:0;width:42px;height:38px;border:1px solid #cbd5e0;border-radius:8px;background:#fff;cursor:pointer;font-size:17px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0}
+  .cps-hdr-btn:active{background:#edf2f7}
+  body:not(.is-mob) .cps-hdr-cam{display:none}
   #cardPhotoBody .cps-load{color:#a0aec0;font-size:12px;padding:6px 2px}
   @media print{#inboxView,#inboxViewer,#inboxPick{display:none!important}}
   #qaCamBtn{display:none}
@@ -12199,7 +12201,7 @@ function renderCardPhotos(cardId){
       sets.sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
       var total=sets.reduce(function(n,s){ return n+((s.photos&&s.photos.length)||0); },0);
       if(cnt) cnt.textContent=sets.length?("（"+sets.length+"件 / 計"+total+"枚）"):"";
-      var btns=(isMob?'<button type="button" class="cps-add2" style="background:#0e4a45;color:#fff;border-color:#0e4a45;margin-bottom:6px" onclick="cardOpenCam(\''+esc(cardId)+'\')">📷 カメラで撮影（このカードに紐付く）</button>':'')+'<button type="button" class="cps-add2" onclick="openInboxForCard()">📥 インボックスから写真を選ぶ・管理</button>';
+      var btns='';
       var slot4=function(s){
         var ph=(s&&s.photos&&s.photos.length)?s.photos:[];
         var cells="";
