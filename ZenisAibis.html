@@ -494,6 +494,8 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
   #mikomiTop .mk-addr{grid-column:1/-1;order:6}
   #mikomiTop .mk-plan{grid-column:1/-1;order:7}
 }
+.addr-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.addr-acts{display:flex;gap:4px;flex:0 0 auto}
 .addr-row{display:flex;gap:4px;align-items:center;margin-top:4px}
 .ar-btn{flex:0 0 auto;width:36px;min-height:40px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;line-height:1;border:1px solid #cbd5e0;border-radius:8px;background:white;cursor:pointer;color:#4a5568;padding:0}
 .ar-btn:active{background:#edf2f7}
@@ -1765,7 +1767,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.31";
+var APP_VERSION = "v8.34";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -6423,11 +6425,16 @@ function copyAddrField(id){
       toast(ok?('📋 '+v):'コピーできませんでした');
     }catch(_e){ toast('コピーできませんでした'); }
   };
+  var done=false;
   try{
-    if(navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(v).then(function(){ toast('📋 '+v); }, fallback);
-    } else { fallback(); }
-  }catch(_e){ fallback(); }
+    var ta=document.createElement('textarea'); ta.value=v;
+    ta.style.position='fixed'; ta.style.top='0'; ta.style.left='-9999px';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    try{ done=document.execCommand('copy'); }catch(_e){}
+    document.body.removeChild(ta);
+  }catch(_e){}
+  try{ if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(v).then(function(){},function(){}); done=true; } }catch(_e){}
+  toast(done?('📋 '+v):'コピーできませんでした');
 }
 function closeMap(){ document.getElementById('mapModal').classList.remove('show'); document.getElementById('mapFrame').src=''; }
 
@@ -10087,23 +10094,25 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <!-- 下段：住所・計画地 + 地図ボタン -->
       <div class="mk-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px">
         <div class="mk-addr">
-          <label>住所（自宅）</label>
-          <div class="addr-row">
-            <button type="button" class="ar-btn mob-only" onclick="geoFill('f_addr')" title="現在地">📍</button>
-            <input type="text" id="f_addr" placeholder="例: 東京都江戸川区..." style="flex:1;min-width:0">
+          <div class="addr-head"><label>住所（自宅）</label><div class="addr-acts">
             <button type="button" class="ar-btn mob-only" onclick="qaTenkeyOpen('f_addr')" title="番地">🔢</button>
             <button type="button" class="ar-btn" onclick="planStreetView('f_addr')" title="ストリートビュー">🌐</button>
             <button type="button" class="ar-btn" onclick="copyAddrField('f_addr')" title="コピー">📋</button>
+          </div></div>
+          <div class="addr-row">
+            <button type="button" class="ar-btn mob-only" onclick="geoFill('f_addr')" title="現在地">📍</button>
+            <input type="text" id="f_addr" placeholder="例: 東京都江戸川区..." style="flex:1;min-width:0">
           </div>
         </div>
         <div class="mk-plan">
-          <label>計画地</label>
-          <div class="addr-row">
-            <button type="button" class="ar-btn mob-only" onclick="geoFill('f_plan')" title="現在地">📍</button>
-            <input type="text" id="f_plan" placeholder="計画地の住所" oninput="updatePlanSvBtn()" style="flex:1;min-width:0">
+          <div class="addr-head"><label>計画地</label><div class="addr-acts">
             <button type="button" class="ar-btn mob-only" onclick="qaTenkeyOpen('f_plan')" title="番地">🔢</button>
             <button type="button" class="ar-btn" onclick="planStreetView('f_plan')" title="ストリートビュー">🌐</button>
             <button type="button" class="ar-btn" onclick="copyAddrField('f_plan')" title="コピー">📋</button>
+          </div></div>
+          <div class="addr-row">
+            <button type="button" class="ar-btn mob-only" onclick="geoFill('f_plan')" title="現在地">📍</button>
+            <input type="text" id="f_plan" placeholder="計画地の住所" oninput="updatePlanSvBtn()" style="flex:1;min-width:0">
           </div>
         </div>
       </div>
