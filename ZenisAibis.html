@@ -1128,26 +1128,6 @@ body.is-mob .mob-menu{display:inline-block}
       <button onclick="qaSave(false)" style="width:100%;background:#38a169;color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer">💾 保存</button>
     </div>
   </div>
-  <!-- 🔢 番地入力テンキー -->
-  <div id="qaTenkeyOv" style="display:none;position:fixed;inset:0;background:rgba(13,21,38,0.55);z-index:9200;align-items:flex-end;justify-content:center" onclick="if(event.target===this)qaTenkeyClose()">
-    <div style="background:#fff;border-radius:16px 16px 0 0;max-width:420px;width:100%;padding:14px 16px 18px;box-shadow:0 -8px 30px rgba(0,0,0,0.3)">
-      <div style="font-size:13px;font-weight:700;color:#1a365d;margin-bottom:6px">番地を追加</div>
-      <div style="font-size:10.5px;color:#a0aec0">現在：</div>
-      <div id="qaTkCur" style="font-size:12px;color:#4a5568;font-weight:600;margin-bottom:6px;word-break:break-all"></div>
-      <div style="font-size:10.5px;color:#a0aec0">追加：</div>
-      <div id="qaTkBuf" style="font-size:18px;font-weight:800;color:#1a365d;border:1px solid #cbd5e0;border-radius:8px;padding:8px 10px;min-height:24px;margin-bottom:10px;letter-spacing:1px">&nbsp;</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
-        <button onclick="qaTkKey('7')" class="qa-tk">7</button><button onclick="qaTkKey('8')" class="qa-tk">8</button><button onclick="qaTkKey('9')" class="qa-tk">9</button>
-        <button onclick="qaTkKey('4')" class="qa-tk">4</button><button onclick="qaTkKey('5')" class="qa-tk">5</button><button onclick="qaTkKey('6')" class="qa-tk">6</button>
-        <button onclick="qaTkKey('1')" class="qa-tk">1</button><button onclick="qaTkKey('2')" class="qa-tk">2</button><button onclick="qaTkKey('3')" class="qa-tk">3</button>
-        <button onclick="qaTkKey('0')" class="qa-tk">0</button><button onclick="qaTkKey('-')" class="qa-tk">-</button><button onclick="qaTkKey('bs')" class="qa-tk">⌫</button>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 2fr;gap:6px;margin-top:6px">
-        <button onclick="qaTkKey('clr')" style="padding:12px;border:1px solid #cbd5e0;border-radius:8px;background:#fff5f5;color:#c53030;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer">クリア</button>
-        <button onclick="qaTkKey('ok')" style="padding:12px;border:none;border-radius:8px;background:#2c5282;color:#fff;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer">決定</button>
-      </div>
-    </div>
-  </div>
 
   <!-- 課分析パネル（管理職PC版のみ） -->
   <div id="analysisPanel" class="z-fullov" onclick="dashOverlayClick(event)" style="display:none;position:fixed;inset:0;overflow:hidden">
@@ -1785,7 +1765,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.30";
+var APP_VERSION = "v8.31";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -10003,6 +9983,26 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
 
 
 <!-- 編集 -->
+  <!-- 🔢 番地テンキー（body直下・全ビュー最前面） -->
+  <div id="qaTenkeyOv" style="display:none;position:fixed;inset:0;background:rgba(13,21,38,0.55);z-index:2147483600;align-items:flex-end;justify-content:center" onclick="if(event.target===this)qaTenkeyClose()">
+    <div style="background:#fff;border-radius:16px 16px 0 0;max-width:420px;width:100%;padding:14px 16px 18px;box-shadow:0 -8px 30px rgba(0,0,0,0.3)">
+      <div style="font-size:13px;font-weight:700;color:#1a365d;margin-bottom:6px">番地を追加</div>
+      <div style="font-size:10.5px;color:#a0aec0">現在：</div>
+      <div id="qaTkCur" style="font-size:12px;color:#4a5568;font-weight:600;margin-bottom:6px;word-break:break-all"></div>
+      <div style="font-size:10.5px;color:#a0aec0">追加：</div>
+      <div id="qaTkBuf" style="font-size:18px;font-weight:800;color:#1a365d;border:1px solid #cbd5e0;border-radius:8px;padding:8px 10px;min-height:24px;margin-bottom:10px;letter-spacing:1px">&nbsp;</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+        <button onclick="qaTkKey('7')" class="qa-tk">7</button><button onclick="qaTkKey('8')" class="qa-tk">8</button><button onclick="qaTkKey('9')" class="qa-tk">9</button>
+        <button onclick="qaTkKey('4')" class="qa-tk">4</button><button onclick="qaTkKey('5')" class="qa-tk">5</button><button onclick="qaTkKey('6')" class="qa-tk">6</button>
+        <button onclick="qaTkKey('1')" class="qa-tk">1</button><button onclick="qaTkKey('2')" class="qa-tk">2</button><button onclick="qaTkKey('3')" class="qa-tk">3</button>
+        <button onclick="qaTkKey('0')" class="qa-tk">0</button><button onclick="qaTkKey('-')" class="qa-tk">-</button><button onclick="qaTkKey('bs')" class="qa-tk">⌫</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 2fr;gap:6px;margin-top:6px">
+        <button onclick="qaTkKey('clr')" style="padding:12px;border:1px solid #cbd5e0;border-radius:8px;background:#fff5f5;color:#c53030;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer">クリア</button>
+        <button onclick="qaTkKey('ok')" style="padding:12px;border:none;border-radius:8px;background:#2c5282;color:#fff;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer">決定</button>
+      </div>
+    </div>
+  </div>
 <div id="editView" style="display:none;position:fixed;inset:0;background:white;z-index:100;overflow-y:auto">
   <header>
     <div class="ha" style="width:100%;display:flex;justify-content:space-between;align-items:center">
