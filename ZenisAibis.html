@@ -498,6 +498,7 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 .addr-row{display:flex;gap:4px;align-items:center;margin-top:4px}
 .ar-btn{flex:0 0 auto;width:36px;min-height:40px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;line-height:1;border:1px solid #cbd5e0;border-radius:8px;background:white;cursor:pointer;color:#4a5568;padding:0}
 .ar-btn:active{background:#edf2f7}
+body:not(.is-mob) .ar-btn.mob-only{display:none}
 .hand-toggle{width:100%;padding:9px 11px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px;font-family:inherit;background:white;min-height:40px;color:#2D3748;cursor:pointer;text-align:left}
 .hand-toggle:active{background:#edf2f7}
 @media(max-width:768px){.hand-toggle{font-size:16px;min-height:44px}}
@@ -1775,7 +1776,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.94";
+var APP_VERSION = "v7.95";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -6420,13 +6421,24 @@ function geoFill(id){
   });
 }
 function copyAddrField(id){
-  var v=(document.getElementById(id)?.value||'').trim();
+  var el=document.getElementById(id);
+  var v=((el&&el.value)||'').trim();
   if(!v){ toast('入力されていません'); return; }
-  navigator.clipboard.writeText(v).then(function(){ toast('📋 '+v); }).catch(function(){
-    var ta=document.createElement('textarea'); ta.value=v; document.body.appendChild(ta);
-    ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-    toast('📋 コピーしました');
-  });
+  var fallback=function(){
+    try{
+      var ta=document.createElement('textarea'); ta.value=v;
+      ta.style.position='fixed'; ta.style.top='0'; ta.style.left='-9999px';
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      var ok=false; try{ ok=document.execCommand('copy'); }catch(_e){}
+      document.body.removeChild(ta);
+      toast(ok?('📋 '+v):'コピーできませんでした');
+    }catch(_e){ toast('コピーできませんでした'); }
+  };
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(v).then(function(){ toast('📋 '+v); }, fallback);
+    } else { fallback(); }
+  }catch(_e){ fallback(); }
 }
 function copyPlanToClipboard(){
   var plan=(document.getElementById('f_plan')?.value||'').trim();
@@ -8938,7 +8950,7 @@ function _sbPaint(){
   +(function(){var jm=cards.filter(_judgeMissing);return jm.length?'<div style="font-size:11.5px;color:#c53030;font-weight:700;background:#fff5f5;border:1px solid #feb2b2;border-radius:6px;padding:5px 8px;margin:6px 0">\u26a0 ランク判定漏れ '+jm.length+'件：'+jm.slice(0,3).map(function(c){return e(c.name||'無名')+'様';}).join('・')+(jm.length>3?' 他':'')+'（判定は必須です）</div>':'';})()+'<div style="font-size:11.5px;color:#718096;margin:4px 0 8px">\u2b50が予定表の金枠に入る優先3客（タップで入れ替え可・最大3）。チェックで予定表入り、チップで今日のアクション。忙しい朝は「選ばずに予定表へ」でOK。</div>'
   +'<div style="font-weight:800;color:#b7791f;font-size:13px;margin:8px 0 2px">\ud83c\udfc6 推奨・優先3客（連想以上\u00d7B以上\u00d7訪問期日到来）</div>'
   +(window._sbPri.length?window._sbPri.map(function(o,ix){return _sbRowHTML(o,true,ix);}).join(''):'<div style="font-size:11px;color:#999;padding:6px 4px">該当なし</div>')
-  +'<div style="font-weight:800;color:#2f855a;font-size:13px;margin:14px 0 2px">\ud83d\udeb6 再訪候補9客（ペース超過・未接触・入力不足）</div>'
+  +'<div style="display:flex;align-items:center;justify-content:space-between;margin:14px 0 2px"><b style="font-weight:800;color:#2f855a;font-size:13px">\ud83d\udeb6 再訪候補9客（ペース超過・未接触・入力不足）</b><span style="flex-shrink:0;white-space:nowrap"><button onclick="zSbRevAll()" style="border:none;background:none;color:#2c5282;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;margin-left:8px">\u2611 全選択</button><button onclick="zSbRevNone()" style="border:none;background:none;color:#2c5282;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;margin-left:6px">解除</button></span></div>'
   +(window._sbRev.length?window._sbRev.map(function(o){return _sbRowHTML(o,false,0);}).join(''):'<div style="font-size:11px;color:#999;padding:6px 4px">該当なし</div>')
   +'<div style="display:flex;gap:10px;margin-top:16px">'
   +'<button onclick="zSbMake()" style="flex:2;background:#2c5282;color:#fff;border:none;border-radius:8px;padding:11px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit">\ud83d\udcc5 選んだ '+nSel+' 件で予定表を作る</button>'
@@ -8946,6 +8958,9 @@ function _sbPaint(){
   +'</div></div>';
 }
 function zSbToggle(sid){ window._sbSel[sid]=!window._sbSel[sid]; _sbPaint(); }
+function zSbRevAll(){ (window._sbRev||[]).forEach(function(o){ window._sbSel[o.sid]=true; }); _sbPaint(); }
+function zSbRevNone(){ (window._sbRev||[]).forEach(function(o){ window._sbSel[o.sid]=false; if(window._sbStar) delete window._sbStar[o.sid]; }); _sbPaint(); }
+window.zSbRevAll=zSbRevAll; window.zSbRevNone=zSbRevNone;
 function zSbAct(sid,a){
  var p=_planLoad(); if(p.sel[sid]===a) delete p.sel[sid]; else p.sel[sid]=a;
  try{ localStorage.setItem(PLNK,JSON.stringify(p)); }catch(_e){}
@@ -10065,9 +10080,9 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <div class="mk-addr">
           <label>住所（自宅）</label>
           <div class="addr-row">
-            <button type="button" class="ar-btn" onclick="geoFill('f_addr')" title="現在地">📍</button>
+            <button type="button" class="ar-btn mob-only" onclick="geoFill('f_addr')" title="現在地">📍</button>
             <input type="text" id="f_addr" placeholder="例: 東京都江戸川区..." style="flex:1;min-width:0">
-            <button type="button" class="ar-btn" onclick="qaTenkeyOpen('f_addr')" title="番地">🔢</button>
+            <button type="button" class="ar-btn mob-only" onclick="qaTenkeyOpen('f_addr')" title="番地">🔢</button>
             <button type="button" class="ar-btn" onclick="planStreetView('f_addr')" title="ストリートビュー">🌐</button>
             <button type="button" class="ar-btn" onclick="copyAddrField('f_addr')" title="コピー">📋</button>
           </div>
@@ -10075,9 +10090,9 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <div class="mk-plan">
           <label>計画地</label>
           <div class="addr-row">
-            <button type="button" class="ar-btn" onclick="geoFill('f_plan')" title="現在地">📍</button>
+            <button type="button" class="ar-btn mob-only" onclick="geoFill('f_plan')" title="現在地">📍</button>
             <input type="text" id="f_plan" placeholder="計画地の住所" oninput="updatePlanSvBtn()" style="flex:1;min-width:0">
-            <button type="button" class="ar-btn" onclick="qaTenkeyOpen('f_plan')" title="番地">🔢</button>
+            <button type="button" class="ar-btn mob-only" onclick="qaTenkeyOpen('f_plan')" title="番地">🔢</button>
             <button type="button" class="ar-btn" onclick="planStreetView('f_plan')" title="ストリートビュー">🌐</button>
             <button type="button" class="ar-btn" onclick="copyAddrField('f_plan')" title="コピー">📋</button>
           </div>
@@ -10224,11 +10239,12 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
             <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="路線価"><span>路線価</span></label>
             <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="エリアマーケ"><span>エリアマーケ</span></label>
             <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="アプローチブック"><span>APブック</span></label>
+            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="パンフレット"><span>パンフ</span></label>
             <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="会社案内"><span>会社案内</span></label>
             <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="リスク本"><span>リスク本</span></label>
             <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="チラシ系"><span>チラシ系</span></label>
           </div>
-          <div style="font-size:10px;color:#a0aec0;margin-top:3px">APブック＝アプローチブック</div>
+          <div style="font-size:10px;color:#a0aec0;margin-top:3px">APブック＝アプローチブック／パンフ＝パンフレット</div>
         </div>
         <div>
           <label style="font-size:11px">前フリ</label>
@@ -10237,10 +10253,11 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
             <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="セミナー"><span>セミナー</span></label>
             <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="物件案内"><span>物件案内</span></label>
             <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="見学会"><span>見学会</span></label>
-            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="ショールーム"><span>SR</span></label>
+            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="ショールーム"><span>本社・SR</span></label>
             <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="税理士同行"><span>税理士同行</span></label>
+            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="信託"><span>信託</span></label>
           </div>
-          <div style="font-size:10px;color:#a0aec0;margin-top:3px">SR＝ショールーム</div>
+          <div style="font-size:10px;color:#a0aec0;margin-top:3px">本社・SR＝本社ショールーム</div>
         </div>
       </div>
     </div>
@@ -11754,6 +11771,10 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   #cardPhotoBody .cps-grid.g3,#cardPhotoBody .cps-grid.g4{grid-template-columns:1fr 1fr}
   #cardPhotoBody .cps-th{position:relative;aspect-ratio:4/3;background:#edf2f7;border-radius:8px;overflow:hidden;cursor:pointer}
   #cardPhotoBody .cps-grid.g1 .cps-th{aspect-ratio:16/10}
+  #cardPhotoBody .cps-grid.fix4{grid-template-columns:1fr 1fr;gap:5px;max-width:300px}
+  #cardPhotoBody .cps-grid.fix4 .cps-th{aspect-ratio:4/3}
+  #cardPhotoBody .cps-th.empty{background:#f1f5f9;border:1px dashed #cbd5e0;cursor:default;display:flex;align-items:center;justify-content:center}
+  #cardPhotoBody .cps-th.empty .cps-noimg{color:#cbd5e0;font-size:22px}
   #cardPhotoBody .cps-th img{width:100%;height:100%;object-fit:cover;display:block}
   #cardPhotoBody .cps-th:active{opacity:.7}
   #cardPhotoBody .cps-noimg{display:flex;align-items:center;justify-content:center;height:100%;color:#a0aec0;font-size:20px}
@@ -12122,24 +12143,31 @@ function renderCardPhotos(cardId){
       sets.sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
       var total=sets.reduce(function(n,s){ return n+((s.photos&&s.photos.length)||0); },0);
       if(cnt) cnt.textContent=sets.length?("（"+sets.length+"件 / 計"+total+"枚）"):"";
+      var btns=(isMob?'<button type="button" class="cps-add2" style="background:#0e4a45;color:#fff;border-color:#0e4a45;margin-bottom:6px" onclick="cardOpenCam(\''+esc(cardId)+'\')">📷 カメラで撮影（このカードに紐付く）</button>':'')+'<button type="button" class="cps-add2" onclick="openInboxForCard()">📥 インボックスから写真を選ぶ・管理</button>';
+      var slot4=function(s){
+        var ph=(s&&s.photos&&s.photos.length)?s.photos:[];
+        var cells="";
+        for(var i=0;i<4;i++){
+          var p=ph[i];
+          if(p){
+            var src=(p&&p.thumb)||(p&&typeof p.full==="string"?p.full:"");
+            cells+='<div class="cps-th" data-sid="'+esc((s&&s.id)||"")+'" data-idx="'+i+'">'+(src?'<img src="'+src+'" alt="">':'<span class="cps-noimg">📷</span>')+'</div>';
+          } else {
+            cells+='<div class="cps-th empty"><span class="cps-noimg">＋</span></div>';
+          }
+        }
+        return '<div class="cps-grid fix4">'+cells+'</div>';
+      };
       if(!sets.length){
-        body.innerHTML='<div class="cps-empty">計画地写真はまだありません。'+(isMob?'<br><button type="button" class="cps-add" style="background:#0e4a45;color:#fff;border-color:#0e4a45" onclick="cardOpenCam(\''+esc(cardId)+'\')">📷 カメラで撮影</button>':'')+'<br><button type="button" class="cps-add" onclick="openInboxForCard()">📥 インボックスから選ぶ</button></div>';
-        return;
-      }
-      var html=sets.map(function(s){
-        var ph=(s.photos&&s.photos.length)?s.photos:[];
-        var g=Math.min(ph.length,4)||1;
-        var thumbs=ph.map(function(p,i){
-          var src=(p&&p.thumb)||(p&&typeof p.full==="string"?p.full:"");
-          return '<div class="cps-th" data-sid="'+esc(s.id)+'" data-idx="'+i+'">'+(src?'<img src="'+src+'" alt="">':'<span class="cps-noimg">📷</span>')+'</div>';
+        body.innerHTML='<div class="cps-set">'+slot4(null)+'<div class="cps-meta">計画地写真はまだありません（最大4枚）。</div></div>'+btns;
+      } else {
+        var html=sets.map(function(s){
+          var meta=[]; if(s.addr) meta.push(esc(s.addr+(s.banchi?(" "+s.banchi):""))); var w=fmtW(s.ts); if(w) meta.push(w); if(s.note) meta.push(esc(s.note));
+          return '<div class="cps-set">'+slot4(s)+'<div class="cps-meta">'+(meta.join(" ・ ")||"計画地写真")+'</div></div>';
         }).join("");
-        var meta=[]; if(s.addr) meta.push(esc(s.addr+(s.banchi?(" "+s.banchi):""))); var w=fmtW(s.ts); if(w) meta.push(w); if(s.note) meta.push(esc(s.note));
-        return '<div class="cps-set"><div class="cps-grid g'+g+'">'+thumbs+'</div><div class="cps-meta">'+meta.join(" ・ ")+'</div></div>';
-      }).join("");
-      if(isMob) html+='<button type="button" class="cps-add2" style="background:#0e4a45;color:#fff;border-color:#0e4a45;margin-bottom:6px" onclick="cardOpenCam(\''+esc(cardId)+'\')">📷 カメラで撮影（このカードに紐付く）</button>';
-      html+='<button type="button" class="cps-add2" onclick="openInboxForCard()">📥 写真を追加・管理</button>';
-      body.innerHTML=html;
-      body.querySelectorAll(".cps-th").forEach(function(el){
+        body.innerHTML=html+btns;
+      }
+      body.querySelectorAll(".cps-th[data-sid]").forEach(function(el){
         el.addEventListener("click",function(){ openInboxPhoto(el.getAttribute("data-sid"), parseInt(el.getAttribute("data-idx"),10)||0); });
       });
     }catch(err2){ body.innerHTML='<div class="cps-empty">表示エラー：<br><span style="color:#c53030;font-size:11px">'+esc(String((err2&&err2.message)||err2))+'</span></div>'; }
