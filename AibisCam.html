@@ -232,10 +232,9 @@
 <!-- ===== 撮影＝仕分け画面 ===== -->
 <div id="scrCam" class="scr hide">
   <div class="top">
-    <button class="tbtn" id="leftBtnSpacer" style="visibility:hidden;pointer-events:none">📥</button>
+    <button class="tbtn" id="rightBtn">📥 <span class="cnt" id="leftCount">0</span></button>
     <div class="cardchip grow"><b id="camTitle">z.AibisCam</b><span class="sub" id="camSub">シャッターで撮影・1データ最大4枚</span></div>
     <span class="vertag" id="verTag"></span>
-    <button class="tbtn" id="rightBtn">📥 <span class="cnt" id="leftCount">0</span></button>
   </div>
 
   <div id="camWrap">
@@ -282,9 +281,8 @@
 <!-- ===== インボックス ===== -->
 <div id="scrInbox" class="scr hide">
   <div class="top">
-    <button class="tbtn" id="inbListSpacer" style="visibility:hidden;pointer-events:none">📷</button>
-    <div class="cardchip grow"><b id="inbTitle">📥 インボックス</b><span class="sub">本体と同じ箱・紐付け→📤PCへ</span></div>
     <button class="tbtn" id="inbBack">📷</button>
+    <div class="cardchip grow"><b id="inbTitle">📥 インボックス</b><span class="sub">本体と同じ箱・紐付け→📤PCへ</span></div>
   </div>
   <div class="pad">
     <div id="inbWarn" class="warnbar hide"></div>
@@ -405,7 +403,7 @@
    ※ prospect_cards_v1 には書き込まない（新規カード作成・PC連携は本体側）
    データ(set): {id,cardId,ts,addrType:'plan',lat,lng,acc,addr,addrPending,banchi,note,sent,photos:[{pid,full(Blob),thumb,w,h,size}]}
    ========================================================= */
-const APP_VERSION = "cam-v1.44";
+const APP_VERSION = "cam-v1.45";
 
 /* ===== PWA：単一ファイルでインストール可能化（外部ファイル不要） ===== */
 function _pwaIcon(size,maskable){
