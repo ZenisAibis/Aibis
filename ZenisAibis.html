@@ -1785,7 +1785,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.29";
+var APP_VERSION = "v8.30";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -11741,8 +11741,8 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   .ibtn.ok{background:#38a169;border-color:#38a169;color:#fff}
   .ibtn.un{background:#718096;border-color:#718096;color:#fff}
   .ibtn.ret{background:rgba(90,103,216,.10);border-color:rgba(90,103,216,.32);color:#5a67d8;padding:7px 10px;font-size:15px}
-  #inboxBody .iacts-lr{display:flex;align-items:center;justify-content:space-between;width:100%;gap:8px}
-  #inboxBody .iacts-lr .ilinkname{flex:1 1 auto;min-width:0;text-align:center;font-size:12.5px;font-weight:700;color:#4a5568;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px}
+  #inboxBody .iacts-lr{display:flex;flex-wrap:nowrap;align-items:center;justify-content:space-between;width:100%;gap:8px}
+  #inboxBody .iacts-lr .ilinkname{flex:1 1 auto;min-width:0;text-align:left;font-size:12.5px;font-weight:700;color:#4a5568;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px}
   #inboxBody .iacts-lr .ibtn{white-space:nowrap;flex:0 0 auto}
   .iacts3{display:flex;gap:6px;flex-wrap:nowrap;width:100%}
   .iacts3 .ibtn{flex:0 1 auto;min-width:0;white-space:nowrap;padding:7px 10px;overflow:visible;text-overflow:clip}
@@ -11951,8 +11951,8 @@ window.cardOpenCam=cardOpenCam;
 function _showInbox(){ var v=document.getElementById("inboxView"); if(v) v.style.display="block"; renderInboxBody(); }
 function closeInbox(){ if(window._inboxReturnToCam){ window._inboxReturnToCam=false; try{ location.href="AibisCam.html"; return; }catch(e){} } document.getElementById("inboxView").style.display="none"; var a=_inboxAttach; _inboxAttach=null; if(a){ openCard(a); } }
 function _cardById(id){ return (typeof cards!=="undefined"&&cards)?cards.find(function(c){return c.id===id;}):null; }
-function _cardName(id){ var c=_cardById(id); if(c) return (c.name||"無名")+"様"; return "カード "+String(id).slice(0,8)+"…"; }
-function _linkName(s){ var c=_cardById(s&&s.cardId); var n=c?(c.name||""):((s&&s.cardName)?String(s.cardName):""); n=(n||"").trim(); return n?e(n)+"様":""; }
+function _cardName(id){ var c=_cardById(id); if(c){ var n=(c.name||"無名"); return n+(n==="土地見込み"?"":"様"); } return "カード "+String(id).slice(0,8)+"…"; }
+function _linkName(s){ var c=_cardById(s&&s.cardId); var n=c?(c.name||""):((s&&s.cardName)?String(s.cardName):""); n=(n||"").trim(); return n?(e(n)+(n==="土地見込み"?"":"様")):""; }
 function _fmtWhen(ts){ var d=new Date(ts),p=function(n){return String(n).padStart(2,"0");}; return d.getFullYear()+"/"+p(d.getMonth()+1)+"/"+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes()); }
 
 function _inrow(s){
@@ -12046,7 +12046,7 @@ function _seedCardFromSet(setId){
   mGet(setId).then(function(s){
     if(!s){ toast("データが見つかりません"); return; }
     var c=mkBlank();
-    c.name=(s.cardName||"").trim()||"（写真から作成）";
+    c.name=(s.cardName||"").trim()||"土地見込み";
     if(s.homeAddr) c.address=s.homeAddr;
     var plan=s.planAddr||s.addr||""; if(plan) c.plan_address=plan;
     try{ if(typeof _stageUpLog==="function") _stageUpLog(null,c); }catch(e){}
