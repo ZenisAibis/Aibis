@@ -279,7 +279,7 @@
 <div id="scrInbox" class="scr hide">
   <div class="top">
     <button class="tbtn" id="inbList">🗂 一覧</button>
-    <div class="cardchip grow"><b id="inbTitle">📥 インボックス</b><span class="sub">タップで仕分け・続けて撮影</span></div>
+    <div class="cardchip grow"><b id="inbTitle">📥 インボックス</b><span class="sub">本体と同じ箱・紐付け→📤PCへ</span></div>
     <button class="tbtn" id="inbBack">📷</button>
   </div>
   <div class="pad">
@@ -401,7 +401,7 @@
    ※ prospect_cards_v1 には書き込まない（新規カード作成・PC連携は本体側）
    データ(set): {id,cardId,ts,addrType:'plan',lat,lng,acc,addr,addrPending,banchi,note,sent,photos:[{pid,full(Blob),thumb,w,h,size}]}
    ========================================================= */
-const APP_VERSION = "cam-v1.35";
+const APP_VERSION = "cam-v1.37";
 
 /* ===== PWA：単一ファイルでインストール可能化（外部ファイル不要） ===== */
 function _pwaIcon(size,maskable){
@@ -964,6 +964,8 @@ function bindDrows(host,fromWhere){
 /* ---------- 送信設定 ---------- */
 function loadCfg(){ try{ return JSON.parse(localStorage.getItem(CFG_KEY)||"{}")||{}; }catch(e){ return {}; } }
 function cfgEmail(){ const c=loadCfg(); return (c.email||localStorage.getItem("prospect_self_v1")||"").trim(); }
+function camMailApp(){ let p='auto'; try{ p=localStorage.getItem('prospect_sendmail_v1')||'auto'; }catch(e){} if(p==='outlook'||p==='gmail'||p==='pick') return p; const em=(cfgEmail()||'').toLowerCase(); if(!em) return 'pick'; if(/gmail\./.test(em)) return 'gmail'; return 'outlook'; }
+function camMailJa(a){ return a==='outlook'?'Outlook':(a==='gmail'?'Gmail':'メールアプリ'); }
 function openCfg(){ const c=loadCfg(); $("cfgEmail").value=c.email||localStorage.getItem("prospect_self_v1")||""; $("cfgName").value=c.name||""; try{ _pwaCamSync(); }catch(e){} $("camCfg").classList.remove("hide"); }
 $("inbCfgBtn").addEventListener("click",openCfg);
 $("cfgCancel").addEventListener("click",()=>$("camCfg").classList.add("hide"));
@@ -1020,8 +1022,9 @@ async function sendInbox(){
   for(const s of targets){ const cur=await idbGet(s.id); if(cur){ cur.sent=true; await idbPut(cur); } }
   unlinkedSel.forEach(s=>sendSel.delete(s.id));   // 送ったぶんは選択解除
   await renderInbox(); showStorage("inbStore");
-  if(to) toast("📋 メアド("+to+")をコピー。メールに貼付→ファイルを添付して送信");
-  else toast(shared?"共有からメールアプリを選んで送信":"ファイルを書き出しました。メールに添付してPCへ");
+  const _ja=camMailJa(camMailApp());
+  if(to) toast("📋 宛先("+to+")コピー済。"+_ja+"を選び、貼付→ファイル添付で送信");
+  else toast(shared?(_ja+"を選んで送信"):"ファイルを書き出しました。"+_ja+"に添付してPCへ");
 }
 $("inbSendBtn").addEventListener("click",sendInbox);
 

@@ -1540,6 +1540,16 @@ body.is-mob .mob-menu{display:inline-block}
         <div><label>👤 ニックネーム</label><input type="text" id="sNick" placeholder="例: 大東" oninput="autoSaveSetup()"></div>
         <div id="setupHandCell"><label style="white-space:nowrap">📱 スマホ持ち方（タップで切替）</label><div id="sHandSeg" class="hand-seg" role="group" aria-label="スマホ持ち方"><button type="button" class="hand-opt" data-hand="left" onclick="setHand('left')">👈 左手</button><button type="button" class="hand-opt" data-hand="right" onclick="setHand('right')">右手 👉</button></div></div>
       </div>
+      <div style="margin-top:10px">
+        <label>📧 写真をPCへ送るメール（端末ごとに記憶）</label>
+        <select id="sSendMail" onchange="saveSendMail(this.value)">
+          <option value="auto">自動（メールアドレスから判定）</option>
+          <option value="outlook">Outlook を使う（会社スマホ）</option>
+          <option value="gmail">Gmail を使う（私用スマホ）</option>
+          <option value="pick">毎回 共有シートで選ぶ</option>
+        </select>
+        <div id="sSendMailHint" style="font-size:11px;color:#718096;margin-top:4px;line-height:1.5"></div>
+      </div>
       <div id="pwaInstallRow" style="margin-top:10px;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;background:#f7fafc">
         <div style="font-size:12px;font-weight:700;color:#2c5282;margin-bottom:6px">🔗 ホーム画面ショートカット</div>
         <div id="pwaBtns" style="display:flex;gap:8px;flex-wrap:wrap"></div>
@@ -1776,7 +1786,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v7.98";
+var APP_VERSION = "v8.01";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -3253,6 +3263,7 @@ function showSetup() {
   if ((el=document.getElementById('sNick')))   el.value = uNick||'';
   paintHandBtn();
   var _hc=document.getElementById('setupHandCell'); if(_hc) _hc.style.display=isMob?'':'none';
+  try{ _paintSendMailHint(); }catch(_e){}
   if(window._pwaSyncBtns) _pwaSyncBtns();
   if ((el=document.getElementById('sCopilotUrl'))) el.value = localStorage.getItem(CPK)||'';
   var _sm=document.getElementById('staffMailSection'); if(_sm){ _sm.style.display=isMgrUnlocked()?'block':'none'; if(typeof renderStaffMailRows==='function'){renderStaffMailRows();renderStaffMailChips();} }
@@ -11881,7 +11892,7 @@ function importPhotoBundle(bundle){
         if(!thumb && src){ try{ thumb=await _thumbFromDataURL(src); }catch(e){} }
         photos.push({pid:p.pid||("p_"+Date.now()+"_"+j), full:blob||src, thumb:thumb||src, w:p.w, h:p.h, size:p.size});
       }
-      var cardId=(s.cardId&&s.cardId!==MEDIA_INBOX)?s.cardId:MEDIA_INBOX;
+      var cardId=_resolveCardIdOnImport(s)||MEDIA_INBOX;
       var rec={ id:s.id||("s_"+Date.now()+"_"+i), cardId:cardId, ts:s.ts||Date.now(), addrType:"plan",
         lat:s.lat, lng:s.lng, acc:s.acc, addr:s.addr||"", addrPending:false, banchi:s.banchi||"", note:s.note||"", sent:false,
         cardName:s.cardName||"", homeAddr:s.homeAddr||"", planAddr:s.planAddr||(s.addr||""), photos:photos };
@@ -11890,7 +11901,8 @@ function importPhotoBundle(bundle){
     try{ updateInboxBadge(); }catch(e){}
     var msg='📥 写真データを読み込みました<br><br>'
       +'<div style="text-align:left;display:inline-block;font-size:13.5px;line-height:1.95">'
-      +'🔗 紐付け済み：<b>'+linkedN+'</b> 件<br>⚪ 未紐付け：<b>'+unlinkedN+'</b> 件<br>⏭ 重複スキップ：<b>'+dup+'</b> 件</div>'
+      +'🔗 紐付け済み：<b>'+linkedN+'</b> 件<br>⚪ 未紐付け（保留）：<b>'+unlinkedN+'</b> 件<br>⏭ 重複スキップ：<b>'+dup+'</b> 件</div>'
+      +(unlinkedN?'<div style="font-size:11.5px;color:#718096;margin-top:8px;line-height:1.6">保留分はインボックスで「🔗 ○○様に紐付け」または「➕ 写真から新規カード」で処理できます。</div>':'')
       +'<div style="display:flex;gap:10px;justify-content:center;margin-top:14px">'
       +'<button class="zfa-ok" style="background:#e2e8f0;color:#2d3748;width:auto;padding:11px 16px" onclick="closeAibisAlert()">閉じる</button>'
       +'<button class="zfa-ok" style="width:auto;padding:11px 16px" onclick="closeAibisAlert();openInbox()">📥 インボックスを開く</button></div>';
@@ -11943,6 +11955,13 @@ function _inrow(s){
 function _inrowSafe(s){ try{ return _inrow(s); }catch(err){ return '<div class="irow"><div class="ibd"><div class="iadr">（このデータは表示できません）</div><div class="imeta">'+e(String((s&&s.id)||""))+'</div></div></div>'; } }
 var _inbSel={}, _inbSeen={}, _inbUnlinkedIds=[];
 function _selfEmail(){ try{ return localStorage.getItem(SEK)||""; }catch(e){ return ""; } }
+var SMK='prospect_sendmail_v1';
+function _mailPref(){ try{ return localStorage.getItem(SMK)||'auto'; }catch(e){ return 'auto'; } }
+function _mailApp(){ var p=_mailPref(); if(p==='outlook'||p==='gmail'||p==='pick') return p; var em=(_selfEmail()||'').toLowerCase(); if(!em) return 'pick'; if(/gmail\./.test(em)) return 'gmail'; return 'outlook'; }
+function _mailAppJa(a){ return a==='outlook'?'Outlook':(a==='gmail'?'Gmail':'メールアプリ'); }
+function _paintSendMailHint(){ var sel=document.getElementById('sSendMail'); if(sel) sel.value=_mailPref(); var h=document.getElementById('sSendMailHint'); if(!h) return; var a=_mailApp(); var em=_selfEmail()||'(メール未設定)'; h.textContent='この端末では「'+_mailAppJa(a)+'」想定で案内します。宛先: '+em+'（共有シートで他のアプリも選べます）'; }
+function saveSendMail(v){ try{ localStorage.setItem(SMK,v||'auto'); }catch(e){} _paintSendMailHint(); }
+window.saveSendMail=saveSendMail;
 function _inbStamp(){ var d=new Date(),p=function(n){return ("0"+n).slice(-2);}; return ""+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+"_"+p(d.getHours())+p(d.getMinutes()); }
 function _blobToDataURL(b){ return new Promise(function(res,rej){ try{ var r=new FileReader(); r.onload=function(){res(r.result);}; r.onerror=function(){rej(r.error);}; r.readAsDataURL(b); }catch(e){ rej(e); } }); }
 function _inboxThumb(s){ var ph=Array.isArray(s.photos)?s.photos:[]; return (ph[0]&&ph[0].thumb)?ph[0].thumb:""; }
@@ -11956,9 +11975,17 @@ function _inrow2(s, isUnlinked){
   if(isUnlinked){
     var on=_inbSel[s.id]?" on":"";
     var chk='<div class="icheck'+on+'" data-act="togsel" data-id="'+e(s.id)+'">'+(_inbSel[s.id]?"✓":"")+'</div>';
+    var snapName=(s.cardName||"").trim();
+    var matchId=snapName?_findCardIdByName(snapName):"";
+    var badge=snapName?('<span class="ibadge un">'+e(snapName)+'様 ・ 要紐付け</span>'):'<span class="ibadge un">未紐付け</span>';
+    var acts='';
+    if(matchId) acts+='<button class="ibtn pri" data-act="linkmatch" data-id="'+e(s.id)+'" data-cardid="'+e(matchId)+'">🔗 '+e(snapName)+'様に紐付け</button>';
+    acts+='<button class="ibtn'+(matchId?'':' pri')+'" data-act="link" data-id="'+e(s.id)+'">🔗 紐付け先を選ぶ</button>';
+    acts+='<button class="ibtn" style="background:#ebf8ff;border-color:#90cdf4;color:#2b6cb0" data-act="seed" data-id="'+e(s.id)+'">➕ 写真から新規カード</button>';
+    acts+='<button class="ibtn dn" data-act="del" data-id="'+e(s.id)+'">🗑</button>';
     return '<div class="irow2">'+chk+th+'<div class="ibd"><div class="iadr">'+addr+sent+'</div>'+
-      '<div class="imeta"><span class="ibadge un">未紐付け</span> ・ '+_fmtWhen(s.ts)+(s.note?" ・ "+e(s.note):"")+'</div>'+
-      '<div class="iacts"><button class="ibtn pri" data-act="link" data-id="'+e(s.id)+'">🔗 カードに紐付け</button><button class="ibtn dn" data-act="del" data-id="'+e(s.id)+'">🗑 完全削除</button></div></div></div>';
+      '<div class="imeta">'+badge+' ・ '+_fmtWhen(s.ts)+(s.note?" ・ "+e(s.note):"")+'</div>'+
+      '<div class="iacts">'+acts+'</div></div></div>';
   }
   return '<div class="irow2">'+th+'<div class="ibd"><div class="iadr">'+addr+sent+'</div>'+
     '<div class="imeta">🔗 '+e(_cardName(s.cardId))+' ・ '+_fmtWhen(s.ts)+(s.note?" ・ "+e(s.note):"")+'</div>'+
@@ -11971,6 +11998,8 @@ function _wireInbox(host){
       if(act==="view") openInboxPhoto(id);
       else if(act==="togsel"){ if(_inbSel[id]) delete _inbSel[id]; else _inbSel[id]=1; renderInboxBody(); }
       else if(act==="link"||act==="relink") openInboxPick(id);
+      else if(act==="seed") _seedCardFromSet(id);
+      else if(act==="linkmatch") _linkSetToCard(id, el.getAttribute("data-cardid"));
       else if(act==="attach") _attachToCard(id);
       else if(act==="unlink") _unlinkSet(id);
       else if(act==="del") _delSet(id);
@@ -11980,6 +12009,35 @@ function _wireInbox(host){
 function inboxSelAll(){ _inbUnlinkedIds.forEach(function(id){ _inbSel[id]=1; }); renderInboxBody(); }
 function inboxSelNone(){ _inbUnlinkedIds.forEach(function(id){ delete _inbSel[id]; }); renderInboxBody(); }
 window.inboxSelAll=inboxSelAll; window.inboxSelNone=inboxSelNone;
+function _findCardById(id){ if(!id||typeof cards==="undefined") return null; for(var i=0;i<cards.length;i++){ if(cards[i]&&String(cards[i].id)===String(id)) return cards[i]; } return null; }
+function _findCardIdByName(nm){ nm=(nm||'').trim(); if(!nm||typeof cards==="undefined") return ''; for(var i=0;i<cards.length;i++){ if(cards[i]&&(cards[i].name||'').trim()===nm) return cards[i].id; } return ''; }
+function _resolveCardIdOnImport(s){ if(s && s.cardId && s.cardId!==MEDIA_INBOX && _findCardById(s.cardId)) return s.cardId; return null; }
+function _linkSetToCard(setId,cardId){ if(!cardId) return; mGet(setId).then(function(s){ if(!s) return; s.cardId=cardId; mPut(s).then(function(){ try{ toast(_cardName(cardId)+" に紐付けました"); }catch(e){} renderInboxBody(); }); }); }
+window._linkSetToCard=_linkSetToCard;
+function _seedCardFromSet(setId){
+  if(typeof mkBlank!=="function"||typeof cards==="undefined"){ toast("このアプリではカード作成ができません"); return; }
+  mGet(setId).then(function(s){
+    if(!s){ toast("データが見つかりません"); return; }
+    var c=mkBlank();
+    c.name=(s.cardName||"").trim()||"（写真から作成）";
+    if(s.homeAddr) c.address=s.homeAddr;
+    var plan=s.planAddr||s.addr||""; if(plan) c.plan_address=plan;
+    try{ if(typeof _stageUpLog==="function") _stageUpLog(null,c); }catch(e){}
+    cards.push(c);
+    s.cardId=c.id;
+    mPut(s).then(function(){
+      doSaveCards(function(ok){
+        if(!ok){ toast("⚠ 保存に失敗しました"); return; }
+        try{ updateInboxBadge(); }catch(e){}
+        try{ if(typeof renderCards==="function") renderCards(); }catch(e){}
+        try{ var v=document.getElementById('inboxView'); if(v) v.style.display='none'; }catch(e){}
+        try{ toast("➕ "+c.name+" を作成し、写真を紐付けました"); }catch(e){}
+        try{ openCard(c.id); }catch(e){}
+      });
+    });
+  });
+}
+window._seedCardFromSet=_seedCardFromSet;
 function _updateInbStore(all){
   var el=document.getElementById("inbStoreMeter"); if(!el) return;
   var bytes=0,n=0; (all||[]).forEach(function(s){ (s.photos||[]).forEach(function(p){ n++; if(typeof p.size==="number") bytes+=p.size; else if(p.full&&p.full.size) bytes+=p.full.size; }); });
@@ -12029,7 +12087,8 @@ function inboxSendToPC(){
         var chain=Promise.resolve();
         targets.forEach(function(s){ chain=chain.then(function(){ return mGet(s.id).then(function(cur){ if(cur){ cur.sent=true; return mPut(cur); } }); }); });
         chain.then(function(){ unlinkedSel.forEach(function(s){ delete _inbSel[s.id]; }); renderInboxBody();
-          toast(to?("📋 メアド("+to+")をコピー。メールに貼付→ファイルを添付して送信"):(shared?"共有からメールアプリを選んで送信":"ファイルを書き出しました。メールに添付してPCへ"));
+          var _ja=_mailAppJa(_mailApp());
+          toast(to?("📋 宛先("+to+")コピー済。"+_ja+"を選び、宛先を貼付→ファイル添付で送信"):(shared?(_ja+"を選んで送信"):"ファイルを書き出しました。"+_ja+"に添付してPCへ"));
         });
       };
       try{
@@ -12062,10 +12121,12 @@ function renderInboxBody(){
     unlinked.forEach(function(s){ if(!_inbSeen[s.id]){ _inbSeen[s.id]=1; if(!s.sent) _inbSel[s.id]=1; } });
     var html="";
     if(_inboxAttach){
-      html+='<div class="ihint">このカードに紐付けたい写真を選んでください（「このカードに紐付け」を押す）。</div>';
+      html+='<div class="isend"><button class="ibtn pri big" onclick="closeInbox()">✓ 完了して「'+e(_cardName(_inboxAttach))+'」へ戻る</button></div>';
+      html+='<div class="ihint">このカードに紐付けたい写真の「このカードに紐付け」を押してください（複数OK）。押すたびにカードの計画地写真へ即反映します。</div>';
       html+=unlinked.concat(linked).map(_inrowSafe).join("");
       host.innerHTML=html; _wireInbox(host); updateInboxBadge(); return;
     }
+    html+='<div style="font-size:11.5px;color:#94a3b8;text-align:center;padding:2px 0 10px;line-height:1.5">📷 カメラも本体も、写真は同じこの箱に入ります。ここで紐付け → 📤 でPCへ。</div>';
     var linkedUnsent=linked.filter(function(s){return !s.sent;}).length;
     var selCount=unlinked.filter(function(s){return _inbSel[s.id];}).length;
     if(isMob){
@@ -12090,7 +12151,7 @@ function renderInboxBody(){
     if(host) host.innerHTML='<div class="iempty">読み込みに時間がかかっています（接続を作り直します）。<br><br><button class="ibtn pri" onclick="renderInboxBody()">🔄 再読み込み</button><br><br><span style="font-size:11px;color:#c53030">'+e(String((err&&err.message)||err))+'</span></div>';
   });
 }
-function _attachToCard(id){ if(!_inboxAttach) return; mGet(id).then(function(s){ if(!s) return; s.cardId=_inboxAttach; mPut(s).then(function(){ toast(_cardName(_inboxAttach)+" に紐付けました"); renderInboxBody(); }); }); }
+function _attachToCard(id){ if(!_inboxAttach) return; var cid=_inboxAttach; mGet(id).then(function(s){ if(!s) return; s.cardId=cid; mPut(s).then(function(){ try{ toast("✓ "+_cardName(cid)+" の計画地写真に追加"); }catch(e){} renderInboxBody(); try{ if(typeof renderCardPhotos==="function" && typeof curId!=="undefined" && curId===cid) renderCardPhotos(cid); }catch(e){} try{ updateInboxBadge(); }catch(e){} }); }); }
 function _unlinkSet(id){ var go=function(){ mGet(id).then(function(s){ if(!s) return; s.cardId=MEDIA_INBOX; mPut(s).then(function(){ toast("インボックスに戻しました"); renderInboxBody(); }); }); };
   if(typeof aibisConfirm==="function") aibisConfirm("このカードから写真を外してインボックスに戻しますか？",go,"外す","やめる"); else if(confirm("インボックスに戻しますか？")) go(); }
 function _delSet(id){ mGet(id).then(function(s){ if(!s) return;
