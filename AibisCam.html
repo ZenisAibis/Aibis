@@ -405,7 +405,7 @@
    ※ prospect_cards_v1 には書き込まない（新規カード作成・PC連携は本体側）
    データ(set): {id,cardId,ts,addrType:'plan',lat,lng,acc,addr,addrPending,banchi,note,sent,photos:[{pid,full(Blob),thumb,w,h,size}]}
    ========================================================= */
-const APP_VERSION = "cam-v1.43";
+const APP_VERSION = "cam-v1.44";
 
 /* ===== PWA：単一ファイルでインストール可能化（外部ファイル不要） ===== */
 function _pwaIcon(size,maskable){
@@ -482,6 +482,14 @@ let mode="quick", targetCard=INBOX, curSet=null, fromAibis=false, facing="enviro
 let sendSel=new Set(), sendSeen=new Set();   // 未紐付けの送信選択（idのSet）
 let qaReturnMode=false;                       // 光速入力から ?ret=qa で来たとき true（完了で住所をアイビスへ返す）
 let viewPhoto=null, pickMode="open", linkTargetId=null, linkFromInbox=false, MUNI=null, micRec=null, kpVal="";
+var _scr="cam";
+function _aibisBack(){
+  if(_scr==="set"){ openInbox(); return; }
+  if(_scr==="inbox"){ enterQuick(); return; }
+  if(_scr==="pick"){ if(pickMode==="link"){ if(linkFromInbox){ linkFromInbox=false; openInbox(); } else { openSet(linkTargetId); } } else { enterQuick(); } return; }
+  if(_scr==="gal"){ if(openGallery._fromCam){ enterCamera(targetCard); } else { openPick("open"); } return; }
+}
+window.addEventListener("popstate", function(){ if(_scr && _scr!=="cam"){ _aibisBack(); try{ history.pushState({ac:1},""); }catch(e){} } });
 let leafMap=null, meTargetId=null;
 
 const $ = id => document.getElementById(id);
@@ -581,6 +589,7 @@ async function boot(){
   const p=new URLSearchParams(location.search), cid=p.get("cardId");
   if(p.get("ret")==="qa") qaReturnMode=true;
   if(cid){ fromAibis=true; enterCamera(cid); } else { enterQuick(); }
+  try{ history.pushState({ac:1},""); }catch(e){}
 }
 
 /* ---------- 画面遷移 ---------- */
@@ -594,10 +603,11 @@ function configureHeader(){
     $("camSub").textContent= qaReturnMode? "撮影 →「完了」でアイビスに住所を反映" : "シャッターで撮影・1データ最大4枚";
   }
 }
-async function enterQuick(){ mode="quick"; targetCard=INBOX; curSet=null; configureHeader(); show("cam"); await startCamera(); renderSetPanel(); await updateRightCount(); }
-async function enterCamera(cardId){ mode="card"; targetCard=cardId; curSet=null; configureHeader(); show("cam"); await startCamera(); renderSetPanel(); await updateRightCount(); }
+async function enterQuick(){ _scr="cam"; mode="quick"; targetCard=INBOX; curSet=null; configureHeader(); show("cam"); await startCamera(); renderSetPanel(); await updateRightCount(); }
+async function enterCamera(cardId){ _scr="cam"; mode="card"; targetCard=cardId; curSet=null; configureHeader(); show("cam"); await startCamera(); renderSetPanel(); await updateRightCount(); }
 async function openSet(id){
   const s=await idbGet(id); if(!s) return;
+  _scr="set";
   curSet=id; targetCard=s.cardId;
   mode=(s.cardId&&s.cardId!==INBOX)?"card":"quick"; fromAibis=false;
   configureHeader(); show("cam"); await startCamera(); renderSetPanel(); await updateRightCount();
@@ -892,8 +902,8 @@ $("kpDone").addEventListener("click",async()=>{
 $("keypad").addEventListener("click",e=>{ if(e.target===$("keypad")) $("keypad").classList.add("hide"); });
 
 /* ---------- インボックス ---------- */
-async function openInbox(){ stopCamera(); show("inbox"); await renderInbox(); showStorage("inbStore"); }
-$("inbBack").addEventListener("click",()=>{ enterQuick(); });
+async function openInbox(){ _scr="inbox"; stopCamera(); show("inbox"); await renderInbox(); showStorage("inbStore"); }
+$("inbBack").addEventListener("click",()=>{ history.back(); });
 async function renderInbox(){
   const all=(await idbAll()).sort((a,b)=>b.ts-a.ts);
   const unlinked=all.filter(s=>!s.cardId||s.cardId===INBOX);
@@ -1040,7 +1050,7 @@ $("inbSendBtn").addEventListener("click",sendInbox);
 
 /* ---------- カード一覧 ---------- */
 function openPick(m){
-  pickMode=m||"open";
+  _scr="pick"; pickMode=m||"open";
   $("pickBack").textContent = pickMode==="link" ? "← 戻る" : "📷 撮影";
   $("pickInbox").classList.toggle("hide", pickMode==="link");
   $("pickTitle").textContent = pickMode==="link" ? "🔗 紐付け先のカード" : "⌘ カード一覧";
@@ -1050,9 +1060,7 @@ function openPick(m){
 }
 async function updatePickInbox(){ const n=await idbCountByCard(INBOX), el=$("pickInboxCount"); if(el) el.textContent=n; }
 $("pickInbox").addEventListener("click",()=>openInbox());
-$("pickBack").addEventListener("click",()=>{
-  if(pickMode==="link"){ if(linkFromInbox){ linkFromInbox=false; openInbox(); } else { openSet(linkTargetId); } } else { enterQuick(); }
-});
+$("pickBack").addEventListener("click",()=>{ history.back(); });
 
 /* ===== 本体「一覧」と同じ並び替え（移植・配点/ペースは2026-06確定値） ===== */
 var sortKey="lv", sortDir={};
@@ -1169,6 +1177,7 @@ async function onPickCard(cardId){
 
 /* ---------- カード別ギャラリー ---------- */
 async function openGallery(cardId,cameFromCam){
+  _scr="gal";
   targetCard=cardId; openGallery._fromCam=!!cameFromCam;
   $("galCardName").textContent=cardLabel(cardId); $("galCardMeta").textContent=cardMeta(cardId);
   show("gal"); stopCamera(); await renderGallery(); showStorage("storeLine");
@@ -1180,7 +1189,7 @@ async function renderGallery(){
   host.innerHTML='<div class="galsec">計画地データ（'+list.length+'件）</div>'+list.map(s=>drowHtml(s)).join("");
   bindDrows(host,"gal");
 }
-$("galBack").addEventListener("click",()=>{ if(openGallery._fromCam){ enterCamera(targetCard); } else { openPick("open"); } });
+$("galBack").addEventListener("click",()=>{ history.back(); });
 $("galShoot").addEventListener("click",()=>{ openGallery._fromCam=true; enterCamera(targetCard); });
 
 /* ---------- 容量表示 ---------- */
