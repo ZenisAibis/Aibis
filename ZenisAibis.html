@@ -1785,7 +1785,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.19";
+var APP_VERSION = "v8.20";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -11739,6 +11739,8 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   .ibtn.dn{background:rgba(197,48,48,.1);border-color:rgba(197,48,48,.25);color:#c53030}
   .ibtn.ok{background:#38a169;border-color:#38a169;color:#fff}
   .ibtn.un{background:#718096;border-color:#718096;color:#fff}
+  .ibtn.ret{background:rgba(90,103,216,.10);border-color:rgba(90,103,216,.32);color:#5a67d8;padding:7px 12px;font-size:15px}
+  #inboxBody .iacts-lr{display:flex;align-items:center;justify-content:space-between;width:100%;gap:8px}
   .iacts3{display:flex;gap:6px;flex-wrap:nowrap;width:100%}
   .iacts3 .ibtn{flex:0 1 auto;min-width:0;white-space:nowrap;padding:7px 10px;overflow:visible;text-overflow:clip}
   .iacts3 .ibtn.dn{flex:0 0 auto;padding:7px 10px}
@@ -11943,7 +11945,7 @@ function openInboxForCard(){ if(!curId){ toast("カードを開いてからど�
 function cardOpenCam(cid){ if(!cid){ toast("カードを開いてからどうぞ"); return; } var u='AibisCam.html?cardId='+encodeURIComponent(cid); try{ window.open(u,'aibiscam'); }catch(e){ location.href=u; } toast('カメラで撮影 → 戻るとこのカードに紐付きます'); }
 window.cardOpenCam=cardOpenCam;
 function _showInbox(){ var v=document.getElementById("inboxView"); if(v) v.style.display="block"; renderInboxBody(); }
-function closeInbox(){ document.getElementById("inboxView").style.display="none"; var a=_inboxAttach; _inboxAttach=null; if(a){ openCard(a); } }
+function closeInbox(){ if(window._inboxReturnToCam){ window._inboxReturnToCam=false; try{ location.href="AibisCam.html"; return; }catch(e){} } document.getElementById("inboxView").style.display="none"; var a=_inboxAttach; _inboxAttach=null; if(a){ openCard(a); } }
 function _cardById(id){ return (typeof cards!=="undefined"&&cards)?cards.find(function(c){return c.id===id;}):null; }
 function _cardName(id){ var c=_cardById(id); if(c) return (c.name||"無名")+"様"; return "カード "+String(id).slice(0,8)+"…"; }
 function _fmtWhen(ts){ var d=new Date(ts),p=function(n){return String(n).padStart(2,"0");}; return d.getFullYear()+"/"+p(d.getMonth()+1)+"/"+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes()); }
@@ -12006,7 +12008,7 @@ function _inrow2(s, isUnlinked){
   }
   return '<div class="irow2">'+th+'<div class="ibd"><div class="iadr">'+addr+'</div>'+
     '<div class="imeta">🔗'+sent+' '+e(_cardName(s.cardId))+' ・ '+_fmtWhen(s.ts)+'</div>'+
-    '<div class="iacts"><div class="iacts3"><button class="ibtn" data-act="gotocard" data-id="'+e(s.id)+'">🪪 カード遷移</button><button class="ibtn un" data-act="unlink" data-id="'+e(s.id)+'">📥 インボックスへ戻る</button></div></div></div></div>';
+    '<div class="iacts iacts-lr"><button class="ibtn" data-act="gotocard" data-id="'+e(s.id)+'">🪪 カード遷移</button><button class="ibtn ret" data-act="unlink" data-id="'+e(s.id)+'" title="インボックスへ戻す">📥</button></div></div></div>';
 }
 function _wireInbox(host){
   host.querySelectorAll("[data-act]").forEach(function(el){
@@ -12287,7 +12289,7 @@ function _imeHints(root){ try{ if(!root) return; if(root.tagName){ var tg=root.t
 /* ---- AibisCam等からのURL遷移：?card=ID でカード / ?inbox でインボックス ---- */
 (function(){ try{
   var sp=new URLSearchParams(location.search||"");
-  var cardId=sp.get("card"), wantInbox=sp.get("inbox");
+  var cardId=sp.get("card"), wantInbox=sp.get("inbox"), fromCam=(sp.get("from")==="cam");
   if(!cardId && !wantInbox) return;
   var tries=0;
   var run=function(){
@@ -12296,7 +12298,7 @@ function _imeHints(root){ try{ if(!root) return; if(root.tagName){ var tg=root.t
     try{
       var done=false;
       if(cardId && typeof openCard==="function" && (cards||[]).some(function(c){return c&&c.id===cardId;})){ openCard(cardId); done=true; }
-      else if((wantInbox||cardId) && typeof openInbox==="function"){ openInbox(); done=true; }
+      else if((wantInbox||cardId) && typeof openInbox==="function"){ if(fromCam) window._inboxReturnToCam=true; openInbox(); done=true; }
       if(done){ try{ history.replaceState({}, "", location.pathname); }catch(_e){} }
     }catch(e){}
   };
