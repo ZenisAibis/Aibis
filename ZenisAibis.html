@@ -1785,7 +1785,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.13";
+var APP_VERSION = "v8.14";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -12004,7 +12004,7 @@ function _inrow2(s, isUnlinked){
   }
   return '<div class="irow2">'+th+'<div class="ibd"><div class="iadr">'+addr+sent+'</div>'+
     '<div class="imeta">🔗 '+e(_cardName(s.cardId))+' ・ '+_fmtWhen(s.ts)+(s.note?" ・ "+e(s.note):"")+'</div>'+
-    '<div class="iacts"><button class="ibtn" data-act="unlink" data-id="'+e(s.id)+'">↩ インボックスへ</button><button class="ibtn dn" data-act="del" data-id="'+e(s.id)+'">🗑</button></div></div></div>';
+    '<div class="iacts"><button class="ibtn" data-act="unlink" data-id="'+e(s.id)+'">↩ インボックスへ</button><button class="ibtn" data-act="gotocard" data-id="'+e(s.id)+'">🪪 カード確認</button><button class="ibtn dn" data-act="del" data-id="'+e(s.id)+'">🗑</button></div></div></div>';
 }
 function _wireInbox(host){
   host.querySelectorAll("[data-act]").forEach(function(el){
@@ -12017,6 +12017,7 @@ function _wireInbox(host){
       else if(act==="linkmatch") _linkSetToCard(id, el.getAttribute("data-cardid"));
       else if(act==="attach") _attachToCard(id);
       else if(act==="detach") _detachFromCard(id);
+      else if(act==="gotocard") _gotoCard(id);
       else if(act==="unlink") _unlinkSet(id);
       else if(act==="del") _delSet(id);
     });
@@ -12172,6 +12173,7 @@ function _unlinkSet(id){ var go=function(){ mGet(id).then(function(s){ if(!s) re
   if(typeof aibisConfirm==="function") aibisConfirm("このカードから写真を外してインボックスに戻しますか？",go,"外す","やめる"); else if(confirm("インボックスに戻しますか？")) go(); }
 function _afterPhotoChange(){ try{ renderInboxBody(); }catch(e){} try{ if(typeof curId!=="undefined" && curId) renderCardPhotos(curId); }catch(e){} try{ updateInboxBadge(); }catch(e){} }
 function _detachFromCard(id){ mGet(id).then(function(s){ if(!s) return; s.cardId=MEDIA_INBOX; mPut(s).then(function(){ try{ toast("カードから外しました"); }catch(e){} _afterPhotoChange(); }); }); }
+function _gotoCard(id){ mGet(id).then(function(s){ if(!s||!s.cardId||s.cardId===MEDIA_INBOX){ try{ toast("紐付け先カードがありません"); }catch(e){} return; } var cid=s.cardId; try{ closeInbox(); }catch(e){} try{ if(typeof openCard==="function") openCard(cid); }catch(e){} }); }
 function _delSet(id){ mGet(id).then(function(s){ if(!s) return;
   var linked=(s.cardId && s.cardId!==MEDIA_INBOX);
   var hard=function(){ mDel(id).then(function(){ toast("完全削除しました"); _afterPhotoChange(); }); };
@@ -12258,6 +12260,18 @@ function _cpRender(dir){
 }
 function cardPhotoStep(d){ if(!_cpSets||!_cpSets.length) return; _cpIdx=((_cpIdx+d)%_cpSets.length+_cpSets.length)%_cpSets.length; _cpRender(d); }
 window.cardPhotoStep=cardPhotoStep;
+/* ---- フォームのIMEヒント：名前・住所・メモ等の文字入力は日本語IME、数字/電話/メール/URLは現状維持 ---- */
+function _imeApply(el){ if(!el||el._imeDone) return; var t=((el.getAttribute("type")||"text")).toLowerCase(); var im=((el.getAttribute("inputmode")||"")).toLowerCase();
+  if(t==="tel"||t==="email"||t==="url"||t==="number"||t==="password"||t==="date"||t==="time"||t==="datetime-local"||t==="month"){ el._imeDone=1; return; }
+  if(im==="numeric"||im==="decimal"||im==="tel"||im==="email"||im==="url"){ el._imeDone=1; return; }
+  el.setAttribute("lang","ja"); el._imeDone=1; }
+function _imeHints(root){ try{ if(!root) return; if(root.tagName){ var tg=root.tagName.toLowerCase(); if(tg==="input"||tg==="textarea") _imeApply(root); } if(root.querySelectorAll){ var ns=root.querySelectorAll("input,textarea"); for(var i=0;i<ns.length;i++) _imeApply(ns[i]); } }catch(e){} }
+(function(){ try{
+  var run=function(){ _imeHints(document);
+    if(window.MutationObserver && document.body){ var ob=new MutationObserver(function(ms){ for(var i=0;i<ms.length;i++){ var ad=ms[i].addedNodes; for(var j=0;j<ad.length;j++){ var n=ad[j]; if(n&&n.nodeType===1) _imeHints(n); } } }); ob.observe(document.body,{childList:true,subtree:true}); }
+  };
+  if(document.readyState!=="loading") run(); else document.addEventListener("DOMContentLoaded",run);
+}catch(e){} })();
 function renderCardPhotos(cardId){
   var sec=document.getElementById("cardPhotoSec"), body=document.getElementById("cardPhotoBody"), cnt=document.getElementById("cardPhotoCount");
   if(!sec||!body) return;
