@@ -1785,7 +1785,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.16";
+var APP_VERSION = "v8.19";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -11738,7 +11738,7 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   .ibtn.pri{background:#2c5282;border-color:#2c5282;color:#fff}
   .ibtn.dn{background:rgba(197,48,48,.1);border-color:rgba(197,48,48,.25);color:#c53030}
   .ibtn.ok{background:#38a169;border-color:#38a169;color:#fff}
-  .ibtn.un{background:#ed8936;border-color:#ed8936;color:#fff}
+  .ibtn.un{background:#718096;border-color:#718096;color:#fff}
   .iacts3{display:flex;gap:6px;flex-wrap:nowrap;width:100%}
   .iacts3 .ibtn{flex:0 1 auto;min-width:0;white-space:nowrap;padding:7px 10px;overflow:visible;text-overflow:clip}
   .iacts3 .ibtn.dn{flex:0 0 auto;padding:7px 10px}
@@ -11749,7 +11749,8 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   .irow2 .ith .ithn{position:absolute;right:3px;bottom:3px;background:rgba(26,54,93,.85);color:#fff;font-size:10px;font-weight:800;padding:1px 6px;border-radius:7px}
   .irow2 .ibd{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
   .irow2 .iadr{font-size:13.5px;font-weight:700;color:#2d3748;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .irow2 .imeta{font-size:11px;color:#718096;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .irow2 .imeta{font-size:11px;color:#718096;line-height:1.5}
+  .irow2 .imeta .ibadge{vertical-align:middle}
   .irow2 .iacts{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
   .icheck{flex:0 0 auto;width:26px;height:26px;border-radius:7px;border:2px solid #cbd5e0;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;color:#fff;cursor:pointer}
   .icheck.on{background:#f59e0b;border-color:#f59e0b}
@@ -11828,7 +11829,7 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
 <div id="inboxPick">
   <div class="ipc">
     <div class="iph"><b>🔗 紐付け先のカードを選択</b><button onclick="closeInboxPick()">閉じる</button></div>
-    <div class="ipsort"><span class="sortbar-lab">🔀 並替：</span><div class="sortbar-scroll"><button class="sbtn active" id="ps_recent" onclick="pickSort('recent')">🕒 最新</button><button class="sbtn" id="ps_name" onclick="pickSort('name')">🧑 名前</button><button class="sbtn" id="ps_addr" onclick="pickSort('addr')">🏠 住所</button></div></div>
+    <div class="ipsort"><span class="sortbar-lab">🔀 並替：</span><div class="sortbar-scroll"><button class="sbtn active" id="psk_lv" onclick="pickSort('lv')">🚶 最新</button><button class="sbtn" id="psk_rv" onclick="pickSort('rv')">🔁 再訪</button><button class="sbtn" id="psk_jw" onclick="pickSort('jw')">⚖ 判定待ち</button><button class="sbtn" id="psk_ad" onclick="pickSort('ad')">🏠 住所</button><button class="sbtn" id="psk_sc" onclick="pickSort('sc')">⭐ スコア</button><button class="sbtn" id="psk_st" onclick="pickSort('st')">📊 心理</button><button class="sbtn" id="psk_pj" onclick="pickSort('pj')">🎯 ランク</button><button class="sbtn" id="psk_pace" onclick="pickSort('pace')">⏰ 遅れ</button><button class="sbtn" id="psk_dt" onclick="pickSort('dt')">📅 初訪</button></div></div>
     <div class="ipsearchrow"><button type="button" class="mic-btn hb" onclick="micStart('inboxPickSearch',this)" title="音声で検索" style="flex-shrink:0;margin-top:0">🎤</button><div style="position:relative;flex:1"><span class="ipsicon">🔍</span><input id="inboxPickSearch" placeholder="名前・担当・住所で検索" oninput="renderInboxPickList()"></div></div>
     <div id="inboxPickList"></div>
   </div>
@@ -11964,7 +11965,7 @@ function _inrow(s){
   return '<div class="irow">'+
     '<div class="ith" data-act="view" data-id="'+e(s.id)+'">'+(thumb?'<img src="'+thumb+'">':'')+'<span class="ithn">'+ph.length+'枚</span></div>'+
     '<div class="ibd"><div class="iadr">'+nm+(s.sent?' <span class="ibadge sent">書き出し済</span>':'')+'</div>'+
-    '<div class="imeta">📍 '+addr+' ・ '+_fmtWhen(s.ts)+(s.note?' ・ '+e(s.note):"")+'</div>'+
+    '<div class="imeta">📍 '+addr+' ・ '+_fmtWhen(s.ts)+'</div>'+
     '<div class="iacts">'+acts+'</div></div></div>';
 }
 function _inrowSafe(s){ try{ return _inrow(s); }catch(err){ return '<div class="irow"><div class="ibd"><div class="iadr">（このデータは表示できません）</div><div class="imeta">'+e(String((s&&s.id)||""))+'</div></div></div>'; } }
@@ -11999,13 +12000,13 @@ function _inrow2(s, isUnlinked){
     acts+='<button class="ibtn" style="background:#ebf8ff;border-color:#90cdf4;color:#2b6cb0" data-act="seed" data-id="'+e(s.id)+'">➕ 新規カード</button>';
     acts+='<button class="ibtn dn" data-act="del" data-id="'+e(s.id)+'">🗑</button>';
     acts+='</div>';
-    return '<div class="irow2">'+chk+th+'<div class="ibd"><div class="iadr">'+addr+sent+'</div>'+
-      '<div class="imeta">'+badge+' ・ '+_fmtWhen(s.ts)+(s.note?" ・ "+e(s.note):"")+'</div>'+
+    return '<div class="irow2">'+chk+th+'<div class="ibd"><div class="iadr">'+addr+'</div>'+
+      '<div class="imeta">'+badge+sent+' ・ '+_fmtWhen(s.ts)+'</div>'+
       '<div class="iacts">'+acts+'</div></div></div>';
   }
-  return '<div class="irow2">'+th+'<div class="ibd"><div class="iadr">'+addr+sent+'</div>'+
-    '<div class="imeta">🔗 '+e(_cardName(s.cardId))+' ・ '+_fmtWhen(s.ts)+(s.note?" ・ "+e(s.note):"")+'</div>'+
-    '<div class="iacts"><div class="iacts3"><button class="ibtn un" data-act="unlink" data-id="'+e(s.id)+'">↩ 紐付け解除</button><button class="ibtn" data-act="gotocard" data-id="'+e(s.id)+'">🪪 カード遷移</button><button class="ibtn dn" data-act="del" data-id="'+e(s.id)+'">🗑</button></div></div></div></div>';
+  return '<div class="irow2">'+th+'<div class="ibd"><div class="iadr">'+addr+'</div>'+
+    '<div class="imeta">🔗'+sent+' '+e(_cardName(s.cardId))+' ・ '+_fmtWhen(s.ts)+'</div>'+
+    '<div class="iacts"><div class="iacts3"><button class="ibtn" data-act="gotocard" data-id="'+e(s.id)+'">🪪 カード遷移</button><button class="ibtn un" data-act="unlink" data-id="'+e(s.id)+'">📥 インボックスへ戻る</button></div></div></div></div>';
 }
 function _wireInbox(host){
   host.querySelectorAll("[data-act]").forEach(function(el){
@@ -12200,18 +12201,28 @@ function _delSet(id){ mGet(id).then(function(s){ if(!s) return;
 /* ---- 紐付けピッカー ---- */
 function openInboxPick(setId){ _pickSetId=setId; document.getElementById("inboxPickSearch").value=""; document.getElementById("inboxPick").style.display="flex"; renderInboxPickList(); }
 function closeInboxPick(){ document.getElementById("inboxPick").style.display="none"; _pickSetId=null; }
-var _pickSort='recent';
-function pickSort(key){ _pickSort=key; renderInboxPickList(); }
+var _pickSortKey="lv", _pickSortDir={};
+function _pickSortArr(arr){
+  var k=_pickSortKey, dir=_pickSortDir[k]==="desc"?-1:1; arr=arr.slice();
+  if(k==="lv"){ arr.sort(function(a,b){ return dir*getLastVD(b).localeCompare(getLastVD(a)); }); }
+  else if(k==="ad"){ var ad=_pickSortDir["ad"]==="desc"?-1:1; arr.sort(function(a,b){ return ad*getArea(a.address||"").localeCompare(getArea(b.address||""),"ja"); }); }
+  else if(k==="st"){ arr.sort(function(a,b){ var sa=(a.stage!==""&&a.stage!=null)?+a.stage:(dir>0?-1:99); var sb=(b.stage!==""&&b.stage!=null)?+b.stage:(dir>0?-1:99); return dir*(sb-sa); }); }
+  else if(k==="sc"){ arr.sort(function(a,b){ return dir*(calcScore(b)-calcScore(a)); }); }
+  else if(k==="pj"){ var o={S:0,A:1,B:2,C:3,D:4,E:5,X:6}; arr.sort(function(a,b){ var pa=o[a.pursuit_judge]!==undefined?o[a.pursuit_judge]:99; var pb=o[b.pursuit_judge]!==undefined?o[b.pursuit_judge]:99; return dir*(pa-pb); }); }
+  else if(k==="rv"){ arr=arr.filter(function(c){return !_hasPursuitActivity(c);}); arr.sort(function(a,b){ return dir*(_revisitCount(b)-_revisitCount(a)); }); }
+  else if(k==="jw"){ arr=arr.filter(_judgeMissing); arr.sort(function(a,b){ return getLastVD(b).localeCompare(getLastVD(a)); }); }
+  else if(k==="pace"){ arr.sort(function(a,b){ var ra=calcPaceOverrate(a),rb=calcPaceOverrate(b); if(ra===-1&&rb===-1)return 0; if(ra===-1)return 1; if(rb===-1)return -1; return dir*(rb-ra); }); }
+  else { arr.sort(function(a,b){ return dir*(b.discovery_date||"").localeCompare(a.discovery_date||""); }); }
+  return arr;
+}
+function pickSort(key){ if(_pickSortKey===key){ _pickSortDir[key]=_pickSortDir[key]==="desc"?"asc":"desc"; } else { _pickSortKey=key; } renderInboxPickList(); }
 window.pickSort=pickSort;
 function renderInboxPickList(){
   var list=(typeof cards!=="undefined"&&cards)?cards.slice():[];
   var f=(document.getElementById("inboxPickSearch").value||"").trim().toLowerCase();
   if(f){ list=list.filter(function(c){ return ((c.name||"")+(c.manager||"")+(c.address||"")+(c.plan_address||"")).toLowerCase().indexOf(f)>=0; }); }
-  var sk=_pickSort||'recent';
-  if(sk==='name'){ list.sort(function(a,b){ return (a.name||"").localeCompare((b.name||""),"ja"); }); }
-  else if(sk==='addr'){ list.sort(function(a,b){ return ((a.address||a.plan_address||"")).localeCompare((b.address||b.plan_address||""),"ja"); }); }
-  else { list.sort(function(a,b){ var ta=new Date(a.updated_at||a.created_at||0).getTime()||0, tb=new Date(b.updated_at||b.created_at||0).getTime()||0; return tb-ta; }); }
-  ['recent','name','addr'].forEach(function(k){ var b=document.getElementById('ps_'+k); if(b) b.classList.toggle('active', k===sk); });
+  list=_pickSortArr(list);
+  ['lv','rv','jw','ad','sc','st','pj','pace','dt'].forEach(function(k){ var b=document.getElementById('psk_'+k); if(b) b.classList.toggle('active', k===_pickSortKey); });
   var host=document.getElementById("inboxPickList");
   if(!list.length){ host.innerHTML='<div class="iempty">該当するカードがありません。</div>'; return; }
   host.innerHTML=list.slice(0,200).map(function(c){ var meta=[c.manager,(c.address||c.plan_address)].filter(Boolean).join("・");
@@ -12272,6 +12283,24 @@ function _imeHints(root){ try{ if(!root) return; if(root.tagName){ var tg=root.t
     if(window.MutationObserver && document.body){ var ob=new MutationObserver(function(ms){ for(var i=0;i<ms.length;i++){ var ad=ms[i].addedNodes; for(var j=0;j<ad.length;j++){ var n=ad[j]; if(n&&n.nodeType===1) _imeHints(n); } } }); ob.observe(document.body,{childList:true,subtree:true}); }
   };
   if(document.readyState!=="loading") run(); else document.addEventListener("DOMContentLoaded",run);
+}catch(e){} })();
+/* ---- AibisCam等からのURL遷移：?card=ID でカード / ?inbox でインボックス ---- */
+(function(){ try{
+  var sp=new URLSearchParams(location.search||"");
+  var cardId=sp.get("card"), wantInbox=sp.get("inbox");
+  if(!cardId && !wantInbox) return;
+  var tries=0;
+  var run=function(){
+    tries++;
+    if((typeof cards==="undefined" || !Array.isArray(cards)) && tries<60){ return setTimeout(run,200); }
+    try{
+      var done=false;
+      if(cardId && typeof openCard==="function" && (cards||[]).some(function(c){return c&&c.id===cardId;})){ openCard(cardId); done=true; }
+      else if((wantInbox||cardId) && typeof openInbox==="function"){ openInbox(); done=true; }
+      if(done){ try{ history.replaceState({}, "", location.pathname); }catch(_e){} }
+    }catch(e){}
+  };
+  if(document.readyState!=="loading") setTimeout(run,300); else document.addEventListener("DOMContentLoaded",function(){ setTimeout(run,300); });
 }catch(e){} })();
 function renderCardPhotos(cardId){
   var sec=document.getElementById("cardPhotoSec"), body=document.getElementById("cardPhotoBody"), cnt=document.getElementById("cardPhotoCount");

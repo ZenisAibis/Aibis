@@ -135,6 +135,9 @@
   .drow .ad.pend{color:var(--dim);font-weight:600}
   .drow .wn{font-size:11px;color:var(--dim)}
   .drow .delbtn{flex:0 0 auto;width:42px;height:42px;border-radius:11px;background:rgba(255,93,125,.14);color:var(--danger);font-size:18px;display:flex;align-items:center;justify-content:center}
+  .drowact{margin-top:7px;display:flex;gap:6px}
+  .drowbtn{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#dbe4f0;border-radius:9px;padding:7px 11px;font-size:12px;font-weight:800;font-family:inherit;cursor:pointer}
+  .drowbtn.pri{background:#2c5282;border-color:#2c5282;color:#fff}
   .drow .delbtn:active{background:rgba(255,93,125,.28)}
   .drow .selbox{flex:0 0 auto;width:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;align-self:stretch}
   .drow .selbox .cbx{width:24px;height:24px;border-radius:7px;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#1a1300;background:transparent}
@@ -401,7 +404,7 @@
    ※ prospect_cards_v1 には書き込まない（新規カード作成・PC連携は本体側）
    データ(set): {id,cardId,ts,addrType:'plan',lat,lng,acc,addr,addrPending,banchi,note,sent,photos:[{pid,full(Blob),thumb,w,h,size}]}
    ========================================================= */
-const APP_VERSION = "cam-v1.38";
+const APP_VERSION = "cam-v1.39";
 
 /* ===== PWA：単一ファイルでインストール可能化（外部ファイル不要） ===== */
 function _pwaIcon(size,maskable){
@@ -947,18 +950,27 @@ function drowHtml(s, kind){
   const on=sendSel.has(s.id);
   const lead = (kind==="sel") ? '<div class="selbox" data-sel="'+esc(s.id)+'"><span class="cbx'+(on?' on':'')+'">'+(on?'✓':'')+'</span></div>' : '';
   const autoB = (kind==="auto"&&!s.sent) ? '<span class="autobadge">自動書き出し</span>' : '';
+  const jump = linked
+    ? '<button class="drowbtn" data-gotomain="card:'+esc(s.cardId)+'">🪪 カード遷移</button>'
+    : '<button class="drowbtn pri" data-gotomain="inbox">🔗 紐付け</button>';
   return '<div class="drow'+(kind==="sel"?' selrow':'')+'" data-id="'+esc(s.id)+'">'+lead+
     '<div class="th"><img src="'+(s.photos[0]?s.photos[0].thumb:"")+'"><span class="n">'+s.photos.length+'枚</span></div>'+
     '<div class="bd"><div class="'+cls+'">'+full+'</div>'+
-    '<div class="wn">'+who+' '+sent+autoB+' ・ '+fmtWhen(s.ts)+'</div></div>'+
+    '<div class="wn">'+who+' '+sent+autoB+' ・ '+fmtWhen(s.ts)+'</div>'+
+    '<div class="drowact">'+jump+'</div></div>'+
     '<button class="delbtn'+(linked?' ret':'')+'" data-del="'+esc(s.id)+'" title="'+(linked?'インボックスに戻す':'削除')+'">'+(linked?'📥':'🗑')+'</button></div>';
 }
 function bindDrows(host,fromWhere){
   host.querySelectorAll(".drow").forEach(el=>el.addEventListener("click",e=>{
-    if(e.target.closest(".delbtn")||e.target.closest(".selbox")) return;
+    if(e.target.closest(".delbtn")||e.target.closest(".selbox")||e.target.closest(".drowact")) return;
     openSet(el.dataset.id);
   }));
   host.querySelectorAll(".delbtn").forEach(b=>b.addEventListener("click",()=>{ destroyOrReturn(b.dataset.del); }));
+  host.querySelectorAll("[data-gotomain]").forEach(b=>b.addEventListener("click",e=>{ e.stopPropagation(); gotoMain(b.dataset.gotomain); }));
+}
+function gotoMain(spec){
+  var qs = spec==="inbox" ? "?inbox=1" : (spec&&spec.indexOf("card:")===0 ? "?card="+encodeURIComponent(spec.slice(5)) : "");
+  try{ location.href="ZenisAibis.html"+qs; }catch(e){ try{ window.open("ZenisAibis.html"+qs,"_self"); }catch(_e){} }
 }
 
 /* ---------- 送信設定 ---------- */
