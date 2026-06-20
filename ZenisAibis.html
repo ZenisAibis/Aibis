@@ -1785,7 +1785,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.14";
+var APP_VERSION = "v8.16";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -11738,6 +11738,7 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   .ibtn.pri{background:#2c5282;border-color:#2c5282;color:#fff}
   .ibtn.dn{background:rgba(197,48,48,.1);border-color:rgba(197,48,48,.25);color:#c53030}
   .ibtn.ok{background:#38a169;border-color:#38a169;color:#fff}
+  .ibtn.un{background:#ed8936;border-color:#ed8936;color:#fff}
   .iacts3{display:flex;gap:6px;flex-wrap:nowrap;width:100%}
   .iacts3 .ibtn{flex:0 1 auto;min-width:0;white-space:nowrap;padding:7px 10px;overflow:visible;text-overflow:clip}
   .iacts3 .ibtn.dn{flex:0 0 auto;padding:7px 10px}
@@ -12004,7 +12005,7 @@ function _inrow2(s, isUnlinked){
   }
   return '<div class="irow2">'+th+'<div class="ibd"><div class="iadr">'+addr+sent+'</div>'+
     '<div class="imeta">🔗 '+e(_cardName(s.cardId))+' ・ '+_fmtWhen(s.ts)+(s.note?" ・ "+e(s.note):"")+'</div>'+
-    '<div class="iacts"><button class="ibtn" data-act="unlink" data-id="'+e(s.id)+'">↩ インボックスへ</button><button class="ibtn" data-act="gotocard" data-id="'+e(s.id)+'">🪪 カード確認</button><button class="ibtn dn" data-act="del" data-id="'+e(s.id)+'">🗑</button></div></div></div>';
+    '<div class="iacts"><div class="iacts3"><button class="ibtn un" data-act="unlink" data-id="'+e(s.id)+'">↩ 紐付け解除</button><button class="ibtn" data-act="gotocard" data-id="'+e(s.id)+'">🪪 カード遷移</button><button class="ibtn dn" data-act="del" data-id="'+e(s.id)+'">🗑</button></div></div></div></div>';
 }
 function _wireInbox(host){
   host.querySelectorAll("[data-act]").forEach(function(el){
@@ -12148,7 +12149,7 @@ function renderInboxBody(){
     var selCount=unlinked.filter(function(s){return _inbSel[s.id];}).length;
     if(isMob){
       html+='<div class="isend"><button class="ibtn pri big" onclick="inboxSendToPC()">📤 PCへ書き出す（'+(linkedUnsent+selCount)+'件）</button></div>';
-      html+='<div class="ihint">📤 紐付け済みは自動で書き出し／未紐付けは✓選択分のみ。</div>';
+      html+='<div class="ihint">📤 紐付け済みは自動で書き出します。</div>';
     }
     if(unlinked.length){
       html+='<div class="isec2">未紐付け（'+unlinked.length+'）<span class="seltools"><button onclick="inboxSelAll()">☑ 全選択</button><button onclick="inboxSelNone()">解除</button></span></div>';
