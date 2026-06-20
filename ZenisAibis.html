@@ -1785,7 +1785,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.08";
+var APP_VERSION = "v8.09";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -11790,6 +11790,7 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   .cps-hdr-btn{flex-shrink:0;width:42px;height:38px;border:1px solid #cbd5e0;border-radius:8px;background:#fff;cursor:pointer;font-size:17px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0}
   .cps-hdr-btn:active{background:#edf2f7}
   body:not(.is-mob) .cps-hdr-cam{display:none}
+  #cardPhotoBody .cps-stage{position:relative;overflow:hidden}
   #cardPhotoBody .cps-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px}
   #cardPhotoBody .cps-pager{display:flex;align-items:center;gap:10px}
   #cardPhotoBody .cps-date{font-size:11px;color:#718096;text-align:right;white-space:nowrap}
