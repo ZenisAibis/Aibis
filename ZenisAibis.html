@@ -1817,13 +1817,17 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.78";
+var APP_VERSION = "v8.82";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
-// 課分析に分析カードをJSのみで追加：zAddAnalysis({id,e,t,s,sp,render:function(ctx){...return html;}}) （同一idは置換）
+// 課分析の章キー（zAddAnalysis の sec で配置先を指定。未指定=state=詳細分析）
+window.Z_ANALYSIS_SECTIONS = {today:'課の指示', coach:'部下の指導', teamchk:'部下の確認', grow:'育成クエスト', state:'詳細分析'};
+// 課分析に分析カードをJSのみで追加：zAddAnalysis({id,e,t,s,sp,sec,render:function(ctx){...return html;}})
+//   sec＝配置先の章（today/coach/teamchk/grow/state、既定 state＝詳細分析）。同一idは置換。
 window.zAddAnalysis=function(item){
   if(!item||typeof item.render!=='function'){ try{console.warn('zAddAnalysis: render関数が必要です');}catch(_e){} return false; }
+  if(item.sec&&!window.Z_ANALYSIS_SECTIONS[item.sec]){ try{console.warn('zAddAnalysis: 未知のsec「'+item.sec+'」→ state(詳細分析)に配置');}catch(_e){} item.sec='state'; }
   window.Z_DEEP_EXTRAS=window.Z_DEEP_EXTRAS||[];
   var _i=window.Z_DEEP_EXTRAS.map(function(x){return x&&x.id;}).indexOf(item.id);
   if(item.id&&_i>=0) window.Z_DEEP_EXTRAS[_i]=item; else window.Z_DEEP_EXTRAS.push(item);
@@ -4629,6 +4633,28 @@ function renderSelfDash(tid){
  var _jm=mine.filter(_judgeMissing).length;var _mis=[];if(_jm)_mis.push('\u26a0 ランク未判定 '+_jm+'件に追客判定を（判定は必須）');if(fuN)_mis.push('14日以上ご無沙汰のカードを1件、再訪アポ');if(famNo)_mis.push('家族構成が空のカードを1件、ヒアリング入力');if(aCand)_mis.push('連想到達のカードを1件、追客判定（A化）');if(_mis.length<3&&c3.length)_mis.push('連想(3)のカードにテストクロージング');if(!_mis.length)_mis.push('良いペース！今日も新規発掘を1件');_mis=_mis.slice(0,3);
  var _prio=mine.map(function(c){return {c:c,s:calcScore(c)};}).sort(function(a,b){return b.s-a.s;}).slice(0,3);
  var H='<div class="zdash zdash-rep"><div class="z-bento">';
+ // ===== 🎯 今日の3手（担当者本人用・最上部・シンプル）=====
+ var _selfMove=function(c){
+   var st=+(c.stage||0), dd=lastContactDays(c), over=calcPaceOverrate(c)>1;
+   var hasAppo=_zAppoDates(c).some(function(d){return d>=_zToday10();});
+   if(over||dd>=14||!hasAppo) return {ask:'「次回お伺いする日を、いま決めさせてください」', promise:'次回訪問のアポ'};
+   if(st>=5&&!c.doukou) return {ask:'「他社さんと比べて、気になる点はどこですか?」', promise:'課長同行の日程'};
+   if(st>=3&&!c.proposal_req) return {ask:'「具体的に進めるなら、どんな形がご希望ですか?」', promise:'提案依頼（意思表示）'};
+   if(!c.family_headcount) return {ask:'「ご家族は何人で、相続されるのはどなたですか?」', promise:'家族構成のヒアリング'};
+   if(!((c.family||[]).some(function(x){return x.met&&(x.owner||x.kp);}))) return {ask:'「ご決断には、どなたのご意向が大切ですか?」', promise:'決裁者(KP)との面談'};
+   return {ask:'「いま一番のお悩みは何ですか?」', promise:'次の接点の約束'};
+ };
+ var _moves=mine.map(function(c){var st=+(c.stage||0),u=0;if(calcPaceOverrate(c)>1)u+=3;var dd=lastContactDays(c);if(dd>=14)u+=2;if(c.pursuit_judge==='S')u+=3;else if(c.pursuit_judge==='A')u+=2;if(st>=3)u+=1;return {c:c,u:u};}).filter(function(o){return o.u>0;}).sort(function(a,b){return b.u-a.u;}).slice(0,3);
+ if(!_moves.length) _moves=mine.filter(function(c){return +(c.stage||0)>=3;}).slice(0,3).map(function(c){return {c:c,u:0};});
+ if(!_moves.length) _moves=mine.slice(0,3).map(function(c){return {c:c,u:0};});
+ var _3te='<div class="z-card z-cf" style="border-top:3px solid #34e3d0;margin:0 0 4px"><h3>🎯 今日の3手</h3><div class="z-sub">この3件だけ動けばOK。タップでカードへ。</div>'
+  +_moves.map(function(o,i){var c=o.c,mv=_selfMove(c),sid=String(c.id||'').replace(/[^\w-]/g,'');
+    return '<div style="padding:8px 0;border-bottom:1px solid var(--z-line)"><div style="display:flex;align-items:center;gap:8px"><span style="width:22px;height:22px;border-radius:7px;background:rgba(52,227,208,.16);color:#34e3d0;font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(i+1)+'</span><b style="font-size:14px;color:var(--z-ink);cursor:pointer" onclick="openCard(\''+sid+'\')">'+e(c.name||'無名')+'様 ›</b></div>'
+      +'<div style="font-size:12px;color:var(--z-mut);margin:3px 0 0 30px;line-height:1.5"><span style="color:#4dabf7;font-weight:700">🗣 聞く：</span>'+e(mv.ask)+'</div>'
+      +'<div style="font-size:12px;color:var(--z-mut);margin:2px 0 0 30px;line-height:1.5"><span style="color:#2f9e44;font-weight:700">🤝 約束：</span>'+e(mv.promise)+'</div></div>';
+  }).join('')
+  +'<div class="z-sub" style="margin-top:8px">💡 1件動くごとに前進。終わったら「次回の狙い」をカードに一言メモしよう。</div></div>';
+ H+=_3te;
  H+='<!--SELFJOB-->';
  H+='<div class="z-card z-hero z-cf"><div class="z-ring" style="--p:'+renso+'"><div class="z-ring-in"><b>'+renso+'<small>%</small></b><span>育成率</span></div></div><div class="z-hmeta"><div class="z-lv">⚔ '+e(uName||'あなた')+' さんの成長ランク</div><h2>Lv.'+_rk.lv+' '+_rk.name+'</h2><div class="z-chips"><span class="z-chip">保有 <b>'+n+'</b>件</span><span class="z-chip">A・S <b>'+asN+'</b>件</span><span class="z-chip">要フォロー <b>'+fuN+'</b>件</span><span class="z-chip">育成率 <b>'+renso+'</b>%</span></div><div class="z-xp"><div class="z-xpl"><span>'+(_rk.next?'あと <b>'+_rk.remain+'pt</b> で Lv.'+(_rk.lv+1)+' '+_rk.next:'最高ランクに到達！')+'</span><span>今月 +'+_mg+'pt</span></div><div class="z-xptrack"><i style="width:'+_rk.prog+'%"></i></div></div><div class="z-sub" style="margin-top:6px">成長ポイント（営業経験値）累計 '+_pts+'pt</div></div></div>';
  var _plan=_planLoad(); var _acts=['再訪','追撃','テスクロ','家族確認','様子見'];
@@ -5845,7 +5871,7 @@ function renderFam(){
   });
   famRenderSummary();
   var _tb=document.getElementById('famTreeBox');
-  if(_tb){ try{ var _ff=(cur.family||[]).filter(function(m){return m.role;}); _tb.innerHTML=_ff.length?('<div style="font-size:10px;color:#a0aec0;margin:0 0 2px 2px">👆 タップで編集</div>'+buildFamTreeSVG(_ff,{interactive:true,src:cur.family})):'<div style="color:#a0aec0;font-size:12px;padding:8px">家族を追加すると世代ツリーが表示されます。</div>'; }catch(_e){ _tb.innerHTML='<div style="color:#a0aec0;font-size:12px;padding:8px">家系図を表示できませんでした。</div>'; } }
+  if(_tb){ try{ var _ff=(cur.family||[]).filter(function(m){return m.role;}); if(_ff.length){var _hasSib=_ff.some(function(m){return ['兄','弟','姉','妹'].indexOf(m.role)>=0;});var _unNote=_hasSib?'<div style="font-size:9.5px;color:#8b95a6;margin:3px 2px 0;line-height:1.4">※「伯父／叔父／伯母／叔母」＝世帯主の兄弟姉妹を、お子様から見た続柄で表示。保存値は兄・弟・姉・妹のままです。</div>':'';_tb.innerHTML='<div style="font-size:10px;color:#a0aec0;margin:0 0 2px 2px">👆 タップで編集</div>'+buildFamTreeSVG(_ff,{interactive:true,src:cur.family})+_unNote;}else{_tb.innerHTML='<div style="color:#a0aec0;font-size:12px;padding:8px">家族を追加すると世代ツリーが表示されます。</div>';} }catch(_e){ _tb.innerHTML='<div style="color:#a0aec0;font-size:12px;padding:8px">家系図を表示できませんでした。</div>'; } }
 }
 function famRenderSummary(){
   // 表示されているメンバー（roleあり）のみ集計
@@ -7252,6 +7278,7 @@ function buildFamTreeSVG(fam, opts){
       var sdc=(m.stance==='pos')?'#38a169':(m.stance==='neg')?'#e53e3e':'#ffffff';
       s+=`<circle cx="${n.x+NW/2}" cy="${n.y+8}" r="3.2" fill="${sdc}" stroke="#94a3b8" stroke-width="0.7"/>`;
       if(!inlaw) s+=`<circle cx="${n.x+NW-9}" cy="${n.y+9}" r="3.6" fill="${resC}" stroke="#ffffff" stroke-width="1"/>`;
+      if(n.kind==='sib'&&g2.length>0){var _unc={'兄':'伯父','姉':'伯母','弟':'叔父','妹':'叔母'}[String(m.role||'')];if(_unc){s+=`<rect x="${n.x+4}" y="${n.y+4}" width="24" height="13" rx="6.5" fill="#eef0fb" stroke="#c7cdf2" stroke-width="0.7"/>`+`<text x="${n.x+16}" y="${n.y+13.6}" font-size="8" fill="#5b54b8" text-anchor="middle" font-weight="700">${_unc}</text>`;}}
     }
     var alY=n.y+NH-7, role=String(m.role||''), pi=role.indexOf('（');
     var rl=pi>=0?[role.slice(0,pi),role.slice(pi)]:[role];
@@ -7308,6 +7335,7 @@ function buildFamilyHTML(c){
       +'<span>枠：<b style="color:#3182ce">青=KP</b>／<b style="color:#c53030">赤=所有者</b>／<b style="color:#38a169">緑=面談済</b></span>'
       +'<span>右上●居住：<b style="color:#06b6d4">同居</b>・<b style="color:#d97706">近居</b>・<b style="color:#3b82f6">別居</b>・<b style="color:#94a3b8">死亡</b></span>'
       +'<span>中央●意向：<b style="color:#38a169">緑=前向</b>/<b style="color:#e53e3e">赤=否定</b>/白=不明</span>'
+      +'<span>左上「伯/叔」＝世帯主の兄弟姉妹（お子様から見た続柄）</span>'
       +'</div></div>';
   }
   var genLabel=['祖父母世代','世帯主世代','子世代'];
@@ -8385,7 +8413,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
  var miniR=board.map(function(b,_bi){var a=g[b.r];return '<div class="z-jobcell">'+jobCardHTML(a,'mgr',b.r)+'</div>';}).join('');
  // ===== 🔬 深掘り分析：動的生成（レジストリ方式） =====
  // 分析カードは配列1要素＝1カード。JSのみで追加できる。
- // 外部追加：window.zAddAnalysis({id,e,t,s,sp,render:function(ctx){return html;}}) （同一idは置換／Z_DEEP_EXTRASへ直接pushも可）。
+ // 外部追加：window.zAddAnalysis({id,e,t,s,sp,sec,render:function(ctx){return html;}}) （sec＝配置章 today/coach/teamchk/grow/state、既定state／同一idは置換／Z_DEEP_EXTRASへ直接pushも可）。
  // ctx＝{t,g,reps,cards,calcScore,STG} ＋ チャート群 {card,vbars,line,spark,radar,funnel,pie,ring,pct,avas,months,e}。global非依存でrender内完結。
  var _deepCtx={t:t,g:g,reps:reps,cards:cards,calcScore:calcScore,STG:STG,e:e,pct:_zPct,card:_zc,vbars:_zVbars,line:_zLine,spark:_zSpark,radar:_zRadar,funnel:_zFunnel,pie:_genjoPie,ring:_ryokuchiRing,avas:_zAVAS,months:_zMonths};
  var _deepItems=[
@@ -8564,7 +8592,8 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
  var _axKingCard=_zc('🏅','タイプ別 No.1（称号）','5つの型それぞれの課トップ。',(_axKing||'<div class="z-sub">集計中</div>'),'z-cf');
  var _cardWork=_zc('🟢','稼働率モニター','達成度','<div class="zWorkCard">'+workMeterInner()+'</div>','z-cf');
  var _cardDiff=_zc('🎚','戦略差分','温度の追従と違う運用。協議の判断ポイント。タップでカードへ',_strategyDiffInner(),'z-cf');
- var _bodyData=_deepItems.filter(function(it){return it.id!=='treasure'&&it.id!=='jobs9';}).map(function(it){var bd='';try{bd=it.render(_deepCtx)||'';}catch(err){bd='<div class="z-sub">⚠ 「'+(it.id||'?')+'」の描画でエラー（'+String(err&&err.message||err).slice(0,80)+'）</div>';}return _zc(it.e||'📈',it.t||it.id||'分析',it.s||'',bd,it.sp||'z-c2');}).join('');
+ // 動的分析カード：sec で章振り分け（既定 state＝詳細分析）。treasure/jobs9 は専用配置のため除外。
+ function _extrasFor(secKey){return _deepItems.filter(function(it){if(it.id==='treasure'||it.id==='jobs9')return false;return (it.sec||'state')===secKey;}).map(function(it){var bd='';try{bd=it.render(_deepCtx)||'';}catch(err){bd='<div class="z-sub">⚠ 「'+(it.id||'?')+'」の描画でエラー（'+String(err&&err.message||err).slice(0,80)+'）</div>';}return _zc(it.e||'📈',it.t||it.id||'分析',it.s||'',bd,it.sp||'z-c2');}).join('');}
  var _cardInsights=_zc('🧠','傾向と対策（AIインサイト）','データから打ち手を自動抽出。',ins,'z-cf');
  var _cardMap=_zc('🗺','マップ','町の熱量とお宝客。',bodyArea+_cardTreasure,'z-cf');
  var dangerCard=_zc('🚨','放置危険アラート','このままだと流れる見込み。至急→要フォロー→注意の順。タップでカードへ。',zDangerCardHTML(t,true),'z-cf'); var contractCard=_zc('✅','契約前進チェックリスト','契約に進むための不足を1行で。不足が少ない順＝契約に近い。','<div class="z-list2">'+zContractListHTML(t,true)+'</div>','z-cf'); var familyCard=_zc('👪','家族合意マップ','賛成●/反対●/未接触○・決裁者・KP・次に会う人。反対や未接触決裁者を優先。','<div class="z-list2">'+zFamilyMapHTML(t,true)+'</div>','z-cf'); // ===== 🌅 朝3分・指揮ボード（最上部・常時表示。既存の計算結果を要約。色は意味色1ブロック1色）=====
@@ -8581,31 +8610,34 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
    function rk(i,col){return '<div style="width:20px;height:20px;border-radius:50%;background:'+col+';color:#fff;font-weight:800;font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+i+'</div>';}
    function sub2(label,txt,col){return '<div style="font-size:11.5px;color:var(--z-mut);margin:1px 0 0 30px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span style="color:'+(col||'var(--z-cyan)')+';font-weight:700">'+label+'</span>'+txt+'</div>';}
    function empty(t){return '<div style="font-size:11.5px;color:var(--z-dim);padding:3px 0 5px">'+t+'</div>';}
+   function sub2w(label,txt,col){return '<div style="font-size:11.5px;color:var(--z-mut);margin:2px 0 0 30px;line-height:1.45"><span style="color:'+(col||'var(--z-cyan)')+';font-weight:700">'+label+'</span>'+txt+'</div>';}
+   var _coachChk={'入力薄':'土地・家族・現状が空のカードを1枚埋めたか','A/S放置':'A/S案件に次回アポが入っているか','追客遅れ':'再訪アポを先に1本決めたか','連想前停滞':'「相続の困りごと」を聞けたか','提案依頼弱':'連想到達カードで提案依頼を打診したか','家族未把握':'家族構成を1件ヒアリングしたか'};
+   // ① 今日動く案件：顧客名／担当／動く理由／今日やること／取るべき約束
    var b1=todayCand.length?todayCand.map(function(o,i){var c=o.c,st=+(c.stage||0),mv=_nextMove(c);
-     return '<div style="padding:5px 0;border-bottom:1px solid var(--z-line)"><div style="display:flex;align-items:center;gap:7px">'+rk(i+1,(RC2[c.pursuit_judge]||'#4a5568'))+nm(c)+meta(STG[st]+'・'+e(c.manager||''))+(o.rs.length?tag(o.rs[0],SC.red):'')+'</div>'+sub2('→ ',e(mv[0]),SC.blue)+(c.next_aim?sub2('担当の狙い：',e(c.next_aim),SC.violet):'')+'</div>';
+     return '<div style="padding:6px 0;border-bottom:1px solid var(--z-line)"><div style="display:flex;align-items:center;gap:7px">'+rk(i+1,(RC2[c.pursuit_judge]||'#4a5568'))+nm(c)+meta(STG[st]+'・'+e(c.manager||''))+(o.rs.length?tag(o.rs[0],SC.red):'')+'</div>'+sub2w('→ ',e(mv[0]),SC.blue)+(mv[1]?sub2w('🤝 約束：',e(mv[1]),SC.green):'')+(c.next_aim?sub2w('担当の狙い：',e(c.next_aim),SC.violet):'')+'</div>';
    }).join(''):empty('今日の優先案件なし。良好です◎');
+   // ② 担当へ言う一言：担当名／詰まり／課長からの一言／今日確認すること
    var needCoach=coachRows.filter(function(o){return o.sev>=2;}).slice(0,3);
    var b2=needCoach.length?needCoach.map(function(o){var col=o.sev>=4?SC.red:SC.gold;
-     return '<div style="padding:5px 0;border-bottom:1px solid var(--z-line)"><div style="display:flex;align-items:center;gap:6px">'+'<b style="font-size:12.5px;color:var(--z-ink);flex-shrink:0">'+e(o.r)+'さん</b>'+tag(o.issue,col)+'<span style="font-size:10.5px;color:var(--z-dim);margin-left:auto;flex-shrink:0">'+o.n+'件</span></div><div style="font-size:11.5px;color:var(--z-mut);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+o.msg+'</div></div>';
+     return '<div style="padding:6px 0;border-bottom:1px solid var(--z-line)"><div style="display:flex;align-items:center;gap:6px"><b style="font-size:12.5px;color:var(--z-ink);flex-shrink:0">'+e(o.r)+'さん</b>'+tag(o.issue,col)+'<span style="font-size:10.5px;color:var(--z-dim);margin-left:auto;flex-shrink:0">'+o.n+'件</span></div>'+sub2w('一言：',o.msg,SC.violet)+(_coachChk[o.issue]?sub2w('今日確認：',e(_coachChk[o.issue]),SC.blue):'')+'</div>';
    }).join(''):empty('全担当 良好◎ 強みを伸ばす声かけを');
+   // ③ 契約に近い案件：顧客名／契約距離／足りないもの→次の約束／課長同行
    var d3=deals.slice(0,3);
-   var b3=d3.length?d3.map(function(o){var c=o.c,gap=_readyGap(c);
-     return '<div style="padding:5px 0;border-bottom:1px solid var(--z-line)"><div style="display:flex;align-items:center;gap:7px">'+nm(c)+meta(e(c.manager||''))+tag('近接 '+o.p+'%',SC.gold)+'</div>'+(gap&&gap!=='準備OK'?sub2('不足：',e(gap),SC.gold):sub2('','次の接点まで準備OK◎',SC.green))+'</div>';
+   var b3=d3.length?d3.map(function(o){var c=o.c,gap=_readyGap(c),st=+(c.stage||0),needDk=(st>=5&&!c.doukou);
+     return '<div style="padding:6px 0;border-bottom:1px solid var(--z-line)"><div style="display:flex;align-items:center;gap:7px">'+nm(c)+meta(e(c.manager||''))+tag('契約距離 '+o.p+'%',SC.gold)+(needDk?tag('要・課長同行',SC.violet):'')+'</div>'+(gap&&gap!=='準備OK'?sub2w('不足→ ',e(gap),SC.gold):sub2w('','次の接点まで準備OK◎',SC.green))+'</div>';
    }).join(''):empty('契約接近の対象なし');
+   // ④ 危険案件：顧客名／放置日数／危険理由／今日の止血行動
    var dg=t.map(function(c){var r=zNeglectRisk(c);return r?{c:c,r:r}:null;}).filter(Boolean).sort(function(a,b){return b.r.level-a.r.level;}).slice(0,3);
-   var b4=dg.length?dg.map(function(o){var c=o.c;
-     return '<div style="padding:5px 0;border-bottom:1px solid var(--z-line)"><div style="display:flex;align-items:center;gap:7px">'+lvlChip(o.r.level)+nm(c)+meta(e(c.manager||''))+'</div>'+sub2('⚠ ',e(o.r.primary),SC.red)+'</div>';
+   var b4=dg.length?dg.map(function(o){var c=o.c,dd=lastContactDays(c);
+     return '<div style="padding:6px 0;border-bottom:1px solid var(--z-line)"><div style="display:flex;align-items:center;gap:7px">'+lvlChip(o.r.level)+nm(c)+meta(e(c.manager||'')+(dd>=0?'・放置'+dd+'日':''))+'</div>'+sub2w('⚠ ',e(o.r.primary),SC.red)+sub2w('→ 止血：',e(zRiskTodo(c)),SC.blue)+'</div>';
    }).join(''):empty('放置危険なし。よく追えています◎');
-   var weak=reps.map(function(r,i){return {r:r,v:inpBars[i]};}).filter(function(o){return o.v<50;}).sort(function(a,b){return a.v-b.v;});
-   var b5=weak.length?'<div style="display:flex;flex-wrap:wrap;gap:5px 10px;padding:3px 0 3px">'+weak.map(function(o){return '<span style="font-size:11.5px;color:var(--z-ink)">'+e(o.r)+' <b style="color:'+SC.red+'">'+o.v+'%</b></span>';}).join('')+'</div><div style="font-size:10.5px;color:var(--z-dim)">入力50%未満。土地・家族・現状の3項目から補強を。</div>':empty('全担当 入力充実◎');
    return '<div class="z-card" style="border:1px solid var(--z-line);border-top:3px solid '+SC.gold+';margin:0 0 14px;padding:13px 14px">'
      +'<div style="display:flex;align-items:center;gap:8px;margin:0 0 10px"><span style="font-size:16px">🌅</span><b style="font-size:15px;color:var(--z-ink)">朝3分・指揮ボード</b><span style="font-size:10.5px;color:var(--z-dim);margin-left:auto;flex-shrink:0">'+(scope==='all'?'課全体':e(scope))+'</span></div>'
-     +'<div style="margin-bottom:9px">'+head('🎯',SC.blue,'今日動く',todayCand.length+'件')+b1+'</div>'
-     +'<div style="margin-bottom:9px">'+head('🗣',SC.violet,'声をかける',needCoach.length?needCoach.length+'人':'')+b2+'</div>'
-     +'<div style="margin-bottom:9px">'+head('✅',SC.gold,'契約に近い',d3.length+'件')+b3+'</div>'
-     +'<div style="margin-bottom:9px">'+head('🚨',SC.red,'放置危険',dg.length+'件')+b4+'</div>'
-     +'<div>'+head('📝',SC.grey,'入力が薄い担当','')+b5+'</div>'
-     +'<div style="font-size:10.5px;color:var(--z-dim);margin-top:10px;padding-top:8px;border-top:1px solid var(--z-line)">詳しくは下の各セクション（🎯課の指示／🎓部下の指導／📊詳細分析）を開いてください。</div>'
+     +'<div style="margin-bottom:9px">'+head('🎯',SC.blue,'今日動く案件',todayCand.length+'件')+b1+'</div>'
+     +'<div style="margin-bottom:9px">'+head('🗣',SC.violet,'担当へ言う一言',needCoach.length?needCoach.length+'人':'')+b2+'</div>'
+     +'<div style="margin-bottom:9px">'+head('✅',SC.gold,'契約に近い案件',d3.length+'件')+b3+'</div>'
+     +'<div>'+head('🚨',SC.red,'危険案件（止血）',dg.length+'件')+b4+'</div>'
+     +'<div style="font-size:10.5px;color:var(--z-dim);margin-top:10px;padding-top:8px;border-top:1px solid var(--z-line)">入力が薄い担当・スコア等の詳細は下の各セクション（🎯課の指示／🎓部下の指導／📊詳細分析）へ。</div>'
      +'</div>';
  })();
  var _llCard=(function(){
@@ -8625,7 +8657,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
    var body=(leads.length+eng.length)?(tiles+brk+perRep+note):'<div class="z-empty">対象カードがありません</div>';
    return _zc('⛏','発掘パイプライン <span class="z-secsub">土地見込み→対話</span>','発掘した土地見込みを、対話・面談につなげられているか。発掘活用率＝対話済み÷(対話済み＋発掘中)。',body,'z-c2');
  })();
- H+=morningBoard+_zsec('today','🎯 課の指示 <span class="z-secsub">今日やること・誰に何を</span>',todayCard+dangerCard+contractCard+familyCard+readyCard+zoneCard+bodyContract)+_zsec('coach','🎓 部下の指導 <span class="z-secsub">コーチング</span>',coachCard)+_zsec('teamchk','👥 部下の確認 <span class="z-secsub">担当の現状</span>',bodyRank+_cardWork+_cardDiff+bodyTeam)+_zsec('grow','🌱 育成クエスト <span class="z-secsub">型・成長・次の課題</span>',questCard+_axKingCard)+_zsec('state','📊 詳細分析 <span class="z-secsub">月次・ヒートマップ・課長会議用</span>',_cardMap+bodyKpi3+bodyProcess+_llCard+bodyQuality+_bodyData+_teamCourse+_cardInsights);
+ H+=morningBoard+_zsec('today','🎯 課の指示 <span class="z-secsub">今日やること・誰に何を</span>',todayCard+dangerCard+contractCard+familyCard+readyCard+zoneCard+bodyContract+_extrasFor('today'))+_zsec('coach','🎓 部下の指導 <span class="z-secsub">コーチング</span>',coachCard+_extrasFor('coach'))+_zsec('teamchk','👥 部下の確認 <span class="z-secsub">担当の現状</span>',bodyRank+_cardWork+_cardDiff+bodyTeam+_extrasFor('teamchk'))+_zsec('grow','🌱 育成クエスト <span class="z-secsub">型・成長・次の課題</span>',questCard+_axKingCard+_extrasFor('grow'))+_zsec('state','📊 詳細分析 <span class="z-secsub">月次・ヒートマップ・課長会議用</span>',_cardMap+bodyKpi3+bodyProcess+_llCard+bodyQuality+_extrasFor('state')+_teamCourse+_cardInsights);
  H+='</div>';
  host.innerHTML=H;
  if(window.IS_DEV){var _dw=document.getElementById('devSelfMirrorWrap');if(_dw){_dw.style.display='';if(window.renderSelfDash)renderSelfDash('devSelfMirror');}}
