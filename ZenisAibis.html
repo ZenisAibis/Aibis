@@ -1767,7 +1767,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.38";
+var APP_VERSION = "v8.39";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -6361,27 +6361,37 @@ function mapRoute(){
   var home=(document.getElementById('f_addr')?.value||'').trim();
   var plan=(document.getElementById('f_plan')?.value||'').trim();
   if(!home||!plan){toast('住所（自宅）と計画地の両方を入力してください');return;}
-  // 計画地→自宅（出発:計画地、目的地:自宅）
-  window.open('https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(plan)+'&destination='+encodeURIComponent(home)+'&travelmode=driving','_blank');
+  // 計画地→自宅（出発:計画地、目的地:自宅）。Android はマップアプリを直接起動。
+  var path='maps/dir/?api=1&origin='+encodeURIComponent(plan)+'&destination='+encodeURIComponent(home)+'&travelmode=driving';
+  var https='https://www.google.com/'+path;
+  if(_isAndroid()){ location.href=_mapsAppUrl(path, https); } else { window.open(https,'_blank'); }
 }
+function _isAndroid(){ return /Android/i.test(navigator.userAgent||''); }
+function _mapsAppUrl(path, httpsUrl){ return 'intent://www.google.com/'+path+'#Intent;scheme=https;package=com.google.android.apps.maps;S.browser_fallback_url='+encodeURIComponent(httpsUrl)+';end'; }
 function mapStation(){
   collectForm();
   var p=(document.getElementById('f_plan')?.value||'').trim();
   if(!p){toast('計画地を入力してください');return;}
-  // 計画地の座標を地理院ジオコーディングで取得→その地点を中心に「駅」を検索（現在地ではなく計画地基準）
-  var w=window.open('about:blank','_blank'); // クリック直後に同期で開く（ポップアップブロック回避）
-  var fb='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p+' 駅');
-  function go(u){ try{ if(w&&!w.closed){ w.location.href=u; return; } }catch(e){} window.open(u,'_blank'); }
+  // 計画地の座標を地理院ジオコーディングで取得→その地点を中心に「駅」を表示（現在地でなく計画地基準）
+  // Android: intent:// でGoogleマップ「アプリ」を直接起動（未インストール時はブラウザにフォールバック）/ PC: ブラウザ新規タブ
+  var android=_isAndroid();
+  var w=android?null:window.open('about:blank','_blank'); // PCはポップアップブロック回避で先に開く
   toast('🚉 計画地の最寄り駅を表示中...');
+  var go=function(path, httpsUrl){
+    if(android){ location.href=_mapsAppUrl(path, httpsUrl); return; } // 同一タブ維持でアプリ起動
+    try{ if(w&&!w.closed){ w.location.href=httpsUrl; return; } }catch(e){}
+    window.open(httpsUrl,'_blank');
+  };
+  var byCoord=function(lat,lon){ var path='maps/search/'+encodeURIComponent('駅')+'/@'+lat+','+lon+',15z'; go(path,'https://www.google.com/'+path); };
+  var byQuery=function(){ var q='maps/search/?api=1&query='+encodeURIComponent(p+' 駅'); go(q,'https://www.google.com/'+q); };
   fetch('https://msearch.gsi.go.jp/address-search/AddressSearch?q='+encodeURIComponent(p))
     .then(function(r){return r.json();})
     .then(function(arr){
       if(arr&&arr[0]&&arr[0].geometry&&arr[0].geometry.coordinates&&arr[0].geometry.coordinates.length>=2){
-        var lon=arr[0].geometry.coordinates[0], lat=arr[0].geometry.coordinates[1];
-        go('https://www.google.com/maps/search/'+encodeURIComponent('駅')+'/@'+lat+','+lon+',15z');
-      } else { go(fb); }
+        byCoord(arr[0].geometry.coordinates[1], arr[0].geometry.coordinates[0]);
+      } else { byQuery(); }
     })
-    .catch(function(){ go(fb); });
+    .catch(function(){ byQuery(); });
 }
 function planStreetView(fieldId){
   collectForm();
