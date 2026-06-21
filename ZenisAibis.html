@@ -1057,6 +1057,7 @@ body.is-mob .mob-menu{display:inline-block}
         <button class="sbtn" id="sb_pj" onclick="toggleSort('pj')">🎯 ランク</button>
         <button class="sbtn" id="sb_pace" onclick="toggleSort('pace')">⏰ 遅れ</button>
         <button class="sbtn" id="sb_dt" onclick="toggleSort('dt')">📅 初訪</button>
+        <button class="sbtn" id="sb_lm" onclick="toggleSort('lm')">🗺 土地見込み</button>
       </div>
     </div>
   </div>
@@ -1708,6 +1709,14 @@ function calcScoreParts(c){
   var total=Math.max(0, Math.round(s+r+k+landFinal+famScore+assetScore+ekiScore+proposalScore+rusuScore+amCardPt));
   return {total:total,parts:parts};
 }
+function _isLandLead(c){ return !!(c && c.name==='土地見込み'); }
+var LANDLEAD_FRESH=14, LANDLEAD_STALE=30, LANDABAND_GREED_MIN=5; // 発掘から:〜14日=直後/〜30日=停滞/31日〜=放置 ; 放置5件以上かつ全体3割以上で雑欲
+function _landLeadAgeDays(c){ if(!c||!c.discovery_date)return 0; var d=new Date(c.discovery_date+'T00:00:00'); if(isNaN(d.getTime()))return 0; return Math.floor((Date.now()-d.getTime())/86400000); }
+function _landLeadStatus(c){ var d=_landLeadAgeDays(c); return d<=LANDLEAD_FRESH?'fresh':(d<=LANDLEAD_STALE?'stale':'abandoned'); }
+function _landLeadTag(c){ var st=_landLeadStatus(c),d=_landLeadAgeDays(c); var m={fresh:['🌱 発掘直後','#2f855a','#f0fff4','#9ae6b4'],stale:['⏳ 停滞ぎみ','#b7791f','#fffaf0','#f6e05e'],abandoned:['⚠ 放置（要昇格）','#c53030','#fff5f5','#feb2b2']}; var x=m[st]; return '<span style=\"font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:'+x[2]+';color:'+x[1]+';border:1px solid '+x[3]+';white-space:nowrap\">'+x[0]+' '+d+'日</span>'; }
+function _llNameLocked(){ var el=document.getElementById('f_name'); return !!(el && (el.value||'').trim()==='土地見込み'); }
+function _refreshLandLeadLock(){ var ll=_llNameLocked(); document.querySelectorAll('#editView .stbtn, #editView .pbtn[data-pill=\"kaiwa\"]').forEach(function(b){ b.style.opacity=ll?'.4':''; b.style.pointerEvents=ll?'none':''; }); var h=document.getElementById('llLockHint'); if(h) h.style.display=ll?'block':'none'; }
+window._refreshLandLeadLock=_refreshLandLeadLock;
 function calcScore(c){ return calcScoreParts(c).total; }
 function paintScoreWhy(){
   try{ var el=document.getElementById('scoreWhyVal'); if(!el||!cur) return;
@@ -1774,7 +1783,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.48";
+var APP_VERSION = "v8.50";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -3512,9 +3521,12 @@ function j9AiAxis(c, axisKey){
 // 担当（カード配列）→ 9軸スコア（0-100, 信頼度補正前）と入力信頼度
 function j9Axes(cards){
   cards=(cards||[]).filter(function(c){return c&&c.pursuit_judge!=='X';}); // ×(打ち切り)=削除予定。保有枚数にも軸計算にも数えない
+  var _llAll=cards.filter(_isLandLead).length;
+  var _llAband=cards.filter(function(c){return _isLandLead(c)&&_landLeadStatus(c)==='abandoned';}).length;
+  cards=cards.filter(function(c){return !_isLandLead(c);}); // 土地見込みは質的軸・保有枚数から除外（放置件数は雑欲判定に別途使用）
   var n=cards.length;
   var ax={chizu:0,houbun:0,choshin:0,enmusubi:0,tsuibi:0,seian:0,sakujin:0,kiroku:0,sokko:0};
-  if(!n) return {axes:ax, trust:0, n:0};
+  if(!n) return {axes:ax, trust:0, n:0, landLead:_llAll, landAband:_llAband};
   var sum={chizu:0,houbun:0,choshin:0,enmusubi:0,tsuibi:0,seian:0,sakujin:0,kiroku:0,sokko:0};
   var trustSum=0;
   var now=Date.now();
@@ -3640,7 +3652,7 @@ function j9Axes(cards){
   sokko+=Math.min(18, visitTotal/Math.max(1,n)/2*18);      // 訪問の総量(件あたり)
   if(aiW.sokko>0){ var aiS=aiSum.sokko/aiW.sokko; var wS=0.7*Math.min(1,aiW.sokko/n); ax.sokko=_clip(aiS*wS + sokko*(1-wS)); }
   else { ax.sokko=_clip(sokko); }
-  return {axes:ax, trust:trustSum/n, n:n, revCov:revCov, purCov:purCov, cntCov:cntCov};
+  return {axes:ax, trust:trustSum/n, n:n, revCov:revCov, purCov:purCov, cntCov:cntCov, landLead:_llAll, landAband:_llAband};
 }
 
 // ===== 57職 名称テーブル（漢字統一・ピラミッド型） =====
@@ -3766,6 +3778,11 @@ function j9DetermineJob(cards, repName, popScale){ var PS=(popScale&&popScale>0)
   var coef=j9TrustCoef(r.trust);
   var corr={}; J9_ORDER.forEach(function(k){ corr[k]=_clip(r.axes[k]*coef); });
   var res={axes:r.axes, corr:corr, trust:r.trust, coef:coef, n:r.n, job:'', title:'', strong:[], provisional:false};
+  res.landAband=r.landAband||0; res.landLead=r.landLead||0;
+  // 放置された土地見込み(発掘1ヶ月超・未昇格)が多い＝発掘しっぱなし → 雑欲（整理を促す）
+  if((r.landAband||0)>=LANDABAND_GREED_MIN && (r.landAband||0)>=((r.n||0)+(r.landLead||0))*0.3){
+    res.job='雑欲士'; res.greed=true; res.strong=[]; res.landAbandFlag=true; return res;
+  }
   if(r.n===0){ res.job='—'; res.provisional=true; return res; }
   // 【初心者帯：芽士】0〜25枚
   if(r.n<=J9_CARD_GATE.meshiMax*PS){
@@ -4542,14 +4559,14 @@ function _streakTick(){
 }
 function renderSelfDash(tid){
  var host=document.getElementById(tid||'selfDashContent'); if(!host) return;
- var mine=cards.slice(), n=mine.length;
+ var _allC=cards.slice(), nAll=_allC.length; var mine=_allC.filter(function(c){return !_isLandLead(c);}), n=mine.length;
  if(!n){ host.innerHTML='<div class="zdash zdash-rep"><div class="z-empty">まだ見込みカードがありません</div></div>'; return; }
  var conn=mine.filter(function(c){return +(c.stage||0)>=3;}).length, adv=mine.filter(function(c){return +(c.stage||0)>=4;}).length;
  var renso=_zPct(conn,n), late=mine.filter(function(c){return calcPaceOverrate(c)>1;}).length;
  var gS=0,gC=0;mine.forEach(function(c){var l=getKaiwaLevel(c);if(l>=0){gS+=l;gC++;}});var grip=gC?Math.round(gS/gC/4*100):0;
  var inputAvg=Math.round(mine.reduce(function(s,c){return s+(basicInputStat(c).pct||0);},0)/n);
  var avg=Math.round(mine.reduce(function(s,c){return s+calcScore(c);},0)/n*10)/10;
- var axes=[['発掘量',Math.min(Math.round(n/30*100),100),'#ff6b6b'],['グリップ',grip,'#ff922b'],['ヒアリング',inputAvg,'#ffd43b'],['連想到達',renso,'#51cf66'],['テスクロ',_zPct(adv,conn),'#4dabf7'],['追客ペース',Math.max(0,100-_zPct(late,n)),'#cc5de8']];
+ var axes=[['発掘量',Math.min(Math.round(nAll/30*100),100),'#ff6b6b'],['グリップ',grip,'#ff922b'],['ヒアリング',inputAvg,'#ffd43b'],['連想到達',renso,'#51cf66'],['テスクロ',_zPct(adv,conn),'#4dabf7'],['追客ペース',Math.max(0,100-_zPct(late,n)),'#cc5de8']];
  var _ghost=null;
  try{
   var _sk=JSON.parse(localStorage.getItem('prospect_skillsnap_v1')||'{}')||{};
@@ -4670,9 +4687,9 @@ function renderSelfDash(tid){
  
  try{
    var _rep=uName||'自分';
-   var _jres=j9DetermineJob(mine,_rep);
+   var _jres=j9DetermineJob(cards.slice(),_rep);
    var _promo=j9CheckPromotion(_rep,_jres);
-   j9Snapshot(_rep, mine);
+   j9Snapshot(_rep, cards.slice());
    if(_promo){
      try{ var _sn=j9LoadSnaps(); var _ym2=_ymKey(); if(_sn[_rep]&&_sn[_rep][_ym2]){ _sn[_rep][_ym2].promo_notified=true; j9SaveSnaps(_sn); } }catch(_e2){}
      (function(p){ setTimeout(function(){ try{
@@ -4766,7 +4783,7 @@ function toggleSort(key) {
 }
 function updateSortBtns() {
   // 非アクティブ時の基本ラベル
-  var base = {lv:'🚶 最新', ad:'🏠 住所', st:'📊 心理', sc:'⭐ スコア', pj:'🎯 ランク', dt:'📅 初訪', kw:'💬 会話', pace:'⏰ 遅れ', rv:'🔁 再訪', jw:'⚖ 判定待ち'};
+  var base = {lv:'🚶 最新', ad:'🏠 住所', st:'📊 心理', sc:'⭐ スコア', pj:'🎯 ランク', dt:'📅 初訪', kw:'💬 会話', pace:'⏰ 遅れ', rv:'🔁 再訪', jw:'⚖ 判定待ち', lm:'🗺 土地見込み'};
   // アクティブ時：その状態で「実際に先頭に来る方」を表示（＝現在の表示順）
   var act = {
     lv:   {desc:'🚶 古い→',     asc:'🚶 最新→'},
@@ -4778,7 +4795,8 @@ function updateSortBtns() {
     kw:   {desc:'💬 会話 浅→',  asc:'💬 会話 深→'},
     pace: {desc:'⏰ 遅れ 小→',  asc:'⏰ 遅れ 大→'},
     rv:   {desc:'🔁 再訪 0→',   asc:'🔁 再訪 3→'},
-    jw:   {desc:'⚖ 判定待ち（更新新→）', asc:'⚖ 判定待ち（更新新→）'}
+    jw:   {desc:'⚖ 判定待ち（更新新→）', asc:'⚖ 判定待ち（更新新→）'},
+    lm:   {desc:'🗺 土地見込み（古→）', asc:'🗺 土地見込み（古→）'}
   };
   Object.keys(base).forEach(function(k){
     var btn = document.getElementById('sb_'+k); if(!btn) return;
@@ -5031,6 +5049,10 @@ function getSorted() {
       if(rb===-1) return -1;
       return dir * (rb - ra); // 超過率が高い順
     });
+  } else if (sortKey==='lm') {
+    arr = arr.filter(_isLandLead);
+    var _dk=function(c){ return c.discovery_date || '9999-99-99'; };
+    arr.sort(function(a,b){ return _dk(a).localeCompare(_dk(b)); }); // 古い発掘順
   } else { // dt
     arr.sort(function(a,b){ return dir * (b.discovery_date||'').localeCompare(a.discovery_date||''); });
   }
@@ -5139,10 +5161,10 @@ function renderCards() {
       +'<label style="display:flex;align-items:center;padding:0 8px 0 4px;cursor:pointer;flex-shrink:0" onclick="event.stopPropagation()"><input type="checkbox" class="sel-cb" data-id="'+c.id+'" '+(isSelected?'checked':'')+' onchange="toggleSelect(\''+c.id+'\')" style="width:18px;height:18px;cursor:pointer"></label>'
       +'<div onclick="openCard(\''+c.id+'\')" style="flex:1;cursor:pointer;min-width:0">'
       +'<div style="display:flex;justify-content:space-between;align-items:start;gap:8px;margin-bottom:4px">'
-      +'<div class="lname">'+(c.name?(c.name.length>7?e(c.name.slice(0,7))+'…':e(c.name)+'様'):'(名前未入力)')+'</div>'
+      +'<div class="lname">'+(c.name?(_isLandLead(c)?'<span style="color:#b7791f">🗺 土地見込み</span>':(c.name.length>7?e(c.name.slice(0,7))+'…':e(c.name)+'様')):'(名前未入力)')+'</div>'
       +'<div class="lmeta">'+e(c.discovery_date||'日付未設定')+(own?' / '+e(own):'')+'</div>'
       +'</div>'
-      +'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'+sb+_mikomiTag(c,si,sc,stl)+_tempoFollowerTag(c)+ekiTag+kTag+'</div>'+'<div style="display:flex;align-items:center;gap:8px;margin-top:4px"><span style="font-size:12px;color:#718096;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">📍 '+(c.address?e(_shortAddr(_han(c.address))):'<span style="color:#cbd5e0">住所未設定</span>')+'</span>'+(lv?'<span style="font-size:11px;color:#a0aec0;flex-shrink:0;white-space:nowrap">🚶 '+lv+'</span>':'')+'</div>'+'</div>'
+      +'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'+(_isLandLead(c)?_landLeadTag(c):(sb+_mikomiTag(c,si,sc,stl)+_tempoFollowerTag(c)+ekiTag+kTag))+'</div>'+'<div style="display:flex;align-items:center;gap:8px;margin-top:4px"><span style="font-size:12px;color:#718096;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">📍 '+(c.address?e(_shortAddr(_han(c.address))):'<span style="color:#cbd5e0">住所未設定</span>')+'</span>'+(lv?'<span style="font-size:11px;color:#a0aec0;flex-shrink:0;white-space:nowrap">🚶 '+lv+'</span>':'')+'</div>'+'</div>'
       +'<button onclick="delCard(\''+c.id+'\',\''+e(c.name||'(名前未入力)')+'\')" style="margin-left:2px;background:none;border:none;color:#cbd5e0;font-size:20px;cursor:pointer;padding:4px 6px;border-radius:6px;align-self:center;flex-shrink:0" title="見込みから外す">🗑</button>'
       +'</div>';
   }).join('');
@@ -5569,6 +5591,7 @@ function fillForm(c) {
   // kaiwaは複数選択（配列・後方互換で文字列も対応）
   var karr=Array.isArray(c.kaiwa)?c.kaiwa:(c.kaiwa?[c.kaiwa]:[]);
   document.querySelectorAll('.pbtn[data-pill="kaiwa"]').forEach(function(b){ b.classList.toggle('active', karr.indexOf(b.dataset.val)>=0); });
+  if(typeof _refreshLandLeadLock==='function')_refreshLandLeadLock();
   document.querySelectorAll('#materials input').forEach(function(cb){ cb.checked=(c.materials||[]).indexOf(cb.value)>=0; });
   document.querySelectorAll('#maefuri input').forEach(function(cb){ cb.checked=(c.maefuri||[]).indexOf(cb.value)>=0; });
   document.querySelectorAll('#jChecklist input').forEach(function(cb){ cb.checked=!!(c.jchecks&&c.jchecks[cb.dataset.ck]); });
@@ -5694,9 +5717,10 @@ document.addEventListener('change',function(ev){
 // ===== ステージ・ピルボタン =====
 document.addEventListener('click',function(ev){
   var sb=ev.target.closest('.stbtn');
-  if(sb){var wasOn=sb.classList.contains('active'); document.querySelectorAll('.stbtn').forEach(function(b){b.classList.remove('active');}); if(!wasOn) sb.classList.add('active'); return;}
+  if(sb){if(_llNameLocked())return; var wasOn=sb.classList.contains('active'); document.querySelectorAll('.stbtn').forEach(function(b){b.classList.remove('active');}); if(!wasOn) sb.classList.add('active'); return;}
   var pb=ev.target.closest('.pbtn');
   if(pb){
+    if(_llNameLocked()&&pb.dataset.pill==='kaiwa')return;
     if(pb.dataset.multi==='1'){pb.classList.toggle('active');}
     else{document.querySelectorAll('.pbtn[data-pill="'+pb.dataset.pill+'"]').forEach(function(b){b.classList.remove('active');}); pb.classList.add('active');}
   }
@@ -10137,7 +10161,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <div id="mikomiTop">
       <!-- 上段：氏名50%・ソーシャル25%・現状25% -->
       <div class="mk-row" style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:8px">
-        <div class="mk-name"><label>氏名 <span class="req">*</span></label><div style="display:flex;gap:6px;align-items:center"><input type="text" id="f_name" placeholder="お客様名" style="flex:1"><button type="button" id="doukouBtn" onclick="toggleDoukou()" style="flex-shrink:0;padding:8px 10px;border:2px solid #e2e8f0;border-radius:6px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;color:#718096;white-space:nowrap;min-height:38px;min-width:78px;text-align:center">単独</button></div></div>
+        <div class="mk-name"><label>氏名 <span class="req">*</span></label><div style="display:flex;gap:6px;align-items:center"><input type="text" id="f_name" placeholder="お客様名" style="flex:1" oninput="if(window._refreshLandLeadLock)_refreshLandLeadLock()"><button type="button" id="doukouBtn" onclick="toggleDoukou()" style="flex-shrink:0;padding:8px 10px;border:2px solid #e2e8f0;border-radius:6px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;color:#718096;white-space:nowrap;min-height:38px;min-width:78px;text-align:center">単独</button></div></div>
         <div class="mk-social">
           <label>ソーシャル</label>
           <select id="f_social">
@@ -10217,6 +10241,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <div class="stbtn" data-s="7"><span class="n">7</span>決心</div>
       </div>
       <div class="shint">★ 3「連想」段階で提案依頼を取得しよう！</div>
+      <div id="llLockHint" class="shint" style="display:none;color:#b7791f;font-weight:700">🗺 土地見込みです。謄本などで氏名を入れると、心理ステージ・会話状況が入力できます</div>
     </div>
     <!-- 資産背景 -->
     <div class="sec">
