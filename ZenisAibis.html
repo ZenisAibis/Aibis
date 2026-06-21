@@ -108,7 +108,7 @@ table.pltt .pareah td{background:#ebf4ff;color:#2c5282;font-weight:800;text-alig
 body.is-mob .pc-only-btn{display:none!important}
 body.is-mob .analysis-print-btn{display:none!important}
 body.is-mob .analysis-paste-btn{display:none!important}
-header{background:linear-gradient(135deg,#1e3a5f,#2c5282);color:white;padding:14px 12px;border-radius:8px 8px 0 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;position:sticky;top:0;z-index:50}
+header{background:linear-gradient(135deg,rgba(30,58,95,.82),rgba(44,82,130,.76));-webkit-backdrop-filter:blur(16px) saturate(150%);backdrop-filter:blur(16px) saturate(150%);border-bottom:1px solid rgba(255,255,255,.10);color:white;padding:14px 12px;border-radius:8px 8px 0 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;position:sticky;top:0;z-index:50}
 body.is-mob header{border-radius:0}
 header h1{font-size:16px;font-weight:600}
 .ha{display:flex;gap:4px;flex-wrap:wrap}
@@ -1819,7 +1819,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.04";
+var APP_VERSION = "v9.05";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -12269,7 +12269,7 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
 <!-- ===== 写真インボックス（本体連携） ここから ===== -->
 <style>
   #inboxView{display:none;position:fixed;inset:0;background:#f7fafc;z-index:1500;overflow-y:auto;-webkit-overflow-scrolling:touch}
-  #inboxView .ih{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:10px;padding:12px 14px;background:linear-gradient(135deg,#1a365d,#2c5282);color:#fff;max-width:900px;margin:0 auto;width:100%;box-sizing:border-box}
+  #inboxView .ih{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:10px;padding:12px 14px;background:linear-gradient(135deg,rgba(26,54,93,.82),rgba(44,82,130,.76));-webkit-backdrop-filter:blur(16px) saturate(150%);backdrop-filter:blur(16px) saturate(150%);border-bottom:1px solid rgba(255,255,255,.10);color:#fff;max-width:900px;margin:0 auto;width:100%;box-sizing:border-box}
   #inboxView .ih b{flex:1;font-size:15px}
   #inboxView .ih button{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:8px;padding:7px 12px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer}
   #inboxBody{padding:12px 14px;max-width:900px;margin:0 auto}

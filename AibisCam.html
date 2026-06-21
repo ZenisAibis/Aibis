@@ -25,7 +25,7 @@
   .scr{flex:1;min-height:0;display:flex;flex-direction:column}
 
   .top{display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + 8px) 12px 8px;
-    background:linear-gradient(180deg,rgba(15,27,45,.96),rgba(15,27,45,.7));backdrop-filter:blur(6px);z-index:10}
+    background:linear-gradient(180deg,rgba(15,27,45,.90),rgba(15,27,45,.66));-webkit-backdrop-filter:blur(13px) saturate(140%);backdrop-filter:blur(13px) saturate(140%);z-index:10;border-bottom:1px solid rgba(255,255,255,.06)}
   .top .ttl{font-size:13px;font-weight:800;letter-spacing:.5px;color:var(--gold)}
   .top .sub{font-size:11px;color:var(--dim);font-weight:600}
   .tbtn{padding:7px 11px;border-radius:9px;background:var(--panel2);font-size:12.5px;font-weight:700;white-space:nowrap}
@@ -413,7 +413,7 @@
    ※ prospect_cards_v1 には書き込まない（新規カード作成・PC連携は本体側）
    データ(set): {id,cardId,ts,addrType:'plan',lat,lng,acc,addr,addrPending,banchi,note,sent,photos:[{pid,full(Blob),thumb,w,h,size}]}
    ========================================================= */
-const APP_VERSION = "cam-v1.60";
+const APP_VERSION = "cam-v1.61";
 
 /* ===== PWA：単一ファイルでインストール可能化（外部ファイル不要） ===== */
 function _pwaIcon(size,maskable){
