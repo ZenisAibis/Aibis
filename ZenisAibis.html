@@ -304,6 +304,7 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 .fam-cell.lv-同居{background:#ecfeff;box-shadow:inset 3px 0 0 #06b6d4}
 .fam-cell.lv-近居{background:#fffbeb;box-shadow:inset 3px 0 0 #d97706}
 .fam-cell.lv-別居{background:#fefce8;box-shadow:inset 3px 0 0 #eab308}
+.fam-add-locked{opacity:.45;cursor:not-allowed}
 .fam-cell.lv-死亡{background:#e2e8f0;border-color:#94a3b8;box-shadow:inset 3px 0 0 #64748b;opacity:0.82}
 .fam-cell.lv-未確認{background:white;box-shadow:inset 3px 0 0 #d6dce4}
 .fam-stance-dot{position:absolute;top:3px;right:3px;width:10px;height:10px;border-radius:50%}
@@ -1819,7 +1820,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.12";
+var APP_VERSION = "v9.15";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -5883,6 +5884,7 @@ function renderFam(){
     }).join('');
   });
   famRenderSummary();
+  if(typeof famUpdateAddButtonState==='function') famUpdateAddButtonState();
   var _tb=document.getElementById('famTreeBox');
   if(_tb){ try{ var _ff=(cur.family||[]).filter(function(m){return m.role;}); if(_ff.length){var _hasSib=_ff.some(function(m){return ['兄','弟','姉','妹'].indexOf(m.role)>=0;});var _unNote=_hasSib?'<div style="font-size:9.5px;color:#8b95a6;margin:3px 2px 0;line-height:1.4">※「伯父／叔父／伯母／叔母」＝世帯主の兄弟姉妹を、お子様から見た続柄で表示。保存値は兄・弟・姉・妹のままです。</div>':'';_tb.innerHTML='<div style="font-size:10px;color:#a0aec0;margin:0 0 2px 2px">👆 タップで編集</div>'+buildFamTreeSVG(_ff,{interactive:true,src:cur.family})+_unNote;}else{_tb.innerHTML='<div style="color:#a0aec0;font-size:12px;padding:8px">家族を追加すると世代ツリーが表示されます。</div>';} }catch(_e){ _tb.innerHTML='<div style="color:#a0aec0;font-size:12px;padding:8px">家系図を表示できませんでした。</div>'; } }
 }
@@ -6022,27 +6024,61 @@ var FAM_ROLE_GROUPS=[
 ];
 // 兄弟姉妹は「世帯主から見た続柄」であることを入力時に明示（保存値=兄/弟/姉/妹 は不変）
 var FAM_SIB_DISP={'兄':'兄（世帯主の）','弟':'弟（世帯主の）','姉':'姉（世帯主の）','妹':'妹（世帯主の）'};
-function famBuildRoleOptions(gen){
-  // option自体を再構築する（モバイルのネイティブselectはoptionの非表示が効かないため、物理的に絞り込む）
+// 世帯主（土地所有者・中心人物）ヘルパー。excludeIdxは編集中メンバーを除外
+function famGetHead(excludeIdx){
+  var fam=(cur&&cur.family)||[];
+  for(var i=0;i<fam.length;i++){ if(i===excludeIdx) continue; if(FAM_HEAD_ROLES.indexOf(normalizeFamRole(fam[i].role||''))>=0) return fam[i]; }
+  return null;
+}
+function famHasHead(excludeIdx){ return !!famGetHead(excludeIdx); }
+function famHeadGen(excludeIdx){ var h=famGetHead(excludeIdx); return h?famGetGen(normalizeFamRole(h.role)):-1; }
+function famIsActiveHead(excludeIdx){ var h=famGetHead(excludeIdx); return !!(h&&['世帯主・父','世帯主・母'].indexOf(normalizeFamRole(h.role))>=0); }
+function famIsGrandHead(excludeIdx){ var h=famGetHead(excludeIdx); return !!(h&&['世帯主・祖父','世帯主・祖母'].indexOf(normalizeFamRole(h.role))>=0); }
+// 現在の家族状態に応じて、選べる続柄だけをoptionに構築する
+function famBuildRoleOptions(gen,editIdx){
   var sel=document.getElementById('famRole'); if(!sel) return;
+  if(editIdx===undefined) editIdx=-1;
+  var fam=(cur&&cur.family)||[];
+  var have={}; fam.forEach(function(m,i){ if(i!==editIdx&&m.role) have[normalizeFamRole(m.role)]=true; });
+  var head=famGetHead(editIdx), hg=famHeadGen(editIdx);
+  var roles=[];
+  if(gen===0){
+    if(!head) roles=['世帯主・祖父','世帯主・祖母','祖父','祖母'];
+    else roles=['祖父','祖母'].filter(function(r){return !have[r];});
+  } else if(gen===1){
+    if(!head) roles=['世帯主・父','世帯主・母'];
+    else if(hg===0) roles=['父','母'].filter(function(r){return !have[r];});
+    else {
+      var sp=famIsActiveHead(editIdx)?(normalizeFamRole(head.role)==='世帯主・父'?'母':'父'):null;
+      roles=[]; if(sp&&!have[sp]) roles.push(sp);
+      roles=roles.concat(FAM_SIBLING_ROLES);
+    }
+  } else {
+    roles=head?['長男','次男','三男','長女','次女','三女','養子・男','養子・女']:[];
+  }
   var html='<option value="">選択</option>';
-  FAM_ROLE_GROUPS.forEach(function(g,gi){
-    if(gen!==undefined&&gi!==gen) return;
-    html+='<optgroup label="'+g.label+'">'+g.roles.map(function(r){ return r==='—'?'<option disabled data-divider>──────────</option>':'<option value="'+r+'">'+(FAM_SIB_DISP[r]||r)+'</option>'; }).join('')+'</optgroup>';
-  });
-  sel.innerHTML=html;
-  sel.value='';
+  if(roles.length){
+    var gl=gen===0?'祖父母':gen===1?'現役世代':'子世代';
+    html+='<optgroup label="'+gl+'">'+roles.map(function(r){return '<option value="'+r+'">'+(FAM_SIB_DISP[r]||r)+'</option>';}).join('')+'</optgroup>';
+  }
+  sel.innerHTML=html; sel.value='';
+}
+// 子世代＋ボタンのロック表示（世帯主が未設定のとき）
+function famUpdateAddButtonState(){
+  var b=document.querySelector('[onclick="famOpenAdd(2)"]'); if(!b) return;
+  if(!famHasHead()){ b.classList.add('fam-add-locked'); b.title='先に世帯主を設定してください'; }
+  else { b.classList.remove('fam-add-locked'); b.title=''; }
 }
 function famOpenAdd(gen){
+  if(gen===2 && !famHasHead()){ if(typeof toast==='function') toast('先に世帯主を設定してね。子世代は世帯主に紐づけて入力するよ。'); return; }
   famEditGen=(gen!==undefined?gen:1); famEditIdx=-1;
   document.getElementById('famModalTitle').textContent='メンバー追加';
   ['famDelBtn','famDelBtnTop'].forEach(function(id){var b=document.getElementById(id);if(b)b.style.display='none';});
   famResetModal();
-  // その世代の続柄だけをoptionに構築
-  famBuildRoleOptions(famEditGen);
+  famBuildRoleOptions(famEditGen,-1);
   document.getElementById('famModal').classList.add('show');
 }
-function famFilterRoleOptions(gen){ famBuildRoleOptions(gen); }
+function famFilterRoleOptions(gen){ famBuildRoleOptions(gen,famEditIdx); }
 function famOpenEdit(idx){
   var m=(cur.family||[])[idx]; if(!m) return;
   famEditIdx=idx;
@@ -6050,8 +6086,7 @@ function famOpenEdit(idx){
   document.getElementById('famModalTitle').textContent=(m.role||'メンバー')+(m.name?' '+m.name:'');
   ['famDelBtn','famDelBtnTop'].forEach(function(id){var b=document.getElementById(id);if(b)b.style.display='inline-block';});
   famResetModal();
-  // 編集時もその世代の続柄だけに絞る
-  famBuildRoleOptions(famEditGen);
+  famBuildRoleOptions(famEditGen,famEditIdx);
   famSetStance(m.stance||'unk');
   famSetLiving(m.living||m.kyojuu||'同居');
   famCurJutaku=m.jutaku||''; famPaintJutaku();
@@ -6073,10 +6108,54 @@ function famOpenEdit(idx){
 function famClose(){ document.getElementById('famModal').classList.remove('show'); }
 function famOverlayClick(ev){ if(ev.target&&ev.target.id==='famModal') famClose(); }
 window.famOverlayClick=famOverlayClick;
+// 保存前バリデーション（矛盾する続柄をブロック）。OKなら''、NGならメッセージ
+function validateFamilySave(role, editIdx){
+  role=normalizeFamRole(role);
+  if(!role) return '続柄を選択してね。';
+  var fam=cur.family||[];
+  var others=fam.filter(function(m,i){return i!==editIdx;}).map(function(m){return normalizeFamRole(m.role||'');});
+  function oh(arr){ return others.some(function(r){return arr.indexOf(r)>=0;}); }
+  var gen=famGetGen(role);
+  if(FAM_HEAD_ROLES.indexOf(role)>=0 && oh(FAM_HEAD_ROLES))
+    return '世帯主は1人だけだよ。もう片方の世帯主を先に父／母などに変えてね。';
+  if(gen===2 && !oh(FAM_HEAD_ROLES))
+    return '先に世帯主を設定してね。子世代は世帯主に紐づけて入力するよ。';
+  if(FAM_SIBLING_ROLES.indexOf(role)>=0 && !oh(['世帯主・父','世帯主・母']))
+    return '兄弟姉妹は、現役世代に世帯主がいる場合だけ追加できるよ。';
+  if(['世帯主・祖父','祖父'].indexOf(role)>=0 && oh(['世帯主・祖父','祖父'])) return '祖父は1人までだよ。';
+  if(['世帯主・祖母','祖母'].indexOf(role)>=0 && oh(['世帯主・祖母','祖母'])) return '祖母は1人までだよ。';
+  if(['世帯主・父','父'].indexOf(role)>=0 && oh(['世帯主・父','父'])) return '父は1人までだよ。';
+  if(['世帯主・母','母'].indexOf(role)>=0 && oh(['世帯主・母','母'])) return '母は1人までだよ。';
+  if(FAM_CHILD_ROLES.indexOf(role)>=0 && others.indexOf(role)>=0) return role+'は重複できないよ。次の続柄を選んでね。';
+  return '';
+}
+// 世帯主保存時に配偶者/祖父母を自動追加（roleのみ・未確認・_auto）
+function famAutoAddSpouse(m){
+  var role=normalizeFamRole(m.role||''), fam=cur.family;
+  function has(r){ return fam.some(function(x){return normalizeFamRole(x.role||'')===r;}); }
+  function add(r){ fam.push({role:r,stance:'unk',living:'未確認',_auto:true}); }
+  if(role==='世帯主・祖父' && !has('祖母')) add('祖母');
+  else if(role==='世帯主・祖母' && !has('祖父')) add('祖父');
+  else if(role==='世帯主・父' && m.marriage==='既婚' && !has('母')) add('母');
+  else if(role==='世帯主・母' && m.marriage==='既婚' && !has('父')) add('父');
+}
+// 既婚でなくなった世帯主の自動配偶者を掃除（未入力のみ・手入力は消さない）
+function famCleanAutoSpouse(m){
+  var role=normalizeFamRole(m.role||'');
+  if((role==='世帯主・父'||role==='世帯主・母') && m.marriage!=='既婚'){
+    var sp=(role==='世帯主・父')?'母':'父';
+    for(var i=cur.family.length-1;i>=0;i--){ var x=cur.family[i];
+      if(normalizeFamRole(x.role||'')===sp && x._auto && !x.name && !x.age && !x.note) cur.family.splice(i,1);
+    }
+  }
+}
 function famSave(){
   if(!cur.family) cur.family=[];
+  var __role=document.getElementById('famRole').value;
+  var __err=validateFamilySave(__role,famEditIdx);
+  if(__err){ if(typeof toast==='function') toast(__err); return; }
   var m={
-    role:document.getElementById('famRole').value,
+    role:__role,
     name:document.getElementById('famName').value,
     age:document.getElementById('famAge').value,
     social:document.getElementById('famSocial')?.value||'',
@@ -6092,7 +6171,8 @@ function famSave(){
   };
   if(famEditIdx>=0) cur.family[famEditIdx]=m;
   else cur.family.push(m);
-  famClose(); renderFam();
+  famCleanAutoSpouse(m); famAutoAddSpouse(m);
+  famClose(); renderFam(); if(typeof setDirty==='function') setDirty(true);
 }
 function famDelete(){
   if(famEditIdx>=0&&cur.family){
@@ -7226,7 +7306,7 @@ function buildFamTreeSVG(fam, opts){
   var g2=fam.filter(m=>m.role&&famGetGen(m.role)===2);
   var NW=92,NH=116,HG=12,CG=22,RG=50,PAD=8,KIDW=52,KIDH=28,RG3=40;
   var GKW=38,GKH=52,GKBUS=14,GK_LBL={'小学生(男)':'小学生','小学生(女)':'小学生','幼児(男)':'幼児','幼児(女)':'幼児','乳児(男)':'乳児','乳児(女)':'乳児','乳児':'乳児','孫(男)':'孫','孫(女)':'孫','幼児':'幼児'};
-  var MALE=['長男','次男','三男','兄','弟'];
+  var MALE=['長男','次男','三男','兄','弟','養子・男'];
   var SIB=['兄','弟','姉','妹'], SPOUSE=['妻','配偶者','世帯主（女）','名義人（妻）'];
   var sibs=g1.filter(m=>SIB.indexOf(m.role)>=0), nonSib=g1.filter(m=>SIB.indexOf(m.role)<0);
   var head=nonSib.filter(m=>m.owner)[0]||nonSib.filter(m=>SPOUSE.indexOf(m.role)<0)[0]||nonSib[0]||null;
@@ -7299,6 +7379,7 @@ function buildFamTreeSVG(fam, opts){
     if(!inlaw){if(m.kp){stroke='#3182ce';sw=2;}else if(m.owner){stroke='#c53030';sw=1.8;}else if(m.met){stroke='#38a169';sw=1.6;}}
     if(inlaw){stroke='#d7dee8';}
     var s=`<rect x="${n.x}" y="${n.y}" width="${NW}" height="${NH}" rx="11" fill="${tint}" stroke="${stroke}" stroke-width="${sw}"${inlaw?' stroke-dasharray="3 2"':''}/>`;
+    if(!inlaw&&typeof FAM_HEAD_ROLES!=='undefined'&&FAM_HEAD_ROLES.indexOf(normalizeFamRole(m.role||''))>=0) s+=`<rect x="${n.x-2}" y="${n.y-2}" width="${NW+4}" height="${NH+4}" rx="13" fill="none" stroke="#d4af37" stroke-width="2.4"/>`;
     var aw=100,ah=112,area=NH-36,asc=Math.min((NW-8)/aw,area/ah),tx=n.x+(NW-aw*asc)/2,ty=n.y+3;
     var dead=(living==='死亡'&&!inlaw);
     s+=`<g transform="translate(${Math.round(tx*100)/100},${ty}) scale(${Math.round(asc*1000)/1000})"${dead?' filter="url(#zfg)" opacity="0.85"':''}>${famAvatarSVG(m.role, inlaw?"smile":(m.stance==="pos"?"smile":m.stance==="neg"?"sad":"neutral"))}</g>`;
@@ -10754,21 +10835,23 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <div class="fam-summary" id="famSummary" style="display:none"></div>
           <div style="margin-top:8px;display:flex;gap:8px 14px;align-items:center;flex-wrap:wrap">
             <button type="button" id="famHeadcountBtn" onclick="toggleFamHeadcount()" style="flex-shrink:0;padding:6px 16px;border:2px solid #e2e8f0;border-radius:8px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;color:#718096;line-height:1.3">👥<br>人数を確定</button>
-            <div style="display:flex;flex-wrap:wrap;gap:4px 12px;font-size:10px;color:#4a5568;align-items:center">
-              <span style="font-weight:700;color:#4a5568">意向</span>
-              <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:50%;background:#38a169;display:inline-block"></span>前向</span>
-              <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:50%;background:#e53e3e;display:inline-block"></span>否定</span>
-              <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:50%;background:#fff;border:1px solid #aaa;display:inline-block"></span>不明</span>
-              <span style="color:#cbd5e0">｜</span>
-              <span style="display:inline-flex;align-items:center;gap:3px"><span style="color:#c53030;font-weight:700">★</span>所有者</span>
-              <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:50%;background:#fff;border:1.5px solid #c53030;display:inline-block"></span>面談済</span>
-              <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:50%;background:#ebf8ff;border:1.5px solid #3182ce;display:inline-block"></span>KP</span>
-              <span style="color:#cbd5e0">｜</span>
-              <span style="font-weight:700;color:#4a5568">居住</span>
-              <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:9px;height:9px;border-radius:2px;background:#06b6d4;display:inline-block"></span>同居</span>
-              <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:9px;height:9px;border-radius:2px;background:#d97706;display:inline-block"></span>近居</span>
-              <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:9px;height:9px;border-radius:2px;background:#eab308;display:inline-block"></span>別居</span>
-              <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:9px;height:9px;border-radius:2px;background:#94a3b8;display:inline-block"></span>死亡</span>
+            <div style="display:flex;flex-direction:column;gap:3px;font-size:10px;color:#4a5568">
+              <div style="display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center">
+                <span style="font-weight:700;color:#4a5568">意向</span>
+                <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:50%;background:#38a169;display:inline-block"></span>前向</span>
+                <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:50%;background:#e53e3e;display:inline-block"></span>否定</span>
+                <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:50%;background:#fff;border:1px solid #aaa;display:inline-block"></span>不明</span>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center">
+                <span style="font-weight:700;color:#4a5568">居住</span>
+                <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:9px;height:9px;border-radius:2px;background:#06b6d4;display:inline-block"></span>同居</span>
+                <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:9px;height:9px;border-radius:2px;background:#eab308;display:inline-block"></span>別居</span>
+                <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:9px;height:9px;border-radius:2px;background:#94a3b8;display:inline-block"></span>死亡</span>
+                <span style="color:#cbd5e0">｜</span>
+                <span style="display:inline-flex;align-items:center;gap:3px"><span style="color:#c53030;font-weight:700">★</span>所有者</span>
+                <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:50%;background:#fff;border:1.5px solid #c53030;display:inline-block"></span>面談済</span>
+                <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:50%;background:#ebf8ff;border:1.5px solid #3182ce;display:inline-block"></span>KP</span>
+              </div>
             </div>
           </div>
           <details class="setup-acc" style="margin-top:9px">
