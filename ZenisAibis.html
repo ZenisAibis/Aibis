@@ -300,11 +300,11 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 .fam-cell.fc-met{border:2px solid #c53030}
 .fam-cell.fc-kp{background:#ebf8ff}
 /* 居住別セル背景色 */
-.fam-cell.lv-同居{background:#dbeafe}
-.fam-cell.lv-近居{background:#dbeafe}
-.fam-cell.lv-別居{background:#fef9c3}
-.fam-cell.lv-死亡{background:#e2e8f0;border-color:#1a202c;box-shadow:inset 0 0 0 2px #1a202c}
-.fam-cell.lv-未確認{background:white}
+.fam-cell.lv-同居{background:#ecfeff;box-shadow:inset 3px 0 0 #06b6d4}
+.fam-cell.lv-近居{background:#fffbeb;box-shadow:inset 3px 0 0 #d97706}
+.fam-cell.lv-別居{background:#eff6ff;box-shadow:inset 3px 0 0 #3b82f6}
+.fam-cell.lv-死亡{background:#e2e8f0;border-color:#94a3b8;box-shadow:inset 3px 0 0 #64748b;opacity:0.82}
+.fam-cell.lv-未確認{background:white;box-shadow:inset 3px 0 0 #d6dce4}
 .fam-stance-dot{position:absolute;top:3px;right:3px;width:10px;height:10px;border-radius:50%}
 .fam-owner-star{position:absolute;top:2px;left:3px;font-size:9px;color:#c53030;font-weight:700;line-height:1}
 .fam-role-sm{font-size:9px;font-weight:700;color:#2d3748;line-height:1.2;text-align:center;white-space:normal;overflow-wrap:anywhere;max-width:50px}
@@ -344,9 +344,9 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 .fam-bbtn{padding:7px 4px;border:2px solid #e2e8f0;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;background:white;font-family:inherit;text-align:center}
 .fam-bbtn.fa-on{outline:2px solid #2c5282;outline-offset:1px}
 /* 居住ボタン個別色 */
-.fam-bbtn.lv-同居{background:#dbeafe;border-color:#3b82f6;color:#1d4ed8}
-.fam-bbtn.lv-近居{background:#dbeafe;border-color:#60a5fa;color:#2563eb}
-.fam-bbtn.lv-別居{background:#fef9c3;border-color:#eab308;color:#854d0e}
+.fam-bbtn.lv-同居{background:#ecfeff;border-color:#06b6d4;color:#0e7490}
+.fam-bbtn.lv-近居{background:#fffbeb;border-color:#d97706;color:#b45309}
+.fam-bbtn.lv-別居{background:#eff6ff;border-color:#3b82f6;color:#1d4ed8}
 .fam-bbtn.lv-死亡{background:#f1f5f9;border-color:#94a3b8;color:#475569}
 .fam-bbtn.lv-未確認{background:white;border-color:#cbd5e0;color:#718096}
 .fam-fbtn{padding:7px 4px;border:2px solid #e2e8f0;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;background:white;font-family:inherit;text-align:center}
@@ -372,6 +372,15 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 .help-details summary::after{content:"▶";font-size:11px;color:#a0aec0;transition:transform 0.2s}
 .help-details[open] summary::after{transform:rotate(90deg)}
 .help-details[open] summary{background:#ebf4ff;color:#2c5282}
+/* 初期設定：担当者リスト アコーディオン */
+.setup-acc{border:1px solid #d6bcfa;border-radius:8px;overflow:hidden;background:#faf7ff}
+.setup-acc>summary{padding:11px 12px;cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;font-weight:700;font-size:13px;color:#553c9a;user-select:none}
+.setup-acc>summary::-webkit-details-marker{display:none}
+.setup-acc-badge{margin-left:auto;font-size:11px;font-weight:700;color:#6b46c1;background:#ede9fe;border-radius:10px;padding:1px 9px;white-space:nowrap}
+.setup-acc-arrow{font-size:11px;color:#9f7aea;transition:transform .2s;flex-shrink:0}
+.setup-acc[open] .setup-acc-arrow{transform:rotate(180deg)}
+.setup-acc[open]>summary{background:#f3effc}
+.setup-acc-body{padding:0 12px 12px}
 .msec{border:1px solid #e2e8f0;border-radius:8px;margin-bottom:8px;overflow:hidden}
 .mttl{padding:12px 14px;cursor:pointer;font-weight:600;font-size:13px;background:#f7fafc;display:flex;justify-content:space-between;align-items:center;user-select:none}
 .msub{border:1px solid #e2e8f0;border-radius:6px;margin-top:8px;overflow:hidden}
@@ -506,6 +515,19 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 .addr-row{display:flex;gap:4px;align-items:center;margin-top:4px}
 .ar-btn{flex:0 0 auto;width:36px;min-height:40px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;line-height:1;border:1px solid #cbd5e0;border-radius:8px;background:white;cursor:pointer;color:#4a5568;padding:0}
 .ar-btn:active{background:#edf2f7}
+/* 地図ピン（住所指定）オーバーレイ */
+#geoMapOv{position:fixed;inset:0;background:#fff;z-index:2147483500;display:none;flex-direction:column}
+#geoMapOv.show{display:flex}
+#geoMapOv .gm-top{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid #e2e8f0;background:#fff;flex:0 0 auto}
+#geoMapOv .gm-title{flex:1;min-width:0}
+#geoLeafWrap{position:relative;flex:1 1 auto;min-height:0}
+#geoLeafMap{position:absolute;inset:0;background:#e8edf2}
+#geoCenterPin{position:absolute;left:50%;top:50%;transform:translate(-50%,-100%);pointer-events:none;z-index:600;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
+#geoMapOv .gm-foot{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid #e2e8f0;background:#fff;flex:0 0 auto}
+.gm-btn{flex:0 0 auto;border:1px solid #cbd5e0;border-radius:8px;background:#fff;padding:9px 12px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;color:#2c5282}
+.gm-btn:active{background:#edf2f7}
+.gm-save{background:#2c5282;color:#fff;border-color:#2c5282}
+.gm-hint{font-size:11px;color:#718096;line-height:1.4;min-width:0}
 body:not(.is-mob) .ar-btn.mob-only{display:none}
 .hand-toggle{width:100%;padding:9px 11px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px;font-family:inherit;background:white;min-height:40px;color:#2D3748;cursor:pointer;text-align:left}
 .hand-toggle:active{background:#edf2f7}
@@ -1014,6 +1036,8 @@ body.is-mob .mob-menu{display:inline-block}
       <div id="fileDisp" style="font-size:11px"></div>
     </div>
   </div>
+  <!-- 控えリマインド：前回の全件控えから日数経過＋未控え件数（スマホ／自動保存なしPC） -->
+  <div id="backupNudge" style="display:none;background:#fff8e1;border:1px solid #ffd54f;border-radius:6px;padding:10px 12px;margin-bottom:8px"></div>
   <!-- スマホ専用：同期促進バナー（保存後に表示） -->
   <div id="syncNudge" style="display:none;background:#fff8e1;border:1px solid #ffd54f;border-radius:6px;padding:10px 12px;margin-bottom:8px;align-items:center;justify-content:space-between;gap:8px">
     <div style="font-size:12px;color:#5d4037;flex:1">
@@ -1117,13 +1141,15 @@ body.is-mob .mob-menu{display:inline-block}
       <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">🏠 住所（自宅）</label>
       <div style="display:flex;gap:6px;align-items:center;margin-bottom:10px">
         <button type="button" onclick="qaGeo('qaAddr')" style="flex-shrink:0;width:40px;height:40px;border:1px solid #cbd5e0;border-radius:8px;background:#ebf8ff;font-size:16px;cursor:pointer">📍</button>
-        <input id="qaAddr" type="text" placeholder="📍で現在地、🔢で番地" style="flex:1;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:13px;font-family:inherit">
+        <button type="button" onclick="openGeoMap('qaAddr')" title="地図で指定" style="flex-shrink:0;width:40px;height:40px;border:1px solid #cbd5e0;border-radius:8px;background:#f0fff4;font-size:16px;cursor:pointer">🗺</button>
+        <input id="qaAddr" type="text" placeholder="📍🗺で位置、🔢で番地" style="flex:1;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:13px;font-family:inherit">
         <button type="button" onclick="qaTenkeyOpen('qaAddr')" style="flex-shrink:0;width:40px;height:40px;border:1px solid #cbd5e0;border-radius:8px;background:#f7fafc;font-size:16px;cursor:pointer">🔢</button>
       </div>
       <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">🏛 計画地</label>
       <div style="display:flex;gap:6px;align-items:center;margin-bottom:10px">
         <button type="button" onclick="qaGeo('qaPlan')" style="flex-shrink:0;width:40px;height:40px;border:1px solid #cbd5e0;border-radius:8px;background:#ebf8ff;font-size:16px;cursor:pointer">📍</button>
-        <input id="qaPlan" type="text" placeholder="📍で現在地、🔢で番地" style="flex:1;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:13px;font-family:inherit">
+        <button type="button" onclick="openGeoMap('qaPlan')" title="地図で指定" style="flex-shrink:0;width:40px;height:40px;border:1px solid #cbd5e0;border-radius:8px;background:#f0fff4;font-size:16px;cursor:pointer">🗺</button>
+        <input id="qaPlan" type="text" placeholder="📍🗺で位置、🔢で番地" style="flex:1;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:13px;font-family:inherit">
         <button type="button" onclick="qaTenkeyOpen('qaPlan')" style="flex-shrink:0;width:40px;height:40px;border:1px solid #cbd5e0;border-radius:8px;background:#f7fafc;font-size:16px;cursor:pointer">🔢</button>
       </div>
       <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">🧠 購買心理ステージ</label>
@@ -1516,12 +1542,16 @@ body.is-mob .mob-menu{display:inline-block}
         <div><label>自分のメールアドレス</label><input type="email" id="sSelf" placeholder="dt0000001@kentaku.co.jp" oninput="autoSaveSetup()"><p class="ht">「📧 PCへ」で送る宛先</p></div>
         <div><label>上司のメールアドレス <span class="req">*</span></label><input type="email" id="sMgr" placeholder="to071024@kentaku.co.jp" oninput="autoSaveSetup()"><p class="ht">📧 課長報告の宛先</p></div>
       </div>
-      <div id="staffMailSection" style="display:none;margin-top:10px;padding:10px;background:#faf7ff;border:1px solid #d6bcfa;border-radius:6px">
-        <label style="color:#553c9a">担当者リスト（個別送付用・管理職のみ）</label>
-        <p class="ht" style="margin:2px 0 6px">「📧 担当へ」で選ぶ宛先だよ。名前は<b>カードの担当名と一致</b>させてね（スペース不可）。</p>
-        <div id="staffMailChips" style="display:flex;gap:4px;flex-wrap:wrap;margin:4px 0;align-items:center"></div>
-        <div id="staffMailRows"></div>
-        <button type="button" onclick="addStaffMailRow()" style="margin-top:6px;background:#ede9fe;border:1px dashed #b794f4;color:#553c9a;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">＋ 担当者を追加</button>
+      <div id="staffMailSection" style="display:none;margin-top:10px">
+        <details class="setup-acc">
+          <summary>👥 <span>担当者リスト（個別送付用・管理職のみ）</span><span id="staffMailCount" class="setup-acc-badge">0人</span><span class="setup-acc-arrow">▾</span></summary>
+          <div class="setup-acc-body">
+            <p class="ht" style="margin:2px 0 6px">「📧 担当へ」で選ぶ宛先だよ。名前は<b>カードの担当名と一致</b>させてね（スペース不可）。</p>
+            <div id="staffMailChips" style="display:flex;gap:4px;flex-wrap:wrap;margin:4px 0;align-items:center"></div>
+            <div id="staffMailRows"></div>
+            <button type="button" onclick="addStaffMailRow()" style="margin-top:6px;background:#ede9fe;border:1px dashed #b794f4;color:#553c9a;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">＋ 担当者を追加</button>
+          </div>
+        </details>
       </div>
       <div id="changeNote" style="display:none;margin-top:10px;padding:10px;background:#fef5e7;border-left:3px solid #ed8936;border-radius:4px;font-size:12px">
         <strong style="color:#c05621">📢 異動の場合</strong>：変更後は新規カードのみに反映。既存カードは変更されません。
@@ -1787,7 +1817,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.61";
+var APP_VERSION = "v8.78";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -2691,6 +2721,7 @@ window._mailtoPrompt=_mailtoPrompt;
 function saveStaffMails(){ try{ localStorage.setItem(SMK, JSON.stringify(staffMails)); }catch(_e){} }
 function renderStaffMailRows(){
   var box=document.getElementById('staffMailRows'); if(!box) return;
+  var _cnt=document.getElementById('staffMailCount'); if(_cnt) _cnt.textContent=((staffMails&&staffMails.length)||0)+'人';
   box.innerHTML = (staffMails&&staffMails.length) ? staffMails.map(function(s,i){
     return '<div style="display:grid;grid-template-columns:1fr 1.4fr auto;gap:6px;margin-bottom:6px;align-items:center">'
       +'<input type="text" placeholder="担当者名" value="'+eAttr(s.name||'')+'" oninput="onStaffMailInput('+i+',\'name\',this.value)" style="font-size:13px">'
@@ -4743,6 +4774,7 @@ function renderList() {
       bb.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:start;gap:8px"><div style="font-size:13px;flex:1"><strong style="color:#c05621">⚠ データ同期の注意</strong><br><span style="font-size:12px">① PC送信後、PC側で読込→同期<br>② PCから読込む前に「スマホをリセット」</span></div><button onclick="disBan()" style="background:none;border:1px solid #cbd5e0;color:#4a5568;font-size:12px;padding:8px;border-radius:6px;cursor:pointer;flex-shrink:0">×</button></div>';
     } else { ban.style.display='none'; }
   }
+  renderBackupNudge();
   renderCards();
 }
 function disBan(){ sessionStorage.setItem('ban_dis','1'); var b=document.getElementById('banner'); if(b) b.style.display='none'; }
@@ -5293,7 +5325,10 @@ function _sendCards(selected, toEmail, ccEmail, subjPrefix, onDone, copyAddr, bd
   var data=JSON.stringify(selected,null,2);
   var now=new Date();
   var ts=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+'_'+String(now.getHours()).padStart(2,'0')+String(now.getMinutes()).padStart(2,'0');
-  try{localStorage.setItem('aibis_last_export',new Date().toISOString());}catch(_e){}
+  try{var _nowISO=new Date().toISOString();localStorage.setItem('aibis_last_export',_nowISO);
+    // 全件カバーの書き出し＝完全な控え（部分送信では更新しない＝取りこぼし防止）
+    if(Array.isArray(cards)&&cards.length>0&&Array.isArray(selected)&&selected.length===cards.length){localStorage.setItem('aibis_last_backup',_nowISO);}
+  }catch(_e){}
   var tag=(subjPrefix||'AIBIS').replace(/\s+/g,'-');  // 種別タグ（英数字・ファイル名/件名で文字化けしない）
   var fn='AIBIS_'+tag+'_'+(uName||'staff')+'_'+APP_VERSION+'_'+selected.length+'cards_'+ts+'.json';
   var subj='AIBIS '+(subjPrefix||'')+' '+ts+' ('+selected.length+' cards)';
@@ -5466,7 +5501,7 @@ function mkBlank() {
     revisits:[{num:1,date:'',appo:'',content:'',instruction:''},{num:2,date:'',appo:'',content:'',instruction:''},{num:3,date:'',appo:'',content:'',instruction:''}],
     revisit_judge_date:'', revisit_judge:'',
     pursuits:[], pursuit_judge_date:'', pursuit_judge:'', pursuit_judge_sel:'', pursuit_judge_ai:'',
-    job9_ranks:null, job9_ranks_at:'', ai_memo:'', family_headcount:false, family_headcount_at:'', family_bikou:'', doukou:false, doukou_at:'', mgr_involve:'単独', asset_type:false, ekitoho:'', proposal_req:false, proposal_req_at:'',
+    job9_ranks:null, job9_ranks_at:'', ai_memo:'', family_headcount:false, family_headcount_at:'', family_bikou:'', doukou:false, doukou_at:'', mgr_involve:'単独', asset_type:false, ekitoho:'', proposal_req:false, proposal_req_at:'', next_aim:'',
     created_at:new Date().toISOString(), updated_at:new Date().toISOString()
   };
 }
@@ -5618,7 +5653,7 @@ function fillForm(c) {
   document.querySelectorAll('.pbtn[data-pill="setsudo"]').forEach(function(b){ b.classList.toggle('active', sarr.indexOf(b.dataset.val)>=0); });
   var harr=Array.isArray(c.houbun)?c.houbun:(c.houbun?[c.houbun]:[]);
   document.querySelectorAll('.pbtn[data-pill="houbun"]').forEach(function(b){ b.classList.toggle('active', harr.indexOf(b.dataset.val)>=0); });
-  ['kodo','bouka'].forEach(function(p){
+  ['kodo','bouka','next_aim'].forEach(function(p){
     document.querySelectorAll('.pbtn[data-pill="'+p+'"]').forEach(function(b){ b.classList.toggle('active', b.dataset.val===(c[p]||'')); });
   });
   // kaiwaは複数選択（配列・後方互換で文字列も対応）
@@ -5684,7 +5719,7 @@ function collectForm() {
   var sb=document.querySelector('.stbtn.active'); c.stage=sb?sb.dataset.s:'';
   c.setsudo=Array.from(document.querySelectorAll('.pbtn[data-pill="setsudo"].active')).map(function(b){return b.dataset.val;});
   c.houbun=Array.from(document.querySelectorAll('.pbtn[data-pill="houbun"].active')).map(function(b){return b.dataset.val;});
-  ['kodo','bouka'].forEach(function(p){
+  ['kodo','bouka','next_aim'].forEach(function(p){
     var ab=document.querySelector('.pbtn[data-pill="'+p+'"].active');
     c[p]=ab?ab.dataset.val:'';
   });
@@ -5809,6 +5844,8 @@ function renderFam(){
     }).join('');
   });
   famRenderSummary();
+  var _tb=document.getElementById('famTreeBox');
+  if(_tb){ try{ var _ff=(cur.family||[]).filter(function(m){return m.role;}); _tb.innerHTML=_ff.length?('<div style="font-size:10px;color:#a0aec0;margin:0 0 2px 2px">👆 タップで編集</div>'+buildFamTreeSVG(_ff,{interactive:true,src:cur.family})):'<div style="color:#a0aec0;font-size:12px;padding:8px">家族を追加すると世代ツリーが表示されます。</div>'; }catch(_e){ _tb.innerHTML='<div style="color:#a0aec0;font-size:12px;padding:8px">家系図を表示できませんでした。</div>'; } }
 }
 function famRenderSummary(){
   // 表示されているメンバー（roleあり）のみ集計
@@ -5888,6 +5925,19 @@ function famSetFlag(f,v){
 }
 var FAM_CHILD_ROLES=['長男','次男','三男','長女','次女','三女'];
 var famCurChildren=0;
+var famCurGrandkids=[];
+var GK_LABEL={'小学生(男)':'小学生男','小学生(女)':'小学生女','幼児(男)':'幼児男','幼児(女)':'幼児女','乳児(男)':'乳児男','乳児(女)':'乳児女','乳児':'乳児','孫(男)':'男の子','孫(女)':'女の子','幼児':'幼児'};
+function famRenderGrandkids(){
+  var box=document.getElementById('famGkChips'); if(!box) return;
+  if(!famCurGrandkids.length){ box.innerHTML='<span style="font-size:12px;color:#a0aec0">お子様なし（いる場合は上のボタンで追加）</span>'; return; }
+  box.innerHTML=famCurGrandkids.map(function(t,i){
+    return '<span style="display:inline-flex;align-items:center;gap:2px;background:#f7fafc;border:1px solid #e2e8f0;border-radius:16px;padding:1px 3px 1px 4px"><svg viewBox="0 0 100 100" width="28" height="28" style="display:block">'+famAvatarSVG(t,"smile")+'</svg><span style="font-size:11px;color:#4a5568;white-space:nowrap">'+(GK_LABEL[t]||t)+'</span><button type="button" onclick="famRemoveGrandkid('+i+')" title="削除" style="background:none;border:none;color:#c53030;cursor:pointer;font-size:14px;line-height:1;padding:0 3px">×</button></span>';
+  }).join('')+'<span style="font-size:11px;color:#718096;margin-left:2px">計'+famCurGrandkids.length+'人</span>';
+}
+function famAddGrandkid(t){ famCurGrandkids.push(t); famCurChildren=famCurGrandkids.length; famRenderGrandkids(); }
+function famRemoveGrandkid(i){ famCurGrandkids.splice(i,1); famCurChildren=famCurGrandkids.length; famRenderGrandkids(); }
+function famClearGrandkids(){ famCurGrandkids=[]; famCurChildren=0; famRenderGrandkids(); }
+window.famAddGrandkid=famAddGrandkid; window.famRemoveGrandkid=famRemoveGrandkid; window.famClearGrandkids=famClearGrandkids;
 function famOnRoleChange(){
   var role=document.getElementById('famRole').value;
   var show=FAM_CHILD_ROLES.indexOf(role)>=0 || ['兄','弟','姉','妹'].indexOf(role)>=0;
@@ -5910,6 +5960,7 @@ function famResetModal(){
   famCurJutaku=''; famPaintJutaku();
   var hb=document.getElementById('famL同居'); if(hb) hb.textContent='同居';
   famSetStance('unk'); famSetLiving('未確認'); famSetMarriage('不明'); famSetChildren(0);
+  famCurGrandkids=[]; famRenderGrandkids();
   famSetFlag('met',false); famSetFlag('owner',false); famSetFlag('kp',false);
   ['famRole','famName','famAddr'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   var ag=document.getElementById('famAge');if(ag)ag.value='';
@@ -5923,13 +5974,15 @@ var FAM_ROLE_GROUPS=[
  {label:'世帯主世代',roles:['世帯主（男）','世帯主（女）','夫','妻','—','兄','弟','姉','妹']},
  {label:'子世代',roles:['長男','次男','三男','長女','次女','三女']}
 ];
+// 兄弟姉妹は「世帯主から見た続柄」であることを入力時に明示（保存値=兄/弟/姉/妹 は不変）
+var FAM_SIB_DISP={'兄':'兄（世帯主の）','弟':'弟（世帯主の）','姉':'姉（世帯主の）','妹':'妹（世帯主の）'};
 function famBuildRoleOptions(gen){
   // option自体を再構築する（モバイルのネイティブselectはoptionの非表示が効かないため、物理的に絞り込む）
   var sel=document.getElementById('famRole'); if(!sel) return;
   var html='<option value="">選択</option>';
   FAM_ROLE_GROUPS.forEach(function(g,gi){
     if(gen!==undefined&&gi!==gen) return;
-    html+='<optgroup label="'+g.label+'">'+g.roles.map(function(r){ return r==='—'?'<option disabled data-divider>──────────</option>':'<option>'+r+'</option>'; }).join('')+'</optgroup>';
+    html+='<optgroup label="'+g.label+'">'+g.roles.map(function(r){ return r==='—'?'<option disabled data-divider>──────────</option>':'<option value="'+r+'">'+(FAM_SIB_DISP[r]||r)+'</option>'; }).join('')+'</optgroup>';
   });
   sel.innerHTML=html;
   sel.value='';
@@ -5957,7 +6010,8 @@ function famOpenEdit(idx){
   famSetLiving(m.living||m.kyojuu||'同居');
   famCurJutaku=m.jutaku||''; famPaintJutaku();
   famSetMarriage(m.marriage||'不明');
-  famSetChildren(m.children||0);
+  famCurGrandkids=(m.grandkids&&m.grandkids.length)?m.grandkids.slice():((+(m.children)>0)?Array(+m.children).fill('孫(男)'):[]);
+  famCurChildren=famCurGrandkids.length; famRenderGrandkids();
   famSetFlag('met',!!m.met); famSetFlag('owner',!!m.owner); famSetFlag('kp',!!m.kp);
   var r=document.getElementById('famRole');
   if(r){ r.value=m.role||''; if(m.role&&r.value!==m.role){ var op=document.createElement('option'); op.textContent=m.role; r.appendChild(op); r.value=m.role; } }
@@ -5981,7 +6035,7 @@ function famSave(){
     age:document.getElementById('famAge').value,
     social:document.getElementById('famSocial')?.value||'',
     living:famCurLiving, marriage:famCurMarriage, stance:famCurStance,
-    children:famCurChildren,
+    children:famCurGrandkids.length, grandkids:famCurGrandkids.slice(),
     met:famCurFlags.met, owner:famCurFlags.owner, kp:famCurFlags.kp,
     addr2:document.getElementById('famAddr').value,
     job:document.getElementById('famJob').value,
@@ -6239,6 +6293,62 @@ function doSyncNow(){
   doMobExport();
   setTimeout(function(){ window.open('https://onedrive.live.com','_blank'); },800);
 }
+
+// ===== 控えリマインド：前回の全件控えからの経過日数＋未控え件数（消失リスクのセーフティネット）=====
+var BACKUP_REMIND_DAYS=3;   // この日数以上で注意（黄）
+var BACKUP_REMIND_HARD=7;   // この日数以上で警告（赤）
+function _lastBackupTs(){ var ts=null; try{ ts=localStorage.getItem('aibis_last_backup'); }catch(_e){} return ts?new Date(ts).getTime():0; }
+function renderBackupNudge(){
+  var el=document.getElementById('backupNudge'); if(!el) return;
+  function hide(){ el.style.display='none'; }
+  if(fHandle){ hide(); return; }                       // PC自動保存＝継続バックアップ中なので不要
+  if(!Array.isArray(cards)||cards.length===0){ hide(); return; }
+  var now=Date.now(), DAY=86400000, t0=_lastBackupTs(), never=(t0===0), atRisk, days;
+  if(never){
+    atRisk=cards.length;
+    var earliest=now;
+    cards.forEach(function(c){ var cr=new Date(c.created_at||c.updated_at||now).getTime(); if(cr&&cr<earliest) earliest=cr; });
+    days=Math.floor((now-earliest)/DAY);
+  } else {
+    atRisk=cards.filter(function(c){ var u=new Date(c.updated_at||c.created_at||0).getTime(); return u>t0; }).length;
+    days=Math.floor((now-t0)/DAY);
+  }
+  if(atRisk===0){ hide(); return; }                    // 未控えの変更がなければ出さない
+  if(days<BACKUP_REMIND_DAYS){ hide(); return; }       // まだ日が浅い
+  // 「後で」抑制：当日内かつ未控え件数が増えていなければ再表示しない
+  try{
+    var dm=JSON.parse(localStorage.getItem('aibis_backup_nudge_dismissed')||'null');
+    var td=new Date(), ds=td.getFullYear()+'-'+(td.getMonth()+1)+'-'+td.getDate();
+    if(dm && dm.d===ds && atRisk<=dm.c){ hide(); return; }
+  }catch(_e){}
+  var hard=days>=BACKUP_REMIND_HARD;
+  var bg=hard?'#fff5f5':'#fff8e1', bdc=hard?'#fc8181':'#ffd54f', ink=hard?'#9b2c2c':'#5d4037';
+  var head=never?'まだ一度もPCへ控えていません':('前回の控えから '+days+'日');
+  var lead=hard?'⚠ ':'💾 ';
+  var sub=hard?'端末のデータが消えると元に戻せません。今すぐPCへ控えを取りましょう。':'万一に備えて、PCへ控えを取っておくと安心です。';
+  var msg=lead+'<strong>'+head+'</strong>'+(never?'':('・未控え '+atRisk+'件'))
+    +'<br><span style="font-size:11px;color:'+ink+'">'+sub+'</span>';
+  var pcNoAuto=(!isMob && hasFSA && !fHandle);
+  var ctaLabel=pcNoAuto?'💾 自動保存を設定':'📧 PCへ控える';
+  var ctaCall=pcNoAuto?'setupChooseSave()':'_doBackupNow()';
+  el.style.background=bg; el.style.borderColor=bdc;
+  el.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">'
+    +'<div style="font-size:12px;color:'+ink+';flex:1">'+msg+'</div>'
+    +'<div style="display:flex;gap:6px;flex-shrink:0">'
+    +'<button onclick="'+ctaCall+'" style="background:'+(hard?'#c53030':'#0078d4')+';color:#fff;border:none;border-radius:6px;padding:8px 12px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:600">'+ctaLabel+'</button>'
+    +'<button onclick="_dismissBackupNudge('+atRisk+')" style="background:none;border:1px solid #cbd5e0;color:#718096;border-radius:6px;padding:8px 10px;font-size:12px;cursor:pointer;font-family:inherit">後で</button>'
+    +'</div></div>';
+  el.style.display='block';
+}
+function _doBackupNow(){
+  if(typeof syncMailToSelf==='function') syncMailToSelf();   // 全カードをPCへ＝aibis_last_backup更新
+  var el=document.getElementById('backupNudge'); if(el) el.style.display='none';
+}
+function _dismissBackupNudge(n){
+  try{ var t=new Date(); localStorage.setItem('aibis_backup_nudge_dismissed', JSON.stringify({d:t.getFullYear()+'-'+(t.getMonth()+1)+'-'+t.getDate(), c:n||0})); }catch(_e){}
+  var el=document.getElementById('backupNudge'); if(el) el.style.display='none';
+}
+window.renderBackupNudge=renderBackupNudge; window._doBackupNow=_doBackupNow; window._dismissBackupNudge=_dismissBackupNudge;
 
 // ===== ファイル操作 =====
 function loadFile(){
@@ -6907,8 +7017,8 @@ function buildPursuitHTML(c){
 var famAvatarSVG=(function(){
 const SKIN='#ffe2c6',EYE='#4a3b34',CHEEK='#ff9fb0',MOUTH='#d36a72',LIP='#e58a93';
 function eyes(cx,hy,o){
-  const young=o.age==='young', old=o.age==='old';
-  const rx=young?3.4:old?2.6:3.0, ry=young?4.8:old?3.2:4.0, ey=hy+(young?4:old?2:3);
+  const young=o.age==='young', old=o.age==='old', child=o.age==='child', baby=o.age==='baby', sk=o.age==='schoolkid', teen=o.age==='teen';
+  const rx=baby?4.2:child?3.8:sk?3.4:teen?3.5:young?3.4:old?2.6:3.0, ry=baby?5.4:child?5.0:sk?4.6:teen?4.9:young?4.8:old?3.2:4.0, ey=hy+((child||baby)?5:(sk||young||teen)?4:old?2:3);
   let s=`<ellipse cx="${cx-9.5}" cy="${ey}" rx="${rx}" ry="${ry}" fill="${EYE}"/><ellipse cx="${cx+9.5}" cy="${ey}" rx="${rx}" ry="${ry}" fill="${EYE}"/>`;
   s+=`<circle cx="${cx-8.3}" cy="${ey-1.5}" r="1" fill="#fff"/><circle cx="${cx+10.7}" cy="${ey-1.5}" r="1" fill="#fff"/>`;
   if(o.gender==='f'){s+=`<path d="M ${cx-13.5} ${ey-2} l -3 -1.5" stroke="${EYE}" stroke-width="1.2" stroke-linecap="round"/><path d="M ${cx+13.5} ${ey-2} l 3 -1.5" stroke="${EYE}" stroke-width="1.2" stroke-linecap="round"/>`;}
@@ -6930,17 +7040,45 @@ function brows(cx,hy,o){
   if((o.expr||'')!=='sad') return '';
   return `<path d="M ${cx-13} ${hy-3.5} q 3.5 -2.5 7 -0.5" stroke="#9c8166" stroke-width="1.4" fill="none" stroke-linecap="round"/><path d="M ${cx+6} ${hy-4} q 3.5 -2 7 0.5" stroke="#9c8166" stroke-width="1.4" fill="none" stroke-linecap="round"/>`;
 }
-function blush(cx,hy,o){const w=o.age==='young'?6:5;return `<ellipse cx="${cx-15}" cy="${hy+9}" rx="${w}" ry="3.2" fill="${CHEEK}" opacity="0.7"/><ellipse cx="${cx+15}" cy="${hy+9}" rx="${w}" ry="3.2" fill="${CHEEK}" opacity="0.7"/>`;}
+function blush(cx,hy,o){var a=o.age;if(a!=='child'&&a!=='baby'&&a!=='schoolkid'&&a!=='teen')return '';var w=(a==='baby'||a==='child')?6:5;var op=a==='teen'?0.38:0.7;return `<ellipse cx="${cx-15}" cy="${hy+9}" rx="${w}" ry="3.2" fill="${CHEEK}" opacity="${op}"/><ellipse cx="${cx+15}" cy="${hy+9}" rx="${w}" ry="3.2" fill="${CHEEK}" opacity="${op}"/>`;}
 function glasses(cx,hy,col){return `<circle cx="${cx-9.5}" cy="${hy+2}" r="6.5" fill="none" stroke="${col}" stroke-width="1.5"/><circle cx="${cx+9.5}" cy="${hy+2}" r="6.5" fill="none" stroke="${col}" stroke-width="1.5"/><line x1="${cx-3}" y1="${hy+2}" x2="${cx+3}" y2="${hy+2}" stroke="${col}" stroke-width="1.5"/>`;}
 function body(cx,hy,r,o){
-  const sw=o.age==='young'?26:o.age==='old'?28:30;
-  let s=`<rect x="${cx-6}" y="${hy+r-6}" width="12" height="11" rx="4" fill="${SKIN}"/>`;
-  s+=`<path d="M ${cx-sw} ${hy+r+34} Q ${cx-sw} ${hy+r+6} ${cx} ${hy+r+4} Q ${cx+sw} ${hy+r+6} ${cx+sw} ${hy+r+34} Z" fill="${o.cloth}"/>`;
+  const sw=o.age==='baby'?17:o.age==='child'?21:o.age==='schoolkid'?24:o.age==='teen'?25:o.age==='young'?26:o.age==='old'?28:30;
+  const bot=o.age==='baby'?(hy+r+18):o.age==='child'?(hy+r+25):o.age==='schoolkid'?(hy+r+29):o.age==='teen'?(hy+r+32):(hy+r+34);
+  const nh=o.age==='baby'?7:o.age==='child'?9:o.age==='schoolkid'?10:11;
+  let s=`<rect x="${cx-6}" y="${hy+r-6}" width="12" height="${nh}" rx="4" fill="${SKIN}"/>`;
+  s+=`<path d="M ${cx-sw} ${bot} Q ${cx-sw} ${hy+r+6} ${cx} ${hy+r+4} Q ${cx+sw} ${hy+r+6} ${cx+sw} ${bot} Z" fill="${o.cloth}"/>`;
+  var ty=hy+r+4, of=o.outfit||'';
+  if(of==='suit'||of==='jacket'){
+    s+=`<path d="M ${cx-10} ${ty} L ${cx} ${ty+22} L ${cx+10} ${ty} Z" fill="${of==='suit'?'#f4f7fb':'#fbfcfe'}"/>`;
+    var lap=o.cloth2||'#33405c';
+    s+=`<path d="M ${cx-2} ${ty-2} L ${cx-13} ${ty+9} L ${cx-7} ${ty+22} L ${cx-1} ${ty+5} Z" fill="${lap}"/>`;
+    s+=`<path d="M ${cx+2} ${ty-2} L ${cx+13} ${ty+9} L ${cx+7} ${ty+22} L ${cx+1} ${ty+5} Z" fill="${lap}"/>`;
+  } else if(of==='hoodie'){
+    s+=`<path d="M ${cx-12} ${ty+1} Q ${cx} ${ty+12} ${cx+12} ${ty+1} Q ${cx+8} ${ty-6} ${cx} ${ty-5} Q ${cx-8} ${ty-6} ${cx-12} ${ty+1} Z" fill="${o.cloth2||o.cloth}"/>`;
+    s+=`<line x1="${cx-3}" y1="${ty+5}" x2="${cx-3}" y2="${ty+17}" stroke="#eef0f2" stroke-width="1.4"/><line x1="${cx+3}" y1="${ty+5}" x2="${cx+3}" y2="${ty+17}" stroke="#eef0f2" stroke-width="1.4"/>`;
+    s+=`<circle cx="${cx-3}" cy="${ty+18}" r="1.5" fill="#dfe3e7"/><circle cx="${cx+3}" cy="${ty+18}" r="1.5" fill="#dfe3e7"/>`;
+    s+=`<path d="M ${cx-10} ${bot-11} q 10 5 20 0" stroke="${o.cloth2||'#9aa3ad'}" stroke-width="1.1" fill="none" opacity="0.6"/>`;
+  } else if(of==='blouse'){
+    s+=`<path d="M ${cx-2} ${ty} L ${cx-7} ${ty+8} L ${cx-1} ${ty+6} Z" fill="#ffffff"/><path d="M ${cx+2} ${ty} L ${cx+7} ${ty+8} L ${cx+1} ${ty+6} Z" fill="#ffffff"/>`;
+    if(o.neckTie) s+=`<path d="M ${cx} ${ty+4} l -4 4 l 4 4 l 4 -4 z" fill="${o.neckTie}"/>`;
+  } else if(of==='uniform_f'){
+    s+=`<path d="M ${cx-13} ${ty-1} L ${cx} ${ty+4} L ${cx+13} ${ty-1} L ${cx+11} ${ty+11} L ${cx} ${ty+7} L ${cx-11} ${ty+11} Z" fill="#eef2f8"/>`;
+    s+=`<path d="M ${cx-13} ${ty-1} L ${cx} ${ty+4} L ${cx+13} ${ty-1}" stroke="#3a4a6b" stroke-width="1.1" fill="none"/>`;
+    s+=`<path d="M ${cx} ${ty+7} l -6 -3 l 0 7 z" fill="#d65a7a"/><path d="M ${cx} ${ty+7} l 6 -3 l 0 7 z" fill="#d65a7a"/><circle cx="${cx}" cy="${ty+7}" r="2" fill="#b8435f"/>`;
+  } else if(of==='cardigan'){
+    s+=`<path d="M ${cx-9} ${ty} L ${cx} ${ty+20} L ${cx+9} ${ty} Z" fill="#f3f5f8"/>`;
+    var cg=o.cloth2||'#8b97a6';
+    s+=`<path d="M ${cx-2} ${ty} L ${cx-9} ${ty+21} L ${cx-6} ${ty+23} L ${cx-1} ${ty+5} Z" fill="${cg}"/>`;
+    s+=`<path d="M ${cx+2} ${ty} L ${cx+9} ${ty+21} L ${cx+6} ${ty+23} L ${cx+1} ${ty+5} Z" fill="${cg}"/>`;
+    s+=`<circle cx="${cx}" cy="${ty+9}" r="1" fill="#ffffff" opacity="0.85"/><circle cx="${cx}" cy="${ty+15}" r="1" fill="#ffffff" opacity="0.85"/>`;
+  }
   if(o.tie) s+=`<path d="M ${cx} ${hy+r-1} l -4 6 l 4 13 l 4 -13 z" fill="${o.tie}"/>`;
   return s;
 }
 function head(cx,hy,r){return `<circle cx="${cx}" cy="${hy}" r="${r}" fill="${SKIN}"/>`;}
 function maleHair(cx,hy,r,col,style){
+  if(style==='tuft') return `<path d="M ${cx-r+5} ${hy-r+6} C ${cx-6} ${hy-r-7} ${cx+6} ${hy-r-7} ${cx+r-5} ${hy-r+6} C ${cx+3} ${hy-r+2} ${cx-3} ${hy-r+2} ${cx-r+5} ${hy-r+6} Z" fill="${col}"/><path d="M ${cx-2} ${hy-r-1} q 3 -7 7 -3 q -2 4 -5 5 z" fill="${col}"/>`;
   var sideY=hy+r*0.18;
   var top=(style==='spiky')
     ? `C ${cx-r-3} ${hy-r-12} ${cx-9} ${hy-r-8} ${cx-7} ${hy-r-13} L ${cx-3} ${hy-r-6} L ${cx} ${hy-r-16} L ${cx+3} ${hy-r-6} L ${cx+7} ${hy-r-13} C ${cx+9} ${hy-r-8} ${cx+r+3} ${hy-r-12} ${cx+r} ${sideY} `
@@ -6981,31 +7119,42 @@ function mkPerson(cx,hy,r,o){
     s+=blush(cx,hy,o)+eyes(cx,hy,o)+brows(cx,hy,o)+mouth(cx,hy,o);
     if(o.glasses) s+=glasses(cx,hy,o.glasses);
     if(o.mustache) s+=`<path d="M ${cx-7} ${hy+10} q 7 4 14 0" stroke="${o.hair}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+    if(o.bowOn) s+=bow(cx,hy,r,o.bowColor);
   }
   return s;
 }
 const GRAY='#c2c7cf';
 function cfg(role){
   const M={
-    '祖父':{gender:'m',age:'old',hair:GRAY,style:'short',cloth:'#9fb0c4',glasses:'#7b8794',mustache:true},
-    '祖母':{gender:'f',age:'old',hair:GRAY,style:'bob',cloth:'#cdb4e0',glasses:'#9aa3ad',bun:true},
-    '世帯主（男）':{gender:'m',age:'mid',hair:'#4a3f3a',style:'sidePart',cloth:'#6aa9e0',tie:'#d65a5a'},
-    '夫':{gender:'m',age:'mid',hair:'#4a3f3a',style:'sidePart',cloth:'#6aa9e0',tie:'#d65a5a'},
-    '妻':{gender:'f',age:'mid',hair:'#7a5236',style:'long',cloth:'#f59ab0'},
-    '世帯主（女）':{gender:'f',age:'mid',hair:'#6b4a30',style:'long',cloth:'#f0a6c0'},
-    '配偶者':{gender:'f',age:'mid',hair:'#7a5236',style:'long',cloth:'#f4a3bb'},
-    '嫁':{gender:'f',age:'young',hair:'#5a4636',style:'ponytail',cloth:'#7ec8a0',glasses:'#8a6f55'},
-    '婿':{gender:'m',age:'young',hair:'#3a3f4a',style:'short',cloth:'#8a93a8',tie:'#5b8def',glasses:'#5b6b80'},
-    '兄':{gender:'m',age:'mid',hair:'#3a3f4a',style:'spiky',cloth:'#5bb7a0'},
-    '弟':{gender:'m',age:'mid',hair:'#6b4a30',style:'round',cloth:'#7fbf7f'},
-    '姉':{gender:'f',age:'mid',hair:'#5a4636',style:'bob',cloth:'#f6a05a'},
-    '妹':{gender:'f',age:'mid',hair:'#7a5236',style:'twin',cloth:'#f6d35a',bowOn:true},
-    '長男':{gender:'m',age:'young',hair:'#4a3f3a',style:'short',cloth:'#5b6bb5'},
-    '次男':{gender:'m',age:'young',hair:'#6b4a30',style:'spiky',cloth:'#5aa9d6'},
-    '三男':{gender:'m',age:'young',hair:'#7a5236',style:'round',cloth:'#5bb1a6'},
-    '長女':{gender:'f',age:'young',hair:'#7a5236',style:'long',cloth:'#f48fb1',bowOn:true,bowColor:'#ff7fa3'},
-    '次女':{gender:'f',age:'young',hair:'#5a4636',style:'twin',cloth:'#b39ddb',bowOn:true,bowColor:'#9f7fd6'},
-    '三女':{gender:'f',age:'young',hair:'#8a5a3b',style:'bob',cloth:'#f5a463',bowOn:true,bowColor:'#ff9a5a'}
+    '祖父':{gender:'m',age:'old',hair:GRAY,style:'short',cloth:'#aeb9c7',cloth2:'#8b97a6',glasses:'#7b8794',outfit:'cardigan'},
+    '祖母':{gender:'f',age:'old',hair:GRAY,style:'bob',cloth:'#c9b6dc',cloth2:'#ad97c6',glasses:'#9aa3ad',bun:true,outfit:'cardigan'},
+    '世帯主（男）':{gender:'m',age:'mid',hair:'#3f3a34',style:'sidePart',cloth:'#46505f',cloth2:'#353d49',outfit:'suit',tie:'#5f7196'},
+    '夫':{gender:'m',age:'mid',hair:'#3f3a34',style:'sidePart',cloth:'#46505f',cloth2:'#353d49',outfit:'suit',tie:'#5f7196'},
+    '妻':{gender:'f',age:'mid',hair:'#6b4a32',style:'long',cloth:'#e3a9b8',outfit:'blouse'},
+    '世帯主（女）':{gender:'f',age:'mid',hair:'#6b4a30',style:'long',cloth:'#dfa6c0',outfit:'blouse'},
+    '配偶者':{gender:'f',age:'mid',hair:'#7a5236',style:'long',cloth:'#e3a3bb',outfit:'blouse'},
+    '嫁':{gender:'f',age:'young',hair:'#5a4636',style:'ponytail',cloth:'#7ec8a0',glasses:'#8a6f55',outfit:'blouse'},
+    '婿':{gender:'m',age:'young',hair:'#3a3f4a',style:'short',cloth:'#6f7a90',cloth2:'#565f72',glasses:'#5b6b80',outfit:'jacket'},
+    '兄':{gender:'m',age:'mid',hair:'#3a3f4a',style:'short',cloth:'#4a6a7e',cloth2:'#3a5563',outfit:'jacket'},
+    '弟':{gender:'m',age:'mid',hair:'#6b4a30',style:'short',cloth:'#5f8a6a',cloth2:'#4c7056',outfit:'jacket'},
+    '姉':{gender:'f',age:'mid',hair:'#5a4636',style:'bob',cloth:'#e2a06a',outfit:'blouse'},
+    '妹':{gender:'f',age:'mid',hair:'#7a5236',style:'bob',cloth:'#e8c45a',outfit:'blouse'},
+    '長男':{gender:'m',age:'young',hair:'#3a352f',style:'sidePart',cloth:'#3a4a6b',cloth2:'#2c3a54',outfit:'suit',tie:'#b04a4a'},
+    '次男':{gender:'m',age:'young',hair:'#5a463a',style:'short',cloth:'#5e7691',cloth2:'#475c73',outfit:'jacket'},
+    '三男':{gender:'m',age:'teen',hair:'#3a342f',style:'round',cloth:'#cfd6df',cloth2:'#bcc4cd',outfit:'hoodie'},
+    '長女':{gender:'f',age:'young',hair:'#6b4a32',style:'long',cloth:'#c9b89f',cloth2:'#b29c80',outfit:'jacket'},
+    '次女':{gender:'f',age:'young',hair:'#7a5236',style:'bob',cloth:'#a9cfe6',outfit:'blouse',neckTie:'#e88aa6'},
+    '三女':{gender:'f',age:'teen',hair:'#6b4a32',style:'long',cloth:'#3a4a6b',outfit:'uniform_f'},
+    '孫(男)':{gender:'m',age:'child',hair:'#4a3f3a',style:'round',cloth:'#7fb5e6'},
+    '孫(女)':{gender:'f',age:'child',hair:'#6b4a30',style:'twin',cloth:'#f6a8c8',bowOn:true,bowColor:'#ff9ab5'},
+    '小学生(男)':{gender:'m',age:'schoolkid',hair:'#3a342f',style:'short',cloth:'#5b7fc0'},
+    '小学生(女)':{gender:'f',age:'schoolkid',hair:'#5a4636',style:'bob',cloth:'#e3d8c4'},
+    '幼児(男)':{gender:'m',age:'child',hair:'#5a4636',style:'round',cloth:'#7fc4a0'},
+    '幼児(女)':{gender:'f',age:'child',hair:'#6b4a30',style:'twin',cloth:'#f4a8c0',bowOn:true,bowColor:'#ff9ab5'},
+    '幼児':{gender:'m',age:'child',hair:'#5a4636',style:'round',cloth:'#8fdcc0'},
+    '乳児(男)':{gender:'m',age:'baby',hair:'#7a5a44',style:'tuft',cloth:'#9bbce8'},
+    '乳児(女)':{gender:'m',age:'baby',hair:'#8a6a50',style:'tuft',cloth:'#f6b8cc',bowOn:true,bowColor:'#ff9ab5'},
+    '乳児':{gender:'m',age:'baby',hair:'#8a6a50',style:'tuft',cloth:'#ffd98c'}
   };
   return M[role]||{gender:'m',age:'mid',hair:'#6b6157',style:'short',cloth:'#a7b0bd'};
 }
@@ -7013,12 +7162,13 @@ function cfg(role){
   return function(role,expr){var c=cfg(role);c.expr=expr||"smile";return mkPerson(50,46,26,c);};
 })();
 
-function buildFamTreeSVG(fam){
+function buildFamTreeSVG(fam, opts){
   function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
   var g0=fam.filter(m=>m.role&&famGetGen(m.role)===0);
   var g1=fam.filter(m=>m.role&&famGetGen(m.role)===1);
   var g2=fam.filter(m=>m.role&&famGetGen(m.role)===2);
   var NW=92,NH=116,HG=12,CG=22,RG=50,PAD=8,KIDW=52,KIDH=28,RG3=40;
+  var GKW=38,GKH=52,GKBUS=14,GK_LBL={'小学生(男)':'小学生','小学生(女)':'小学生','幼児(男)':'幼児','幼児(女)':'幼児','乳児(男)':'乳児','乳児(女)':'乳児','乳児':'乳児','孫(男)':'孫','孫(女)':'孫','幼児':'幼児'};
   var MALE=['長男','次男','三男','兄','弟'];
   var SIB=['兄','弟','姉','妹'], SPOUSE=['妻','配偶者','世帯主（女）','名義人（妻）'];
   var sibs=g1.filter(m=>SIB.indexOf(m.role)>=0), nonSib=g1.filter(m=>SIB.indexOf(m.role)<0);
@@ -7034,7 +7184,7 @@ function buildFamTreeSVG(fam){
   var coupleMid = (headNode&&spouseNode)?((headNode.x+NW/2)+(spouseNode.x+NW/2))/2 : headNode?headNode.x+NW/2 : (g1nodes.length?(Math.min(...g1nodes.map(n=>n.x+NW/2))+Math.max(...g1nodes.map(n=>n.x+NW/2)))/2:0);
   // gen2 ユニット
   var units=[],cur2=0;
-  g2.forEach(m=>{var married=(m.marriage==="既婚");var CG2=30;var u={m,childX:cur2,married,kids:(+m.children)||0};u.spouseX=married?cur2+NW+CG2:null;units.push(u);cur2+=(married?NW*2+CG2:NW)+HG;});
+  g2.forEach(m=>{var married=(m.marriage==="既婚");var CG2=30;var gk=(m.grandkids&&m.grandkids.length)?m.grandkids.slice():((+(m.children)>0)?Array(+m.children).fill('孫(男)'):[]);var u={m,childX:cur2,married,kids:gk.length,gk:gk};u.spouseX=married?cur2+NW+CG2:null;var unitW=(married?NW*2+CG2:NW);u.adv=Math.max(unitW,gk.length*GKW);units.push(u);cur2+=u.adv+HG;});
   var totalW2=cur2-HG, startX2=coupleMid-totalW2/2;
   units.forEach(u=>{u.childX+=startX2;if(u.married)u.spouseX+=startX2;u.bloodC=u.childX+NW/2;u.coupleMid=u.married?((u.childX+NW/2)+(u.spouseX+NW/2))/2:u.bloodC;});
   var c2nodes=[];
@@ -7053,14 +7203,14 @@ function buildFamTreeSVG(fam){
   g0nodes.forEach(n=>n.y=yByGen[0]);g1nodes.forEach(n=>n.y=yByGen[1]);c2nodes.forEach(n=>n.y=yByGen[2]);
   var gen3Y=(yByGen[2]!=null?yByGen[2]:yByGen[1])+NH+RG3;
   // kid boxes
-  var kidBoxes=[];units.forEach(u=>{if(u.kids>0)kidBoxes.push({cx:u.coupleMid,n:u.kids});});
+  var kidBoxes=[];units.forEach(u=>{if(u.kids>0)kidBoxes.push({cx:u.coupleMid,gk:u.gk,w:u.gk.length*GKW,mref:u.m});});
   // shift
   var allAv=g0nodes.concat(g1nodes,c2nodes);
-  var xsAll=allAv.map(n=>n.x).concat(allAv.map(n=>n.x+NW)).concat(kidBoxes.map(b=>b.cx-KIDW/2)).concat(kidBoxes.map(b=>b.cx+KIDW/2));
+  var xsAll=allAv.map(n=>n.x).concat(allAv.map(n=>n.x+NW)).concat(kidBoxes.map(b=>b.cx-b.w/2)).concat(kidBoxes.map(b=>b.cx+b.w/2));
   var minX=Math.min(...xsAll),maxX=Math.max(...xsAll),dx=PAD-minX;
   allAv.forEach(n=>n.x+=dx);kidBoxes.forEach(b=>b.cx+=dx);
   var W=(maxX-minX)+2*PAD;
-  var maxY=hasKids?gen3Y+KIDH:Math.max(...allAv.map(n=>n.y+NH));
+  var maxY=hasKids?gen3Y+GKH:Math.max(...allAv.map(n=>n.y+NH));
   var H=maxY+PAD;
   function ctr(n){return n.x+NW/2;}
   var CS='#7c8aa0';
@@ -7080,13 +7230,14 @@ function buildFamTreeSVG(fam){
   units.forEach(u=>{
     var bx=u.bloodC+dx, sx=(u.spouseX!=null?u.spouseX+dx:null), cmid=u.coupleMid+dx, cy=yByGen[2]+NH/2;
     if(u.married){lines+=L(bx+NW/2,cy,sx,cy);} // child右端〜spouse左端
-    if(u.kids>0){lines+=L(cmid,(u.married?yByGen[2]+NH/2:yByGen[2]+NH),cmid,gen3Y);}
+    if(u.kids>0){lines+=L(cmid,(u.married?yByGen[2]+NH/2:yByGen[2]+NH),cmid,gen3Y-GKBUS);}
   });
   // ノード描画
   function node(n){
     var m=n.m,inlaw=(n.kind==='inlaw');
     var living=m.living||'未確認';
-    var tint=inlaw?'#fbfcfe':(living==='同居'||living==='近居')?'#eef4ff':(living==='別居')?'#fffbe6':(living==='死亡')?'#f1f3f5':'#ffffff';
+    var tint=inlaw?'#fbfcfe':(living==='同居')?'#ecfeff':(living==='近居')?'#fffbeb':(living==='別居')?'#eff6ff':(living==='死亡')?'#f1f3f5':'#ffffff';
+    var resC=(living==='同居')?'#06b6d4':(living==='近居')?'#d97706':(living==='別居')?'#3b82f6':(living==='死亡')?'#94a3b8':'#d6dce4';
     var stroke='#cbd5e0',sw=1;
     if(!inlaw){if(m.kp){stroke='#3182ce';sw=2;}else if(m.owner){stroke='#c53030';sw=1.8;}else if(m.met){stroke='#38a169';sw=1.6;}}
     if(inlaw){stroke='#d7dee8';}
@@ -7100,6 +7251,7 @@ function buildFamTreeSVG(fam){
       if(m.kp)s+=`<text x="${n.x+NW-6}" y="${n.y+15}" font-size="8.5" fill="#3182ce" font-weight="700" text-anchor="end">KP</text>`;
       var sdc=(m.stance==='pos')?'#38a169':(m.stance==='neg')?'#e53e3e':'#ffffff';
       s+=`<circle cx="${n.x+NW/2}" cy="${n.y+8}" r="3.2" fill="${sdc}" stroke="#94a3b8" stroke-width="0.7"/>`;
+      if(!inlaw) s+=`<circle cx="${n.x+NW-9}" cy="${n.y+9}" r="3.6" fill="${resC}" stroke="#ffffff" stroke-width="1"/>`;
     }
     var alY=n.y+NH-7, role=String(m.role||''), pi=role.indexOf('（');
     var rl=pi>=0?[role.slice(0,pi),role.slice(pi)]:[role];
@@ -7112,7 +7264,33 @@ function buildFamTreeSVG(fam){
   var svg=`<svg viewBox="0 0 ${Math.round(W)} ${Math.round(H)}" width="${Math.round(W)}" height="${Math.round(H)}" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;display:block;margin:1mm auto 0"><defs><filter id="zfg"><feColorMatrix type="saturate" values="0"/></filter></defs>`;
   svg+=lines;
   allAv.forEach(n=>svg+=node(n));
-  kidBoxes.forEach(b=>{svg+=`<rect x="${b.cx-KIDW/2}" y="${gen3Y}" width="${KIDW}" height="${KIDH}" rx="7" fill="#fff7ed" stroke="#f0b27a"/><text x="${b.cx}" y="${gen3Y+18}" font-size="11" fill="#b9651b" font-weight="700" text-anchor="middle">子${b.n}人</text>`;});
+  kidBoxes.forEach(b=>{
+    var n=b.gk.length, startX=b.cx-(n*GKW)/2, busY=gen3Y-GKBUS;
+    // 横バス（孫が2人以上のとき）と各孫への分岐線
+    var firstC=startX+GKW/2, lastC=startX+(n-1)*GKW+GKW/2;
+    if(n>1) svg+=L(firstC,busY,lastC,busY);
+    for(var gi=0;gi<n;gi++){
+      var gx=startX+gi*GKW+GKW/2;
+      svg+=L(gx,busY,gx,gen3Y);
+      var aw=100,ah=112,asc=Math.min((GKW-4)/aw,(GKH-12)/ah),tx=gx-aw*asc/2,ty=gen3Y;
+      svg+=`<g transform="translate(${Math.round(tx*100)/100},${ty}) scale(${Math.round(asc*1000)/1000})">${famAvatarSVG(b.gk[gi],"smile")}</g>`;
+      svg+=`<text x="${gx}" y="${gen3Y+GKH-1}" font-size="7.5" fill="#718096" text-anchor="middle">${GK_LBL[b.gk[gi]]||'孫'}</text>`;
+    }
+  });
+  // タップ編集レイヤー（画面のみ／印刷では opts なしで無効）
+  if(opts&&opts.interactive&&opts.src){
+    var _ix=function(mm){return opts.src.indexOf(mm);};
+    allAv.forEach(function(n){
+      if(n.kind==='inlaw') return;
+      var id=_ix(n.m); if(id<0) return;
+      svg+='<rect x="'+n.x+'" y="'+n.y+'" width="'+NW+'" height="'+NH+'" rx="11" fill="transparent" style="cursor:pointer" onclick="famOpenEdit('+id+')"><title>タップで編集</title></rect>';
+    });
+    kidBoxes.forEach(function(b){
+      if(!b.mref) return; var id=_ix(b.mref); if(id<0) return;
+      var nn=b.gk.length, sX=b.cx-(nn*GKW)/2;
+      svg+='<rect x="'+sX+'" y="'+gen3Y+'" width="'+(nn*GKW)+'" height="'+GKH+'" fill="transparent" style="cursor:pointer" onclick="famOpenEdit('+id+')"><title>タップで親（子世代）を編集</title></rect>';
+    });
+  }
   svg+='</svg>';
   return svg;
 }
@@ -7128,8 +7306,8 @@ function buildFamilyHTML(c){
       +'<div class="stitle">🌳 三世代家系図</div>'+svg
       +'<div style="display:flex;flex-wrap:wrap;gap:2mm 4mm;margin-top:1.5mm;font-size:7pt;color:#718096">'
       +'<span>枠：<b style="color:#3182ce">青=KP</b>／<b style="color:#c53030">赤=所有者</b>／<b style="color:#38a169">緑=面談済</b></span>'
-      +'<span>塗り：青=同居/近居・黄=別居・灰=死亡・白=未確認</span>'
-      +'<span>中央●：<b style="color:#38a169">緑=前向</b>/<b style="color:#e53e3e">赤=否定</b>/白=不明</span>'
+      +'<span>右上●居住：<b style="color:#06b6d4">同居</b>・<b style="color:#d97706">近居</b>・<b style="color:#3b82f6">別居</b>・<b style="color:#94a3b8">死亡</b></span>'
+      +'<span>中央●意向：<b style="color:#38a169">緑=前向</b>/<b style="color:#e53e3e">赤=否定</b>/白=不明</span>'
       +'</div></div>';
   }
   var genLabel=['祖父母世代','世帯主世代','子世代'];
@@ -7147,7 +7325,7 @@ function buildFamilyHTML(c){
       if(m.kp)tags.push('<span style="color:#3182ce;font-weight:700">KP</span>');
       if(m.met)tags.push('<span style="color:#276749;font-weight:700">面談済</span>');
       var mc='';
-      if(DEEP.indexOf(m.role)>=0){if(m.marriage&&m.marriage!=='不明')mc+=m.marriage;if(m.children)mc+=(mc?'・':'')+'子'+m.children+'人';}
+      if(DEEP.indexOf(m.role)>=0){if(m.marriage&&m.marriage!=='不明')mc+=m.marriage;var _gk=(m.grandkids&&m.grandkids.length)?m.grandkids:null;if(_gk){var _GL={'小学生(男)':'小学生男','小学生(女)':'小学生女','幼児(男)':'幼児男','幼児(女)':'幼児女','乳児(男)':'乳児男','乳児(女)':'乳児女','孫(男)':'男の子','孫(女)':'女の子','幼児':'幼児','乳児':'乳児'};mc+=(mc?'・':'')+'子'+_gk.length+'人（'+_gk.map(function(g){return _GL[g]||'子';}).join('・')+'）';}else if(m.children)mc+=(mc?'・':'')+'子'+m.children+'人';}
       var sep='<span style="color:#cbd5e0;padding:0 1mm">|</span>';
       html+='<div style="display:flex;align-items:baseline;gap:1.5mm;padding:1.2mm 0;border-bottom:0.3pt solid #edf2f7;font-size:9.5pt;flex-wrap:wrap">'
         +'<span style="font-weight:700;min-width:17mm;color:#2d3748">'+(m.owner?'★':'')+e(m.role)+'</span>'
@@ -8119,33 +8297,34 @@ function renderAnalysis(){
  if(!t.length){host.innerHTML='<div class="zdash zdash-mgr"><div class="z-card"><div class="z-empty">対象データがありません</div></div></div>';return;}
  var STG=['面識','注意','興味','連想','欲求','比較','信念','決心'];
  var RC={S:'#c53030',A:'#e53e3e',B:'#dd6b20',C:'#d69e2e',D:'#38a169',E:'#718096',X:'#4a5568'};
- var n=t.length, avg=Math.round(t.reduce(function(s,c){return s+calcScore(c);},0)/n*10)/10;
- var conn=t.filter(function(c){return +(c.stage||0)>=3;}).length, late=t.filter(function(c){return calcPaceOverrate(c)>1;}).length;
+ var tE=t.filter(function(c){return !_isLandLead(c);}), nE=tE.length;
+ var n=t.length, avg=nE?Math.round(tE.reduce(function(s,c){return s+calcScore(c);},0)/nE*10)/10:0;
+ var conn=tE.filter(function(c){return +(c.stage||0)>=3;}).length, late=tE.filter(function(c){return calcPaceOverrate(c)>1;}).length;
  var mDisc=_zMonthly(t,function(c){return c.discovery_date;}), thisM=mDisc[11],lastM=mDisc[10],dd=thisM-lastM;
- var sc=[0,0,0,0,0,0,0,0];t.forEach(function(c){var s=+(c.stage||0);if(s>=0&&s<=7)sc[s]++;});
+ var sc=[0,0,0,0,0,0,0,0];tE.forEach(function(c){var s=+(c.stage||0);if(s>=0&&s<=7)sc[s]++;});
  // team活動（フル稼働）
  var g=_zByMgr(cards), reps=Object.keys(g).sort(), curMonth=_zMonths()[11];
  var active=reps.filter(function(r){return g[r].some(function(c){return (c.discovery_date||'').slice(0,7)===curMonth||_zVisitDates(c).some(function(d){return d.slice(0,7)===curMonth;});});});
  var H='<div class="zdash zdash-mgr"><div class="z-cockpit"><div class="z-cmdhead">⌘ COMMAND CENTER <span>/ '+(scope==='all'?'課分析':e(scope))+'</span></div>';
  // KPI + gauge
  H+='<div class="z-bento"><div class="z-card z-kpi z-c1"><span class="z-klab">今月発掘</span>'+(thisM||lastM?'<span class="z-delta '+(dd>=0?'up':'dn')+'">'+(dd>=0?'▲':'▼')+' '+Math.abs(dd)+'</span>':'')+'<div class="z-kval z-num">'+thisM+'<small>件</small></div>'+_zSpark(mDisc,'#34e3d0')+'</div>'
-  +'<div class="z-card z-kpi z-c1"><span class="z-klab">スコア平均</span><div class="z-kval z-num" style="color:#8b7cff">'+avg+'<small>/78</small></div><div class="z-ksub">対象 '+n+'件</div></div>'
-  +'<div class="z-card z-kpi z-c1"><span class="z-klab">連想率</span><div class="z-kval z-num" style="color:#9be15d">'+_zPct(conn,n)+'<small>%</small></div><div class="z-ksub">'+conn+'件</div></div>'
-  +'<div class="z-card z-kpi z-c1"><span class="z-klab">ペース遅れ</span><div class="z-kval z-num" style="color:#ff5d7d">'+late+'<small>件</small></div><div class="z-ksub">'+_zPct(late,n)+'%</div></div></div>';
+  +'<div class="z-card z-kpi z-c1"><span class="z-klab">スコア平均</span><div class="z-kval z-num" style="color:#8b7cff">'+avg+'<small>/78</small></div><div class="z-ksub">対象 '+nE+'件</div></div>'
+  +'<div class="z-card z-kpi z-c1"><span class="z-klab">連想率</span><div class="z-kval z-num" style="color:#9be15d">'+_zPct(conn,nE)+'<small>%</small></div><div class="z-ksub">'+conn+'件</div></div>'
+  +'<div class="z-card z-kpi z-c1"><span class="z-klab">ペース遅れ</span><div class="z-kval z-num" style="color:#ff5d7d">'+late+'<small>件</small></div><div class="z-ksub">'+_zPct(late,nE)+'%</div></div></div>';
  H+='</div>';
  // 📐 カード品質ピラミッド
  var bodyQuality=(function(){
   var tiers=[['\ud83d\udc8e 完全カード','75〜','#34e3d0'],['\ud83e\udd47 実用','55〜74','#9be15d'],['\ud83e\udd48 骨だけ','35〜54','#ffd43b'],['\ud83e\udd49 メモ程度','15〜34','#ffb443'],['\ud83e\udea8 素材','〜14','#ff5d7d']];
   var cnt=[0,0,0,0,0];
-  t.forEach(function(c){ cnt[_richTier(_cardRichness(c))]++; });
+  tE.forEach(function(c){ cnt[_richTier(_cardRichness(c))]++; });
   var rows=tiers.map(function(tr,i){
-   var pc=_zPct(cnt[i],n);
+   var pc=_zPct(cnt[i],nE);
    var w=Math.max(14,pc);
    return '<div style="margin:3px auto;width:'+w+'%;min-width:190px;background:'+tr[2]+'22;border:1px solid '+tr[2]+'66;border-radius:6px;padding:4px 8px;font-size:11.5px;display:flex;justify-content:space-between;gap:8px"><span>'+tr[0]+' <span style="opacity:.6">'+tr[1]+'</span></span><b>'+pc+'%<span style="opacity:.6;font-weight:600">（'+cnt[i]+'枚）</span></b></div>';
   }).join('');
   var byRep='';
   if(scope==='all'&&reps.length>=2){
-   var rr=reps.map(function(r){var cs=g[r];var hi=cs.filter(function(c){return _richTier(_cardRichness(c))<=1;}).length;return {r:r,n:cs.length,hi:hi,pct:_zPct(hi,cs.length)};}).sort(function(a,b){return b.pct-a.pct;});
+   var rr=reps.map(function(r){var cs=g[r].filter(function(c){return !_isLandLead(c);});var hi=cs.filter(function(c){return _richTier(_cardRichness(c))<=1;}).length;return {r:r,n:cs.length,hi:hi,pct:_zPct(hi,cs.length)};}).sort(function(a,b){return b.pct-a.pct;});
    byRep='<div style="margin-top:9px;border-top:1px solid rgba(255,255,255,.08);padding-top:7px"><div class="z-sub" style="margin-bottom:4px">担当別 高品質率（\ud83d\udc8e＋\ud83e\udd47）</div><div style="display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px">'+rr.map(function(o){return '<span>'+e(o.r)+' <b>'+o.pct+'%</b><span style="opacity:.55">（'+o.hi+'/'+o.n+'）</span></span>';}).join('')+'</div></div>';
   }
   return '<div class="z-card z-c2"><h3>\ud83d\udcd0 カード品質ピラミッド</h3><div class="z-sub">内容の濃さ（入力率・記述量・「」引用・→反応・家族把握・録音）で5階層。幅＝全体に占める割合。</div><div style="margin-top:6px">'+rows+'</div>'+byRep+'</div>';
@@ -8180,7 +8359,7 @@ function renderAnalysis(){
   +_zc('🔮','着地予測（今月見込み）','現パイプライン×転換率の概算。','<div class="z-tiles"><div class="z-tile"><b>'+proj+'</b><span>契約見込</span></div><div class="z-tile"><b>'+Math.round(conn*0.35)+'</b><span>提案依頼見込</span></div><div class="z-tile"><b>'+fc5+'</b><span>比較以上</span></div></div><div class="z-sub" style="margin-top:8px">※過去転換率の蓄積で精度UP</div>','z-c2')
   +_zc('⚠','要フォロー（最優先）','至急アクションすべき高価値の客。課長から指示を。','<div class="z-list2">'+prioH+'</div>','z-cf'));
  // rank & game (team)
- var board=reps.map(function(r){var a=g[r];return {r:r,av:a.length?Math.round(a.reduce(function(s,c){return s+calcScore(c);},0)/a.length*10)/10:0,n:a.length};}).sort(function(a,b){return b.av-a.av;});
+ var board=reps.map(function(r){var a=g[r];var aE=a.filter(function(c){return !_isLandLead(c);});return {r:r,av:aE.length?Math.round(aE.reduce(function(s,c){return s+calcScore(c);},0)/aE.length*10)/10:0,n:a.length};}).sort(function(a,b){return b.av-a.av;});
  var mxAv=Math.max.apply(null,board.map(function(b){return b.av;}))||1;
  var lbH=board.map(function(b,i){var col=_zAVAS[reps.indexOf(b.r)%8];return '<div class="z-lb"><div class="z-lrank'+(i===0?' top':'')+'">'+(i===0?'👑':'#'+(i+1))+'</div><div class="z-av" style="background:'+col+'">'+e(b.r.slice(0,1))+'</div><div class="z-lnm">'+e(b.r)+'<span>'+b.n+'件</span></div><div class="z-lbar"><i style="width:'+Math.round(b.av/mxAv*100)+'%"></i></div><div class="z-lsc" style="color:'+col+'">'+b.av+'</div></div>';}).join('');
  var bd=_zBadges();
@@ -8225,15 +8404,16 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
  var holdBars=reps.map(function(r){return g[r].length;});
  var prGot=cards.filter(function(c){return c.proposal_req;}).length;
  var prBars=reps.map(function(r){return g[r].filter(function(c){return c.proposal_req;}).length;});
- var inpBars=reps.map(function(r){var a=g[r];return a.length?Math.round(a.reduce(function(s,c){return s+basicInputStat(c).pct;},0)/a.length):0;});
+ var inpBars=reps.map(function(r){var a=g[r].filter(function(c){return !_isLandLead(c);});return a.length?Math.round(a.reduce(function(s,c){return s+basicInputStat(c).pct;},0)/a.length):0;});
  var FCHK=[['氏名',function(c){return !(c.name&&String(c.name).trim());}],['現状',function(c){return !(c.genjo&&String(c.genjo).trim());}],['住所',function(c){return !(c.address&&String(c.address).trim());}],['会話',function(c){var kw=Array.isArray(c.kaiwa)?c.kaiwa:(c.kaiwa?[c.kaiwa]:[]);return kw.length===0;}],['ステージ',function(c){return c.stage===''||c.stage==null;}],['資産',function(c){return !(c.land_asset&&String(c.land_asset).trim());}],['想定',function(c){return !(c.souteim&&String(c.souteim).trim());}],['家族',function(c){var fam=Array.isArray(c.family)?c.family:[];return !(fam.length>0||c.family_headcount);}]];
- var blankRates=FCHK.map(function(fc){return _zPct(cards.filter(fc[1]).length,cards.length);});
+ var blankRates=(function(){var _cE=cards.filter(function(c){return !_isLandLead(c);});return FCHK.map(function(fc){return _zPct(_cE.filter(fc[1]).length,_cE.length);});})();
  var traitRows=reps.map(function(r){
    var a=g[r],T=a.length||1;
-   var renso=_zPct(a.filter(function(c){return +(c.stage||0)>=3;}).length,T);
-   var inp=a.length?Math.round(a.reduce(function(s,c){return s+basicInputStat(c).pct;},0)/a.length):0;
-   var pace=100-_zPct(a.filter(function(c){return calcPaceOverrate(c)>1;}).length,T);
-   var prr=_zPct(a.filter(function(c){return c.proposal_req;}).length,T);
+   var aE=a.filter(function(c){return !_isLandLead(c);}), TE=aE.length||1;
+   var renso=_zPct(aE.filter(function(c){return +(c.stage||0)>=3;}).length,TE);
+   var inp=aE.length?Math.round(aE.reduce(function(s,c){return s+basicInputStat(c).pct;},0)/aE.length):0;
+   var pace=100-_zPct(aE.filter(function(c){return calcPaceOverrate(c)>1;}).length,TE);
+   var prr=_zPct(aE.filter(function(c){return c.proposal_req;}).length,TE);
    var grip=(function(){var sv=0,n=0;a.forEach(function(c){var l=getKaiwaLevel(c);if(l>=0){sv+=l;n++;}});return n?Math.round(sv/n/4*100):0;})();
    var tr=[];
    if(a.length>=avgHold*1.25) tr.push(['量型(保有多)','#34e3d0']); else if(a.length>0&&a.length<=avgHold*0.7) tr.push(['厳選型(保有少)','#8b7cff']);
@@ -8248,12 +8428,12 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
  var _teamCourse=_zc('🕳','リーク分析（離脱の場所）','転換率が落ちる段を発見。',_zFunnel(sc),'z-c2');
  var bodyTeam=('🧑‍💼 担当の特性・保有状況',
    _zc('📇','見込み保有数（全体・担当別）','課全体の母数と担当別の保有件数。','<div style="text-align:center;margin-bottom:8px"><span style="font-family:Sora,sans-serif;font-size:30px;font-weight:800;color:#34e3d0">'+cards.length+'</span><span style="font-size:12px;color:var(--z-dim)"> 件（全体）／平均 '+avgHold.toFixed(1)+'件</span></div>'+_zVbars(holdBars,reps.map(function(r){return r.slice(0,1);}),_zAVAS),'z-c2')
-  +_zc('⭕','提案依頼の取得状況','顧客の意思表示＝契約への最短サイン。','<div style="text-align:center;margin-bottom:8px"><span style="font-family:Sora,sans-serif;font-size:30px;font-weight:800;color:#2f9e44">'+prGot+'</span><span style="font-size:12px;color:var(--z-dim)"> 件取得／'+cards.length+'件中（'+_zPct(prGot,cards.length)+'%）</span></div>'+_zVbars(prBars,reps.map(function(r){return r.slice(0,1);}),reps.map(function(){return '#2f9e44';})),'z-c2')
+  +_zc('⭕','提案依頼の取得状況','顧客の意思表示＝契約への最短サイン。','<div style="text-align:center;margin-bottom:8px"><span style="font-family:Sora,sans-serif;font-size:30px;font-weight:800;color:#2f9e44">'+prGot+'</span><span style="font-size:12px;color:var(--z-dim)"> 件取得／'+cards.filter(function(c){return !_isLandLead(c);}).length+'件中（'+_zPct(prGot,cards.filter(function(c){return !_isLandLead(c);}).length)+'%）</span></div>'+_zVbars(prBars,reps.map(function(r){return r.slice(0,1);}),reps.map(function(){return '#2f9e44';})),'z-c2')
   +_zc('📝','入力充実度（担当別）','カードの作り込み度。低い担当は質のフォローを。',_zVbars(inpBars,reps.map(function(r){return r.slice(0,1);}),inpBars.map(function(v){return v>=70?'#2f9e44':v>=50?'#ffb443':'#ff5d7d';})),'z-c2')
   +_zc('🕳','未入力の傾向（課全体）','どの項目が抜けやすいか。高い＝チームの弱点。',_zVbars(blankRates,FCHK.map(function(f){return f[0];}),blankRates.map(function(){return '#ff8aa0';})),'z-c2')
   +_zc('🧬','担当の特性（自動所見）','カード全体から見た各担当のタイプ。','<div class="z-list2">'+(traitRows||'<div class="z-sub">担当データなし</div>')+'</div>','z-cf'));
  // insights
- var pingStat=reps.map(function(r){var a=g[r],T=a.length||1;return {r:r,v:_zPct(a.filter(function(c){return getKaiwaLevel(c)===0;}).length,T),n:a.length};}).filter(function(o){return o.n>=3;}).sort(function(a,b){return b.v-a.v;});
+ var pingStat=reps.map(function(r){var a=g[r].filter(function(c){return !_isLandLead(c);}),T=a.length||1;return {r:r,v:_zPct(a.filter(function(c){return getKaiwaLevel(c)===0;}).length,T),n:a.length};}).filter(function(o){return o.n>=3;}).sort(function(a,b){return b.v-a.v;});
  var saLate=cards.filter(function(c){return (c.pursuit_judge==='A'||c.pursuit_judge==='S')&&calcPaceOverrate(c)>1;}).length;
  var ins='';
  ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(255,93,125,.16)">⚠</div><div><b>失速ポイントは「'+STG[slow]+'」段<span class="z-pill" style="background:rgba(255,93,125,.16);color:#ff5d7d">PACE</span></b><p>この段の滞留が最長。'+STG[slow]+'を越える一手（提案依頼・連れ出し）を朝礼で共有を。</p></div></div>';
@@ -8299,11 +8479,12 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
  var tidyH=_tidyArr.length?'<div style="padding:8px 10px;margin-bottom:8px;border-radius:8px;background:rgba(232,146,12,.12);border:1px solid rgba(232,146,12,.35)"><div style="font-size:11px;font-weight:800;color:#e8920c">🧹 まず整理の一手</div>'+_tidyArr.map(function(o){return '<div style="font-size:12px;color:var(--z-ink);margin-top:3px"><b>'+e(o.r)+'さん</b>：'+e(o.msg)+'</div>';}).join('')+'</div>':'';
  var todayCard=_zc('📌','今日の一手','今日、誰に・何を・何を聞くか（上位'+todayCand.length+'件）',tidyH+'<div class="z-list2">'+todayH+'</div>','z-cf');
  var coachRows=reps.map(function(r){var a=g[r],T=a.length||1;
-   var renso=_zPct(a.filter(function(c){return +(c.stage||0)>=3;}).length,T);
-   var prr=_zPct(a.filter(function(c){return c.proposal_req;}).length,T);
-   var paceLate=_zPct(a.filter(function(c){return calcPaceOverrate(c)>1;}).length,T);
-   var inp=a.length?Math.round(a.reduce(function(s,c){return s+basicInputStat(c).pct;},0)/a.length):0;
-   var famr=_zPct(a.filter(function(c){return c.family_headcount;}).length,T);
+   var aE=a.filter(function(c){return !_isLandLead(c);}), TE=aE.length||1;
+   var renso=_zPct(aE.filter(function(c){return +(c.stage||0)>=3;}).length,TE);
+   var prr=_zPct(aE.filter(function(c){return c.proposal_req;}).length,TE);
+   var paceLate=_zPct(aE.filter(function(c){return calcPaceOverrate(c)>1;}).length,TE);
+   var inp=aE.length?Math.round(aE.reduce(function(s,c){return s+basicInputStat(c).pct;},0)/aE.length):0;
+   var famr=_zPct(aE.filter(function(c){return c.family_headcount;}).length,TE);
    var asCnt=a.filter(function(c){return c.pursuit_judge==='A'||c.pursuit_judge==='S';}).length;
    var asLate=a.filter(function(c){return (c.pursuit_judge==='A'||c.pursuit_judge==='S')&&calcPaceOverrate(c)>1;}).length;
    var sev=0,issue='良好',msg='',good='';
@@ -8386,7 +8567,65 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
  var _bodyData=_deepItems.filter(function(it){return it.id!=='treasure'&&it.id!=='jobs9';}).map(function(it){var bd='';try{bd=it.render(_deepCtx)||'';}catch(err){bd='<div class="z-sub">⚠ 「'+(it.id||'?')+'」の描画でエラー（'+String(err&&err.message||err).slice(0,80)+'）</div>';}return _zc(it.e||'📈',it.t||it.id||'分析',it.s||'',bd,it.sp||'z-c2');}).join('');
  var _cardInsights=_zc('🧠','傾向と対策（AIインサイト）','データから打ち手を自動抽出。',ins,'z-cf');
  var _cardMap=_zc('🗺','マップ','町の熱量とお宝客。',bodyArea+_cardTreasure,'z-cf');
- var dangerCard=_zc('🚨','放置危険アラート','このままだと流れる見込み。至急→要フォロー→注意の順。タップでカードへ。',zDangerCardHTML(t,true),'z-cf'); var contractCard=_zc('✅','契約前進チェックリスト','契約に進むための不足を1行で。不足が少ない順＝契約に近い。','<div class="z-list2">'+zContractListHTML(t,true)+'</div>','z-cf'); var familyCard=_zc('👪','家族合意マップ','賛成●/反対●/未接触○・決裁者・KP・次に会う人。反対や未接触決裁者を優先。','<div class="z-list2">'+zFamilyMapHTML(t,true)+'</div>','z-cf'); H+=_zsec('today','🎯 課の指示 <span class="z-secsub">今日やること・誰に何を</span>',todayCard+dangerCard+contractCard+familyCard+readyCard+zoneCard+bodyContract)+_zsec('coach','🎓 部下の指導 <span class="z-secsub">コーチング</span>',coachCard)+_zsec('teamchk','👥 部下の確認 <span class="z-secsub">担当の現状</span>',bodyRank+_cardWork+_cardDiff+bodyTeam)+_zsec('grow','🌱 育成クエスト <span class="z-secsub">型・成長・次の課題</span>',questCard+_axKingCard)+_zsec('state','📊 詳細分析 <span class="z-secsub">月次・ヒートマップ・課長会議用</span>',_cardMap+bodyKpi3+bodyProcess+bodyQuality+_bodyData+_teamCourse+_cardInsights);
+ var dangerCard=_zc('🚨','放置危険アラート','このままだと流れる見込み。至急→要フォロー→注意の順。タップでカードへ。',zDangerCardHTML(t,true),'z-cf'); var contractCard=_zc('✅','契約前進チェックリスト','契約に進むための不足を1行で。不足が少ない順＝契約に近い。','<div class="z-list2">'+zContractListHTML(t,true)+'</div>','z-cf'); var familyCard=_zc('👪','家族合意マップ','賛成●/反対●/未接触○・決裁者・KP・次に会う人。反対や未接触決裁者を優先。','<div class="z-list2">'+zFamilyMapHTML(t,true)+'</div>','z-cf'); // ===== 🌅 朝3分・指揮ボード（最上部・常時表示。既存の計算結果を要約。色は意味色1ブロック1色）=====
+ var morningBoard=(function(){
+   var SC={blue:'#4aa8ff',violet:'#8b7cff',gold:'#ffb443',red:'#ff5d7d',green:'#2f9e44',grey:'#8593a8'};
+   var RC2={S:'#c53030',A:'#e53e3e',B:'#dd6b20',C:'#d69e2e',D:'#38a169',E:'#718096',X:'#4a5568'};
+   var LVc=[null,'#d69e2e','#dd6b20','#e53e3e'],LVt=[null,'注意','要フォロー','至急'];
+   function jid(c){return String(c.id||'').replace(/[^\w-]/g,'');}
+   function head(ic,col,title,sub){return '<div style="display:flex;align-items:center;gap:7px;margin:2px 0 5px"><span style="width:22px;height:22px;border-radius:7px;background:'+col+'22;color:'+col+';display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0">'+ic+'</span><b style="font-size:13px;color:var(--z-ink)">'+title+'</b>'+(sub?'<span style="font-size:10.5px;color:var(--z-dim);margin-left:auto;flex-shrink:0">'+sub+'</span>':'')+'</div>';}
+   function nm(c){return '<div style="flex:1;min-width:0;overflow:hidden"><b style="font-size:13px;color:var(--z-ink);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block" onclick="zJumpCard(\''+jid(c)+'\')">'+e(c.name||'無名')+'様</b></div>';}
+   function meta(s){return '<span style="font-size:10.5px;color:var(--z-mut);flex-shrink:0;white-space:nowrap">'+s+'</span>';}
+   function tag(txt,col){return '<span style="font-size:10px;background:'+col+'22;color:'+col+';border:1px solid '+col+'55;border-radius:9px;padding:1px 7px;white-space:nowrap;flex-shrink:0">'+txt+'</span>';}
+   function lvlChip(lv){return '<span style="font-size:10px;font-weight:800;color:#fff;background:'+LVc[lv]+';border-radius:8px;padding:1px 7px;white-space:nowrap;flex-shrink:0">'+LVt[lv]+'</span>';}
+   function rk(i,col){return '<div style="width:20px;height:20px;border-radius:50%;background:'+col+';color:#fff;font-weight:800;font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+i+'</div>';}
+   function sub2(label,txt,col){return '<div style="font-size:11.5px;color:var(--z-mut);margin:1px 0 0 30px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span style="color:'+(col||'var(--z-cyan)')+';font-weight:700">'+label+'</span>'+txt+'</div>';}
+   function empty(t){return '<div style="font-size:11.5px;color:var(--z-dim);padding:3px 0 5px">'+t+'</div>';}
+   var b1=todayCand.length?todayCand.map(function(o,i){var c=o.c,st=+(c.stage||0),mv=_nextMove(c);
+     return '<div style="padding:5px 0;border-bottom:1px solid var(--z-line)"><div style="display:flex;align-items:center;gap:7px">'+rk(i+1,(RC2[c.pursuit_judge]||'#4a5568'))+nm(c)+meta(STG[st]+'・'+e(c.manager||''))+(o.rs.length?tag(o.rs[0],SC.red):'')+'</div>'+sub2('→ ',e(mv[0]),SC.blue)+(c.next_aim?sub2('担当の狙い：',e(c.next_aim),SC.violet):'')+'</div>';
+   }).join(''):empty('今日の優先案件なし。良好です◎');
+   var needCoach=coachRows.filter(function(o){return o.sev>=2;}).slice(0,3);
+   var b2=needCoach.length?needCoach.map(function(o){var col=o.sev>=4?SC.red:SC.gold;
+     return '<div style="padding:5px 0;border-bottom:1px solid var(--z-line)"><div style="display:flex;align-items:center;gap:6px">'+'<b style="font-size:12.5px;color:var(--z-ink);flex-shrink:0">'+e(o.r)+'さん</b>'+tag(o.issue,col)+'<span style="font-size:10.5px;color:var(--z-dim);margin-left:auto;flex-shrink:0">'+o.n+'件</span></div><div style="font-size:11.5px;color:var(--z-mut);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+o.msg+'</div></div>';
+   }).join(''):empty('全担当 良好◎ 強みを伸ばす声かけを');
+   var d3=deals.slice(0,3);
+   var b3=d3.length?d3.map(function(o){var c=o.c,gap=_readyGap(c);
+     return '<div style="padding:5px 0;border-bottom:1px solid var(--z-line)"><div style="display:flex;align-items:center;gap:7px">'+nm(c)+meta(e(c.manager||''))+tag('近接 '+o.p+'%',SC.gold)+'</div>'+(gap&&gap!=='準備OK'?sub2('不足：',e(gap),SC.gold):sub2('','次の接点まで準備OK◎',SC.green))+'</div>';
+   }).join(''):empty('契約接近の対象なし');
+   var dg=t.map(function(c){var r=zNeglectRisk(c);return r?{c:c,r:r}:null;}).filter(Boolean).sort(function(a,b){return b.r.level-a.r.level;}).slice(0,3);
+   var b4=dg.length?dg.map(function(o){var c=o.c;
+     return '<div style="padding:5px 0;border-bottom:1px solid var(--z-line)"><div style="display:flex;align-items:center;gap:7px">'+lvlChip(o.r.level)+nm(c)+meta(e(c.manager||''))+'</div>'+sub2('⚠ ',e(o.r.primary),SC.red)+'</div>';
+   }).join(''):empty('放置危険なし。よく追えています◎');
+   var weak=reps.map(function(r,i){return {r:r,v:inpBars[i]};}).filter(function(o){return o.v<50;}).sort(function(a,b){return a.v-b.v;});
+   var b5=weak.length?'<div style="display:flex;flex-wrap:wrap;gap:5px 10px;padding:3px 0 3px">'+weak.map(function(o){return '<span style="font-size:11.5px;color:var(--z-ink)">'+e(o.r)+' <b style="color:'+SC.red+'">'+o.v+'%</b></span>';}).join('')+'</div><div style="font-size:10.5px;color:var(--z-dim)">入力50%未満。土地・家族・現状の3項目から補強を。</div>':empty('全担当 入力充実◎');
+   return '<div class="z-card" style="border:1px solid var(--z-line);border-top:3px solid '+SC.gold+';margin:0 0 14px;padding:13px 14px">'
+     +'<div style="display:flex;align-items:center;gap:8px;margin:0 0 10px"><span style="font-size:16px">🌅</span><b style="font-size:15px;color:var(--z-ink)">朝3分・指揮ボード</b><span style="font-size:10.5px;color:var(--z-dim);margin-left:auto;flex-shrink:0">'+(scope==='all'?'課全体':e(scope))+'</span></div>'
+     +'<div style="margin-bottom:9px">'+head('🎯',SC.blue,'今日動く',todayCand.length+'件')+b1+'</div>'
+     +'<div style="margin-bottom:9px">'+head('🗣',SC.violet,'声をかける',needCoach.length?needCoach.length+'人':'')+b2+'</div>'
+     +'<div style="margin-bottom:9px">'+head('✅',SC.gold,'契約に近い',d3.length+'件')+b3+'</div>'
+     +'<div style="margin-bottom:9px">'+head('🚨',SC.red,'放置危険',dg.length+'件')+b4+'</div>'
+     +'<div>'+head('📝',SC.grey,'入力が薄い担当','')+b5+'</div>'
+     +'<div style="font-size:10.5px;color:var(--z-dim);margin-top:10px;padding-top:8px;border-top:1px solid var(--z-line)">詳しくは下の各セクション（🎯課の指示／🎓部下の指導／📊詳細分析）を開いてください。</div>'
+     +'</div>';
+ })();
+ var _llCard=(function(){
+   var leads=t.filter(_isLandLead), eng=t.filter(function(c){return !_isLandLead(c);});
+   var fr=0,stl=0,ab=0; leads.forEach(function(c){var s=_landLeadStatus(c); if(s==='fresh')fr++;else if(s==='stale')stl++;else ab++;});
+   var rate=_zPct(eng.length, eng.length+leads.length);
+   var tiles='<div class="z-tiles"><div class="z-tile"><b>'+leads.length+'</b><span>発掘中(土地見込み)</span></div>'
+     +'<div class="z-tile"><b>'+eng.length+'</b><span>対話済み</span></div>'
+     +'<div class="z-tile"><b style="color:'+(rate>=60?'#2f9e44':rate>=40?'#e8920c':'#e03131')+'">'+rate+'%</b><span>発掘活用率</span></div></div>';
+   var brk='<div class="z-sub" style="margin-top:8px">発掘の鮮度：<b style="color:#2f855a">🌱直後 '+fr+'</b>　<b style="color:#b7791f">⏳停滞 '+stl+'</b>　<b style="color:#c53030">⚠放置 '+ab+'</b></div>';
+   var perRep='';
+   if(scope==='all'&&ab>0){
+     var rows=reps.map(function(r){var nn=g[r].filter(function(c){return _isLandLead(c)&&_landLeadStatus(c)==='abandoned';}).length;return {r:r,n:nn};}).filter(function(x){return x.n>0;}).sort(function(a,b){return b.n-a.n;}).slice(0,5);
+     if(rows.length) perRep='<div class="z-sub" style="margin-top:6px">放置の多い担当：'+rows.map(function(x){return e(x.r)+' '+x.n+'件';}).join('・')+'</div>';
+   }
+   var note=ab>0?'<div class="z-sub" style="margin-top:6px;color:#c05621">※放置（31日超・未昇格）が多いと「雑欲（発掘しっぱなし）」。昇格 or 整理を促そう。</div>':'';
+   var body=(leads.length+eng.length)?(tiles+brk+perRep+note):'<div class="z-empty">対象カードがありません</div>';
+   return _zc('⛏','発掘パイプライン <span class="z-secsub">土地見込み→対話</span>','発掘した土地見込みを、対話・面談につなげられているか。発掘活用率＝対話済み÷(対話済み＋発掘中)。',body,'z-c2');
+ })();
+ H+=morningBoard+_zsec('today','🎯 課の指示 <span class="z-secsub">今日やること・誰に何を</span>',todayCard+dangerCard+contractCard+familyCard+readyCard+zoneCard+bodyContract)+_zsec('coach','🎓 部下の指導 <span class="z-secsub">コーチング</span>',coachCard)+_zsec('teamchk','👥 部下の確認 <span class="z-secsub">担当の現状</span>',bodyRank+_cardWork+_cardDiff+bodyTeam)+_zsec('grow','🌱 育成クエスト <span class="z-secsub">型・成長・次の課題</span>',questCard+_axKingCard)+_zsec('state','📊 詳細分析 <span class="z-secsub">月次・ヒートマップ・課長会議用</span>',_cardMap+bodyKpi3+bodyProcess+_llCard+bodyQuality+_bodyData+_teamCourse+_cardInsights);
  H+='</div>';
  host.innerHTML=H;
  if(window.IS_DEV){var _dw=document.getElementById('devSelfMirrorWrap');if(_dw){_dw.style.display='';if(window.renderSelfDash)renderSelfDash('devSelfMirror');}}
@@ -8438,7 +8677,7 @@ function copyAnalysisPrompt(){
 
   var prompt='';
   var _pToday=new Date().toISOString().slice(0,10);
-    var outInstr='上記データを踏まえ、不動産・相続営業の課長が朝礼・個別面談でそのまま使える具体的な指示を作ってください。抽象論や「頑張りましょう」は禁止。各案件で「次に聞く質問」と「取るべき約束」まで明記。家族構成・相続不安・土地活用・提案依頼・決裁者・同行を重視。\n\n【出力形式】\n1. 総評：現在の見込み状況／ボトルネック／今週の重点テーマ\n2. 最優先で動くべき見込み客トップ5：顧客名／担当／ステージ／追客ランク／動くべき理由／次回アクション／次回訪問で聞く質問／目標とする一言（取る約束）\n3. 次回アクションが曖昧な案件：顧客名／何が曖昧か／どう書き換えるべきか（具体的な文例）\n4. 放置リスクのある案件：顧客名／最終接触からの日数／リスク理由／再接触の口実\n5. 担当者へのコーチング：担当者名／良い点／改善点／今週の一言指示\n6. 明日からの行動指示トップ3：誰が・誰に・何を聞き・何の約束を取るか\n';
+    var outInstr='上記データを踏まえ、不動産・相続営業の課長が朝礼・個別面談でそのまま使える具体的な指示を作ってください。抽象論や「頑張りましょう」は禁止。各案件で「次に聞く質問」と「取るべき約束」まで明記。家族構成・相続不安・土地活用・提案依頼・決裁者・同行を重視。\n\n【出力形式】\n1. 総評：現在の見込み状況／ボトルネック／今週の重点テーマ\n2. 最優先で動くべき見込み客トップ5：顧客名／担当／ステージ／追客ランク／動くべき理由／次回アクション／次回訪問で聞く質問／目標とする一言（取る約束）\n3. 次回アクションが曖昧な案件：顧客名／何が曖昧か／どう書き換えるべきか（具体的な文例）\n4. 放置リスクのある案件：顧客名／最終接触からの日数／リスク理由／再接触の口実\n5. 担当者へのコーチング：担当者名／良い点／改善点／今週の一言指示／「担当の狙い」（本人の自己判断）とAI推奨にズレがあれば、その是非と理由を一言で\n6. 明日からの行動指示トップ3：誰が・誰に・何を聞き・何の約束を取るか\n';
 
   if(isMember){
     // 担当者個別フィードバック
@@ -8459,7 +8698,7 @@ function copyAnalysisPrompt(){
     if(avgRosen) prompt+='  路線価平均：約'+(avgRosen/10000).toFixed(1)+'万円/㎡\n';
     prompt+='\n■ スコア上位5件\n';
     scored.slice(0,5).forEach(function(c,i){
-      prompt+='  '+(i+1)+'位 '+e(c.name||'氏名不明')+'｜'+stageNames[+(c.stage||0)]+'｜追客'+(c.pursuit_judge||'未')+'｜最終接触'+lastContactDays(c)+'日｜アポ'+(_zAppoDates(c).some(function(d){return d>=_pToday;})?'有':'無')+'｜提案依頼'+(c.proposal_req?'○':'✕')+'｜家族'+(c.family_headcount?'○':'✕')+'｜KP'+((c.family||[]).some(function(x){return x.met&&(x.owner||x.kp);})?'○':'✕')+'｜スコア'+c._score+'\n';
+      prompt+='  '+(i+1)+'位 '+e(c.name||'氏名不明')+'｜'+stageNames[+(c.stage||0)]+'｜追客'+(c.pursuit_judge||'未')+'｜最終接触'+lastContactDays(c)+'日｜アポ'+(_zAppoDates(c).some(function(d){return d>=_pToday;})?'有':'無')+'｜提案依頼'+(c.proposal_req?'○':'✕')+'｜家族'+(c.family_headcount?'○':'✕')+'｜KP'+((c.family||[]).some(function(x){return x.met&&(x.owner||x.kp);})?'○':'✕')+'｜スコア'+c._score+(c.next_aim?'｜担当の狙い「'+e(c.next_aim)+'」':'')+'\n';
     });
     prompt+='\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
     prompt+='上記のデータを踏まえて、'+memberName+'さんへのフィードバックを作成してください。\n\n';
@@ -8488,7 +8727,7 @@ function copyAnalysisPrompt(){
     });
     prompt+='\n■ スコア上位10件\n';
     scored.slice(0,10).forEach(function(c,i){
-      prompt+='  '+(i+1)+'位 '+e(c.name||'氏名不明')+' ['+e(c.manager||'')+']｜'+stageNames[+(c.stage||0)]+'｜追客'+(c.pursuit_judge||'未')+'｜最終接触'+lastContactDays(c)+'日｜アポ'+(_zAppoDates(c).some(function(d){return d>=_pToday;})?'有':'無')+'｜提案依頼'+(c.proposal_req?'○':'✕')+'｜家族'+(c.family_headcount?'○':'✕')+'｜スコア'+c._score+'\n';
+      prompt+='  '+(i+1)+'位 '+e(c.name||'氏名不明')+' ['+e(c.manager||'')+']｜'+stageNames[+(c.stage||0)]+'｜追客'+(c.pursuit_judge||'未')+'｜最終接触'+lastContactDays(c)+'日｜アポ'+(_zAppoDates(c).some(function(d){return d>=_pToday;})?'有':'無')+'｜提案依頼'+(c.proposal_req?'○':'✕')+'｜家族'+(c.family_headcount?'○':'✕')+'｜スコア'+c._score+(c.next_aim?'｜担当の狙い「'+e(c.next_aim)+'」':'')+'\n';
     });
     prompt+='\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
     prompt+='上記のデータを踏まえて、課長視点で以下を分析してください：\n\n';
@@ -9141,7 +9380,7 @@ function closeSyncModal(){
 function doMobExport(){
   if(cards.length===0){toast('保存するカードがありません');return;}
   var j=mkJson();
-  try{localStorage.setItem('aibis_last_export',new Date().toISOString());}catch(_e){}
+  try{var _nowISO=new Date().toISOString();localStorage.setItem('aibis_last_export',_nowISO);localStorage.setItem('aibis_last_backup',_nowISO);}catch(_e){}
   var fn='AIBIS_'+(uName||'staff')+'_'+APP_VERSION+'_'+j.ts+'.json';
   var a=document.createElement('a'); a.href=j.url; a.download=fn; a.click();
   URL.revokeObjectURL(j.url);
@@ -9901,6 +10140,89 @@ function closeBook(){var o=document.getElementById("bookOverlay");if(o)o.remove(
 window.openBook=openBook;window.closeBook=closeBook;
 window.mapRoute=mapRoute; window.mapStation=mapStation; window.copyAddrToPlan=copyAddrToPlan; window.closeMap=closeMap;
 
+// ===== 地図ピンで住所指定（カメラと同方式：中心ピン固定） =====
+// 座標→住所文字列（OSM Nominatim + 地理院 併用／getCurrentAddress と同ロジック・独立実装）
+function _addrFromLatLon(lat, lon, cb){
+  var osmU='https://nominatim.openstreetmap.org/reverse?format=json&lat='+lat+'&lon='+lon+'&accept-language=ja&zoom=18&addressdetails=1';
+  var gsiU='https://mreversegeocoder.gsi.go.jp/reverse-geocoder/LonLatToAddress?lat='+lat+'&lon='+lon;
+  var pOsm=fetch(osmU).then(function(r){return r.json();}).catch(function(){return null;});
+  var pGsi=fetch(gsiU).then(function(r){return r.json();}).catch(function(){return null;});
+  Promise.all([pOsm,pGsi]).then(function(res){
+    var osm=res[0]||{}, gsi=res[1]||{};
+    var addr=osm.address||{};
+    var pref = addr.province||addr.state||'';
+    var city = addr.city||addr.town||addr.village||addr.county||'';
+    var ward = addr.city_district||addr.borough||'';
+    var chome='';
+    try{ var nm=gsi&&gsi.results&&gsi.results.lv01Nm; if(nm&&nm!=='\uff0d') chome=nm; }catch(e){}
+    if(!chome){
+      var cand=[addr.suburb||'', addr.quarter||addr.neighbourhood||'', addr.hamlet||'', addr.road||''];
+      var seen=[];
+      for(var i=0;i<cand.length;i++){ if(cand[i]&&seen.indexOf(cand[i])<0) seen.push(cand[i]); }
+      chome=seen.join('');
+    }
+    var parts=[];
+    if(pref) parts.push(pref);
+    if(city) parts.push(city);
+    if(ward && ward!==city) parts.push(ward);
+    if(chome && chome!==ward && chome!==city) parts.push(chome);
+    var fullAddr=parts.join('');
+    if(typeof cb==='function') cb(fullAddr||'');
+  }).catch(function(){ if(typeof cb==='function') cb(''); });
+}
+var _geoLeaf=null, _geoTargetId='', _geoDefault=[35.7066,139.8683]; // 既定中心=江戸川区付近
+function _loadLeaflet(){
+  return new Promise(function(res,rej){
+    if(window.L) return res();
+    var css=document.createElement('link'); css.rel='stylesheet'; css.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'; document.head.appendChild(css);
+    var js=document.createElement('script'); js.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'; js.onload=function(){res();}; js.onerror=function(){rej(new Error('leaflet'));}; document.head.appendChild(js);
+  });
+}
+function _geoInit(lat,lng){
+  if(!_geoLeaf){
+    _geoLeaf=L.map('geoLeafMap',{zoomControl:true}).setView([lat,lng],18);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:20,attribution:'\u00a9 OpenStreetMap'}).addTo(_geoLeaf);
+  } else { _geoLeaf.setView([lat,lng],18); }
+  setTimeout(function(){ try{_geoLeaf.invalidateSize();}catch(e){} },80);
+}
+function openGeoMap(targetId){
+  _geoTargetId=targetId;
+  var show=function(lat,lng){
+    var ov=document.getElementById('geoMapOv'); if(ov) ov.classList.add('show');
+    setTimeout(function(){ _geoInit(lat,lng); },60);
+  };
+  toast('\ud83d\uddfa \u5730\u56f3\u3092\u8aad\u307f\u8fbc\u307f\u4e2d...');
+  _loadLeaflet().then(function(){
+    if(navigator.geolocation){
+      navigator.geolocation.getCurrentPosition(
+        function(pos){ show(pos.coords.latitude,pos.coords.longitude); },
+        function(){ show(_geoDefault[0],_geoDefault[1]); },
+        {enableHighAccuracy:true,timeout:8000,maximumAge:0});
+    } else { show(_geoDefault[0],_geoDefault[1]); }
+  }).catch(function(){ toast('\u5730\u56f3\u3092\u8aad\u307f\u8fbc\u3081\u307e\u305b\u3093\u3067\u3057\u305f\uff08\u901a\u4fe1\u74b0\u5883\u3092\u3054\u78ba\u8a8d\u304f\u3060\u3055\u3044\uff09'); });
+}
+function geoMapHere(){
+  if(!navigator.geolocation){ toast('\u73fe\u5728\u5730\u306b\u672a\u5bfe\u5fdc'); return; }
+  toast('\ud83d\udccd \u73fe\u5728\u5730\u3078\u79fb\u52d5\u4e2d...');
+  navigator.geolocation.getCurrentPosition(
+    function(pos){ if(_geoLeaf) _geoLeaf.setView([pos.coords.latitude,pos.coords.longitude],18); },
+    function(){ toast('\u73fe\u5728\u5730\u3092\u53d6\u5f97\u3067\u304d\u307e\u305b\u3093\u3067\u3057\u305f'); },
+    {enableHighAccuracy:true,timeout:15000,maximumAge:0});
+}
+function geoMapCancel(){ var ov=document.getElementById('geoMapOv'); if(ov) ov.classList.remove('show'); }
+function geoMapSave(){
+  if(!_geoLeaf){ geoMapCancel(); return; }
+  var c=_geoLeaf.getCenter();
+  toast('\ud83d\udccd \u4f4f\u6240\u3092\u53d6\u5f97\u4e2d...');
+  _addrFromLatLon(c.lat, c.lng, function(addr){
+    geoMapCancel();
+    if(!addr){ toast('\u4f4f\u6240\u306e\u53d6\u5f97\u306b\u5931\u6557\u3057\u307e\u3057\u305f'); return; }
+    var el=document.getElementById(_geoTargetId);
+    if(el){ el.value=addr; if(_geoTargetId==='f_plan'){ try{updatePlanSvBtn();}catch(e){} } }
+    toast('\ud83d\udccd '+addr);
+  });
+}
+window.openGeoMap=openGeoMap; window.geoMapHere=geoMapHere; window.geoMapCancel=geoMapCancel; window.geoMapSave=geoMapSave;
 function getCurrentAddress(cb){
   if(!navigator.geolocation){ toast('お使いのブラウザは位置情報に対応していません'); return; }
   toast('📍 現在地を取得中...');
@@ -10130,6 +10452,22 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
 
 
 <!-- 編集 -->
+  <!-- 🗺 地図ピンで住所指定（中心ピン固定） -->
+  <div id="geoMapOv">
+    <div class="gm-top">
+      <button class="gm-btn" onclick="geoMapCancel()">✕ 取消</button>
+      <div class="gm-title"><div style="font-size:13px;font-weight:700;color:#2c5282">📍 地図で位置を指定</div><div style="font-size:11px;color:#718096">地図を動かして中心に合わせる</div></div>
+      <button class="gm-btn gm-save" onclick="geoMapSave()">この位置で保存</button>
+    </div>
+    <div id="geoLeafWrap">
+      <div id="geoLeafMap"></div>
+      <div id="geoCenterPin"><svg width="34" height="46" viewBox="0 0 24 34"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 22 12 22s12-13 12-22C24 5.4 18.6 0 12 0z" fill="#ff3b3b" stroke="#fff" stroke-width="1.5"/><circle cx="12" cy="12" r="5" fill="#fff"/></svg></div>
+    </div>
+    <div class="gm-foot">
+      <button class="gm-btn" onclick="geoMapHere()">📍 現在地へ</button>
+      <span class="gm-hint">中心ピンを計画地に合わせて「この位置で保存」。丁目まで住所が入ります。番地は🔢で追加してね。</span>
+    </div>
+  </div>
   <!-- 🔢 番地テンキー（body直下・全ビュー最前面） -->
   <div id="qaTenkeyOv" style="display:none;position:fixed;inset:0;background:rgba(13,21,38,0.55);z-index:2147483600;align-items:flex-end;justify-content:center" onclick="if(event.target===this)qaTenkeyClose()">
     <div style="background:#fff;border-radius:16px 16px 0 0;max-width:420px;width:100%;padding:14px 16px 18px;box-shadow:0 -8px 30px rgba(0,0,0,0.3)">
@@ -10241,6 +10579,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           </div></div>
           <div class="addr-row">
             <button type="button" class="ar-btn mob-only" onclick="geoFill('f_addr')" title="現在地">📍</button>
+            <button type="button" class="ar-btn mob-only" onclick="openGeoMap('f_addr')" title="地図で指定">🗺</button>
             <input type="text" id="f_addr" placeholder="例: 東京都江戸川区..." style="flex:1;min-width:0">
           </div>
         </div>
@@ -10252,6 +10591,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           </div></div>
           <div class="addr-row">
             <button type="button" class="ar-btn mob-only" onclick="geoFill('f_plan')" title="現在地">📍</button>
+            <button type="button" class="ar-btn mob-only" onclick="openGeoMap('f_plan')" title="地図で指定">🗺</button>
             <input type="text" id="f_plan" placeholder="計画地の住所" oninput="updatePlanSvBtn()" style="flex:1;min-width:0">
           </div>
         </div>
@@ -10345,6 +10685,22 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
             <button type="button" class="fam-add-btn" onclick="famOpenAdd(2)">＋</button>
           </div>
           <div class="fam-summary" id="famSummary" style="display:none"></div>
+          <div style="display:flex;flex-wrap:wrap;gap:3px 10px;margin-top:7px;font-size:10px;color:#718096;align-items:center">
+            <span style="font-weight:700;color:#4a5568">居住</span>
+            <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:9px;height:9px;border-radius:2px;background:#06b6d4;display:inline-block"></span>同居</span>
+            <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:9px;height:9px;border-radius:2px;background:#d97706;display:inline-block"></span>近居</span>
+            <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:9px;height:9px;border-radius:2px;background:#3b82f6;display:inline-block"></span>別居</span>
+            <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:9px;height:9px;border-radius:2px;background:#94a3b8;display:inline-block"></span>死亡</span>
+            <span style="color:#cbd5e0">｜</span>
+            <span style="font-weight:700;color:#4a5568">意向</span>
+            <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:9px;height:9px;border-radius:50%;background:#38a169;display:inline-block"></span>前向</span>
+            <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:9px;height:9px;border-radius:50%;background:#e53e3e;display:inline-block"></span>否定</span>
+            <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:9px;height:9px;border-radius:50%;background:#fff;border:1px solid #aaa;display:inline-block"></span>不明</span>
+          </div>
+          <details class="setup-acc" style="margin-top:9px">
+            <summary>🌳 <span>家系図（世代ツリー）</span><span class="setup-acc-arrow">▾</span></summary>
+            <div class="setup-acc-body" style="padding:8px 2px 2px"><div id="famTreeBox" style="overflow-x:auto"></div></div>
+          </details>
         </div>
         <div style="flex:27;border-left:1px solid #e2e8f0;padding-left:8px;font-size:10px;color:#4a5568;display:flex;flex-direction:column;gap:8px">
           <!-- コンプリートボタン（大） -->
@@ -10390,6 +10746,18 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <button type="button" class="pbtn kaiwa-btn" data-pill="kaiwa" data-multi="1" data-val="上り込み">上り込み</button>
         </div>
         <div style="font-size:9px;color:#a0aec0;text-align:center;margin-top:2px">ピンポン ➤ 立ち話 ➤ 玄関内 ➤ 連れ出し ➤ 上り込み</div>
+      </div>
+      <div style="margin-top:11px">
+        <label style="font-size:11px">🎯 次回の狙い <span style="color:#8b7cff;font-weight:700">担当の自己判断</span> <span style="color:#718096;font-weight:400">（次の訪問で何を狙うか、自分で1つ決める）</span></label>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-top:3px">
+          <button type="button" class="pbtn" data-pill="next_aim" data-val="家族を聞く">家族を聞く</button>
+          <button type="button" class="pbtn" data-pill="next_aim" data-val="土地・資産を聞く">土地・資産</button>
+          <button type="button" class="pbtn" data-pill="next_aim" data-val="悩みを深掘る">悩みを深掘る</button>
+          <button type="button" class="pbtn" data-pill="next_aim" data-val="提案依頼を取る">提案依頼を取る</button>
+          <button type="button" class="pbtn" data-pill="next_aim" data-val="課長同行に進める">課長同行へ</button>
+          <button type="button" class="pbtn" data-pill="next_aim" data-val="">未設定</button>
+        </div>
+        <div style="font-size:9px;color:#a0aec0;margin-top:2px">アプリ任せにせず、自分の仮説を持って訪問しよう。課長はAI分析と見比べて指導します。</div>
       </div>
       <div id="actCols" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
         <div>
@@ -10943,6 +11311,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         </select>
       </div>
     </div>
+    <div style="font-size:10.5px;color:#718096;margin:-4px 0 8px 2px">※「兄／弟／姉／妹」は世帯主から見た続柄です</div>
     <!-- 3行目：面談済・所有者・KP -->
     <div class="fam-grid3" style="margin-bottom:6px">
       <button type="button" class="fam-fbtn" id="famFMet" onclick="famToggleFlag('met')">面談済</button>
@@ -10981,15 +11350,18 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <button type="button" class="fam-bbtn" id="famM未婚" onclick="famSetMarriage('未婚')">未婚</button>
       </div>
       <div id="famChildRow" style="display:none;margin-bottom:8px">
-        <label>子の人数</label>
+        <label>👶 お子様（＝ご本人から見たお孫様）</label>
         <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:3px">
-          <button type="button" class="fam-bbtn fa-on" id="famC0" onclick="famSetChildren(0)">なし</button>
-          <button type="button" class="fam-bbtn" id="famC1" onclick="famSetChildren(1)">子1</button>
-          <button type="button" class="fam-bbtn" id="famC2" onclick="famSetChildren(2)">子2</button>
-          <button type="button" class="fam-bbtn" id="famC3" onclick="famSetChildren(3)">子3</button>
-          <button type="button" class="fam-bbtn" id="famC4" onclick="famSetChildren(4)">子4</button>
-          <button type="button" class="fam-bbtn" id="famC5" onclick="famSetChildren(5)">子5</button>
+          <button type="button" class="fam-bbtn" onclick="famAddGrandkid('小学生(男)')">＋ 小学生男</button>
+          <button type="button" class="fam-bbtn" onclick="famAddGrandkid('小学生(女)')">＋ 小学生女</button>
+          <button type="button" class="fam-bbtn" onclick="famAddGrandkid('幼児(男)')">＋ 幼児男</button>
+          <button type="button" class="fam-bbtn" onclick="famAddGrandkid('幼児(女)')">＋ 幼児女</button>
+          <button type="button" class="fam-bbtn" onclick="famAddGrandkid('乳児(男)')">＋ 乳児男</button>
+          <button type="button" class="fam-bbtn" onclick="famAddGrandkid('乳児(女)')">＋ 乳児女</button>
+          <button type="button" class="fam-bbtn" onclick="famClearGrandkids()">クリア</button>
         </div>
+        <div id="famGkChips" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:7px;align-items:center"></div>
+        <p class="ht" style="margin:4px 0 0">お孫様は家系図に「お子様の枝」として表示されます（独立カードにはなりません）。</p>
       </div>
     </div>
     <div class="fam-sec-lbl">詳細情報</div>
