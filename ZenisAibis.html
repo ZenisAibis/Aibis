@@ -1818,7 +1818,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.93";
+var APP_VERSION = "v8.94";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -8353,13 +8353,13 @@ function renderAnalysis(){
   tE.forEach(function(c){ cnt[_richTier(_cardRichness(c))]++; });
   var rows=tiers.map(function(tr,i){
    var pc=_zPct(cnt[i],nE);
-   var w=Math.max(14,pc);
-   return '<div style="margin:3px auto;width:'+w+'%;min-width:190px;background:'+tr[2]+'22;border:1px solid '+tr[2]+'66;border-radius:6px;padding:4px 8px;font-size:11.5px;display:flex;justify-content:space-between;gap:8px"><span>'+tr[0]+' <span style="opacity:.6">'+tr[1]+'</span></span><b>'+pc+'%<span style="opacity:.6;font-weight:600">（'+cnt[i]+'枚）</span></b></div>';
+   var w=Math.max(40,pc);
+   return '<div style="margin:3px auto;width:'+w+'%;min-width:240px;background:'+tr[2]+'22;border:1px solid '+tr[2]+'66;border-radius:6px;padding:4px 10px;font-size:11.5px;display:flex;justify-content:space-between;gap:8px;white-space:nowrap"><span>'+tr[0]+' <span style="opacity:.6">'+tr[1]+'</span></span><b>'+pc+'%<span style="opacity:.6;font-weight:600">（'+cnt[i]+'枚）</span></b></div>';
   }).join('');
   var byRep='';
   if(scope==='all'&&reps.length>=2){
    var rr=reps.map(function(r){var cs=g[r].filter(function(c){return !_isLandLead(c);});var hi=cs.filter(function(c){return _richTier(_cardRichness(c))<=1;}).length;return {r:r,n:cs.length,hi:hi,pct:_zPct(hi,cs.length)};}).sort(function(a,b){return b.pct-a.pct;});
-   byRep='<div style="margin-top:9px;border-top:1px solid rgba(255,255,255,.08);padding-top:7px"><div class="z-sub" style="margin-bottom:4px">担当別 高品質率（\ud83d\udc8e＋\ud83e\udd47）</div><div style="display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px">'+rr.map(function(o){return '<span>'+e(o.r)+' <b>'+o.pct+'%</b><span style="opacity:.55">（'+o.hi+'/'+o.n+'）</span></span>';}).join('')+'</div></div>';
+   byRep='<div style="margin-top:9px;border-top:1px solid rgba(255,255,255,.08);padding-top:7px"><div class="z-sub" style="margin-bottom:4px">担当別 高品質率（\ud83d\udc8e＋\ud83e\udd47）</div><div style="display:grid;grid-template-columns:1fr auto auto;gap:3px 14px;font-size:11.5px;align-items:baseline">'+rr.map(function(o){return '<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">'+e(o.r)+'</span><b style="text-align:right;white-space:nowrap">'+o.pct+'%</b><span style="opacity:.55;text-align:right;white-space:nowrap">（'+o.hi+'/'+o.n+'）</span>';}).join('')+'</div></div>';
   }
   return '<div class="z-card z-c2"><h3>\ud83d\udcd0 カード品質ピラミッド</h3><div class="z-sub">内容の濃さ（入力率・記述量・「」引用・→反応・家族把握・録音）で5階層。幅＝全体に占める割合。</div><div style="margin-top:6px">'+rows+'</div>'+byRep+'</div>';
  })();
@@ -8391,7 +8391,7 @@ function renderAnalysis(){
   +_zc('⏱','45日契約クロック','A昇格(追撃判定)→45日。赤は超過。',clockH,'z-c2')
   +_zc('🏎','パイプライン・ベロシティ','各段の平均滞留日数。長い段が失速＝<b style="color:#ff5d7d">'+STG[slow]+'</b>。',_zVbars(dwAvg,STG.map(function(s){return s.slice(0,2);}),dwAvg.map(function(v){return v>=50?'#ff5d7d':v>=30?'#ffb443':'#38a169';})),'z-c2')
   +_zc('🔮','着地予測（今月見込み）','現パイプライン×転換率の概算。','<div class="z-tiles"><div class="z-tile"><b>'+proj+'</b><span>契約見込</span></div><div class="z-tile"><b>'+Math.round(conn*0.35)+'</b><span>提案依頼見込</span></div><div class="z-tile"><b>'+fc5+'</b><span>比較以上</span></div></div><div class="z-sub" style="margin-top:8px">※過去転換率の蓄積で精度UP</div>','z-c2')
-  +_zc('⚠','要フォロー（最優先）','至急アクションすべき高価値の客。課長から指示を。','<div class="z-list2">'+prioH+'</div>','z-cf'));
+  );
  // rank & game (team)
  var board=reps.map(function(r){var a=g[r];var aE=a.filter(function(c){return !_isLandLead(c);});return {r:r,av:aE.length?Math.round(aE.reduce(function(s,c){return s+calcScore(c);},0)/aE.length*10)/10:0,n:a.length};}).sort(function(a,b){return b.av-a.av;});
  var mxAv=Math.max.apply(null,board.map(function(b){return b.av;}))||1;
@@ -8663,7 +8663,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
    var body=(leads.length+eng.length)?(tiles+brk+perRep+note):'<div class="z-empty">対象カードがありません</div>';
    return _zc('⛏','発掘パイプライン <span class="z-secsub">土地見込み→対話</span>','発掘した土地見込みを、対話・面談につなげられているか。発掘活用率＝対話済み÷(対話済み＋発掘中)。',body,'z-c2');
  })();
- H+=morningBoard+_zsec('today','🎯 課の指示 <span class="z-secsub">今日やること・誰に何を</span>',todayCard+dangerCard+contractCard+familyCard+readyCard+zoneCard+bodyContract+_extrasFor('today'))+_zsec('coach','🎓 部下の指導 <span class="z-secsub">コーチング</span>',coachCard+_extrasFor('coach'))+_zsec('teamchk','👥 部下の確認 <span class="z-secsub">担当の現状</span>',bodyRank+_cardWork+_cardDiff+bodyTeam+_extrasFor('teamchk'))+_zsec('grow','🌱 育成クエスト <span class="z-secsub">型・成長・次の課題</span>',questCard+_axKingCard+_extrasFor('grow'))+_zsec('state','📊 詳細分析 <span class="z-secsub">月次・ヒートマップ・課長会議用</span>',_cardMap+bodyKpi3+bodyProcess+_llCard+bodyQuality+_extrasFor('state')+_teamCourse+_cardInsights);
+ H+=morningBoard+_zsec('today','🎯 課の指示 <span class="z-secsub">今日やること・誰に何を</span>',todayCard+contractCard+zoneCard+bodyContract+_extrasFor('today'))+_zsec('coach','🎓 部下の指導 <span class="z-secsub">コーチング</span>',coachCard+dangerCard+readyCard+_extrasFor('coach'))+_zsec('teamchk','👥 部下の確認 <span class="z-secsub">担当の現状</span>',bodyRank+_cardWork+bodyTeam+_extrasFor('teamchk'))+_zsec('grow','🌱 育成クエスト <span class="z-secsub">型・成長・次の課題</span>',questCard+_axKingCard+_extrasFor('grow'))+_zsec('state','📊 詳細分析 <span class="z-secsub">月次・ヒートマップ・課長会議用</span>',_cardMap+bodyKpi3+bodyProcess+_llCard+bodyQuality+_extrasFor('state')+_teamCourse+_cardInsights);
  H+='</div>';
  host.innerHTML=H;
  if(window.IS_DEV){var _dw=document.getElementById('devSelfMirrorWrap');if(_dw){_dw.style.display='';if(window.renderSelfDash)renderSelfDash('devSelfMirror');}}
