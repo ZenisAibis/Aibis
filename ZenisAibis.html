@@ -1515,12 +1515,12 @@ body.is-mob .mob-menu{display:inline-block}
   <div class="panel">
     <div class="sec">
       <div class="stitle">■ 利用者情報</div>
-      <div style="display:grid;grid-template-columns:2fr 2fr 1.5fr 1fr;gap:8px;margin-bottom:10px">
-        <div><label>お名前 <span class="req">*</span></label><input type="text" id="sName" placeholder="例: 大東太郎" oninput="autoSaveSetup();this.value=this.value.replace(/[\s　]/g,'')" onpaste="setTimeout(function(){var el=document.getElementById('sName');el.value=el.value.replace(/[\s　]/g,'');autoSaveSetup();},0)"><p class="ht">カードの担当欄に自動入力（スペース不可）</p></div>
-        <div><label>支店名 <span class="req">*</span></label><input type="text" id="sBranch" placeholder="例: 東京" oninput="autoSaveSetup();this.value=this.value.replace(/支店/g,'')" onpaste="setTimeout(function(){var el=document.getElementById('sBranch');el.value=el.value.replace(/支店/g,'');autoSaveSetup();},0)"><p class="ht">「支店」は自動除去されます</p></div>
+      <div style="display:grid;grid-template-columns:1.8fr 1.7fr 1.6fr 0.9fr;gap:8px;margin-bottom:10px">
+        <div><label>お名前 <span class="req">*</span></label><input type="text" id="sName" placeholder="例: 大東太郎" oninput="autoSaveSetup();this.value=this.value.replace(/[\s　]/g,'')" onpaste="setTimeout(function(){var el=document.getElementById('sName');el.value=el.value.replace(/[\s　]/g,'');autoSaveSetup();},0)"></div>
+        <div><label>支店名 <span class="req">*</span></label><input type="text" id="sBranch" placeholder="例: 東京" oninput="autoSaveSetup();this.value=this.value.replace(/支店/g,'')" onpaste="setTimeout(function(){var el=document.getElementById('sBranch');el.value=el.value.replace(/支店/g,'');autoSaveSetup();},0)"></div>
         <div>
           <label>役職 <span class="req">*</span></label>
-          <select id="sRole" onchange="onRoleChange(this)">
+          <select id="sRole" onchange="onRoleChange(this)" style="font-size:13px">
             <option value="">選択</option>
             <option value="支店長">支店長</option>
             <option value="課長">課長</option>
@@ -1531,21 +1531,22 @@ body.is-mob .mob-menu{display:inline-block}
           </select>
         </div>
         <div>
-          <label>所属課 <span class="req">*</span></label>
+          <label>課 <span class="req">*</span></label>
           <select id="sSec" onchange="autoSaveSetup()">
             <option value="">-</option>
-            <option value="1課">1課</option><option value="2課">2課</option>
-            <option value="3課">3課</option><option value="4課">4課</option>
+            <option value="1課">1</option><option value="2課">2</option>
+            <option value="3課">3</option><option value="4課">4</option>
           </select>
         </div>
       </div>
+      <div class="ht" style="margin:-2px 0 10px">※ カードの担当欄に自動入力（スペース不可）<br>※ 「支店」は自動除去されます</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
         <div><label>自分のメールアドレス</label><input type="email" id="sSelf" placeholder="dt0000001@kentaku.co.jp" oninput="autoSaveSetup()"><p class="ht">「📧 PCへ」で送る宛先</p></div>
         <div><label>上司のメールアドレス <span class="req">*</span></label><input type="email" id="sMgr" placeholder="to071024@kentaku.co.jp" oninput="autoSaveSetup()"><p class="ht">📧 課長報告の宛先</p></div>
       </div>
       <div id="staffMailSection" style="display:none;margin-top:10px">
         <details class="setup-acc">
-          <summary>👥 <span>担当者リスト（個別送付用・管理職のみ）</span><span id="staffMailCount" class="setup-acc-badge">0人</span><span class="setup-acc-arrow">▾</span></summary>
+          <summary>👥 <span>担当者メアド（管理職のみ）</span><span id="staffMailCount" class="setup-acc-badge">0人</span><span class="setup-acc-arrow">▾</span></summary>
           <div class="setup-acc-body">
             <p class="ht" style="margin:2px 0 6px">「📧 担当へ」で選ぶ宛先だよ。名前は<b>カードの担当名と一致</b>させてね（スペース不可）。</p>
             <div id="staffMailChips" style="display:flex;gap:4px;flex-wrap:wrap;margin:4px 0;align-items:center"></div>
@@ -1581,19 +1582,19 @@ body.is-mob .mob-menu{display:inline-block}
         <div style="font-size:11px;font-weight:700;color:#553c9a;margin-bottom:6px">🔧 開発者用：管理職パスのハッシュ生成</div>
         <div style="display:flex;gap:6px"><input type="text" id="devHashIn" placeholder="新しいパスワード" style="flex:1;margin-bottom:0"><button type="button" onclick="devGenHash()" style="background:#553c9a;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap">生成</button></div>
         <div id="devHashOut" style="font-size:10px;color:#4a5568;word-break:break-all;margin-top:6px"></div>
-        <p class="ht">ハッシュを MGR_HASH に貼り替え→再デプロイ。全端末で次回1回だけ再入力。</p>
+        <p class="ht">ハッシュを MGR_HASH に貼り替え→再デプロイ。<br>全端末で次回1回だけ再入力。</p>
         <div style="height:1px;background:#e9d8fd;margin:10px 0"></div>
         <div style="font-size:11px;font-weight:700;color:#553c9a;margin-bottom:6px">🔧 開発者用：規定値ビューア</div>
         <button type="button" onclick="openDevDefaults()" style="background:#553c9a;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:700">⚙ アプリ規定値を一覧表示</button>
-        <p class="ht">配点・ペース・温度バンド等の規定値を一覧。<span style="color:#b7791f;font-weight:700">暫定</span>・<span style="color:#c53030;font-weight:700">仮</span>＝数値協議で正式化待ち。</p>
+        <p class="ht">配点・ペース・温度バンド等の規定値を一覧。<br><span style="color:#b7791f;font-weight:700">暫定</span>・<span style="color:#c53030;font-weight:700">仮</span>＝数値協議で正式化待ち。</p>
         <div style="height:1px;background:#e9d8fd;margin:10px 0"></div>
         <div style="font-size:11px;font-weight:700;color:#553c9a;margin-bottom:6px">🔧 開発者用：ジョブ図鑑プレビュー</div>
         <button type="button" onclick="openJobGallery()" style="background:#553c9a;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:700">🖼 全ジョブ画像を一覧表示</button>
-        <p class="ht">全ジョブのドット絵を一覧。<span style="color:#c53030;font-weight:700">赤枠＝画像なし</span>（ミス/未アップ発見）。読み取り専用。</p>
+        <p class="ht">全ジョブのドット絵を一覧。<br><span style="color:#c53030;font-weight:700">赤枠＝画像なし</span>（ミス/未アップ発見）。読み取り専用。</p>
         <div style="height:1px;background:#e9d8fd;margin:10px 0"></div>
         <div style="font-size:11px;font-weight:700;color:#553c9a;margin-bottom:6px">🩺 開発者用：セルフ点検</div>
         <button type="button" onclick="openSelfCheck()" style="background:#553c9a;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:700">🩺 自動セルフ点検を実行</button>
-        <p class="ht">描画・印刷・関数・ジョブ・整合を自動チェック。<span style="color:#c53030;font-weight:700">NG</span>＝壊れた箇所。読み取り専用。</p>
+        <p class="ht">描画・印刷・関数・ジョブ・整合を自動チェック。<br><span style="color:#c53030;font-weight:700">NG</span>＝壊れた箇所。読み取り専用。</p>
       </div>
       <!-- ▲▲ 開発者ツールパネル END ▲▲ -->
     </div>
@@ -1632,7 +1633,7 @@ body.is-mob .mob-menu{display:inline-block}
       <div class="stitle">■ 会社のCopilot URL設定</div>
       <label>Copilot URL <span style="font-size:11px;color:#718096">（変更がある場合のみ入力）</span></label>
       <input type="url" id="sCopilotUrl" placeholder="https://copilot.microsoft.com/" style="font-size:13px">
-      <p class="ht" style="margin-top:4px">未入力の場合はデフォルトのURLを使用します。戦略協議の使い方はマニュアルまたはアイビスへ。</p>
+      <p class="ht" style="margin-top:4px">未入力の場合はデフォルトのURLを使用します。<br>戦略協議の使い方はマニュアルまたはアイビスへ。</p>
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
       <button class="bc" id="setupCancel" onclick="showList()" style="display:none">キャンセル</button>
@@ -1818,7 +1819,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.94";
+var APP_VERSION = "v8.95";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -8254,8 +8255,8 @@ function workMeterInner(){
   var g=_zByMgr(cards), reps=Object.keys(g).sort();
   var now=new Date(), y=now.getFullYear(), mo=now.getMonth();
   var P=[['m0','今月'],['cmp','先月比較'],['m3','3ヶ月'],['m6','6ヶ月'],['load','⚖️負荷率']];
-  var toggle='<div class="no-print" style="display:inline-flex;flex-wrap:wrap;border:1px solid var(--z-line);border-radius:9px;overflow:hidden;margin:4px 0 10px">'+P.map(function(p){var on=_wkP===p[0];return '<button onclick="setWkP(\''+p[0]+'\')" style="border:none;background:'+(on?'#2f9e44':'transparent')+';color:'+(on?'#fff':'var(--z-mut)')+';padding:6px 13px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">'+p[1]+'</button>';}).join('')+'</div>';
-  var legend='<div class="z-sub">基準｜発掘 <b>2</b>件/日・提案依頼 <b>1</b>件/月（取得日基準）・再訪J <b>3</b>件/週・追客J <b>2</b>件/月。月初は発掘か訪問で動いた日からカウント。</div>';
+  var toggle='<div class="no-print" style="display:flex;border:1px solid var(--z-line);border-radius:9px;overflow:hidden;margin:4px 0 10px">'+P.map(function(p){var on=_wkP===p[0];return '<button onclick="setWkP(\''+p[0]+'\')" style="border:none;background:'+(on?'#2f9e44':'transparent')+';color:'+(on?'#fff':'var(--z-mut)')+';flex:1;padding:6px 4px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;text-align:center">'+p[1]+'</button>';}).join('')+'</div>';
+  var legend='<div class="z-sub">基準｜発掘<b>2</b>/日・提案依頼<b>1</b>/月・再訪J<b>3</b>/週・追客J<b>2</b>/月。<br>月初は動いた日から起算。</div>';
   var head=legend+toggle;
   function metric(lab,a,t,rt){ return '<div style="text-align:center;min-width:44px"><div style="font-size:9px;color:var(--z-dim)">'+lab+'</div><div style="font-size:12px;font-weight:800;color:'+_wkCol(rt)+'">'+Math.round(rt*100)+'%</div><div style="font-size:8px;color:var(--z-dim)">'+a+'/'+t+'</div></div>'; }
   function rankc(i){ return '<div style="width:22px;height:22px;border-radius:50%;background:'+_zAVAS[i%8]+';color:#06121f;font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(i+1)+'</div>'; }
@@ -8554,7 +8555,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
    if(st>=3) s+=15;
    return s;};
  var _readyGap=function(c){var st=+(c.stage||0);
-   if(!_zAppoDates(c).some(function(d){return d>=_today10;})) return '次回アポ 未設定 → 再訪日を決める';
+   if(!_zAppoDates(c).some(function(d){return d>=_today10;})) return '次回アポ → 再訪日を決める';
    if(st>=3&&!c.proposal_req) return '提案依頼 未取得 → テストクロージング';
    if(!c.family_headcount) return '家族構成 未把握 → 次回ヒアリング';
    if(!((c.family||[]).some(function(x){return x.met&&(x.owner||x.kp);}))) return '決裁者 未確認 → KP面談を設定';
@@ -8602,7 +8603,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
  function _extrasFor(secKey){return _deepItems.filter(function(it){if(it.id==='treasure'||it.id==='jobs9')return false;return (it.sec||'state')===secKey;}).map(function(it){var bd='';try{bd=it.render(_deepCtx)||'';}catch(err){bd='<div class="z-sub">⚠ 「'+(it.id||'?')+'」の描画でエラー（'+String(err&&err.message||err).slice(0,80)+'）</div>';}return _zc(it.e||'📈',it.t||it.id||'分析',it.s||'',bd,it.sp||'z-c2');}).join('');}
  var _cardInsights=_zc('🧠','傾向と対策（AIインサイト）','データから打ち手を自動抽出。',ins,'z-cf');
  var _cardMap=_zc('🗺','マップ','町の熱量とお宝客。',bodyArea+_cardTreasure,'z-cf');
- var dangerCard=_zc('🚨','放置危険アラート','このままだと流れる見込み。至急→要フォロー→注意の順。タップでカードへ。',zDangerCardHTML(t,true),'z-cf'); var contractCard=_zc('✅','契約前進チェックリスト','契約に進むための不足を1行で。不足が少ない順＝契約に近い。','<div class="z-list2">'+zContractListHTML(t,true)+'</div>','z-cf'); var familyCard=_zc('👪','家族合意マップ','賛成●/反対●/未接触○・決裁者・KP・次に会う人。反対や未接触決裁者を優先。','<div class="z-list2">'+zFamilyMapHTML(t,true)+'</div>','z-cf'); // ===== 🌅 朝3分・指揮ボード（最上部・常時表示。既存の計算結果を要約。色は意味色1ブロック1色）=====
+ var dangerCard=_zc('🚨','放置危険アラート','このままだと流れる見込み。<br>至急→要フォロー→注意の順。タップでカードへ。',zDangerCardHTML(t,true),'z-cf'); var contractCard=_zc('✅','契約前進チェックリスト','契約に進むための不足を1行で。<br>不足が少ない順＝契約に近い。','<div class="z-list2">'+zContractListHTML(t,true)+'</div>','z-cf'); var familyCard=_zc('👪','家族合意マップ','賛成●/反対●/未接触○・決裁者・KP・次に会う人。反対や未接触決裁者を優先。','<div class="z-list2">'+zFamilyMapHTML(t,true)+'</div>','z-cf'); // ===== 🌅 朝3分・指揮ボード（最上部・常時表示。既存の計算結果を要約。色は意味色1ブロック1色）=====
  var morningBoard=(function(){
    var SC={blue:'#4aa8ff',violet:'#8b7cff',gold:'#ffb443',red:'#ff5d7d',green:'#2f9e44',grey:'#8593a8'};
    var RC2={S:'#c53030',A:'#e53e3e',B:'#dd6b20',C:'#d69e2e',D:'#38a169',E:'#718096',X:'#4a5568'};
