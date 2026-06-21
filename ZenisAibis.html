@@ -168,7 +168,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:#2c5282;box-sh
 textarea{resize:vertical;min-height:80px}
 .cg{display:flex;gap:6px;flex-wrap:wrap}
 .ci{display:inline-flex;align-items:center;gap:4px;padding:8px 12px;background:white;border:1px solid #cbd5e0;border-radius:6px;cursor:pointer;font-size:13px;min-height:38px}
-#materials .ci,#maefuri .ci{justify-content:center;padding:4px 4px;white-space:nowrap;overflow:hidden}
+#materials .ci,#maefuri .ci{justify-content:flex-start;padding:4px 6px;white-space:nowrap;overflow:hidden}#materials .ci>span,#maefuri .ci>span{flex:1;text-align:center}
 #rusuRow{gap:4px;width:100%}
 #rusuRow .ci{flex:1 1 0;min-width:0;padding:8px 2px;justify-content:center;gap:3px}
 #rusuRow .ci span{font-size:13px}
@@ -1818,7 +1818,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.92";
+var APP_VERSION = "v8.93";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -10687,14 +10687,14 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <label style="font-size:11px">提示資料</label>
           <div class="cg" id="materials" style="display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-top:2px">
             <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="路線価"><span>路線価</span></label>
-            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="エリアマーケ"><span>エリアマーケ</span></label>
+            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="エリアマーケ"><span>Aマーケ</span></label>
             <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="アプローチブック"><span>APブック</span></label>
             <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="パンフレット"><span>パンフ</span></label>
             <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="会社案内"><span>会社案内</span></label>
             <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="リスク本"><span>リスク本</span></label>
             <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="チラシ系"><span>チラシ系</span></label>
           </div>
-          <div style="font-size:10px;color:#a0aec0;margin-top:3px">APブック＝アプローチブック／パンフ＝パンフレット</div>
+          <div style="font-size:10px;color:#a0aec0;margin-top:3px">APブック＝アプローチブック／Aマーケ＝エリアマーケ</div>
         </div>
         <div>
           <label style="font-size:11px">前フリ</label>
@@ -10704,7 +10704,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
             <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="物件案内"><span>物件案内</span></label>
             <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="見学会"><span>見学会</span></label>
             <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="ショールーム"><span>本社・SR</span></label>
-            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="税理士同行"><span>税理士同行</span></label>
+            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="税理士同行"><span>先生同行</span></label>
             <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="信託"><span>信託</span></label>
           </div>
           <div style="font-size:10px;color:#a0aec0;margin-top:3px">本社・SR＝本社ショールーム</div>
