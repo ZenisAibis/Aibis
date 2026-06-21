@@ -1580,19 +1580,19 @@ body.is-mob .mob-menu{display:inline-block}
         <div style="font-size:11px;font-weight:700;color:#553c9a;margin-bottom:6px">🔧 開発者用：管理職パスのハッシュ生成</div>
         <div style="display:flex;gap:6px"><input type="text" id="devHashIn" placeholder="新しいパスワード" style="flex:1;margin-bottom:0"><button type="button" onclick="devGenHash()" style="background:#553c9a;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap">生成</button></div>
         <div id="devHashOut" style="font-size:10px;color:#4a5568;word-break:break-all;margin-top:6px"></div>
-        <p class="ht">生成したハッシュをソースの MGR_HASH に貼り替えて再デプロイ→パス更新（全端末で次回1回だけ再入力）。</p>
+        <p class="ht">ハッシュを MGR_HASH に貼り替え→再デプロイ。全端末で次回1回だけ再入力。</p>
         <div style="height:1px;background:#e9d8fd;margin:10px 0"></div>
         <div style="font-size:11px;font-weight:700;color:#553c9a;margin-bottom:6px">🔧 開発者用：規定値ビューア</div>
         <button type="button" onclick="openDevDefaults()" style="background:#553c9a;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:700">⚙ アプリ規定値を一覧表示</button>
-        <p class="ht">スコア配点・訪問ペース・温度バンドなど、アプリ内部の規定値を一覧確認。<span style="color:#b7791f;font-weight:700">暫定</span>・<span style="color:#c53030;font-weight:700">仮</span>のバッジは数値協議で正式化待ちの項目。</p>
+        <p class="ht">配点・ペース・温度バンド等の規定値を一覧。<span style="color:#b7791f;font-weight:700">暫定</span>・<span style="color:#c53030;font-weight:700">仮</span>＝数値協議で正式化待ち。</p>
         <div style="height:1px;background:#e9d8fd;margin:10px 0"></div>
         <div style="font-size:11px;font-weight:700;color:#553c9a;margin-bottom:6px">🔧 開発者用：ジョブ図鑑プレビュー</div>
         <button type="button" onclick="openJobGallery()" style="background:#553c9a;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:700">🖼 全ジョブ画像を一覧表示</button>
-        <p class="ht">全ジョブのドット絵を一度に表示。<span style="color:#c53030;font-weight:700">赤枠＝画像なし</span>（ファイル名ミスや未アップを即発見）。実データには触れない読み取り専用。</p>
+        <p class="ht">全ジョブのドット絵を一覧。<span style="color:#c53030;font-weight:700">赤枠＝画像なし</span>（ミス/未アップ発見）。読み取り専用。</p>
         <div style="height:1px;background:#e9d8fd;margin:10px 0"></div>
         <div style="font-size:11px;font-weight:700;color:#553c9a;margin-bottom:6px">🩺 開発者用：セルフ点検</div>
         <button type="button" onclick="openSelfCheck()" style="background:#553c9a;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:700">🩺 自動セルフ点検を実行</button>
-        <p class="ht">描画・印刷・主要関数・ジョブ定義・データ整合を自動チェック。<span style="color:#c53030;font-weight:700">NG</span>があれば壊れた箇所が一目で分かる。読み取り専用（データは変更しません）。</p>
+        <p class="ht">描画・印刷・関数・ジョブ・整合を自動チェック。<span style="color:#c53030;font-weight:700">NG</span>＝壊れた箇所。読み取り専用。</p>
       </div>
       <!-- ▲▲ 開発者ツールパネル END ▲▲ -->
     </div>
@@ -1817,7 +1817,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.84";
+var APP_VERSION = "v8.85";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -2691,7 +2691,7 @@ function _pwaSyncBtns(){
   var hint=document.getElementById('pwaHint'); var html='';
   if(isMob){
     html+='<button type="button" class="bp" onclick="pwaShortcut()" style="font-size:12px;padding:8px 12px">🔗 ショートカット作成の手順</button>';
-    if(hint) hint.innerHTML='ブラウザの <b>⋮メニュー</b> →「<b>ホーム画面に追加</b>」でショートカットを作成できます。';
+    if(hint) hint.innerHTML='ブラウザの <b>⋮</b> →「<b>ホーム画面に追加</b>」で作成。';
   } else {
     html+='<button type="button" class="bp" onclick="pwaShortcut()" style="font-size:12px;padding:8px 12px">🔗 ショートカット作成の手順</button>';
     if(hint) hint.innerHTML='ブラウザのメニューから、デスクトップにショートカットを作成できます。';
@@ -10782,16 +10782,16 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <div style="font-size:9px;color:#a0aec0;text-align:center;margin-top:2px">ピンポン ➤ 立ち話 ➤ 玄関内 ➤ 連れ出し ➤ 上り込み</div>
       </div>
       <div style="margin-top:11px">
-        <label style="font-size:11px">🎯 次回の狙い <span style="color:#8b7cff;font-weight:700">担当の自己判断</span> <span style="color:#718096;font-weight:400">（次の訪問で何を狙うか、自分で1つ決める）</span></label>
+        <label style="font-size:11px">🎯 次回の狙い <span style="color:#8b7cff;font-weight:700">担当の自己判断</span> <span style="color:#718096;font-weight:400">（次に狙うことを1つ決める）</span></label>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-top:3px">
           <button type="button" class="pbtn" data-pill="next_aim" data-val="家族を聞く">家族を聞く</button>
           <button type="button" class="pbtn" data-pill="next_aim" data-val="土地・資産を聞く">土地・資産</button>
           <button type="button" class="pbtn" data-pill="next_aim" data-val="悩みを深掘る">悩みを深掘る</button>
-          <button type="button" class="pbtn" data-pill="next_aim" data-val="提案依頼を取る">提案依頼を取る</button>
+          <button type="button" class="pbtn" data-pill="next_aim" data-val="提案依頼を取る">提案依頼</button>
           <button type="button" class="pbtn" data-pill="next_aim" data-val="課長同行に進める">課長同行へ</button>
           <button type="button" class="pbtn" data-pill="next_aim" data-val="">未設定</button>
         </div>
-        <div style="font-size:9px;color:#a0aec0;margin-top:2px">アプリ任せにせず、自分の仮説を持って訪問しよう。課長はAI分析と見比べて指導します。</div>
+        <div style="font-size:9px;color:#a0aec0;margin-top:2px">自分の仮説を持って訪問。課長はAI分析と見比べ指導します。</div>
       </div>
       <div id="actCols" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
         <div>
@@ -11395,7 +11395,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <button type="button" class="fam-bbtn" onclick="famClearGrandkids()">クリア</button>
         </div>
         <div id="famGkChips" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:7px;align-items:center"></div>
-        <p class="ht" style="margin:4px 0 0">お孫様は家系図に「お子様の枝」として表示されます（独立カードにはなりません）。</p>
+        <p class="ht" style="margin:4px 0 0">お孫様は家系図に「子の枝」で表示（独立カードにはなりません）。</p>
       </div>
     </div>
     <div class="fam-sec-lbl">詳細情報</div>
@@ -11412,9 +11412,9 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <option>パート・アルバイト</option><option>公務員</option><option>年金のみ</option>
       <option>学生</option><option>無職</option><option>その他</option>
     </select>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
-      <label style="margin:0">備考・特記事項</label>
-      <button type="button" class="mic-btn" onclick="micStart('famNote',this)">🎤</button>
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+      <button type="button" class="mic-btn hb" onclick="micStart('famNote',this)" style="margin-top:0">🎤</button>
+      <label style="margin:0;flex:1">備考・特記事項</label>
     </div>
     <textarea id="famNote" placeholder="例: 相続に関心あり。売却派。"></textarea>
     <!-- 下部ボタン -->
@@ -12540,7 +12540,7 @@ var SMK='prospect_sendmail_v1';
 function _mailPref(){ try{ return localStorage.getItem(SMK)||'auto'; }catch(e){ return 'auto'; } }
 function _mailApp(){ var p=_mailPref(); if(p==='outlook'||p==='gmail'||p==='pick') return p; var em=(_selfEmail()||'').toLowerCase(); if(!em) return 'pick'; if(/gmail\./.test(em)) return 'gmail'; return 'outlook'; }
 function _mailAppJa(a){ return a==='outlook'?'Outlook':(a==='gmail'?'Gmail':'メールアプリ'); }
-function _paintSendMailHint(){ var sel=document.getElementById('sSendMail'); if(sel) sel.value=_mailPref(); var h=document.getElementById('sSendMailHint'); if(!h) return; var a=_mailApp(); var em=_selfEmail()||'(メール未設定)'; h.textContent='この端末では「'+_mailAppJa(a)+'」想定で案内します。宛先: '+em+'（共有シートで他のアプリも選べます）'; }
+function _paintSendMailHint(){ var sel=document.getElementById('sSendMail'); if(sel) sel.value=_mailPref(); var h=document.getElementById('sSendMailHint'); if(!h) return; var a=_mailApp(); var em=_selfEmail()||'(メール未設定)'; h.textContent='「'+_mailAppJa(a)+'」想定で案内。宛先: '+em+'（共有シートで他アプリも可）'; }
 function saveSendMail(v){ try{ localStorage.setItem(SMK,v||'auto'); }catch(e){} _paintSendMailHint(); }
 window.saveSendMail=saveSendMail;
 function _inbStamp(){ var d=new Date(),p=function(n){return ("0"+n).slice(-2);}; return ""+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+"_"+p(d.getHours())+p(d.getMinutes()); }
