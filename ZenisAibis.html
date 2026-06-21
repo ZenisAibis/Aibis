@@ -1050,14 +1050,14 @@ body.is-mob .mob-menu{display:inline-block}
       <div class="sortbar-scroll">
         <button class="sbtn active" id="sb_lv" onclick="toggleSort('lv')">🚶 最新</button>
         <button class="sbtn" id="sb_rv" onclick="toggleSort('rv')">🔁 再訪</button>
-        <button class="sbtn" id="sb_jw" onclick="toggleSort('jw')">⚖ 判定待ち</button>
+        <button class="sbtn" id="sb_jw" onclick="toggleSort('jw')">⚖ ジャッジ</button>
         <button class="sbtn" id="sb_ad" onclick="toggleSort('ad')">🏠 住所</button>
         <button class="sbtn" id="sb_sc" onclick="toggleSort('sc')">⭐ スコア</button>
         <button class="sbtn" id="sb_st" onclick="toggleSort('st')">📊 心理</button>
         <button class="sbtn" id="sb_pj" onclick="toggleSort('pj')">🎯 ランク</button>
         <button class="sbtn" id="sb_pace" onclick="toggleSort('pace')">⏰ 遅れ</button>
         <button class="sbtn" id="sb_dt" onclick="toggleSort('dt')">📅 初訪</button>
-        <button class="sbtn" id="sb_lm" onclick="toggleSort('lm')">🗺 土地見込み</button>
+        <button class="sbtn" id="sb_lm" onclick="toggleSort('lm')">🗺 土地</button>
       </div>
     </div>
   </div>
@@ -1096,7 +1096,7 @@ body.is-mob .mob-menu{display:inline-block}
         <div style="font-size:15px;font-weight:700;color:#1a365d">⚡ 光速入力モード</div>
         <button onclick="closeQuickAdd()" style="background:#edf2f7;border:none;border-radius:6px;width:30px;height:30px;font-size:14px;cursor:pointer;font-family:inherit">✕</button>
       </div>
-      <div style="font-size:11.5px;color:#718096;margin-bottom:10px">訪問の合間にサッと登録。詳細はあとで見込みカードから追記できます。</div>
+      <div style="font-size:11.5px;color:#718096;margin-bottom:10px">訪問の合間にサッと登録（詳細は後で追記OK）</div>
       <button type="button" id="qaCamBtn" onclick="qaOpenCam()" style="width:100%;margin-bottom:12px;background:#0e4a45;color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer">📷 計画地を撮影（カメラ）</button>
       <div style="display:grid;grid-template-columns:1fr 96px;gap:8px;margin-bottom:10px">
         <div>
@@ -1269,7 +1269,7 @@ body.is-mob .mob-menu{display:inline-block}
         ※ <b>チェックなしで押すと、前回送信から更新・新規のカードだけ</b>を自動で選んで送るよ（確認あり）。全部送るなら「全選択」<br><br>
         <b style="color:#718096">【共通】</b><br>
         検索 … 氏名・住所・地名で絞り込み（スペース区切りで複数）<br>
-        並び替え … 最新・再訪・判定待ち・住所・スコア・心理・ランク・遅れ・初訪から選択<br>
+        並び替え … 最新・再訪・ジャッジ・住所・スコア・心理・ランク・遅れ・初訪・土地から選択<br>
         一覧の各カードには「追客ランク」「心理ステージ」が表示されます
       </div>
     </div>
@@ -1787,7 +1787,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.59";
+var APP_VERSION = "v8.61";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -4789,7 +4789,7 @@ function toggleSort(key) {
 }
 function updateSortBtns() {
   // 非アクティブ時の基本ラベル
-  var base = {lv:'🚶 最新', ad:'🏠 住所', st:'📊 心理', sc:'⭐ スコア', pj:'🎯 ランク', dt:'📅 初訪', kw:'💬 会話', pace:'⏰ 遅れ', rv:'🔁 再訪', jw:'⚖ 判定待ち', lm:'🗺 土地見込み'};
+  var base = {lv:'🚶 最新', ad:'🏠 住所', st:'📊 心理', sc:'⭐ スコア', pj:'🎯 ランク', dt:'📅 初訪', kw:'💬 会話', pace:'⏰ 遅れ', rv:'🔁 再訪', jw:'⚖ ジャッジ', lm:'🗺 土地'};
   // アクティブ時：その状態で「実際に先頭に来る方」を表示（＝現在の表示順）
   var act = {
     lv:   {desc:'🚶 古い→',     asc:'🚶 最新→'},
@@ -4801,8 +4801,8 @@ function updateSortBtns() {
     kw:   {desc:'💬 会話 浅→',  asc:'💬 会話 深→'},
     pace: {desc:'⏰ 遅れ 小→',  asc:'⏰ 遅れ 大→'},
     rv:   {desc:'🔁 再訪 0→',   asc:'🔁 再訪 3→'},
-    jw:   {desc:'⚖ 判定待ち（更新新→）', asc:'⚖ 判定待ち（更新新→）'},
-    lm:   {desc:'🗺 土地見込み（古→）', asc:'🗺 土地見込み（古→）'}
+    jw:   {desc:'⚖ ジャッジ（更新新→）', asc:'⚖ ジャッジ（更新新→）'},
+    lm:   {desc:'🗺 土地（古→）', asc:'🗺 土地（古→）'}
   };
   Object.keys(base).forEach(function(k){
     var btn = document.getElementById('sb_'+k); if(!btn) return;
@@ -9403,7 +9403,7 @@ function qaRender(){
     return '<button onclick="qaToggleKaiwa(\''+k+'\')" style="'+dis+'border:1px solid '+(on?'#276749':'#cbd5e0')+';background:'+(on?'#276749':'#f7fafc')+';color:'+(on?'#fff':'#2d3748')+';border-radius:7px;padding:8px 1px;font-size:10.5px;font-weight:'+(on?'700':'500')+';font-family:inherit;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+k+'</button>';
   }).join('');
   var h=document.getElementById('qaLockHint');
-  if(h){ if(lk){ var _el=document.getElementById('qaName'); var _n=_el?(_el.value||'').trim():''; h.textContent=(_n==='土地見込み')?'🗺 土地見込みです。お客様と会話を交わせたら心理・会話を入力しよう':'✏️ お客様名を入れると、心理ステージ・会話状況が入力できます'; h.style.display='block'; } else h.style.display='none'; }
+  if(h){ if(lk){ var _el=document.getElementById('qaName'); var _n=_el?(_el.value||'').trim():''; h.textContent=(_n==='土地見込み')?'🗺 会話を交わせたら心理・会話を入力できます':'✏️ お客様名を入れると入力できます'; h.style.display='block'; } else h.style.display='none'; }
 }
 function qaSetStage(i){ if(_qaLocked())return; qaStageSel=(qaStageSel===i?-1:i); qaRender(); }
 function qaToggleKaiwa(k){ if(_qaLocked())return; var p=qaKaiwaSel.indexOf(k); if(p>=0) qaKaiwaSel.splice(p,1); else qaKaiwaSel.push(k); qaRender(); }
