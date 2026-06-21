@@ -1786,7 +1786,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.56";
+var APP_VERSION = "v8.57";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -5299,32 +5299,42 @@ function _sendCards(selected, toEmail, ccEmail, subjPrefix, onDone, copyAddr, bd
   var brk=bd?('\nNew:'+bd.n+'  Updated:'+bd.u+'  Forwarded:'+bd.f):'';
   var body='AIBIS '+(subjPrefix||'')+brk+'\n'+ts;
   var clipAddr=(typeof copyAddr!=='undefined'&&copyAddr!==null&&copyAddr!=='')?copyAddr:(toEmail||'');
-  function fallback(){
-    // PC：宛先プリフィル＋件名/本文は英数字のみ（文字化け回避）。手動でファイル添付して送信。
-    var blob=new Blob([data],{type:'application/json'});
-    var url=URL.createObjectURL(blob);
-    var a=document.createElement('a'); a.href=url; a.download=fn; a.click();
+  var cardFile=null; try{ cardFile=new File([data],fn,{type:'application/json'}); }catch(_e){}
+  function fallback(files){
+    (files||[]).forEach(function(f){ try{ var url=URL.createObjectURL(f); var a=document.createElement('a'); a.href=url; a.download=(f.name||fn); document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(url); },4000); }catch(_e){} });
     var q=(ccEmail?'?cc='+ccEmail+'&subject=':'?subject=')+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
-    _mailtoPrompt('mailto:'+(toEmail||'')+q, '宛先は入力済み。①DLしたファイルを添付　②送信してね。');
-    setTimeout(function(){ URL.revokeObjectURL(url); },1500);
+    _mailtoPrompt('mailto:'+(toEmail||'')+q, ((files&&files.length>1)?'宛先は入力済み。①DLした2ファイル（カード＋写真）を添付　②送信してね。':'宛先は入力済み。①DLしたファイルを添付　②送信してね。'));
     if(onDone) onDone();
   }
-  function doShare(f){
-    var shareText=body;
+  function doShare(files){
     try{ if(clipAddr && navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(clipAddr); } }catch(_e){}
-    navigator.share({files:[f], title:subj, text:shareText})
-      .then(function(){ toast(clipAddr?('共有OK。宛先「'+clipAddr+'」をコピー済→Outlookの宛先に貼り付け'):'共有しました'); if(onDone) onDone(); })
-      .catch(function(err){ if(err && err.name==='AbortError') return; fallback(); });
+    navigator.share({files:files, title:subj, text:body})
+      .then(function(){ toast(clipAddr?('共有OK。宛先「'+clipAddr+'」をコピー済→宛先に貼り付け'):'共有しました'); if(onDone) onDone(); })
+      .catch(function(err){ if(err && err.name==='AbortError') return; fallback(files); });
   }
-  var canShareFiles=(typeof navigator!=='undefined' && navigator.share && navigator.canShare);
-  if(isMob && canShareFiles){
-    // ①JSONファイルで添付（カメラと同方式）。②不可な端末のみ.txtで添付。③それも不可ならmailto。
-    var jf=null; try{ jf=new File([data],fn,{type:'application/json'}); }catch(_e){}
-    if(jf && navigator.canShare({files:[jf]})){ doShare(jf); return; }
-    var tf=null; try{ tf=new File([data],fn.replace(/\.json$/,'.txt'),{type:'text/plain'}); }catch(_e){}
-    if(tf && navigator.canShare({files:[tf]})){ doShare(tf); return; }
-  }
-  fallback();
+  // 写真も同梱：Phone-to-PC=全インボックス（フル退避）／他=送るカードに紐付く写真だけ
+  var photoScope=(subjPrefix==='Phone-to-PC')?'all':'cards';
+  var _selIds={}; (selected||[]).forEach(function(c){ if(c&&c.id) _selIds[c.id]=1; });
+  var getPhotoFile=function(){
+    if(typeof mAll!=='function'||typeof _buildPhotoBundle!=='function') return Promise.resolve(null);
+    return mAll().then(function(all){
+      all=all||[];
+      var sets=(photoScope==='all')?all:all.filter(function(s){ return s && s.cardId && s.cardId!==MEDIA_INBOX && _selIds[s.cardId]; });
+      if(!sets.length) return null;
+      return _buildPhotoBundle(sets).then(function(bundle){ try{ return new File([JSON.stringify(bundle)],'AIBIS_PHOTOS_'+tag+'_'+(uName||'staff')+'_'+ts+'.json',{type:'application/json'}); }catch(_e){ return null; } });
+    }).catch(function(){ return null; });
+  };
+  getPhotoFile().then(function(photoFile){
+    var files=[]; if(cardFile) files.push(cardFile); if(photoFile) files.push(photoFile);
+    var canShareFiles=(typeof navigator!=='undefined' && navigator.share && navigator.canShare);
+    if(files.length){
+      if(isMob && canShareFiles && navigator.canShare({files:files})){ doShare(files); return; }
+      fallback(files); return;
+    }
+    var blob=new Blob([data],{type:'application/json'}); var url=URL.createObjectURL(blob); var a=document.createElement('a'); a.href=url; a.download=fn; a.click(); setTimeout(function(){ URL.revokeObjectURL(url); },1500);
+    var q=(ccEmail?'?cc='+ccEmail+'&subject=':'?subject=')+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
+    _mailtoPrompt('mailto:'+(toEmail||'')+q,'宛先は入力済み。①DLしたファイルを添付　②送信してね。'); if(onDone) onDone();
+  });
 }
 function mailSelectedToManager(skipWarn, diffIds){
   if(!mgrEmail){ aibisConfirm('課長（上司）のメールアドレスが未登録です。<br><br>⚙初期設定 →「上司のメールアドレス」に登録してね。', function(){ showSetup(); }, '設定を開く', '閉じる'); return; }
