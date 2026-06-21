@@ -1819,7 +1819,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.97";
+var APP_VERSION = "v8.99";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -8372,10 +8372,10 @@ function renderAnalysis(){
  var secWork=workMeterSection();
  // process
  var mVis=_zMonthly(t,_zVisitDates), mApo=_zMonthly(t,_zAppoDates), cum=[],r0=0;mDisc.forEach(function(v){r0+=v;cum.push(r0);});
+ var _discByRep=_zc('👥','担当別 今月の発掘','誰がエンジンか。',_zVbars(reps.map(function(r){return g[r].filter(function(c){return (c.discovery_date||'').slice(0,7)===curMonth;}).length;}),reps.map(function(r){return r.slice(0,1);}),_zAVAS),'z-c2');
  var bodyProcess=('📈 プロセス（活動量の伸び）',
    _zc('📊','課の活動量（直近12ヶ月）','発掘・訪問・アポの月別量。',_zLine([{data:mDisc,color:'#9be15d'},{data:mVis,color:'#4aa8ff'},{data:mApo,color:'#ffb443'}])+'<div class="z-legend"><span><i style="background:#9be15d"></i>発掘</span><span><i style="background:#4aa8ff"></i>訪問</span><span><i style="background:#ffb443"></i>アポ</span></div>','z-cf')
-  +_zc('🧗','累計発掘（積み上がり）','努力が積み上がる様子。',_zLine([{data:cum,color:'#34e3d0'}]),'z-c2')
-  +_zc('👥','担当別 今月の発掘','誰がエンジンか。',_zVbars(reps.map(function(r){return g[r].filter(function(c){return (c.discovery_date||'').slice(0,7)===curMonth;}).length;}),reps.map(function(r){return r.slice(0,1);}),_zAVAS),'z-c2'));
+  +_zc('🧗','累計発掘（積み上がり）','努力が積み上がる様子。',_zLine([{data:cum,color:'#34e3d0'}]),'z-c2'));
  // contract
  var rw={S:35,A:28,B:15,C:8,D:3};function prox(c){return Math.max(0,Math.min(100,Math.round(+(c.stage||0)/7*45)+(rw[c.pursuit_judge]||0)+(calcPaceOverrate(c)>1?0:15)));}
  var deals=t.filter(function(c){return['S','A','B'].indexOf(c.pursuit_judge)>=0||+(c.stage||0)>=3;}).map(function(c){return {c:c,p:prox(c)};}).sort(function(a,b){return b.p-a.p;}).slice(0,6);
@@ -8635,7 +8635,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
    var b4=dg.length?dg.map(function(o){var c=o.c,dd=lastContactDays(c);
      return '<div style="padding:6px 0;border-bottom:1px solid var(--z-line)"><div style="display:flex;align-items:center;gap:7px">'+lvlChip(o.r.level)+nm(c)+meta(e(c.manager||'')+(dd>=0?'・放置'+dd+'日':''))+'</div>'+sub2w('⚠ ',e(o.r.primary),SC.red)+sub2w('→ 止血：',e(zRiskTodo(c)),SC.blue)+'</div>';
    }).join(''):empty('放置危険なし。よく追えています◎');
-   return '<div class="z-card" style="border:1px solid var(--z-line);border-top:3px solid '+SC.gold+';margin:0 0 14px;padding:13px 14px">'
+   return '<div class="z-card z-cf" style="border:1px solid var(--z-line);border-top:3px solid '+SC.gold+';margin:0 0 14px;padding:13px 14px">'
      +'<div style="display:flex;align-items:center;gap:8px;margin:0 0 10px"><span style="font-size:16px">🌅</span><b style="font-size:15px;color:var(--z-ink)">朝3分・指揮ボード</b><span style="font-size:10.5px;color:var(--z-dim);margin-left:auto;flex-shrink:0">'+(scope==='all'?'課全体':e(scope))+'</span></div>'
      +'<div style="margin-bottom:9px">'+head('🎯',SC.blue,'今日動く案件',todayCand.length+'件')+b1+'</div>'
      +'<div style="margin-bottom:9px">'+head('🗣',SC.violet,'担当へ言う一言',needCoach.length?needCoach.length+'人':'')+b2+'</div>'
@@ -8661,7 +8661,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
    var body=(leads.length+eng.length)?(tiles+brk+perRep+note):'<div class="z-empty">対象カードがありません</div>';
    return _zc('⛏','発掘パイプライン <span class="z-secsub">土地見込み→対話</span>','発掘した土地見込みを、対話・面談につなげられているか。発掘活用率＝対話済み÷(対話済み＋発掘中)。',body,'z-c2');
  })();
- H+=morningBoard+_zsec('today','🎯 課の指示 <span class="z-secsub">今日やること・誰に何を</span>',todayCard+contractCard+zoneCard+bodyContract+_extrasFor('today'))+_zsec('coach','🎓 部下の指導 <span class="z-secsub">コーチング</span>',coachCard+dangerCard+readyCard+_extrasFor('coach'))+_zsec('teamchk','👥 部下の確認 <span class="z-secsub">担当の現状</span>',bodyRank+_cardWork+bodyTeam+_extrasFor('teamchk'))+_zsec('grow','🌱 育成クエスト <span class="z-secsub">型・成長・次の課題</span>',questCard+_axKingCard+_axData+_extrasFor('grow'))+_zsec('state','📊 詳細分析 <span class="z-secsub">月次・ヒートマップ・課長会議用</span>',_cardMap+bodyKpi3+bodyProcess+_llCard+bodyQuality+_extrasFor('state')+_teamCourse+_cardInsights);
+ H+=_zsec('cmd','🎮 コマンドセンター <span class="z-secsub">今日の指揮＋重要指標</span>',morningBoard+bodyKpi3+_cardMap+_teamCourse+_cardInsights)+_zsec('today','🎯 課の指示 <span class="z-secsub">今日やること・誰に何を</span>',todayCard+contractCard+zoneCard+bodyContract+_extrasFor('today'))+_zsec('coach','🎓 部下の指導 <span class="z-secsub">コーチング</span>',coachCard+dangerCard+readyCard+_extrasFor('coach'))+_zsec('teamchk','👥 部下の確認 <span class="z-secsub">担当の現状</span>',bodyRank+_cardWork+bodyTeam+_llCard+_extrasFor('teamchk'))+_zsec('grow','🌱 育成クエスト <span class="z-secsub">型・成長・次の課題</span>',questCard+_axKingCard+_axData+bodyQuality+_discByRep+_extrasFor('grow'))+_zsec('state','📊 詳細分析 <span class="z-secsub">月次・ヒートマップ・課長会議用</span>',bodyProcess+_extrasFor('state'));
  H+='</div>';
  host.innerHTML=H;
  if(window.IS_DEV){var _dw=document.getElementById('devSelfMirrorWrap');if(_dw){_dw.style.display='';if(window.renderSelfDash)renderSelfDash('devSelfMirror');}}
@@ -8922,7 +8922,7 @@ function printSelfReport(){ var ta=document.getElementById('selfAnalysisMemo'); 
 function clearSelfMemo(){ var ta=document.getElementById('selfAnalysisMemo'); if(!ta)return; if(!ta.value){toast('すでに空です');return;} aibisAlert('この分析結果を削除するよ。よろしい？<br><br><div style="display:flex;gap:8px;margin-top:8px"><button onclick="closeAibisAlert();doClearSelfMemo()" style="flex:1;padding:8px;background:#c53030;color:white;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit">削除する</button><button onclick="closeAibisAlert()" style="flex:1;padding:8px;background:#e2e8f0;color:#2d3748;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit">やめる</button></div>'); }
 function doClearSelfMemo(){ var ta=document.getElementById('selfAnalysisMemo'); if(ta)ta.value=''; try{localStorage.removeItem('analysis_memo_self_v1');localStorage.removeItem('analysis_memo_self_at_v1');}catch(ex){} var l=document.getElementById('selfMemoAt'); if(l)l.textContent=''; toast('削除しました'); }
 window.copySelfPrompt=copySelfPrompt; window.saveSelfMemo=saveSelfMemo; window.loadSelfMemo=loadSelfMemo; window.printSelfReport=printSelfReport; window.clearSelfMemo=clearSelfMemo; window.doClearSelfMemo=doClearSelfMemo;
-function openAnalysis(){ var p=document.getElementById('analysisPanel'); if(!p) return; _zOpen={}; p.style.display='block'; renderAnalysis(); loadAnalysisMemo(); var sc=document.getElementById('analysisContent'); if(sc) sc.scrollTop=0; }
+function openAnalysis(){ var p=document.getElementById('analysisPanel'); if(!p) return; _zOpen={cmd:true}; p.style.display='block'; renderAnalysis(); loadAnalysisMemo(); var sc=document.getElementById('analysisContent'); if(sc) sc.scrollTop=0; }
 function closeAnalysis(){ var p=document.getElementById('analysisPanel'); if(p) p.style.display='none'; }
 function toggleAnalysis(){ openAnalysis(); }
 window.toggleAnalysis=toggleAnalysis; window.openAnalysis=openAnalysis; window.closeAnalysis=closeAnalysis;
