@@ -1097,12 +1097,13 @@ body.is-mob .mob-menu{display:inline-block}
         <button onclick="closeQuickAdd()" style="background:#edf2f7;border:none;border-radius:6px;width:30px;height:30px;font-size:14px;cursor:pointer;font-family:inherit">✕</button>
       </div>
       <div style="font-size:11.5px;color:#718096;margin-bottom:10px">訪問の合間にサッと登録。詳細はあとで見込みカードから追記できます。</div>
+      <button type="button" id="qaCamBtn" onclick="qaOpenCam()" style="width:100%;margin-bottom:12px;background:#0e4a45;color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer">📷 計画地を撮影（カメラ）</button>
       <div style="display:grid;grid-template-columns:1fr 96px;gap:8px;margin-bottom:10px">
         <div>
           <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">👤 氏名 <span style="color:#c53030">必須</span></label>
           <div style="display:flex;gap:6px;align-items:center">
             <button type="button" class="mic-btn hb" onclick="micStart('qaName',this)" style="flex-shrink:0;margin-top:0">🎤</button>
-            <input id="qaName" type="text" placeholder="お客様名" style="flex:1;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px;font-family:inherit">
+            <input id="qaName" type="text" placeholder="お客様名" oninput="if(typeof qaRender==='function')qaRender()" style="flex:1;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px;font-family:inherit">
           </div>
         </div>
         <div>
@@ -1125,11 +1126,11 @@ body.is-mob .mob-menu{display:inline-block}
         <input id="qaPlan" type="text" placeholder="📍で現在地、🔢で番地" style="flex:1;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:13px;font-family:inherit">
         <button type="button" onclick="qaTenkeyOpen('qaPlan')" style="flex-shrink:0;width:40px;height:40px;border:1px solid #cbd5e0;border-radius:8px;background:#f7fafc;font-size:16px;cursor:pointer">🔢</button>
       </div>
-      <button type="button" id="qaCamBtn" onclick="qaOpenCam()" style="width:100%;margin-bottom:10px;background:#0e4a45;color:#fff;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer">📷 計画地を撮影（カメラ）</button>
       <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">🧠 購買心理ステージ</label>
       <div id="qaStage" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px"></div>
       <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">🗣 会話状況（複数可）</label>
       <div id="qaKaiwa" style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:10px"></div>
+      <div id="qaLockHint" style="display:none;font-size:11px;color:#b7791f;font-weight:700;margin:-4px 0 10px;line-height:1.5"></div>
       <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">📝 計画地備考</label>
       <div style="display:flex;gap:6px;align-items:center;margin-bottom:14px">
         <button type="button" class="mic-btn hb" onclick="micStart('qaKuubi',this)" style="flex-shrink:0;margin-top:0">🎤</button>
@@ -1716,7 +1717,7 @@ var LANDLEAD_FRESH=14, LANDLEAD_STALE=30, LANDABAND_GREED_MIN=5, LANDABAND_PENAL
 function _landLeadAgeDays(c){ if(!c||!c.discovery_date)return 0; var d=new Date(c.discovery_date+'T00:00:00'); if(isNaN(d.getTime()))return 0; return Math.floor((Date.now()-d.getTime())/86400000); }
 function _landLeadStatus(c){ var d=_landLeadAgeDays(c); return d<=LANDLEAD_FRESH?'fresh':(d<=LANDLEAD_STALE?'stale':'abandoned'); }
 function _landLeadTag(c){ var st=_landLeadStatus(c),d=_landLeadAgeDays(c); var m={fresh:['🌱 発掘直後','#2f855a','#f0fff4','#9ae6b4'],stale:['⏳ 停滞ぎみ','#b7791f','#fffaf0','#f6e05e'],abandoned:['⚠ 放置（要昇格）','#c53030','#fff5f5','#feb2b2']}; var x=m[st]; return '<span style=\"font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:'+x[2]+';color:'+x[1]+';border:1px solid '+x[3]+';white-space:nowrap\">'+x[0]+' '+d+'日</span>'; }
-function _llNameLocked(){ var el=document.getElementById('f_name'); return !!(el && (el.value||'').trim()==='土地見込み'); }
+function _llNameLocked(){ var el=document.getElementById('f_name'); var n=el?(el.value||'').trim():''; return n===''||n==='土地見込み'; }
 var LL_LOCK_MSGS=['🗺 お客様と会話を交わせたら、心理ステージと会話状況を入力しよう！','🌱 まだ発掘段階だね。実際にお話しできたら、ここを埋めていこう✨','😊 お客様と言葉を交わしたら、そのときの心理と会話を記録してね','🚪 ピンポンして会話できたら、心理・会話が入力できるようになるよ','💬 会って話せたら、その手応えを心理ステージに残そう！','🤝 お客様と接点ができたら心理・会話をつけてね。発掘おつかれさま'];
 function _refreshLandLeadLock(){ var ll=_llNameLocked(); document.querySelectorAll('#editView .stbtn, #editView .pbtn[data-pill=\"kaiwa\"]').forEach(function(b){ b.style.opacity=ll?'.4':''; b.style.pointerEvents=ll?'none':''; }); var h=document.getElementById('llLockHint'); if(!h)return; if(ll){ if(h.style.display!=='block') h.textContent=LL_LOCK_MSGS[Math.floor(Math.random()*LL_LOCK_MSGS.length)]; h.style.display='block'; } else { h.style.display='none'; } }
 window._refreshLandLeadLock=_refreshLandLeadLock;
@@ -1786,7 +1787,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.57";
+var APP_VERSION = "v8.59";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -6445,7 +6446,7 @@ function mapRoute(){
   collectForm();
   var home=(document.getElementById('f_addr')?.value||'').trim();
   var plan=(document.getElementById('f_plan')?.value||'').trim();
-  if(!home||!plan){toast('住所（自宅）と計画地、\n両方入れてね😊');return;}
+  if(!home||!plan){toast('住所（自宅）と計画地の両方を入れてね😊');return;}
   // 計画地→自宅（出発:計画地、目的地:自宅）。Android はマップアプリを直接起動。
   var path='maps/dir/?api=1&origin='+encodeURIComponent(plan)+'&destination='+encodeURIComponent(home)+'&travelmode=driving';
   var https='https://www.google.com/'+path;
@@ -6462,7 +6463,7 @@ function mapStation(){
   // Android: マップアプリで徒歩ルート起動 / PC: ブラウザ新規タブ
   var android=_isAndroid();
   var w=android?null:window.open('about:blank','_blank'); // PCはポップアップブロック回避
-  toast('🚉 最寄り駅まで\n徒歩ルートを探すね…');
+  toast('🚉 最寄り駅まで徒歩ルートを探すね…');
   var openHttps=function(path){ var https='https://www.google.com/'+path; if(android){ location.href=_mapsAppUrl(path,https); return; } try{ if(w&&!w.closed){ w.location.href=https; return; } }catch(e){} window.open(https,'_blank'); };
   var fallbackSearch=function(lat,lng){ openHttps((lat!=null)?('maps/search/'+encodeURIComponent('駅')+'/@'+lat+','+lng+',15z'):('maps/search/?api=1&query='+encodeURIComponent(p+' 駅'))); };
   fetch('https://msearch.gsi.go.jp/address-search/AddressSearch?q='+encodeURIComponent(p))
@@ -6479,7 +6480,7 @@ function mapStation(){
           if(!best){ fallbackSearch(lat,lng); return; }
           var nm=(best.tags&&best.tags.name)||'駅';
           var mins=Math.max(1,Math.round(bd/65)); // 道のり係数込みの徒歩目安
-          toast('🚉 最寄りは'+nm+'だよ\n直線約'+bd+'m（徒歩目安'+mins+'分）');
+          toast('🚉 最寄りは'+nm+'だよ。直線約'+bd+'m（徒歩目安'+mins+'分）');
           openHttps('maps/dir/?api=1&origin='+lat+','+lng+'&destination='+best.lat+','+best.lon+'&travelmode=walking');
         })
         .catch(function(){ fallbackSearch(lat,lng); });
@@ -9388,20 +9389,24 @@ function openQuickAdd(){
   var ov=document.getElementById('quickAddOv'); if(ov) ov.style.display='flex';
 }
 function closeQuickAdd(){ var ov=document.getElementById('quickAddOv'); if(ov) ov.style.display='none'; }
+function _qaLocked(){ var el=document.getElementById('qaName'); var n=el?(el.value||'').trim():''; return n===''||n==='土地見込み'; }
 function qaRender(){
+  var lk=_qaLocked(); var dis=lk?'opacity:.4;pointer-events:none;':'';
   var st=document.getElementById('qaStage');
   if(st) st.innerHTML=QA_STAGES.map(function(s,i){
     var on=(qaStageSel===i);
-    return '<button onclick="qaSetStage('+i+')" style="border:1px solid '+(on?'#2c5282':'#cbd5e0')+';background:'+(on?'#2c5282':'#f7fafc')+';color:'+(on?'#fff':'#2d3748')+';border-radius:7px;padding:8px 2px;font-size:11.5px;font-weight:'+(on?'700':'500')+';font-family:inherit;cursor:pointer;white-space:nowrap">'+s+'</button>';
+    return '<button onclick="qaSetStage('+i+')" style="'+dis+'border:1px solid '+(on?'#2c5282':'#cbd5e0')+';background:'+(on?'#2c5282':'#f7fafc')+';color:'+(on?'#fff':'#2d3748')+';border-radius:7px;padding:8px 2px;font-size:11.5px;font-weight:'+(on?'700':'500')+';font-family:inherit;cursor:pointer;white-space:nowrap">'+s+'</button>';
   }).join('');
   var kw=document.getElementById('qaKaiwa');
   if(kw) kw.innerHTML=QA_KAIWA.map(function(k){
     var on=qaKaiwaSel.indexOf(k)>=0;
-    return '<button onclick="qaToggleKaiwa(\''+k+'\')" style="border:1px solid '+(on?'#276749':'#cbd5e0')+';background:'+(on?'#276749':'#f7fafc')+';color:'+(on?'#fff':'#2d3748')+';border-radius:7px;padding:8px 1px;font-size:10.5px;font-weight:'+(on?'700':'500')+';font-family:inherit;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+k+'</button>';
+    return '<button onclick="qaToggleKaiwa(\''+k+'\')" style="'+dis+'border:1px solid '+(on?'#276749':'#cbd5e0')+';background:'+(on?'#276749':'#f7fafc')+';color:'+(on?'#fff':'#2d3748')+';border-radius:7px;padding:8px 1px;font-size:10.5px;font-weight:'+(on?'700':'500')+';font-family:inherit;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+k+'</button>';
   }).join('');
+  var h=document.getElementById('qaLockHint');
+  if(h){ if(lk){ var _el=document.getElementById('qaName'); var _n=_el?(_el.value||'').trim():''; h.textContent=(_n==='土地見込み')?'🗺 土地見込みです。お客様と会話を交わせたら心理・会話を入力しよう':'✏️ お客様名を入れると、心理ステージ・会話状況が入力できます'; h.style.display='block'; } else h.style.display='none'; }
 }
-function qaSetStage(i){ qaStageSel=(qaStageSel===i?-1:i); qaRender(); }
-function qaToggleKaiwa(k){ var p=qaKaiwaSel.indexOf(k); if(p>=0) qaKaiwaSel.splice(p,1); else qaKaiwaSel.push(k); qaRender(); }
+function qaSetStage(i){ if(_qaLocked())return; qaStageSel=(qaStageSel===i?-1:i); qaRender(); }
+function qaToggleKaiwa(k){ if(_qaLocked())return; var p=qaKaiwaSel.indexOf(k); if(p>=0) qaKaiwaSel.splice(p,1); else qaKaiwaSel.push(k); qaRender(); }
 function _focusNoKb(el){
   if(!el) return;
   try{
@@ -9419,8 +9424,8 @@ function qaSave(cont){
   var _kb0=document.getElementById('qaKuubi'); var _kuubi0=_kb0?_kb0.value.trim():'';
   if(!name){
     // 名前なしで保存するには「計画地住所」と「計画地備考」の両方が最低条件（土地見込み）
-    if(!_plan0){ toast('お名前がまだだね😊\nまずは計画地の住所を入れてね'); if(_pl0) _focusNoKb(_pl0); return; }
-    if(!_kuubi0){ toast('あと一歩！📝計画地備考にメモを入れれば\n「土地見込み」で登録できるよ😊'); if(_kb0) _focusNoKb(_kb0); return; }
+    if(!_plan0){ toast('お名前がまだだね😊 まずは計画地の住所を入れてね'); if(_pl0) _focusNoKb(_pl0); return; }
+    if(!_kuubi0){ toast('計画地備考にメモを入れると「土地見込み」で登録できるよ😊'); if(_kb0) _focusNoKb(_kb0); return; }
     name='土地見込み'; // 名前なし＋計画地住所＋計画地備考あり → 土地見込みとして保存
   }
   var c=mkBlank();
