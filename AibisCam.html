@@ -5,7 +5,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="theme-color" content="#0f1b2d">
 <title>z.Aibis カメラ</title>
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgcng9IjM2IiBmaWxsPSIjMGYxYjJkIi8+PGNpcmNsZSBjeD0iOTYiIGN5PSIxMDgiIHI9IjM0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmNTllMGIiIHN0cm9rZS13aWR0aD0iOCIvPjxyZWN0IHg9IjU2IiB5PSI2NCIgd2lkdGg9IjgwIiBoZWlnaHQ9IjE2IiByeD0iNiIgZmlsbD0iIzM0ZTNkMCIvPjx0ZXh0IHg9Ijk2IiB5PSIxMTYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNiIgZm9udC13ZWlnaHQ9IjkwMCIgZmlsbD0iI2Y1OWUwYiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+ei48L3RleHQ+PC9zdmc+">
@@ -39,7 +39,12 @@
   .cardchip b{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
   #camWrap{position:relative;flex:1;min-height:170px;background:#000;overflow:hidden}
-  #video{width:100%;height:100%;object-fit:cover;display:block;background:#000}
+  #video{width:100%;height:100%;object-fit:cover;display:block;background:#000;touch-action:none}
+  #focusRing{position:absolute;width:74px;height:74px;margin:-37px 0 0 -37px;border:2px solid #ffd24d;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,.35);pointer-events:none;z-index:6;opacity:0}
+  #focusRing.go{animation:focusPulse .65s ease-out}
+  @keyframes focusPulse{0%{opacity:0;transform:scale(1.6)}22%{opacity:1}60%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1)}}
+  #zoomBadge{position:absolute;left:50%;top:12px;transform:translateX(-50%);background:rgba(0,0,0,.6);color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:14px;font-size:12px;font-weight:800;padding:4px 12px;z-index:6;opacity:0;transition:opacity .2s;pointer-events:none}
+  #zoomBadge.show{opacity:1}
   #flashfx{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
   #flashfx.go{animation:flash .28s ease-out}
   @keyframes flash{0%{opacity:.0}15%{opacity:.85}100%{opacity:0}}
@@ -258,6 +263,8 @@
     <div class="gpschip" id="gpsChip"><span id="gpsTxt">📍 位置情報を取得中…</span></div>
     <button id="camToggle" class="hide">⤢</button>
     <div id="flashfx"></div>
+    <div id="focusRing"></div>
+    <div id="zoomBadge"></div>
     <div class="errcard hide" id="camErr">
       <div style="font-size:40px">📷</div>
       <div class="em" id="camErrMsg"></div>
@@ -413,7 +420,7 @@
    ※ prospect_cards_v1 には書き込まない（新規カード作成・PC連携は本体側）
    データ(set): {id,cardId,ts,addrType:'plan',lat,lng,acc,addr,addrPending,banchi,note,sent,photos:[{pid,full(Blob),thumb,w,h,size}]}
    ========================================================= */
-const APP_VERSION = "cam-v1.61";
+const APP_VERSION = "cam-v1.62";
 
 /* ===== PWA：単一ファイルでインストール可能化（外部ファイル不要） ===== */
 function _pwaIcon(size,maskable){
@@ -487,6 +494,7 @@ const TOKYO_WARDS = {
 /* ---------- 状態 ---------- */
 let DB=null, stream=null, track=null, geoWatch=null, lastPos=null;
 let mode="quick", targetCard=INBOX, curSet=null, fromAibis=false, facing="environment", torchOn=false, capturing=false;
+let _zoomCap=null,_curZoom=1,_focusPOI=false,_focusModes=[];
 let sendSel=new Set(), sendSeen=new Set();   // 未紐付けの送信選択（idのSet）
 let qaReturnMode=false;                       // 光速入力から ?ret=qa で来たとき true（完了で住所をアイビスへ返す）
 let _launchedFromMain=false;                  // 本体側（?cardId / ?ret=qa）から起動した＝完了で反映してクローズ。直接起動は完了でインボックスへ
@@ -651,10 +659,15 @@ async function startCamera(){
   $("camErr").classList.add("hide"); stopCamera();
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ showCamErr("このブラウザはカメラに対応していません。"); return; }
   try{
-    stream=await navigator.mediaDevices.getUserMedia({ audio:false, video:{ facingMode:{ideal:facing}, width:{ideal:2560}, height:{ideal:1440} } });
+    stream=await navigator.mediaDevices.getUserMedia({ audio:false, video:{ facingMode:{ideal:facing}, width:{ideal:3840}, height:{ideal:2160}, frameRate:{ideal:30} } });
     const v=$("video"); v.srcObject=stream; await v.play().catch(()=>{});
     track=stream.getVideoTracks()[0];
     const caps=track.getCapabilities?track.getCapabilities():{};
+    _zoomCap=(caps.zoom && typeof caps.zoom.max==="number" && caps.zoom.max>caps.zoom.min)?caps.zoom:null;
+    _focusModes=caps.focusMode||[]; _focusPOI=!!caps.pointsOfInterest;
+    _curZoom=_zoomCap?((track.getSettings&&track.getSettings().zoom)||_zoomCap.min):1;
+    try{ $("video").style.transform=""; }catch(e){}
+    try{ if(_focusModes.indexOf&&_focusModes.indexOf("continuous")>=0) track.applyConstraints({advanced:[{focusMode:"continuous"}]}); }catch(e){}
     $("torchBtn").style.display = caps.torch ? "flex":"none";
     torchOn=false; $("torchBtn").classList.remove("on");
     $("shutter").disabled=false;
@@ -757,11 +770,44 @@ async function resolveAddr(id){
 
 /* ---------- 撮影（最大4枚で1データ） ---------- */
 $("shutter").addEventListener("click",capture);
-$("camWrap").addEventListener("click",e=>{
-  if(e.target.closest(".errcard")||e.target.closest(".gpschip")) return;
-  if(!curSet) return;
-  setCamFocus(!screens.cam.classList.contains("focus"));
-});
+$("camToggle").addEventListener("click",e=>{ e.stopPropagation(); setCamFocus(!screens.cam.classList.contains("focus")); });
+(function(){
+  const wrap=$("camWrap"), vid=$("video");
+  let pinching=false, pDist=0, pZoom=1, tx=0, ty=0, tMoved=false, tT=0, _zbT=null;
+  function d2(t){ const dx=t[0].clientX-t[1].clientX, dy=t[0].clientY-t[1].clientY; return Math.hypot(dx,dy); }
+  function showZoom(r){ const b=$("zoomBadge"); if(!b) return; b.textContent="×"+(Math.round(r*10)/10); b.classList.add("show"); clearTimeout(_zbT); _zbT=setTimeout(()=>b.classList.remove("show"),900); }
+  function applyZoom(z){
+    if(_zoomCap){ z=Math.max(_zoomCap.min,Math.min(_zoomCap.max,z)); _curZoom=z; try{ track.applyConstraints({advanced:[{zoom:z}]}); }catch(e){} showZoom(z/_zoomCap.min); }
+    else { z=Math.max(1,Math.min(5,z)); _curZoom=z; vid.style.transform="scale("+z+")"; showZoom(z); }
+  }
+  function tapFocus(cx,cy){
+    if(!track) return;
+    const r=wrap.getBoundingClientRect(); const x=cx-r.left, y=cy-r.top;
+    const ring=$("focusRing"); if(ring){ ring.style.left=x+"px"; ring.style.top=y+"px"; ring.classList.remove("go"); void ring.offsetWidth; ring.classList.add("go"); }
+    const nx=Math.max(0,Math.min(1,x/r.width)), ny=Math.max(0,Math.min(1,y/r.height));
+    try{
+      if(_focusPOI){ const a={pointsOfInterest:[{x:nx,y:ny}]}; if(_focusModes.indexOf("single-shot")>=0)a.focusMode="single-shot"; track.applyConstraints({advanced:[a]}).catch(()=>{}); }
+      else if(_focusModes.indexOf("single-shot")>=0){ track.applyConstraints({advanced:[{focusMode:"single-shot"}]}).then(()=>{ setTimeout(()=>{ try{ if(_focusModes.indexOf("continuous")>=0) track.applyConstraints({advanced:[{focusMode:"continuous"}]}); }catch(e){} },1400); }).catch(()=>{}); }
+    }catch(e){}
+  }
+  wrap.addEventListener("touchstart",e=>{
+    if(e.target.closest(".errcard")||e.target.closest("#camToggle")) return;
+    if(e.touches.length===2){ pinching=true; pDist=d2(e.touches); pZoom=_curZoom||1; e.preventDefault(); }
+    else if(e.touches.length===1){ const t=e.touches[0]; tx=t.clientX; ty=t.clientY; tMoved=false; tT=Date.now(); }
+  },{passive:false});
+  wrap.addEventListener("touchmove",e=>{
+    if(pinching && e.touches.length===2){ const d=d2(e.touches); if(pDist>0) applyZoom(pZoom*(d/pDist)); e.preventDefault(); }
+    else if(e.touches.length===1){ const t=e.touches[0]; if(Math.abs(t.clientX-tx)>10||Math.abs(t.clientY-ty)>10) tMoved=true; }
+  },{passive:false});
+  wrap.addEventListener("touchend",e=>{
+    if(pinching){ if(e.touches.length<2) pinching=false; return; }
+    if(!tMoved && (Date.now()-tT)<400 && e.changedTouches.length){
+      const t=e.changedTouches[0];
+      if(t.target&&(t.target.closest(".errcard")||t.target.closest("#camToggle")||t.target.closest(".gpschip"))) return;
+      tapFocus(t.clientX,t.clientY);
+    }
+  });
+})();
 async function capture(){
   if(capturing) return;
   if(!track){ toast("カメラ未起動"); return; }
@@ -773,9 +819,11 @@ async function capture(){
   capturing=true;
   try{
     const fx=$("flashfx"); fx.classList.remove("go"); void fx.offsetWidth; fx.classList.add("go");
-    const scale=Math.min(1, MAX_EDGE/Math.max(vw,vh));
-    const w=Math.round(vw*scale), h=Math.round(vh*scale);
-    const cv=document.createElement("canvas"); cv.width=w; cv.height=h; cv.getContext("2d").drawImage(v,0,0,w,h);
+    var dz=(!_zoomCap && _curZoom>1)?_curZoom:1;
+    var sw=vw/dz, sh=vh/dz, sx=(vw-sw)/2, sy=(vh-sh)/2;
+    const scale=Math.min(1, MAX_EDGE/Math.max(sw,sh));
+    const w=Math.round(sw*scale), h=Math.round(sh*scale);
+    const cv=document.createElement("canvas"); cv.width=w; cv.height=h; cv.getContext("2d").drawImage(v,sx,sy,sw,sh,0,0,w,h);
     const full=await new Promise(r=>cv.toBlob(r,"image/jpeg",JPEG_Q));
     const photo={ pid:rid("p"), full, thumb:makeThumb(cv,w,h), w, h, size:(full?full.size:0) };
     await addPhoto(photo);

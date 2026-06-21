@@ -1107,7 +1107,7 @@ body.is-mob .mob-menu{display:inline-block}
   <!-- 自己分析ダッシュボード（担当本人向け） -->
   <div id="selfDashPanel" class="z-fullov" onclick="dashOverlayClick(event)" style="display:none;position:fixed;inset:0;overflow:hidden">
     <div class="z-dashcard">
-    <div style="position:sticky;top:0;z-index:2;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;background:#f0f5ff;border-bottom:1px solid #c3dafe">
+    <div style="position:sticky;top:0;z-index:2;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;background:rgba(240,245,255,.72);-webkit-backdrop-filter:blur(14px) saturate(140%);backdrop-filter:blur(14px) saturate(140%);border-bottom:1px solid rgba(195,218,254,.6)">
       <span style="font-size:15px;font-weight:700;color:#2c5282">🔭 自己分析ダッシュボード</span>
       <button onclick="closeSelfDash()" style="border:1px solid #c3dafe;background:#fff;border-radius:8px;padding:6px 13px;font-size:13px;font-weight:700;color:#2c5282;cursor:pointer;font-family:inherit">✕ 閉じる</button>
     </div>
@@ -1170,7 +1170,7 @@ body.is-mob .mob-menu{display:inline-block}
   <!-- 課分析パネル（管理職PC版のみ） -->
   <div id="analysisPanel" class="z-fullov" onclick="dashOverlayClick(event)" style="display:none;position:fixed;inset:0;overflow:hidden">
     <div class="z-dashcard">
-      <div style="position:sticky;top:0;z-index:2;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;background:#ebf4ff;border-bottom:1px solid #bee3f8">
+      <div style="position:sticky;top:0;z-index:2;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;background:rgba(235,244,255,.72);-webkit-backdrop-filter:blur(14px) saturate(140%);backdrop-filter:blur(14px) saturate(140%);border-bottom:1px solid rgba(190,227,248,.6)">
         <span style="font-size:15px;font-weight:700;color:#2c5282">📊 課分析ダッシュボード</span>
         <button onclick="closeAnalysis()" style="border:1px solid #bee3f8;background:#fff;border-radius:8px;padding:6px 13px;font-size:13px;font-weight:700;color:#2c5282;cursor:pointer;font-family:inherit">✕ 閉じる</button>
       </div>
@@ -1819,7 +1819,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.05";
+var APP_VERSION = "v9.06";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -10548,7 +10548,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       </div>
     </div>
   </header>
-    <div id="cardNav" class="no-print" style="display:none;position:sticky;top:var(--hdrTop,66px);z-index:48;align-items:center;justify-content:space-between;gap:8px;padding:7px 12px;background:#eef3fb;border-bottom:1px solid #d8e2f0">
+    <div id="cardNav" class="no-print" style="display:none;position:sticky;top:var(--hdrTop,66px);z-index:48;align-items:center;justify-content:space-between;gap:8px;padding:7px 12px;background:rgba(238,243,251,.72);-webkit-backdrop-filter:blur(14px) saturate(140%);backdrop-filter:blur(14px) saturate(140%);border-bottom:1px solid rgba(216,226,240,.65)">
       <button id="cardNavPrev" onclick="navCard(-1)" style="background:#fff;border:1px solid #b9cce8;color:#2c5282;border-radius:8px;font-size:13px;font-weight:700;padding:8px 18px;min-height:38px;cursor:pointer;font-family:inherit">‹ 前</button>
       <span id="cardNavPos" style="font-size:12px;font-weight:700;color:#5a6b85;white-space:nowrap">- / -</span>
       <button id="cardNavNext" onclick="navCard(1)" style="background:#fff;border:1px solid #b9cce8;color:#2c5282;border-radius:8px;font-size:13px;font-weight:700;padding:8px 18px;min-height:38px;cursor:pointer;font-family:inherit">次 ›</button>
