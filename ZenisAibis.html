@@ -269,7 +269,7 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 .mo{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:9500;padding:12px}
 .mo.show{display:flex!important;align-items:center!important;justify-content:center!important}
 .md{background:white;border-radius:8px;padding:20px;max-width:760px;width:100%;max-height:90vh;overflow-y:auto}
-.toast{position:fixed;top:64px;left:50%;transform:translateX(-50%) translateY(-12px);background:linear-gradient(135deg,#1e3a5f,#2c5282);color:white;padding:11px 18px 11px 14px;border-radius:18px;font-size:13px;font-weight:600;opacity:0;transition:opacity 0.3s,transform 0.3s;z-index:9999;pointer-events:none;white-space:normal;max-width:86vw;display:inline-flex;align-items:center;gap:9px;text-align:left;line-height:1.5;box-shadow:0 4px 16px rgba(0,0,0,0.3);letter-spacing:0.3px}
+.toast{position:fixed;top:64px;left:50%;transform:translateX(-50%) translateY(-12px);background:linear-gradient(135deg,#1e3a5f,#2c5282);color:white;padding:11px 18px 11px 14px;border-radius:18px;font-size:13px;font-weight:600;opacity:0;transition:opacity 0.3s,transform 0.3s;z-index:9999;pointer-events:none;white-space:normal;max-width:92vw;display:inline-flex;align-items:center;gap:9px;text-align:left;line-height:1.5;box-shadow:0 4px 16px rgba(0,0,0,0.3);letter-spacing:0.3px}
 .toast .toast-fairy{position:relative;flex:0 0 auto;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center}
 .toast .toast-fairy::after{content:'';position:absolute;inset:-7px;border-radius:50%;background:radial-gradient(circle,rgba(246,173,85,.55),rgba(246,173,85,0) 70%);z-index:0;animation:abGlow 1.8s ease-in-out infinite}
 .toast .tf-face{position:relative;z-index:1;font-size:20px;line-height:1;display:inline-block;transform-origin:50% 80%;animation:abFloat 1.5s ease-in-out infinite}
@@ -1817,7 +1817,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.83";
+var APP_VERSION = "v8.84";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -2034,6 +2034,7 @@ function toast(msg) {
   var t = document.getElementById('toast');
   if (!t) return;
   var s = _aibisify(String(msg==null?'':msg));
+  s = s.replace(/([0-9０-９])\s*[-－‐]\s*([0-9０-９])/g, '$1\u2011$2'); // 番地/電話の数字-数字を分離禁止ハイフンに（表示のみ）
   t.innerHTML = '<span class="toast-fairy"><span class="tf-spark tf-s1">✨</span><span class="tf-face">🧚</span><span class="tf-spark tf-s2">✨</span></span><span class="toast-msg">'+e(s).replace(/\n/g,'<br>')+'</span>'; // アイビス語＋改行＋エスケープ＋フェアリー
   t.classList.add('show');
   clearTimeout(toastTimer);
@@ -9018,6 +9019,7 @@ function _navToList(){
   var lv=document.getElementById('listView'); if(lv) lv.style.display=(hasFSA&&!isMob)?'flex':'block';
 }
 window.addEventListener('popstate',function(ev){
+  var _gov=document.getElementById('geoMapOv'); if(_gov && _gov.classList.contains('show')){ _gov.classList.remove('show'); return; } // 地図オーバーレイは閉じるだけ（土台のカード/光速を維持）
   try{ autoCommitEdit(); }catch(_e){}
   var st=ev.state||{}; var zv=st.zv||'list';
   _silent=true;
@@ -10222,7 +10224,7 @@ function openGeoMap(targetId){
   toast('\ud83d\uddfa \u5730\u56f3\u3092\u8aad\u307f\u8fbc\u307f\u4e2d...');
   _loadLeaflet().then(function(){
     // まず既定中心ですぐ地図を開く（GPS待ちで真っ白にならないように）
-    var ov=document.getElementById('geoMapOv'); if(ov) ov.classList.add('show');
+    var ov=document.getElementById('geoMapOv'); if(ov){ ov.classList.add('show'); try{ history.pushState({zv:(history.state&&history.state.zv)||null,id:(history.state&&history.state.id)||null,geomap:1},''); }catch(e){} }
     setTimeout(function(){ _geoInit(_geoDefault[0],_geoDefault[1]); },60);
     // 取れたら現在地へ寄せる（拒否/失敗時は既定のまま）
     if(navigator.geolocation){
@@ -10241,7 +10243,7 @@ function geoMapHere(){
     function(){ toast('\u73fe\u5728\u5730\u3092\u53d6\u5f97\u3067\u304d\u307e\u305b\u3093\u3067\u3057\u305f'); },
     {enableHighAccuracy:true,timeout:15000,maximumAge:0});
 }
-function geoMapCancel(){ var ov=document.getElementById('geoMapOv'); if(ov) ov.classList.remove('show'); }
+function geoMapCancel(){ try{ if(history.state&&history.state.geomap){ history.back(); return; } }catch(e){} var ov=document.getElementById('geoMapOv'); if(ov) ov.classList.remove('show'); }
 function geoMapSave(){
   if(!_geoLeaf){ geoMapCancel(); return; }
   var c=_geoLeaf.getCenter();
@@ -11399,6 +11401,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
     <div class="fam-sec-lbl">詳細情報</div>
     <label>住所・居住地</label>
     <div style="display:flex;gap:6px;align-items:flex-start">
+      <button type="button" class="mic-btn hb" onclick="micStart('famAddr',this)" style="flex-shrink:0;margin-top:0" title="音声で住所入力">🎤</button>
       <input type="text" id="famAddr" placeholder="例: 東京都世田谷区" style="flex:1;min-width:0">
       <button type="button" id="famOwnRent" onclick="famToggleJutaku()" style="display:none;flex-shrink:0;min-height:38px;padding:4px 10px;border:1px solid #cbd5e0;border-radius:6px;background:#f7fafc;color:#a0aec0;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">持ち家/賃貸</button>
     </div>
