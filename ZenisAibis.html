@@ -1817,7 +1817,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.85";
+var APP_VERSION = "v8.87";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -5384,6 +5384,7 @@ function _sendCards(selected, toEmail, ccEmail, subjPrefix, onDone, copyAddr, bd
       all=all||[];
       var sets=(photoScope==='all')?all:all.filter(function(s){ return s && s.cardId && s.cardId!==MEDIA_INBOX && _selIds[s.cardId]; });
       if(!sets.length) return null;
+      try{ sets.forEach(function(st){ st.sent=true; mPut(st); }); }catch(_e){} // 送信＝書き出し扱い（インボックスの書き出し済を更新）
       return _buildPhotoBundle(sets).then(function(bundle){ try{ return new File([JSON.stringify(bundle)],'AIBIS_PHOTOS_'+tag+'_'+(uName||'staff')+'_'+ts+'.json',{type:'application/json'}); }catch(_e){ return null; } });
     }).catch(function(){ return null; });
   };
@@ -5674,7 +5675,7 @@ function fillForm(c) {
       else { sel.value='__custom__'; cust.style.display=''; cust.value=dom; }
     } else { elc.value=em; sel.value='gmail.com'; cust.style.display='none'; cust.value=''; }
   })();
-  var hz=document.getElementById('f_hatazao'); if(hz) hz.checked=!!c.hatazao;
+  var hz=document.getElementById('f_hatazao'); if(hz) hz.checked=!!c.hatazao; var hzb=document.getElementById('hatazaoBtn'); if(hzb) hzb.classList.toggle('active',!!c.hatazao);
   document.querySelectorAll('.stbtn').forEach(function(b){ b.classList.toggle('active', String(b.dataset.s)===String(c.stage)); });
   var sarr=Array.isArray(c.setsudo)?c.setsudo:(c.setsudo?[c.setsudo]:[]);
   document.querySelectorAll('.pbtn[data-pill="setsudo"]').forEach(function(b){ b.classList.toggle('active', sarr.indexOf(b.dataset.val)>=0); });
@@ -6689,6 +6690,8 @@ function copyAddrField(id){
   toast(done?('📋 '+v):'コピーできませんでした');
 }
 window.geoFill=geoFill; window.copyAddrField=copyAddrField;
+function toggleHatazao(){ var cb=document.getElementById('f_hatazao'); if(!cb)return; cb.checked=!cb.checked; var b=document.getElementById('hatazaoBtn'); if(b) b.classList.toggle('active',cb.checked); try{ if(typeof setDirty==='function') setDirty(true); }catch(e){} }
+window.toggleHatazao=toggleHatazao;
 function closeMap(){ document.getElementById('mapModal').classList.remove('show'); document.getElementById('mapFrame').src=''; }
 
 // ===== 印刷 =====
@@ -9823,7 +9826,7 @@ function doClearAllCards(){
 function resetSmartphone(){
   var _go=function(ph,unsent){
     if(cards.length===0 && ph===0){aibisAlert('もうリセット済みだよ。<br>PCから最新データを読み込んでね📥');return;}
-    var warn = unsent>0 ? ('<div style="background:#fff5f5;border:1px solid #feb2b2;border-radius:6px;padding:8px;margin:8px 0;color:#c53030;font-size:12px;line-height:1.6">⚠ まだPCへ書き出していない写真が <b>'+unsent+'件</b> あります。<br>先に「📤 PCへ書き出す」をおすすめします。</div>') : '';
+    var warn = unsent>0 ? ('<div style="background:#fff5f5;border:1px solid #feb2b2;border-radius:6px;padding:8px;margin:8px 0;color:#c53030;font-size:12px;line-height:1.6">⚠ まだPCへ書き出していない写真が <b>'+unsent+'件</b> あります。<br>先に「📧 PCへ」で送ってください。</div>') : '';
     aibisAlert('スマホのデータをリセットするよ⚠<br><br>'
       +'カード <b>'+cards.length+'件</b>'+(ph?(' ／ 写真 <b>'+ph+'件</b>'):'')+' をすべて消去します。<br>'
       +'翌日まっさらで始めたいときや、PCで削除したカードを反映したいときに使うよ。<br>'+warn
@@ -10860,21 +10863,22 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         </div>
         <div><label>間口（m）</label><input type="number" id="f_maguchi" placeholder="12" inputmode="numeric" pattern="[0-9]*" style="width:100%"></div>
       </div>
-      <!-- 接道・用途地域 -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-        <div>
-          <label>接道方位</label>
-          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:2px">
-            <button type="button" class="pbtn" data-pill="setsudo" data-multi="1" data-val="東">東</button>
-            <button type="button" class="pbtn" data-pill="setsudo" data-multi="1" data-val="北">北</button>
-            <button type="button" class="pbtn" data-pill="setsudo" data-multi="1" data-val="南">南</button>
-            <button type="button" class="pbtn" data-pill="setsudo" data-multi="1" data-val="西">西</button>
-            <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#4a5568;white-space:nowrap"><input type="checkbox" id="f_hatazao" style="width:19px;height:19px;flex-shrink:0">旗竿</label>
-          </div>
+      <!-- 接道・旗竿 -->
+      <div style="margin-bottom:8px">
+        <label>接道方位</label>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:2px">
+          <button type="button" class="pbtn" data-pill="setsudo" data-multi="1" data-val="東">東</button>
+          <button type="button" class="pbtn" data-pill="setsudo" data-multi="1" data-val="北">北</button>
+          <button type="button" class="pbtn" data-pill="setsudo" data-multi="1" data-val="南">南</button>
+          <button type="button" class="pbtn" data-pill="setsudo" data-multi="1" data-val="西">西</button>
+          <input type="checkbox" id="f_hatazao" style="display:none">
+          <button type="button" class="pbtn" id="hatazaoBtn" onclick="toggleHatazao()" style="border-style:dashed">🚩 旗竿</button>
         </div>
-        <div>
-          <label>用途地域</label>
-          <select id="f_youto" style="font-size:12px">
+      </div>
+      <!-- 用途地域（フル幅） -->
+      <div style="margin-bottom:8px">
+        <label>用途地域</label>
+        <select id="f_youto" style="font-size:13px;width:100%">
             <option value="">-</option>
             <option value="第一種低層住居専用地域">第一種低層住居専用地域</option>
             <option value="第二種低層住居専用地域">第二種低層住居専用地域</option>
@@ -10889,9 +10893,8 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
             <option value="準工業地域">準工業地域</option>
             <option value="工業地域">工業地域</option>
             <option value="工業専用地域">工業専用地域</option>
-            <option value="無指定">無指定</option>
-          </select>
-        </div>
+          <option value="無指定">無指定</option>
+        </select>
       </div>
       <!-- 権利関係チェック -->
       <div style="margin-bottom:8px">
@@ -11026,6 +11029,17 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <label style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:150px;font-size:11px;font-weight:700;color:#718096">提案後ステータス<select id="f_post_proposal" style="padding:8px;border:1px solid #cbd5e0;border-radius:7px;font-family:inherit;font-size:13px;min-height:38px;background:#fff"><option value="">—（任意）</option><option>提案書作成中</option><option>提案済</option><option>再提案必要</option><option>家族説明待ち</option><option>税理士確認待ち</option><option>融資確認待ち</option><option>競合比較中</option><option>申込前</option><option>契約準備</option></select></label>
         </div>
     <div id="revisitList"></div>
+    <div style="margin-top:10px;padding:9px 11px;border:1px solid #e2e8f0;border-radius:8px;background:#fafbfc">
+      <label style="font-size:11px;margin:0">🎯 次回の狙い <span style="color:#8b7cff;font-weight:700">担当の自己判断</span></label>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-top:4px">
+        <button type="button" class="pbtn" data-pill="next_aim" data-val="家族を聞く">家族を聞く</button>
+        <button type="button" class="pbtn" data-pill="next_aim" data-val="土地・資産を聞く">土地・資産</button>
+        <button type="button" class="pbtn" data-pill="next_aim" data-val="悩みを深掘る">悩みを深掘る</button>
+        <button type="button" class="pbtn" data-pill="next_aim" data-val="提案依頼を取る">提案依頼</button>
+        <button type="button" class="pbtn" data-pill="next_aim" data-val="課長同行に進める">課長同行へ</button>
+        <button type="button" class="pbtn" data-pill="next_aim" data-val="">未設定</button>
+      </div>
+    </div>
     <div class="jsec">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:10px">
         <h3 style="margin:0">♦ 再訪 Judgment <span style="font-size:11px;font-weight:700;color:#2c5282;background:#ebf4ff;border:1px solid #bee3f8;border-radius:999px;padding:2px 9px;letter-spacing:.05em;vertical-align:middle">フォーアイズジャッジ</span></h3>
@@ -11058,6 +11072,17 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
     <div class="ht" style="margin-bottom:10px">★ 追客は週1回、継続は2ヵ月に1回 / 留守でも足跡を残そう</div>
     <div id="pursuitList"></div>
     <button class="addbtn" id="addPursuitBtn" onclick="addPursuit()">＋ 追撃訪問を追加（14回超はJudgment記入後）</button>
+    <div style="margin-top:10px;padding:9px 11px;border:1px solid #e2e8f0;border-radius:8px;background:#fafbfc">
+      <label style="font-size:11px;margin:0">🎯 次回の狙い <span style="color:#8b7cff;font-weight:700">担当の自己判断</span></label>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-top:4px">
+        <button type="button" class="pbtn" data-pill="next_aim" data-val="家族を聞く">家族を聞く</button>
+        <button type="button" class="pbtn" data-pill="next_aim" data-val="土地・資産を聞く">土地・資産</button>
+        <button type="button" class="pbtn" data-pill="next_aim" data-val="悩みを深掘る">悩みを深掘る</button>
+        <button type="button" class="pbtn" data-pill="next_aim" data-val="提案依頼を取る">提案依頼</button>
+        <button type="button" class="pbtn" data-pill="next_aim" data-val="課長同行に進める">課長同行へ</button>
+        <button type="button" class="pbtn" data-pill="next_aim" data-val="">未設定</button>
+      </div>
+    </div>
     <div class="jsec">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:10px">
         <h3 style="margin:0">♦ 追撃 Judgment <span style="font-size:11px;font-weight:700;color:#553c9a;background:#f3effc;border:1px solid #d6bcfa;border-radius:999px;padding:2px 9px;letter-spacing:.05em;vertical-align:middle">シックスアイズジャッジ</span></h3>
@@ -11369,7 +11394,10 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
     <div style="display:grid;grid-template-columns:1fr 72px;gap:8px;align-items:flex-end;margin-bottom:8px">
       <div>
         <label>氏名</label>
-        <input type="text" id="famName" placeholder="例: 田中 太郎" style="margin-bottom:0">
+        <div style="display:flex;gap:6px;align-items:center">
+          <button type="button" class="mic-btn hb" onclick="micStart('famName',this)" style="flex-shrink:0;margin-top:0" title="音声で氏名入力">🎤</button>
+          <input type="text" id="famName" placeholder="例: 田中 太郎" style="margin-bottom:0;flex:1;min-width:0">
+        </div>
       </div>
       <div>
         <label>年齢</label>
@@ -12736,12 +12764,10 @@ function renderInboxBody(){
       if(!_att.length && !_oth.length){ html+='<div class="iempty">写真がありません。</div>'; }
       host.innerHTML=html; _wireInbox(host); _applyInboxBadge(all); return;
     }
-    html+='<div style="font-size:11.5px;color:#94a3b8;text-align:center;padding:2px 0 10px;line-height:1.5">📷 カメラ・本体の写真は1箱に集約 → 紐付け → 📤 でPCへ。</div>';
+    html+='<div style="font-size:11.5px;color:#94a3b8;text-align:center;padding:2px 0 10px;line-height:1.5">📷 写真は1箱に集約 → 紐付け → 📧 PCへ送信で自動的に書き出します。</div>';
     var linkedUnsent=linked.length;
     var selCount=unlinked.filter(function(s){return _inbSel[s.id];}).length;
-    var _expLabel=isMob?'📤 PCへ書き出す':'📤 スマホへ書き出す';
-    html+='<div class="isend"><button class="ibtn pri big" onclick="inboxSendToPC()">'+_expLabel+'（'+(linkedUnsent+selCount)+'件）</button></div>';
-    html+='<div class="ihint">📤 紐付け済みは自動で書き出します。'+(isMob?'':'（PCはファイルがDL→メールでスマホへ）')+'</div>';
+    // 写真の書き出しはカードの📧送信に統合（インボックスは紐付け専用）
     if(unlinked.length){
       html+='<div class="isec2">未紐付け（'+unlinked.length+'）<span class="seltools"><button onclick="inboxSelAll()">☑ 全選択</button><button onclick="inboxSelNone()">解除</button></span></div>';
       html+=unlinked.map(function(s){return _inrow2(s,true);}).join("");
