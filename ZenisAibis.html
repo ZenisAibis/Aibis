@@ -1819,7 +1819,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.95";
+var APP_VERSION = "v8.96";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -8360,7 +8360,7 @@ function renderAnalysis(){
   var byRep='';
   if(scope==='all'&&reps.length>=2){
    var rr=reps.map(function(r){var cs=g[r].filter(function(c){return !_isLandLead(c);});var hi=cs.filter(function(c){return _richTier(_cardRichness(c))<=1;}).length;return {r:r,n:cs.length,hi:hi,pct:_zPct(hi,cs.length)};}).sort(function(a,b){return b.pct-a.pct;});
-   byRep='<div style="margin-top:9px;border-top:1px solid rgba(255,255,255,.08);padding-top:7px"><div class="z-sub" style="margin-bottom:4px">担当別 高品質率（\ud83d\udc8e＋\ud83e\udd47）</div><div style="display:grid;grid-template-columns:1fr auto auto;gap:3px 14px;font-size:11.5px;align-items:baseline">'+rr.map(function(o){return '<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">'+e(o.r)+'</span><b style="text-align:right;white-space:nowrap">'+o.pct+'%</b><span style="opacity:.55;text-align:right;white-space:nowrap">（'+o.hi+'/'+o.n+'）</span>';}).join('')+'</div></div>';
+   byRep='<div style="margin-top:9px;border-top:1px solid rgba(255,255,255,.08);padding-top:7px"><div class="z-sub" style="margin-bottom:4px">担当別 高品質率（\ud83d\udc8e＋\ud83e\udd47）</div><div style="display:grid;grid-template-columns:1fr 2.6em 6.6em;gap:3px 12px;font-size:11.5px;align-items:baseline">'+rr.map(function(o){return '<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">'+e(o.r)+'</span><b style="text-align:right;white-space:nowrap">'+o.pct+'%</b><span style="opacity:.55;text-align:right;white-space:nowrap">（'+o.hi+'/'+o.n+'）</span>';}).join('')+'</div></div>';
   }
   return '<div class="z-card z-c2"><h3>\ud83d\udcd0 カード品質ピラミッド</h3><div class="z-sub">内容の濃さ（入力率・記述量・「」引用・→反応・家族把握・録音）で5階層。幅＝全体に占める割合。</div><div style="margin-top:6px">'+rows+'</div>'+byRep+'</div>';
  })();
@@ -10818,7 +10818,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
     </div>
     <div class="sec" id="secTochi">
       <div class="stitle" style="display:flex;align-items:center;gap:8px">土地情報（優先計画地）<button type="button" id="assetBtn" onclick="toggleAssetType()">アセット系</button></div>
-      <div class="asset-note">🏢 アセット系：土地情報は封印中（入力不可・各判定では対象外）</div>
+      <div class="asset-note">🏢 アセット系：土地情報は封印中・判定対象外</div>
       <div style="margin-bottom:8px">
         <label>計画地備考</label>
         <div style="display:flex;gap:6px;align-items:center">
@@ -10987,7 +10987,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
   <div class="panel tc" id="tr" style="display:none">
     <h2>《 再訪カード 》</h2>
     <div class="sec">
-      <div class="stitle">判定事項チェックリスト（チェックが多いほど Good!）</div>
+      <div class="stitle">判定事項リスト（チェックが多いほど Good!）</div>
       <div class="jgrid" id="jChecklist">
         <label class="jitem"><input type="checkbox" data-ck="building_amount"><span>建物・金額など具体的な話が出た</span></label>
         <label class="jitem"><input type="checkbox" data-ck="souzoku"><span>相続や活用に関心を示す</span></label>
@@ -11018,10 +11018,6 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         </div>
       </div>
     </div>
-    <div class="cg" style="flex-wrap:wrap;gap:8px;margin-top:8px">
-          <label style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:150px;font-size:11px;font-weight:700;color:#718096">提案依頼の質<select id="f_proposal_quality" style="padding:8px;border:1px solid #cbd5e0;border-radius:7px;font-family:inherit;font-size:13px;min-height:38px;background:#fff"><option value="">—（任意）</option><option>自然依頼</option><option>許可依頼</option><option>形だけ</option><option>課長同行</option><option>家族条件付き</option></select></label>
-          <label style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:150px;font-size:11px;font-weight:700;color:#718096">提案後ステータス<select id="f_post_proposal" style="padding:8px;border:1px solid #cbd5e0;border-radius:7px;font-family:inherit;font-size:13px;min-height:38px;background:#fff"><option value="">—（任意）</option><option>提案書作成中</option><option>提案済</option><option>再提案必要</option><option>家族説明待ち</option><option>税理士確認待ち</option><option>融資確認待ち</option><option>競合比較中</option><option>申込前</option><option>契約準備</option></select></label>
-        </div>
     <div id="revisitList"></div>
     <div class="jsec">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:10px">
@@ -11051,6 +11047,10 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
   <!-- 追撃 -->
   <div class="panel tc" id="tp" style="display:none">
     <h2>《 追撃カード 》</h2>
+    <div class="cg" style="flex-wrap:wrap;gap:8px;margin-top:8px">
+          <label style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:150px;font-size:11px;font-weight:700;color:#718096">提案依頼の質<select id="f_proposal_quality" style="padding:8px;border:1px solid #cbd5e0;border-radius:7px;font-family:inherit;font-size:13px;min-height:38px;background:#fff"><option value="">—（任意）</option><option>自然依頼</option><option>許可依頼</option><option>形だけ</option><option>課長同行</option><option>家族条件付き</option></select></label>
+          <label style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:150px;font-size:11px;font-weight:700;color:#718096">提案後ステータス<select id="f_post_proposal" style="padding:8px;border:1px solid #cbd5e0;border-radius:7px;font-family:inherit;font-size:13px;min-height:38px;background:#fff"><option value="">—（任意）</option><option>提案書作成中</option><option>提案済</option><option>再提案必要</option><option>家族説明待ち</option><option>税理士確認待ち</option><option>融資確認待ち</option><option>競合比較中</option><option>申込前</option><option>契約準備</option></select></label>
+        </div>
     <!-- 印刷時のみ：再訪Judgmentをここに表示 -->
     <div class="ht" style="margin-bottom:10px">★ 追客は週1回、継続は2ヵ月に1回 / 留守でも足跡を残そう</div>
     <div id="pursuitList"></div>
