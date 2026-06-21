@@ -1819,7 +1819,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.03";
+var APP_VERSION = "v9.04";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -10206,7 +10206,7 @@ function _addrFromLatLon(lat, lon, cb){
     if(typeof cb==='function') cb(fullAddr||'');
   }).catch(function(){ if(typeof cb==='function') cb(''); });
 }
-var _geoLeaf=null, _geoTargetId='', _geoDefault=[35.7066,139.8683]; // 既定中心=江戸川区付近
+var _geoLeaf=null, _geoTargetId='', _geoDefault=[35.7066,139.8683], _geoSeq=0; // 既定中心=江戸川区付近
 function _loadLeaflet(){
   return new Promise(function(res,rej){
     if(window.L) return res();
@@ -10218,19 +10218,19 @@ function _geoInit(lat,lng){
   if(!_geoLeaf){
     _geoLeaf=L.map('geoLeafMap',{zoomControl:true}).setView([lat,lng],18);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:20,attribution:'\u00a9 OpenStreetMap'}).addTo(_geoLeaf);
-  } else { _geoLeaf.setView([lat,lng],18); }
+  }
   setTimeout(function(){ try{_geoLeaf.invalidateSize();}catch(e){} },80);
 }
 function openGeoMap(targetId){
-  _geoTargetId=targetId;
+  _geoTargetId=targetId; var myseq=++_geoSeq;
   toast('\ud83d\uddfa \u5730\u56f3\u3092\u8aad\u307f\u8fbc\u307f\u4e2d...');
   _loadLeaflet().then(function(){
     // まず既定中心ですぐ地図を開く（GPS待ちで真っ白にならないように）
     var ov=document.getElementById('geoMapOv'); if(ov){ ov.classList.add('show'); try{ history.pushState({zv:(history.state&&history.state.zv)||null,id:(history.state&&history.state.id)||null,geomap:1},''); }catch(e){} }
     setTimeout(function(){ _geoInit(_geoDefault[0],_geoDefault[1]); },60);
     var _av=''; try{ var _ae=document.getElementById(targetId); _av=((_ae&&_ae.value)||'').trim(); }catch(e){}
-    var _ctr=function(lat,lng){ var fn=function(){ if(_geoLeaf){ try{_geoLeaf.setView([lat,lng],18);}catch(e){} } else { setTimeout(fn,60); } }; fn(); };
-    var _toGps=function(){ if(navigator.geolocation){ navigator.geolocation.getCurrentPosition(function(pos){ _ctr(pos.coords.latitude,pos.coords.longitude); },function(){},{enableHighAccuracy:true,timeout:8000,maximumAge:0}); } };
+    var _ctr=function(lat,lng){ var fn=function(){ if(myseq!==_geoSeq) return; if(_geoLeaf){ try{_geoLeaf.setView([lat,lng],18);}catch(e){} } else { setTimeout(fn,60); } }; fn(); };
+    var _toGps=function(){ if(navigator.geolocation){ navigator.geolocation.getCurrentPosition(function(pos){ _ctr(pos.coords.latitude,pos.coords.longitude); },function(){ _ctr(_geoDefault[0],_geoDefault[1]); },{enableHighAccuracy:true,timeout:8000,maximumAge:0}); } else { _ctr(_geoDefault[0],_geoDefault[1]); } };
     if(_av){
       fetch('https://msearch.gsi.go.jp/address-search/AddressSearch?q='+encodeURIComponent(_av)).then(function(r){return r.json();}).then(function(arr){ if(arr&&arr[0]&&arr[0].geometry&&arr[0].geometry.coordinates&&arr[0].geometry.coordinates.length>=2){ _ctr(arr[0].geometry.coordinates[1],arr[0].geometry.coordinates[0]); } else { _toGps(); } }).catch(function(){ _toGps(); });
     } else { _toGps(); }
