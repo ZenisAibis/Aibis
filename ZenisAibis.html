@@ -1817,7 +1817,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.82";
+var APP_VERSION = "v8.83";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -10219,18 +10219,18 @@ function _geoInit(lat,lng){
 }
 function openGeoMap(targetId){
   _geoTargetId=targetId;
-  var show=function(lat,lng){
-    var ov=document.getElementById('geoMapOv'); if(ov) ov.classList.add('show');
-    setTimeout(function(){ _geoInit(lat,lng); },60);
-  };
   toast('\ud83d\uddfa \u5730\u56f3\u3092\u8aad\u307f\u8fbc\u307f\u4e2d...');
   _loadLeaflet().then(function(){
+    // まず既定中心ですぐ地図を開く（GPS待ちで真っ白にならないように）
+    var ov=document.getElementById('geoMapOv'); if(ov) ov.classList.add('show');
+    setTimeout(function(){ _geoInit(_geoDefault[0],_geoDefault[1]); },60);
+    // 取れたら現在地へ寄せる（拒否/失敗時は既定のまま）
     if(navigator.geolocation){
       navigator.geolocation.getCurrentPosition(
-        function(pos){ show(pos.coords.latitude,pos.coords.longitude); },
-        function(){ show(_geoDefault[0],_geoDefault[1]); },
+        function(pos){ try{ if(_geoLeaf) _geoLeaf.setView([pos.coords.latitude,pos.coords.longitude],18); }catch(e){} },
+        function(){},
         {enableHighAccuracy:true,timeout:8000,maximumAge:0});
-    } else { show(_geoDefault[0],_geoDefault[1]); }
+    }
   }).catch(function(){ toast('\u5730\u56f3\u3092\u8aad\u307f\u8fbc\u3081\u307e\u305b\u3093\u3067\u3057\u305f\uff08\u901a\u4fe1\u74b0\u5883\u3092\u3054\u78ba\u8a8d\u304f\u3060\u3055\u3044\uff09'); });
 }
 function geoMapHere(){
