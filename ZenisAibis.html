@@ -1767,7 +1767,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.42";
+var APP_VERSION = "v8.43";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -9317,6 +9317,16 @@ function qaRender(){
 }
 function qaSetStage(i){ qaStageSel=(qaStageSel===i?-1:i); qaRender(); }
 function qaToggleKaiwa(k){ var p=qaKaiwaSel.indexOf(k); if(p>=0) qaKaiwaSel.splice(p,1); else qaKaiwaSel.push(k); qaRender(); }
+function _focusNoKb(el){
+  if(!el) return;
+  try{
+    var ro=el.readOnly;
+    el.readOnly=true;            // readonly中のfocusはソフトキーボードを出さない
+    el.focus({preventScroll:false});
+    try{ el.scrollIntoView({block:'center',behavior:'smooth'}); }catch(_e){}
+    setTimeout(function(){ try{ el.readOnly=ro; }catch(_e){} }, 250); // 解除後はタップで入力可
+  }catch(_e){ try{ el.focus(); }catch(__e){} }
+}
 function qaSave(cont){
   var nm=document.getElementById('qaName');
   var name=nm?nm.value.trim():'';
@@ -9324,8 +9334,8 @@ function qaSave(cont){
   var _kb0=document.getElementById('qaKuubi'); var _kuubi0=_kb0?_kb0.value.trim():'';
   if(!name){
     // 名前なしで保存するには「計画地住所」と「計画地備考」の両方が最低条件（土地見込み）
-    if(!_plan0){ toast('名前が未入力です。まず「計画地」の住所を入力してください'); if(_pl0) _pl0.focus(); return; }
-    if(!_kuubi0){ toast('次に「📝 計画地備考」にコメントを入れてください（この2箇所で土地見込み保存）'); if(_kb0) _kb0.focus(); return; }
+    if(!_plan0){ toast('名前が未入力です。まず「計画地」の住所を入力してください'); if(_pl0) _focusNoKb(_pl0); return; }
+    if(!_kuubi0){ toast('次に「📝 計画地備考」にコメントを入れてください（この2箇所で土地見込み保存）'); if(_kb0) _focusNoKb(_kb0); return; }
     name='土地見込み'; // 名前なし＋計画地住所＋計画地備考あり → 土地見込みとして保存
   }
   var c=mkBlank();
