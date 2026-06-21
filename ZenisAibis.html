@@ -1819,7 +1819,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.99";
+var APP_VERSION = "v9.00";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -5360,9 +5360,10 @@ function _sendCards(selected, toEmail, ccEmail, subjPrefix, onDone, copyAddr, bd
   }catch(_e){}
   var tag=(subjPrefix||'AIBIS').replace(/\s+/g,'-');  // 種別タグ（英数字・ファイル名/件名で文字化けしない）
   var fn='AIBIS_'+tag+'_'+(uName||'staff')+'_'+APP_VERSION+'_'+selected.length+'cards_'+ts+'.json';
-  var subj='AIBIS '+(subjPrefix||'')+' '+ts+' ('+selected.length+' cards)';
+  var _isAllSel=(Array.isArray(cards)&&cards.length>0&&Array.isArray(selected)&&selected.length===cards.length);
+  var subj='AIBIS '+(subjPrefix||'')+' '+ts+' ('+selected.length+' cards'+(_isAllSel?' ALL':'')+')';
   var brk=bd?('\nNew:'+bd.n+'  Updated:'+bd.u+'  Forwarded:'+bd.f):'';
-  var body='AIBIS '+(subjPrefix||'')+brk+'\n'+ts;
+  var body='AIBIS '+(subjPrefix||'')+(_isAllSel?' [ALL選択]':'')+brk+'\n'+ts;
   var clipAddr=(typeof copyAddr!=='undefined'&&copyAddr!==null&&copyAddr!=='')?copyAddr:(toEmail||'');
   var cardFile=null; try{ cardFile=new File([data],fn,{type:'application/json'}); }catch(_e){}
   function fallback(files){
@@ -12733,7 +12734,7 @@ function renderInboxBody(){
       if(!_att.length && !_oth.length){ html+='<div class="iempty">写真がありません。</div>'; }
       host.innerHTML=html; _wireInbox(host); _applyInboxBadge(all); return;
     }
-    html+='<div style="font-size:11.5px;color:#94a3b8;text-align:center;padding:2px 0 10px;line-height:1.5">📷 写真は1箱に集約 → 紐付け → 📧 PCへ送信で自動的に書き出します。</div>';
+    html+='<div style="font-size:11.5px;color:#94a3b8;text-align:center;padding:2px 0 10px;line-height:1.5">📷 1箱に集約 → 紐付け → 📧PCへ書き出し</div>';
     var linkedUnsent=linked.length;
     var selCount=unlinked.filter(function(s){return _inbSel[s.id];}).length;
     // 写真の書き出しはカードの📧送信に統合（インボックスは紐付け専用）

@@ -295,14 +295,11 @@
 <div id="scrInbox" class="scr hide">
   <div class="top">
     <button class="tbtn" id="inbBack">📷</button>
-    <div class="cardchip grow"><b id="inbTitle">📥 インボックス</b><span class="sub">本体と同じ箱・紐付け→📤PCへ</span></div>
+    <div class="cardchip grow"><b id="inbTitle">📥 インボックス</b><span class="sub">本体と同じ箱・書き出しは本体で</span></div>
     <button class="tbtn" id="inbCfgBtn">⚙</button>
   </div>
   <div class="pad">
     <div id="inbWarn" class="warnbar hide"></div>
-    <div class="inbtools">
-      <button class="vbtn" id="inbSendBtn" style="width:100%">📤 PCへ書き出す</button>
-    </div>
     <div id="inbBody"></div>
     <div class="storeline" id="inbStore"></div>
   </div>
@@ -416,7 +413,7 @@
    ※ prospect_cards_v1 には書き込まない（新規カード作成・PC連携は本体側）
    データ(set): {id,cardId,ts,addrType:'plan',lat,lng,acc,addr,addrPending,banchi,note,sent,photos:[{pid,full(Blob),thumb,w,h,size}]}
    ========================================================= */
-const APP_VERSION = "cam-v1.58";
+const APP_VERSION = "cam-v1.59";
 
 /* ===== PWA：単一ファイルでインストール可能化（外部ファイル不要） ===== */
 function _pwaIcon(size,maskable){
@@ -793,8 +790,8 @@ async function addPhoto(photo){
   }
   // 新規データ
   if(targetCard===INBOX){ const n=await idbCountByCard(INBOX);
-    if(n>=WARN_HARD) toast("インボックスが"+n+"件です。続けるなら先にPCへ書き出して整理しましょう");
-    else if(n>=WARN_SOFT) toast("インボックス"+n+"件。そろそろPCへ送りましょう"); }
+    if(n>=WARN_HARD) toast("インボックスが"+n+"件です。本体アプリで整理しましょう");
+    else if(n>=WARN_SOFT) toast("インボックス"+n+"件。本体アプリで整理を"); }
   const pos=lastPos;
   const s={ id:rid("s"), cardId:targetCard, ts:Date.now(), addrType:"plan",
     lat:pos?pos.lat:null, lng:pos?pos.lng:null, acc:pos?pos.acc:null,
@@ -956,8 +953,8 @@ async function renderInbox(){
 
   $("inbTitle").textContent="📥 インボックス（未紐付 "+unlinked.length+"）";
   const warn=$("inbWarn");
-  if(unlinked.length>=WARN_HARD){ warn.className="warnbar hard"; warn.textContent="⚠ 未紐付けが"+unlinked.length+"件です。紐付け＆PCへ書き出して整理しましょう。"; }
-  else if(unlinked.length>=WARN_SOFT){ warn.className="warnbar soft"; warn.textContent="そろそろ"+unlinked.length+"件です。区切りで紐付け＆PCへ書き出すのがおすすめです。"; }
+  if(unlinked.length>=WARN_HARD){ warn.className="warnbar hard"; warn.textContent="⚠ 未紐付けが"+unlinked.length+"件です。本体アプリで紐付け・整理しましょう。"; }
+  else if(unlinked.length>=WARN_SOFT){ warn.className="warnbar soft"; warn.textContent="そろそろ"+unlinked.length+"件です。本体アプリで紐付け・整理を。"; }
   else warn.className="warnbar hide";
 
   const linkedCount=linked.length;
@@ -1092,7 +1089,7 @@ async function sendInbox(){
   if(to) toast("📋 宛先("+to+")コピー済。"+_ja+"を選び、貼付→ファイル添付で送信");
   else toast(shared?(_ja+"を選んで送信"):"ファイルを書き出しました。"+_ja+"に添付してPCへ");
 }
-$("inbSendBtn").addEventListener("click",sendInbox);
+var _ibS=$("inbSendBtn"); if(_ibS) _ibS.addEventListener("click",sendInbox);
 
 /* ---------- カード一覧 ---------- */
 function openPick(m){
