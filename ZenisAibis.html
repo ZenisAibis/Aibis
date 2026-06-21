@@ -1819,7 +1819,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.96";
+var APP_VERSION = "v8.97";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -8405,9 +8405,7 @@ function renderAnalysis(){
  var ptRows=reps.map(function(r){return {r:r,p:_repPoints(g[r])};}).sort(function(a,b){return b.p-a.p;});var ptMax=ptRows.length?ptRows[0].p:0;var ptTot=ptRows.reduce(function(s,x){return s+x.p;},0);var ptH='<div class="z-sub" style="margin-bottom:8px">課合計 <b style="color:var(--z-lime)">'+ptTot+'</b>pt（活動の積み上げ・現在値）</div>'+ptRows.map(function(x){var pct=ptMax?Math.round(x.p/ptMax*100):0;var col=_ptColor(pct);return '<div class="z-mbar"><div class="z-ml"><span>'+e(x.r)+'</span><b>'+x.p+'pt</b></div><div class="z-mtrack"><i style="width:'+pct+'%;background:'+col+'"></i></div></div>';}).join('');
 var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';return '<div style="margin-bottom:7px"><span style="font-size:12px;font-weight:700">'+e(r)+'</span> '+bs.map(function(b){return '<span class="z-pill" style="background:rgba(155,225,93,.14);color:var(--z-lime);margin-left:4px">'+b.e+' '+b.t+'</span>';}).join('')+'</div>';}).join('')||'<div class="z-sub">集計中</div>';
  var bodyRank=('🏆 ランキング & 評価',
-   _zc('🏆','担当別スコア','平均スコア順。',lbH,'z-c2')
-  +_zc('⚡','担当別 行動量スコア','行動の積み上げ。契約だけでなく前進を評価。',ptH,'z-c2')
-  +_zc('🎖','担当別 実績バッジ','行動の積み重ねで全員に出番。',achH,'z-c2')
+   _zc('🎖','担当別 実績バッジ','行動の積み重ねで全員に出番。',achH,'z-c2')
   +_zc('🎖','今月の課目標（進捗）','今月の課目標。みんなで達成。',missH,'z-c2'));
  // area
  var bodyArea=_zAreaCard(t);
@@ -8462,11 +8460,10 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
  }).join('');
  var _teamCourse=_zc('🕳','リーク分析（離脱の場所）','転換率が落ちる段を発見。',_zFunnel(sc),'z-c2');
  var bodyTeam=('🧑‍💼 担当の特性・保有状況',
-   _zc('📇','見込み保有数（全体・担当別）','課全体の母数と担当別の保有件数。','<div style="text-align:center;margin-bottom:8px"><span style="font-family:Sora,sans-serif;font-size:30px;font-weight:800;color:#34e3d0">'+cards.length+'</span><span style="font-size:12px;color:var(--z-dim)"> 件（全体）／平均 '+avgHold.toFixed(1)+'件</span></div>'+_zVbars(holdBars,reps.map(function(r){return r.slice(0,1);}),_zAVAS),'z-c2')
-  +_zc('⭕','提案依頼の取得状況','顧客の意思表示＝契約への最短サイン。','<div style="text-align:center;margin-bottom:8px"><span style="font-family:Sora,sans-serif;font-size:30px;font-weight:800;color:#2f9e44">'+prGot+'</span><span style="font-size:12px;color:var(--z-dim)"> 件取得／'+cards.filter(function(c){return !_isLandLead(c);}).length+'件中（'+_zPct(prGot,cards.filter(function(c){return !_isLandLead(c);}).length)+'%）</span></div>'+_zVbars(prBars,reps.map(function(r){return r.slice(0,1);}),reps.map(function(){return '#2f9e44';})),'z-c2')
-  +_zc('📝','入力充実度（担当別）','カードの作り込み度。低い担当は質のフォローを。',_zVbars(inpBars,reps.map(function(r){return r.slice(0,1);}),inpBars.map(function(v){return v>=70?'#2f9e44':v>=50?'#ffb443':'#ff5d7d';})),'z-c2')
+   _zc('⭕','提案依頼の取得状況','顧客の意思表示＝契約への最短サイン。','<div style="text-align:center;margin-bottom:8px"><span style="font-family:Sora,sans-serif;font-size:30px;font-weight:800;color:#2f9e44">'+prGot+'</span><span style="font-size:12px;color:var(--z-dim)"> 件取得／'+cards.filter(function(c){return !_isLandLead(c);}).length+'件中（'+_zPct(prGot,cards.filter(function(c){return !_isLandLead(c);}).length)+'%）</span></div>'+_zVbars(prBars,reps.map(function(r){return r.slice(0,1);}),reps.map(function(){return '#2f9e44';})),'z-c2')
   +_zc('🕳','未入力の傾向（課全体）','どの項目が抜けやすいか。高い＝チームの弱点。',_zVbars(blankRates,FCHK.map(function(f){return f[0];}),blankRates.map(function(){return '#ff8aa0';})),'z-c2')
   +_zc('🧬','担当の特性（自動所見）','カード全体から見た各担当のタイプ。','<div class="z-list2">'+(traitRows||'<div class="z-sub">担当データなし</div>')+'</div>','z-cf'));
+ var _axData=(_zc('🏆','担当別スコア','平均スコア順。',lbH,'z-c2')+_zc('⚡','担当別 行動量スコア','行動の積み上げ。契約だけでなく前進を評価。',ptH,'z-c2')+_zc('📇','見込み保有数（全体・担当別）','課全体の母数と担当別の保有件数。','<div style="text-align:center;margin-bottom:8px"><span style="font-family:Sora,sans-serif;font-size:30px;font-weight:800;color:#34e3d0">'+cards.length+'</span><span style="font-size:12px;color:var(--z-dim)"> 件（全体）／平均 '+avgHold.toFixed(1)+'件</span></div>'+_zVbars(holdBars,reps.map(function(r){return r.slice(0,1);}),_zAVAS),'z-c2')+_zc('📝','入力充実度（担当別）','カードの作り込み度。低い担当は質のフォローを。',_zVbars(inpBars,reps.map(function(r){return r.slice(0,1);}),inpBars.map(function(v){return v>=70?'#2f9e44':v>=50?'#ffb443':'#ff5d7d';})),'z-c2'));
  // insights
  var pingStat=reps.map(function(r){var a=g[r].filter(function(c){return !_isLandLead(c);}),T=a.length||1;return {r:r,v:_zPct(a.filter(function(c){return getKaiwaLevel(c)===0;}).length,T),n:a.length};}).filter(function(o){return o.n>=3;}).sort(function(a,b){return b.v-a.v;});
  var saLate=cards.filter(function(c){return (c.pursuit_judge==='A'||c.pursuit_judge==='S')&&calcPaceOverrate(c)>1;}).length;
@@ -8664,7 +8661,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
    var body=(leads.length+eng.length)?(tiles+brk+perRep+note):'<div class="z-empty">対象カードがありません</div>';
    return _zc('⛏','発掘パイプライン <span class="z-secsub">土地見込み→対話</span>','発掘した土地見込みを、対話・面談につなげられているか。発掘活用率＝対話済み÷(対話済み＋発掘中)。',body,'z-c2');
  })();
- H+=morningBoard+_zsec('today','🎯 課の指示 <span class="z-secsub">今日やること・誰に何を</span>',todayCard+contractCard+zoneCard+bodyContract+_extrasFor('today'))+_zsec('coach','🎓 部下の指導 <span class="z-secsub">コーチング</span>',coachCard+dangerCard+readyCard+_extrasFor('coach'))+_zsec('teamchk','👥 部下の確認 <span class="z-secsub">担当の現状</span>',bodyRank+_cardWork+bodyTeam+_extrasFor('teamchk'))+_zsec('grow','🌱 育成クエスト <span class="z-secsub">型・成長・次の課題</span>',questCard+_axKingCard+_extrasFor('grow'))+_zsec('state','📊 詳細分析 <span class="z-secsub">月次・ヒートマップ・課長会議用</span>',_cardMap+bodyKpi3+bodyProcess+_llCard+bodyQuality+_extrasFor('state')+_teamCourse+_cardInsights);
+ H+=morningBoard+_zsec('today','🎯 課の指示 <span class="z-secsub">今日やること・誰に何を</span>',todayCard+contractCard+zoneCard+bodyContract+_extrasFor('today'))+_zsec('coach','🎓 部下の指導 <span class="z-secsub">コーチング</span>',coachCard+dangerCard+readyCard+_extrasFor('coach'))+_zsec('teamchk','👥 部下の確認 <span class="z-secsub">担当の現状</span>',bodyRank+_cardWork+bodyTeam+_extrasFor('teamchk'))+_zsec('grow','🌱 育成クエスト <span class="z-secsub">型・成長・次の課題</span>',questCard+_axKingCard+_axData+_extrasFor('grow'))+_zsec('state','📊 詳細分析 <span class="z-secsub">月次・ヒートマップ・課長会議用</span>',_cardMap+bodyKpi3+bodyProcess+_llCard+bodyQuality+_extrasFor('state')+_teamCourse+_cardInsights);
  H+='</div>';
  host.innerHTML=H;
  if(window.IS_DEV){var _dw=document.getElementById('devSelfMirrorWrap');if(_dw){_dw.style.display='';if(window.renderSelfDash)renderSelfDash('devSelfMirror');}}
