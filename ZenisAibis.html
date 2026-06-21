@@ -1767,7 +1767,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.36";
+var APP_VERSION = "v8.37";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -6436,6 +6436,7 @@ function copyAddrField(id){
   try{ if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(v).then(function(){},function(){}); done=true; } }catch(_e){}
   toast(done?('📋 '+v):'コピーできませんでした');
 }
+window.geoFill=geoFill; window.copyAddrField=copyAddrField;
 function closeMap(){ document.getElementById('mapModal').classList.remove('show'); document.getElementById('mapFrame').src=''; }
 
 // ===== 印刷 =====
