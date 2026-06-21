@@ -1767,7 +1767,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.41";
+var APP_VERSION = "v8.42";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -9320,10 +9320,13 @@ function qaToggleKaiwa(k){ var p=qaKaiwaSel.indexOf(k); if(p>=0) qaKaiwaSel.spli
 function qaSave(cont){
   var nm=document.getElementById('qaName');
   var name=nm?nm.value.trim():'';
+  var _pl0=document.getElementById('qaPlan'); var _plan0=_pl0?_pl0.value.trim():'';
   var _kb0=document.getElementById('qaKuubi'); var _kuubi0=_kb0?_kb0.value.trim():'';
   if(!name){
-    if(!_kuubi0){ toast('名前が未入力です。「📝 計画地備考」にコメントを入れると、土地見込みとして保存できます'); if(_kb0) _kb0.focus(); return; }
-    name='土地見込み'; // 名前なし＋計画地備考あり → 土地見込みとして保存
+    // 名前なしで保存するには「計画地住所」と「計画地備考」の両方が最低条件（土地見込み）
+    if(!_plan0){ toast('名前が未入力です。まず「計画地」の住所を入力してください'); if(_pl0) _pl0.focus(); return; }
+    if(!_kuubi0){ toast('次に「📝 計画地備考」にコメントを入れてください（この2箇所で土地見込み保存）'); if(_kb0) _kb0.focus(); return; }
+    name='土地見込み'; // 名前なし＋計画地住所＋計画地備考あり → 土地見込みとして保存
   }
   var c=mkBlank();
   c.name=name;
