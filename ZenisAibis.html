@@ -303,7 +303,7 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 /* 居住別セル背景色 */
 .fam-cell.lv-同居{background:#ecfeff;box-shadow:inset 3px 0 0 #06b6d4}
 .fam-cell.lv-近居{background:#fffbeb;box-shadow:inset 3px 0 0 #d97706}
-.fam-cell.lv-別居{background:#eff6ff;box-shadow:inset 3px 0 0 #3b82f6}
+.fam-cell.lv-別居{background:#fefce8;box-shadow:inset 3px 0 0 #eab308}
 .fam-cell.lv-死亡{background:#e2e8f0;border-color:#94a3b8;box-shadow:inset 3px 0 0 #64748b;opacity:0.82}
 .fam-cell.lv-未確認{background:white;box-shadow:inset 3px 0 0 #d6dce4}
 .fam-stance-dot{position:absolute;top:3px;right:3px;width:10px;height:10px;border-radius:50%}
@@ -347,7 +347,7 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 /* 居住ボタン個別色 */
 .fam-bbtn.lv-同居{background:#ecfeff;border-color:#06b6d4;color:#0e7490}
 .fam-bbtn.lv-近居{background:#fffbeb;border-color:#d97706;color:#b45309}
-.fam-bbtn.lv-別居{background:#eff6ff;border-color:#3b82f6;color:#1d4ed8}
+.fam-bbtn.lv-別居{background:#fefce8;border-color:#eab308;color:#a16207}
 .fam-bbtn.lv-死亡{background:#f1f5f9;border-color:#94a3b8;color:#475569}
 .fam-bbtn.lv-未確認{background:white;border-color:#cbd5e0;color:#718096}
 .fam-fbtn{padding:7px 4px;border:2px solid #e2e8f0;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;background:white;font-family:inherit;text-align:center}
@@ -1819,7 +1819,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.10";
+var APP_VERSION = "v9.12";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -5842,9 +5842,16 @@ var famCurFlags={met:false,owner:false,kp:false};
 var FAM_G1_LOCAL=['祖父','祖母'];
 var FAM_G2_LOCAL=['世帯主（男）','世帯主（女）','夫','妻','名義人（夫）','名義人（妻）','配偶者','兄','弟','姉','妹'];
 
+function normalizeFamRole(role){
+  var map={'世帯主（男）':'世帯主・父','世帯主（女）':'世帯主・母','名義人（夫）':'世帯主・父','名義人（妻）':'世帯主・母','未婚':'独身'};
+  return map[role]||role;
+}
+var FAM_GEN0_ROLES=['世帯主・祖父','世帯主・祖母','祖父','祖母'];
+var FAM_GEN1_ROLES=['世帯主・父','世帯主・母','父','母','夫','妻','配偶者','兄','弟','姉','妹'];
 function famGetGen(role){
-  if(FAM_G1_LOCAL.indexOf(role)>=0) return 0;
-  if(FAM_G2_LOCAL.indexOf(role)>=0) return 1;
+  role=normalizeFamRole(role);
+  if(FAM_GEN0_ROLES.indexOf(role)>=0) return 0;
+  if(FAM_GEN1_ROLES.indexOf(role)>=0) return 1;
   return 2;
 }
 function famGetFamilyByGen(){
@@ -5935,8 +5942,9 @@ function famToggleJutaku(){
 }
 window.famToggleJutaku=famToggleJutaku;
 function famSetMarriage(v){
+  if(v==='未婚')v='独身';
   famCurMarriage=v;
-  ['不明','既婚','未婚'].forEach(function(k){
+  ['既婚','独身','不明'].forEach(function(k){
     var b=document.getElementById('famM'+k);
     if(b) b.className='fam-bbtn'+(k===v?' fa-on':'');
   });
@@ -5955,7 +5963,7 @@ function famSetFlag(f,v){
   var b=document.getElementById(id[f]);
   if(b) b.className='fam-fbtn'+(v?' '+cls[f]:'');
 }
-var FAM_CHILD_ROLES=['長男','次男','三男','長女','次女','三女'];
+var FAM_CHILD_ROLES=['長男','次男','三男','長女','次女','三女','養子・男','養子・女'];
 var famCurChildren=0;
 var famCurGrandkids=[];
 var GK_LABEL={'小学生(男)':'小学生男','小学生(女)':'小学生女','幼児(男)':'幼児男','幼児(女)':'幼児女','乳児(男)':'乳児男','乳児(女)':'乳児女','乳児':'乳児','孫(男)':'男の子','孫(女)':'女の子','幼児':'幼児'};
@@ -5971,10 +5979,12 @@ function famRemoveGrandkid(i){ famCurGrandkids.splice(i,1); famCurChildren=famCu
 function famClearGrandkids(){ famCurGrandkids=[]; famCurChildren=0; famRenderGrandkids(); }
 window.famAddGrandkid=famAddGrandkid; window.famRemoveGrandkid=famRemoveGrandkid; window.famClearGrandkids=famClearGrandkids;
 function famOnRoleChange(){
-  var role=document.getElementById('famRole').value;
-  var show=FAM_CHILD_ROLES.indexOf(role)>=0 || ['兄','弟','姉','妹'].indexOf(role)>=0;
-  document.getElementById('famMarriageRow').style.display=show?'block':'none';
-  document.getElementById('famChildRow').style.display=show?'block':'none';
+  var role=normalizeFamRole(document.getElementById('famRole').value);
+  var gen=role?famGetGen(role):-1;
+  var isChild=FAM_CHILD_ROLES.indexOf(role)>=0;
+  var showMarriage=(gen===1)||isChild;
+  document.getElementById('famMarriageRow').style.display=showMarriage?'block':'none';
+  document.getElementById('famChildRow').style.display=isChild?'block':'none';
   // 世帯主・名義人のときは「同居」ボタンを「世帯主」表記にし、最初から選択状態に
   var isHead=/^世帯主/.test(role)||/^名義人/.test(role);
   var hb=document.getElementById('famL同居');
@@ -6001,10 +6011,14 @@ function famResetModal(){
   var nt=document.getElementById('famNote');if(nt)nt.value='';
   document.getElementById('famMarriageRow').style.display='none';
 }
+var FAM_HEAD_ROLES=['世帯主・祖父','世帯主・祖母','世帯主・父','世帯主・母'];
+var FAM_GRAND_ROLES=['世帯主・祖父','世帯主・祖母','祖父','祖母'];
+var FAM_ACTIVE_BASE_ROLES=['世帯主・父','世帯主・母','父','母'];
+var FAM_SIBLING_ROLES=['兄','弟','姉','妹'];
 var FAM_ROLE_GROUPS=[
- {label:'祖父母世代',roles:['祖父','祖母']},
- {label:'世帯主世代',roles:['世帯主（男）','世帯主（女）','夫','妻','—','兄','弟','姉','妹']},
- {label:'子世代',roles:['長男','次男','三男','長女','次女','三女']}
+ {label:'祖父母',roles:['世帯主・祖父','世帯主・祖母','祖父','祖母']},
+ {label:'現役世代',roles:['世帯主・父','世帯主・母','父','母','—','兄','弟','姉','妹']},
+ {label:'子世代',roles:['長男','次男','三男','長女','次女','三女','養子・男','養子・女']}
 ];
 // 兄弟姉妹は「世帯主から見た続柄」であることを入力時に明示（保存値=兄/弟/姉/妹 は不変）
 var FAM_SIB_DISP={'兄':'兄（世帯主の）','弟':'弟（世帯主の）','姉':'姉（世帯主の）','妹':'妹（世帯主の）'};
@@ -6032,12 +6046,12 @@ function famFilterRoleOptions(gen){ famBuildRoleOptions(gen); }
 function famOpenEdit(idx){
   var m=(cur.family||[])[idx]; if(!m) return;
   famEditIdx=idx;
-  famEditGen=+(m.gen||1);
+  famEditGen=(typeof famGetGen==="function"&&famGetGen(m.role)>=0)?famGetGen(m.role):+(m.gen||1);
   document.getElementById('famModalTitle').textContent=(m.role||'メンバー')+(m.name?' '+m.name:'');
   ['famDelBtn','famDelBtnTop'].forEach(function(id){var b=document.getElementById(id);if(b)b.style.display='inline-block';});
   famResetModal();
-  // 編集時は全続柄を構築
-  famBuildRoleOptions();
+  // 編集時もその世代の続柄だけに絞る
+  famBuildRoleOptions(famEditGen);
   famSetStance(m.stance||'unk');
   famSetLiving(m.living||m.kyojuu||'同居');
   famCurJutaku=m.jutaku||''; famPaintJutaku();
@@ -6947,7 +6961,7 @@ function buildInitVisitHTML(c){
     +'</div></div>';
   var family=c.family||[];
   if(family.length>0){
-    var genLabel=['祖父母','世帯主世代','子世代'];
+    var genLabel=['祖父母','現役世代','子世代'];
     html+='<div class="sec purple"><div class="stitle">👨‍👩‍👧‍👦 家族構成</div>';
     [0,1,2].forEach(function(gen){
       var members=family.filter(function(m){return m.role&&famGetGen(m.role||"")===gen;});
@@ -7162,6 +7176,14 @@ function cfg(role){
   const M={
     '祖父':{gender:'m',age:'old',hair:GRAY,style:'short',cloth:'#aeb9c7',cloth2:'#8b97a6',glasses:'#7b8794',outfit:'cardigan'},
     '祖母':{gender:'f',age:'old',hair:GRAY,style:'bob',cloth:'#c9b6dc',cloth2:'#ad97c6',glasses:'#9aa3ad',bun:true,outfit:'cardigan'},
+    '世帯主・祖父':{gender:'m',age:'old',hair:GRAY,style:'short',cloth:'#aeb9c7',cloth2:'#8b97a6',glasses:'#7b8794',outfit:'cardigan'},
+    '世帯主・祖母':{gender:'f',age:'old',hair:GRAY,style:'bob',cloth:'#c9b6dc',cloth2:'#ad97c6',glasses:'#9aa3ad',bun:true,outfit:'cardigan'},
+    '世帯主・父':{gender:'m',age:'mid',hair:'#3f3a34',style:'sidePart',cloth:'#46505f',cloth2:'#353d49',outfit:'suit',tie:'#5f7196'},
+    '世帯主・母':{gender:'f',age:'mid',hair:'#6b4a30',style:'long',cloth:'#dfa6c0',outfit:'blouse'},
+    '父':{gender:'m',age:'mid',hair:'#3f3a34',style:'sidePart',cloth:'#46505f',cloth2:'#353d49',outfit:'suit',tie:'#5f7196'},
+    '母':{gender:'f',age:'mid',hair:'#6b4a30',style:'long',cloth:'#dfa6c0',outfit:'blouse'},
+    '養子・男':{gender:'m',age:'young',hair:'#3a352f',style:'sidePart',cloth:'#3a4a6b',cloth2:'#2c3a54',outfit:'suit',tie:'#b04a4a'},
+    '養子・女':{gender:'f',age:'young',hair:'#6b4a32',style:'long',cloth:'#c9b89f',cloth2:'#b29c80',outfit:'jacket'},
     '世帯主（男）':{gender:'m',age:'mid',hair:'#3f3a34',style:'sidePart',cloth:'#46505f',cloth2:'#353d49',outfit:'suit',tie:'#5f7196'},
     '夫':{gender:'m',age:'mid',hair:'#3f3a34',style:'sidePart',cloth:'#46505f',cloth2:'#353d49',outfit:'suit',tie:'#5f7196'},
     '妻':{gender:'f',age:'mid',hair:'#6b4a32',style:'long',cloth:'#e3a9b8',outfit:'blouse'},
@@ -7193,7 +7215,7 @@ function cfg(role){
   return M[role]||{gender:'m',age:'mid',hair:'#6b6157',style:'short',cloth:'#a7b0bd'};
 }
 
-  var FAM_FILE={'祖父':'grandfather','祖母':'grandmother','世帯主（男）':'father','夫':'father','名義人（夫）':'father','妻':'mother','世帯主（女）':'mother','配偶者':'mother','名義人（妻）':'mother','嫁':'daughter_in_law','婿':'son_in_law','兄':'uncle','弟':'uncle','姉':'aunt','妹':'aunt','長男':'son','次男':'son','三男':'teen_boy','長女':'daughter','次女':'daughter','三女':'teen_girl','孫(男)':'child_boy','孫(女)':'child_girl','小学生(男)':'schoolkid_boy','小学生(女)':'schoolkid_girl','幼児(男)':'child_boy','幼児(女)':'child_girl','幼児':'child_boy','乳児(男)':'baby','乳児(女)':'baby','乳児':'baby'};
+  var FAM_FILE={'世帯主・祖父':'grandfather','世帯主・祖母':'grandmother','世帯主・父':'father','世帯主・母':'mother','父':'father','母':'mother','養子・男':'son','養子・女':'daughter','祖父':'grandfather','祖母':'grandmother','世帯主（男）':'father','夫':'father','名義人（夫）':'father','妻':'mother','世帯主（女）':'mother','配偶者':'mother','名義人（妻）':'mother','嫁':'daughter_in_law','婿':'son_in_law','兄':'uncle','弟':'uncle','姉':'aunt','妹':'aunt','長男':'son','次男':'son','三男':'teen_boy','長女':'daughter','次女':'daughter','三女':'teen_girl','孫(男)':'child_boy','孫(女)':'child_girl','小学生(男)':'schoolkid_boy','小学生(女)':'schoolkid_girl','幼児(男)':'child_boy','幼児(女)':'child_girl','幼児':'child_boy','乳児(男)':'baby','乳児(女)':'baby','乳児':'baby'};
   return function(role,expr){var c=cfg(role);c.expr=expr||"smile";var f=FAM_FILE[role]||'father';return '<g class="famfb">'+mkPerson(50,46,26,c)+'</g><image href="img/family/fam_'+f+'.png?v='+APP_VERSION+'" x="0" y="0" width="100" height="112" preserveAspectRatio="xMidYMid slice" onload="if(this.previousElementSibling)this.previousElementSibling.remove()" onerror="this.remove()"/>';};
 })();
 
@@ -7271,8 +7293,8 @@ function buildFamTreeSVG(fam, opts){
   function node(n){
     var m=n.m,inlaw=(n.kind==='inlaw');
     var living=m.living||'未確認';
-    var tint=inlaw?'#fbfcfe':(living==='同居')?'#ecfeff':(living==='近居')?'#fffbeb':(living==='別居')?'#eff6ff':(living==='死亡')?'#f1f3f5':'#ffffff';
-    var resC=(living==='同居')?'#06b6d4':(living==='近居')?'#d97706':(living==='別居')?'#3b82f6':(living==='死亡')?'#94a3b8':'#d6dce4';
+    var tint=inlaw?'#fbfcfe':(living==='同居')?'#ecfeff':(living==='近居')?'#fffbeb':(living==='別居')?'#fefce8':(living==='死亡')?'#f1f3f5':'#ffffff';
+    var resC=(living==='同居')?'#06b6d4':(living==='近居')?'#d97706':(living==='別居')?'#eab308':(living==='死亡')?'#94a3b8':'#d6dce4';
     var stroke='#cbd5e0',sw=1;
     if(!inlaw){if(m.kp){stroke='#3182ce';sw=2;}else if(m.owner){stroke='#c53030';sw=1.8;}else if(m.met){stroke='#38a169';sw=1.6;}}
     if(inlaw){stroke='#d7dee8';}
@@ -7290,8 +7312,8 @@ function buildFamTreeSVG(fam, opts){
       if(n.kind==='sib'&&g2.length>0){var _unc={'兄':'伯父','姉':'伯母','弟':'叔父','妹':'叔母'}[String(m.role||'')];if(_unc){s+=`<rect x="${n.x+4}" y="${n.y+4}" width="24" height="13" rx="6.5" fill="#eef0fb" stroke="#c7cdf2" stroke-width="0.7"/>`+`<text x="${n.x+16}" y="${n.y+13.6}" font-size="8" fill="#5b54b8" text-anchor="middle" font-weight="700">${_unc}</text>`;}}
     }
     var alY=n.y+NH-7, role=String(m.role||''), pi=role.indexOf('（');
-    var rl=pi>=0?[role.slice(0,pi),role.slice(pi)]:[role];
-    var rf=role.replace('（','').replace('）','').length>4?9.5:11;
+    var rl=[role];
+    var rf=role.length>=6?10:11;
     var rLast=alY-(inlaw?2:12);
     rl.forEach((t,i)=>{var yy=rLast-(rl.length-1-i)*11;s+=`<text x="${n.x+NW/2}" y="${yy}" font-size="${rf}" fill="#2d3748" font-weight="700" text-anchor="middle">${esc(t)}</text>`;});
     if(!inlaw){var lc=(living==='同居'||living==='近居')?'#2563eb':(living==='別居')?'#b7791f':(living==='死亡')?'#64748b':'#94a3b8';var lvDisp=(/^世帯主|^名義人/.test(m.role||'')&&living==='同居')?'世帯主':living;var al=(m.age?esc(m.age)+'歳':'')+((m.age&&lvDisp)?' ':'')+esc(lvDisp);s+=`<text x="${n.x+NW/2}" y="${alY}" font-size="8" fill="${lc}" text-anchor="middle">${al}</text>`;}
@@ -7347,7 +7369,7 @@ function buildFamilyHTML(c){
       +'<span>左上「伯/叔」＝世帯主の兄弟姉妹（お子様から見た続柄）</span>'
       +'</div></div>';
   }
-  var genLabel=['祖父母世代','世帯主世代','子世代'];
+  var genLabel=['祖父母世代','現役世代','子世代'];
   var DEEP=['兄','弟','姉','妹','長男','次男','三男','長女','次女','三女'];
   [0,1,2].forEach(function(gen){
     var members=fam.filter(function(m){return famGetGen(m.role)===gen;});
@@ -7661,7 +7683,7 @@ function genPrompt(anon){
   var fam=c.family||[];
   if(fam.length>0){
     lines.push('■ 家族構成詳細');
-    var genLabel=['祖父母世代','世帯主世代','子世代'];
+    var genLabel=['祖父母世代','現役世代','子世代'];
     [0,1,2].forEach(function(gen){
       var members=fam.filter(function(m){return m.role&&famGetGen(m.role||"")===gen;});
       if(!members.length) return;
@@ -10710,8 +10732,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
     </div>
     <!-- 家族構成 -->
     <div class="sec">
-      <div style="display:flex;gap:10px;align-items:flex-start">
-        <div style="flex:73;min-width:0">
+      <div>
           <div class="stitle">家族構成</div>
           <div class="fam-gen-row">
             <div class="fam-gen-label">祖父母</div>
@@ -10720,7 +10741,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           </div>
           <hr class="fam-divider">
           <div class="fam-gen-row">
-            <div class="fam-gen-label">世帯主<br>世代</div>
+            <div class="fam-gen-label">現役<br>世代</div>
             <div class="fam-gen-members" id="famGen1"></div>
             <button type="button" class="fam-add-btn" onclick="famOpenAdd(1)">＋</button>
           </div>
@@ -10731,46 +10752,30 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
             <button type="button" class="fam-add-btn" onclick="famOpenAdd(2)">＋</button>
           </div>
           <div class="fam-summary" id="famSummary" style="display:none"></div>
-          <div style="display:flex;flex-wrap:wrap;gap:3px 10px;margin-top:7px;font-size:10px;color:#718096;align-items:center">
-            <span style="font-weight:700;color:#4a5568">居住</span>
-            <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:9px;height:9px;border-radius:2px;background:#06b6d4;display:inline-block"></span>同居</span>
-            <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:9px;height:9px;border-radius:2px;background:#d97706;display:inline-block"></span>近居</span>
-            <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:9px;height:9px;border-radius:2px;background:#3b82f6;display:inline-block"></span>別居</span>
-            <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:9px;height:9px;border-radius:2px;background:#94a3b8;display:inline-block"></span>死亡</span>
-            <span style="color:#cbd5e0">｜</span>
-            <span style="font-weight:700;color:#4a5568">意向</span>
-            <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:9px;height:9px;border-radius:50%;background:#38a169;display:inline-block"></span>前向</span>
-            <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:9px;height:9px;border-radius:50%;background:#e53e3e;display:inline-block"></span>否定</span>
-            <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:9px;height:9px;border-radius:50%;background:#fff;border:1px solid #aaa;display:inline-block"></span>不明</span>
+          <div style="margin-top:8px;display:flex;gap:8px 14px;align-items:center;flex-wrap:wrap">
+            <button type="button" id="famHeadcountBtn" onclick="toggleFamHeadcount()" style="flex-shrink:0;padding:6px 16px;border:2px solid #e2e8f0;border-radius:8px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;color:#718096;line-height:1.3">👥<br>人数を確定</button>
+            <div style="display:flex;flex-wrap:wrap;gap:4px 12px;font-size:10px;color:#4a5568;align-items:center">
+              <span style="font-weight:700;color:#4a5568">意向</span>
+              <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:50%;background:#38a169;display:inline-block"></span>前向</span>
+              <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:50%;background:#e53e3e;display:inline-block"></span>否定</span>
+              <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:50%;background:#fff;border:1px solid #aaa;display:inline-block"></span>不明</span>
+              <span style="color:#cbd5e0">｜</span>
+              <span style="display:inline-flex;align-items:center;gap:3px"><span style="color:#c53030;font-weight:700">★</span>所有者</span>
+              <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:50%;background:#fff;border:1.5px solid #c53030;display:inline-block"></span>面談済</span>
+              <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:50%;background:#ebf8ff;border:1.5px solid #3182ce;display:inline-block"></span>KP</span>
+              <span style="color:#cbd5e0">｜</span>
+              <span style="font-weight:700;color:#4a5568">居住</span>
+              <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:9px;height:9px;border-radius:2px;background:#06b6d4;display:inline-block"></span>同居</span>
+              <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:9px;height:9px;border-radius:2px;background:#d97706;display:inline-block"></span>近居</span>
+              <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:9px;height:9px;border-radius:2px;background:#eab308;display:inline-block"></span>別居</span>
+              <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:9px;height:9px;border-radius:2px;background:#94a3b8;display:inline-block"></span>死亡</span>
+            </div>
           </div>
           <details class="setup-acc" style="margin-top:9px">
             <summary>🌳 <span>家系図（世代ツリー）</span><span class="setup-acc-arrow">▾</span></summary>
             <div class="setup-acc-body" style="padding:8px 2px 2px"><div id="famTreeBox" style="overflow-x:auto"></div></div>
           </details>
         </div>
-        <div style="flex:27;border-left:1px solid #e2e8f0;padding-left:8px;font-size:10px;color:#4a5568;display:flex;flex-direction:column;gap:8px">
-          <!-- コンプリートボタン（大） -->
-          <div>
-            <div class="stitle" style="font-size:11px;margin-bottom:6px">家族人数</div>
-            <button type="button" id="famHeadcountBtn" onclick="toggleFamHeadcount()" style="width:100%;padding:7px 3px;border:2px solid #e2e8f0;border-radius:8px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;color:#718096;line-height:1.35">👥<br>人数を確定</button>
-          </div>
-          <!-- 凡例 -->
-          <div>
-            <div class="stitle" style="font-size:11px;margin-bottom:4px">凡例</div>
-            <div style="display:flex;flex-direction:column;gap:3px">
-              <div style="display:flex;align-items:center;gap:4px"><div class="fam-ld" style="background:#38a169;flex-shrink:0"></div><span>ポジティブ</span></div>
-              <div style="display:flex;align-items:center;gap:4px"><div class="fam-ld" style="background:#e53e3e;flex-shrink:0"></div><span>ネガティブ</span></div>
-              <div style="display:flex;align-items:center;gap:4px"><div class="fam-ld" style="background:white;border-color:#aaa;flex-shrink:0"></div><span>不明</span></div>
-              <div style="display:flex;align-items:center;gap:4px"><span style="font-size:9px;color:#c53030;font-weight:700;width:14px;text-align:center">★</span><span>所有者</span></div>
-              <div style="display:flex;align-items:center;gap:4px"><div class="fam-ld" style="background:white;border:1.5px solid #c53030;flex-shrink:0"></div><span>面談済</span></div>
-              <div style="display:flex;align-items:center;gap:4px"><div class="fam-ld" style="background:#ebf8ff;border-color:#bee3f8;flex-shrink:0"></div><span>KP</span></div>
-              <div style="display:flex;align-items:center;gap:4px"><div class="fam-ld" style="background:#dbeafe;border-color:#3b82f6;flex-shrink:0"></div><span>同居・近居</span></div>
-              <div style="display:flex;align-items:center;gap:4px"><div class="fam-ld" style="background:#fef9c3;border-color:#eab308;flex-shrink:0"></div><span>別居</span></div>
-              <div style="display:flex;align-items:center;gap:4px"><div class="fam-ld" style="background:#e2e8f0;border-color:#1a202c;box-shadow:inset 0 0 0 1.5px #1a202c;flex-shrink:0"></div><span>死亡</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
       <div style="margin-top:8px">
         <label>家族構成備考</label>
         <div style="display:flex;gap:6px;align-items:center">
@@ -11375,9 +11380,9 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
     <div id="famMarriageRow" style="display:none">
       <label>婚姻状況</label>
       <div class="fam-grid3" style="margin-bottom:8px">
-        <button type="button" class="fam-bbtn fa-on" id="famM不明" onclick="famSetMarriage('不明')">不明</button>
         <button type="button" class="fam-bbtn" id="famM既婚" onclick="famSetMarriage('既婚')">既婚</button>
-        <button type="button" class="fam-bbtn" id="famM未婚" onclick="famSetMarriage('未婚')">未婚</button>
+        <button type="button" class="fam-bbtn" id="famM独身" onclick="famSetMarriage('独身')">独身</button>
+        <button type="button" class="fam-bbtn fa-on" id="famM不明" onclick="famSetMarriage('不明')">不明</button>
       </div>
       <div id="famChildRow" style="display:none;margin-bottom:8px">
         <label>👶 お子様（＝ご本人から見たお孫様）</label>
