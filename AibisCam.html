@@ -413,7 +413,7 @@
    ※ prospect_cards_v1 には書き込まない（新規カード作成・PC連携は本体側）
    データ(set): {id,cardId,ts,addrType:'plan',lat,lng,acc,addr,addrPending,banchi,note,sent,photos:[{pid,full(Blob),thumb,w,h,size}]}
    ========================================================= */
-const APP_VERSION = "cam-v1.59";
+const APP_VERSION = "cam-v1.60";
 
 /* ===== PWA：単一ファイルでインストール可能化（外部ファイル不要） ===== */
 function _pwaIcon(size,maskable){
@@ -1015,7 +1015,7 @@ function bindDrows(host,fromWhere){
     if(e.target.closest(".delbtn")||e.target.closest(".selbox")||e.target.closest(".drowact")) return;
     openSet(el.dataset.id);
   }));
-  host.querySelectorAll("[data-del]").forEach(b=>b.addEventListener("click",e=>{ e.stopPropagation(); destroyOrReturn(b.dataset.del); }));
+  host.querySelectorAll("[data-del]").forEach(b=>b.addEventListener("click",e=>{ e.stopPropagation(); const _selIds=unlinked.filter(s=>sendSel.has(s.id)).map(s=>s.id); if(_selIds.length>0){ aibisConfirm("チェックが入っているもの "+_selIds.length+"件 をすべて削除しますか？", async()=>{ for(const _id of _selIds){ try{ await idbDel(_id); sendSel.delete(_id); }catch(_e){} } toast("🗑 "+_selIds.length+"件を削除しました"); try{ await refreshIndex(INBOX); }catch(_e){} await renderInbox(); try{ showStorage("inbStore"); }catch(_e){} try{ await updateRightCount(); }catch(_e){} }, "全件削除", "やめる"); } else { destroyOrReturn(b.dataset.del); } }));
   host.querySelectorAll("[data-gotomain]").forEach(b=>b.addEventListener("click",e=>{ e.stopPropagation(); gotoMain(b.dataset.gotomain); }));
   host.querySelectorAll("[data-link]").forEach(b=>b.addEventListener("click",e=>{ e.stopPropagation(); linkTargetId=b.dataset.link; linkFromInbox=true; openPick("link"); }));
 }

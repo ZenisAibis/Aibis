@@ -1819,7 +1819,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.00";
+var APP_VERSION = "v9.02";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -8356,7 +8356,7 @@ function renderAnalysis(){
   var rows=tiers.map(function(tr,i){
    var pc=_zPct(cnt[i],nE);
    var w=Math.max(40,pc);
-   return '<div style="margin:3px auto;width:'+w+'%;min-width:240px;background:'+tr[2]+'22;border:1px solid '+tr[2]+'66;border-radius:6px;padding:4px 10px;font-size:11.5px;display:flex;justify-content:space-between;gap:8px;white-space:nowrap"><span>'+tr[0]+' <span style="opacity:.6">'+tr[1]+'</span></span><b>'+pc+'%<span style="opacity:.6;font-weight:600">（'+cnt[i]+'枚）</span></b></div>';
+   return '<div style="margin:3px auto;width:'+w+'%;min-width:240px;background:'+tr[2]+'22;border:1px solid '+tr[2]+'66;border-radius:6px;padding:4px 10px;font-size:11.5px;display:grid;grid-template-columns:1fr 2.8em 4.8em;gap:8px;align-items:baseline;white-space:nowrap"><span>'+tr[0]+' <span style="opacity:.6">'+tr[1]+'</span></span><b style="text-align:right">'+pc+'%</b><span style="opacity:.6;font-weight:600;text-align:right">（'+cnt[i]+'枚）</span></div>';
   }).join('');
   var byRep='';
   if(scope==='all'&&reps.length>=2){
@@ -8368,8 +8368,7 @@ function renderAnalysis(){
  var _k3=reps.map(function(r){var cc=_kpi3Now(g[r]);return {r:r,p:cc[0],d:cc[1],f:cc[2],tot:cc[0]+cc[1]+cc[2]};}).sort(function(a,b){return b.tot-a.tot;});
  var _k3rows=_k3.some(function(x){return x.tot>0;})?_k3.map(function(x,i){return '<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--z-line)"><div style="width:20px;height:20px;border-radius:50%;background:'+_zAVAS[reps.indexOf(x.r)%8]+';color:#06121f;font-weight:800;font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(i+1)+'</div><div style="width:70px;flex-shrink:0;font-weight:700;font-size:12px;color:var(--z-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e(x.r)+'</div><div style="display:flex;gap:9px;margin-left:auto;flex-shrink:0;align-items:center">'+[['#e03131',x.p],['#2f9e44',x.d],['#efc010',x.f]].map(function(m){return '<div style="font-size:15px;font-weight:800;color:'+m[0]+';min-width:24px;text-align:center">'+m[1]+'</div>';}).join('')+'<div style="font-weight:800;color:var(--z-ink);font-size:13px;min-width:30px;text-align:right;border-left:1px solid var(--z-line);padding-left:8px">'+x.tot+'</div></div></div>';}).join('')+'<div class="z-legend" style="margin-top:7px"><span><i style="background:#e03131"></i>提案依頼</span><span><i style="background:#2f9e44"></i>同行</span><span><i style="background:#efc010"></i>家族構成</span></div>':'<div class="z-empty">今月の記録がまだありません（各項目を設定すると当月から計上）</div>';
  var bodyKpi3=('📌 重要3指標（提案依頼・同行・家族構成）',
-   _kpi3Cards(t)+_zc('🏆','今月の重要3指標ランキング','今月件数で順位。※家族構成コンプは人数把握まで。氏名・年齢・職業の深掘りが本来の狙い。',_k3rows,'z-c2')
-  +_zc('📈','重要3指標トレンド（直近6ヶ月）','3指標を重ねて推移。提案=赤・同行=緑・家族=黄。',_kpi3Chart(t),'z-c2'));
+   _kpi3Cards(t)+_zc('🏆','今月の重要3指標ランキング','今月件数で順位。※家族構成コンプは人数把握まで。氏名・年齢・職業の深掘りが本来の狙い。',_k3rows,'z-c2'));
  var secWork=workMeterSection();
  // process
  var mVis=_zMonthly(t,_zVisitDates), mApo=_zMonthly(t,_zAppoDates), cum=[],r0=0;mDisc.forEach(function(v){r0+=v;cum.push(r0);});
@@ -8391,7 +8390,6 @@ function renderAnalysis(){
  var bodyContract=('💼 契約（着実に進める）',
    _zc('💼','契約クローズ・トラッカー','今フォローすべき的を近接度順に。<span class="z-pill" style="background:rgba(139,124,255,.18);color:#8b7cff">CLOSING</span>',dealsH,'z-c2')
   +_zc('⏱','45日契約クロック','A昇格(追撃判定)→45日。赤は超過。',clockH,'z-c2')
-  +_zc('🏎','パイプライン・ベロシティ','各段の平均滞留日数。長い段が失速＝<b style="color:#ff5d7d">'+STG[slow]+'</b>。',_zVbars(dwAvg,STG.map(function(s){return s.slice(0,2);}),dwAvg.map(function(v){return v>=50?'#ff5d7d':v>=30?'#ffb443':'#38a169';})),'z-c2')
   +_zc('🔮','着地予測（今月見込み）','現パイプライン×転換率の概算。','<div class="z-tiles"><div class="z-tile"><b>'+proj+'</b><span>契約見込</span></div><div class="z-tile"><b>'+Math.round(conn*0.35)+'</b><span>提案依頼見込</span></div><div class="z-tile"><b>'+fc5+'</b><span>比較以上</span></div></div><div class="z-sub" style="margin-top:8px">※過去転換率の蓄積で精度UP</div>','z-c2')
   );
  // rank & game (team)
@@ -8462,7 +8460,6 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
  var _teamCourse=_zc('🕳','リーク分析（離脱の場所）','転換率が落ちる段を発見。',_zFunnel(sc),'z-c2');
  var bodyTeam=('🧑‍💼 担当の特性・保有状況',
    _zc('⭕','提案依頼の取得状況','顧客の意思表示＝契約への最短サイン。','<div style="text-align:center;margin-bottom:8px"><span style="font-family:Sora,sans-serif;font-size:30px;font-weight:800;color:#2f9e44">'+prGot+'</span><span style="font-size:12px;color:var(--z-dim)"> 件取得／'+cards.filter(function(c){return !_isLandLead(c);}).length+'件中（'+_zPct(prGot,cards.filter(function(c){return !_isLandLead(c);}).length)+'%）</span></div>'+_zVbars(prBars,reps.map(function(r){return r.slice(0,1);}),reps.map(function(){return '#2f9e44';})),'z-c2')
-  +_zc('🕳','未入力の傾向（課全体）','どの項目が抜けやすいか。高い＝チームの弱点。',_zVbars(blankRates,FCHK.map(function(f){return f[0];}),blankRates.map(function(){return '#ff8aa0';})),'z-c2')
   +_zc('🧬','担当の特性（自動所見）','カード全体から見た各担当のタイプ。','<div class="z-list2">'+(traitRows||'<div class="z-sub">担当データなし</div>')+'</div>','z-cf'));
  var _axData=(_zc('🏆','担当別スコア','平均スコア順。',lbH,'z-c2')+_zc('⚡','担当別 行動量スコア','行動の積み上げ。契約だけでなく前進を評価。',ptH,'z-c2')+_zc('📇','見込み保有数（全体・担当別）','課全体の母数と担当別の保有件数。','<div style="text-align:center;margin-bottom:8px"><span style="font-family:Sora,sans-serif;font-size:30px;font-weight:800;color:#34e3d0">'+cards.length+'</span><span style="font-size:12px;color:var(--z-dim)"> 件（全体）／平均 '+avgHold.toFixed(1)+'件</span></div>'+_zVbars(holdBars,reps.map(function(r){return r.slice(0,1);}),_zAVAS),'z-c2')+_zc('📝','入力充実度（担当別）','カードの作り込み度。低い担当は質のフォローを。',_zVbars(inpBars,reps.map(function(r){return r.slice(0,1);}),inpBars.map(function(v){return v>=70?'#2f9e44':v>=50?'#ffb443':'#ff5d7d';})),'z-c2'));
  // insights
@@ -8618,7 +8615,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
    function sub2w(label,txt,col){return '<div style="font-size:11.5px;color:var(--z-mut);margin:2px 0 0 30px;line-height:1.45"><span style="color:'+(col||'var(--z-cyan)')+';font-weight:700">'+label+'</span>'+txt+'</div>';}
    var _coachChk={'入力薄':'土地・家族・現状が空のカードを1枚埋めたか','A/S放置':'A/S案件に次回アポが入っているか','追客遅れ':'再訪アポを先に1本決めたか','連想前停滞':'「相続の困りごと」を聞けたか','提案依頼弱':'連想到達カードで提案依頼を打診したか','家族未把握':'家族構成を1件ヒアリングしたか'};
    // ① 今日動く案件：顧客名／担当／動く理由／今日やること／取るべき約束
-   var b1=todayCand.length?todayCand.map(function(o,i){var c=o.c,st=+(c.stage||0),mv=_nextMove(c);
+   var b1=todayCand.length?todayCand.slice(0,2).map(function(o,i){var c=o.c,st=+(c.stage||0),mv=_nextMove(c);
      return '<div style="padding:6px 0;border-bottom:1px solid var(--z-line)"><div style="display:flex;align-items:center;gap:7px">'+rk(i+1,(RC2[c.pursuit_judge]||'#4a5568'))+nm(c)+meta(STG[st]+'・'+e(c.manager||''))+(o.rs.length?tag(o.rs[0],SC.red):'')+'</div>'+sub2w('→ ',e(mv[0]),SC.blue)+(mv[1]?sub2w('🤝 約束：',e(mv[1]),SC.green):'')+(c.next_aim?sub2w('担当の狙い：',e(c.next_aim),SC.violet):'')+'</div>';
    }).join(''):empty('今日の優先案件なし。良好です◎');
    // ② 担当へ言う一言：担当名／詰まり／課長からの一言／今日確認すること
@@ -8662,7 +8659,8 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
    var body=(leads.length+eng.length)?(tiles+brk+perRep+note):'<div class="z-empty">対象カードがありません</div>';
    return _zc('⛏','発掘パイプライン <span class="z-secsub">土地見込み→対話</span>','発掘した土地見込みを、対話・面談につなげられているか。発掘活用率＝対話済み÷(対話済み＋発掘中)。',body,'z-c2');
  })();
- H+=_zsec('cmd','🎮 コマンドセンター <span class="z-secsub">今日の指揮＋重要指標</span>',morningBoard+bodyKpi3+_cardMap+_teamCourse+_cardInsights)+_zsec('today','🎯 課の指示 <span class="z-secsub">今日やること・誰に何を</span>',todayCard+contractCard+zoneCard+bodyContract+_extrasFor('today'))+_zsec('coach','🎓 部下の指導 <span class="z-secsub">コーチング</span>',coachCard+dangerCard+readyCard+_extrasFor('coach'))+_zsec('teamchk','👥 部下の確認 <span class="z-secsub">担当の現状</span>',bodyRank+_cardWork+bodyTeam+_llCard+_extrasFor('teamchk'))+_zsec('grow','🌱 育成クエスト <span class="z-secsub">型・成長・次の課題</span>',questCard+_axKingCard+_axData+bodyQuality+_discByRep+_extrasFor('grow'))+_zsec('state','📊 詳細分析 <span class="z-secsub">月次・ヒートマップ・課長会議用</span>',bodyProcess+_extrasFor('state'));
+ var _kpiTrend=(_zc('📈','重要3指標トレンド（直近6ヶ月）','3指標を重ねて推移。提案=赤・同行=緑・家族=黄。',_kpi3Chart(t),'z-c2')); var _velCard=(_zc('🏎','パイプライン・ベロシティ','各段の平均滞留日数。長い段が失速＝<b style="color:#ff5d7d">'+STG[slow]+'</b>。',_zVbars(dwAvg,STG.map(function(s){return s.slice(0,2);}),dwAvg.map(function(v){return v>=50?'#ff5d7d':v>=30?'#ffb443':'#38a169';})),'z-c2')); var _blankCard=(_zc('🕳','未入力の傾向（課全体）','どの項目が抜けやすいか。高い＝チームの弱点。',_zVbars(blankRates,FCHK.map(function(f){return f[0];}),blankRates.map(function(){return '#ff8aa0';})),'z-c2'));
+ H+=_zsec('cmd','🎮 コマンドセンター <span class="z-secsub">今日の指揮＋重要指標</span>',morningBoard+bodyKpi3+_cardMap+_teamCourse+_cardInsights)+_zsec('today','🎯 課の指示 <span class="z-secsub">今日やること・誰に何を</span>',todayCard+contractCard+bodyContract+_extrasFor('today'))+_zsec('coach','🎓 部下の指導 <span class="z-secsub">コーチング</span>',coachCard+dangerCard+readyCard+_extrasFor('coach'))+_zsec('teamchk','👥 部下の確認 <span class="z-secsub">担当の現状</span>',bodyRank+bodyTeam+_llCard+_extrasFor('teamchk'))+_zsec('grow','🌱 育成クエスト <span class="z-secsub">型・成長・次の課題</span>',questCard+_axKingCard+_axData+bodyQuality+_discByRep+_extrasFor('grow'))+_zsec('state','📊 詳細分析 <span class="z-secsub">月次・ヒートマップ・課長会議用</span>',bodyProcess+_kpiTrend+zoneCard+_velCard+_cardWork+_blankCard+_extrasFor('state'));
  H+='</div>';
  host.innerHTML=H;
  if(window.IS_DEV){var _dw=document.getElementById('devSelfMirrorWrap');if(_dw){_dw.style.display='';if(window.renderSelfDash)renderSelfDash('devSelfMirror');}}
@@ -12599,8 +12597,8 @@ function _wireInbox(host){
       else if(act==="unlink") _unlinkSet(id);
       else if(act==="del"){
         var _selIds=_inbUnlinkedIds.filter(function(x){return _inbSel[x];});
-        if(_inbUnlinkedIds.length>1 && _selIds.length===_inbUnlinkedIds.length){
-          aibisConfirm('全選択中です。選択した <b>'+_selIds.length+'件</b> をすべて完全削除しますか？<br><span style="font-size:12px;color:#718096">写真は復元できません。</span>', function(){ _bulkDelSets(_selIds); }, '全件削除', 'やめる');
+        if(_selIds.length>0){
+          aibisConfirm('チェックが入っているもの <b>'+_selIds.length+'件</b> をすべて完全削除しますか？<br><span style="font-size:12px;color:#718096">写真は復元できません。</span>', function(){ _bulkDelSets(_selIds); }, '全件削除', 'やめる');
         } else { _delSet(id); }
       }
       else if(act==="delone") _delSet(id);
