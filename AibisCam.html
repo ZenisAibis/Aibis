@@ -409,7 +409,7 @@
    ※ prospect_cards_v1 には書き込まない（新規カード作成・PC連携は本体側）
    データ(set): {id,cardId,ts,addrType:'plan',lat,lng,acc,addr,addrPending,banchi,note,sent,photos:[{pid,full(Blob),thumb,w,h,size}]}
    ========================================================= */
-const APP_VERSION = "cam-v1.54";
+const APP_VERSION = "cam-v1.55";
 
 /* ===== PWA：単一ファイルでインストール可能化（外部ファイル不要） ===== */
 function _pwaIcon(size,maskable){
@@ -582,9 +582,9 @@ async function refreshIndex(cardId){
 /* ---------- カード読込(read-only) ---------- */
 function loadCards(){ try{ const a=JSON.parse(localStorage.getItem(SK_CARDS)||"[]"); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
 function findCard(id){ return loadCards().find(c=>c.id===id)||null; }
-function cardLabel(id){ const c=findCard(id); if(c){ const n=(c.name||"無名"); return n+(n==="土地見込み"?"":"様"); } return "カード "+String(id).slice(0,8)+"…"; }
-function linkLabel(s){ const c=findCard(s.cardId); if(c) return (c.name||"無名")+"様"; if(s&&s.cardName) return String(s.cardName)+"様"; return "紐付け済み"; }
-function linkName(s){ const c=findCard(s&&s.cardId); let n=c?(c.name||""):((s&&s.cardName)?String(s.cardName):""); n=(n||"").trim(); return n?(esc(n)+(n==="土地見込み"?"":"様")):""; }
+function cardLabel(id){ const c=findCard(id); if(c){ let n=String(c.name||"無名").trim().replace(/様+$/,""); if(!n) n="無名"; return n+(n==="土地見込み"?"":"様"); } return "カード "+String(id).slice(0,8)+"…"; }
+function linkLabel(s){ const c=findCard(s.cardId); let n=c?(c.name||"無名"):((s&&s.cardName)?String(s.cardName):""); n=(n||"").trim().replace(/様+$/,""); return n?(n+(n==="土地見込み"?"":"様")):"紐付け済み"; }
+function linkName(s){ const c=findCard(s&&s.cardId); let n=c?(c.name||""):((s&&s.cardName)?String(s.cardName):""); n=(n||"").trim().replace(/様+$/,""); return n?(esc(n)+(n==="土地見込み"?"":"様")):""; }
 function cardMeta(id){ const c=findCard(id); return c?[c.manager,c.address||c.plan_address].filter(Boolean).join("・"):""; }
 
 /* ---------- 起動 ---------- */

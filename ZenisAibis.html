@@ -1767,7 +1767,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.37";
+var APP_VERSION = "v8.38";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -6368,9 +6368,20 @@ function mapStation(){
   collectForm();
   var p=(document.getElementById('f_plan')?.value||'').trim();
   if(!p){toast('計画地を入力してください');return;}
-  // 計画地周辺の駅を地図で表示（ユーザーが駅を選んでルート確認できる）
-  // near: 計画地 + 駅 で検索し、地図上でピンをタップ→ルート案内が使える
-  window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent('駅')+'&near='+encodeURIComponent(p),'_blank');
+  // 計画地の座標を地理院ジオコーディングで取得→その地点を中心に「駅」を検索（現在地ではなく計画地基準）
+  var w=window.open('about:blank','_blank'); // クリック直後に同期で開く（ポップアップブロック回避）
+  var fb='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p+' 駅');
+  function go(u){ try{ if(w&&!w.closed){ w.location.href=u; return; } }catch(e){} window.open(u,'_blank'); }
+  toast('🚉 計画地の最寄り駅を表示中...');
+  fetch('https://msearch.gsi.go.jp/address-search/AddressSearch?q='+encodeURIComponent(p))
+    .then(function(r){return r.json();})
+    .then(function(arr){
+      if(arr&&arr[0]&&arr[0].geometry&&arr[0].geometry.coordinates&&arr[0].geometry.coordinates.length>=2){
+        var lon=arr[0].geometry.coordinates[0], lat=arr[0].geometry.coordinates[1];
+        go('https://www.google.com/maps/search/'+encodeURIComponent('駅')+'/@'+lat+','+lon+',15z');
+      } else { go(fb); }
+    })
+    .catch(function(){ go(fb); });
 }
 function planStreetView(fieldId){
   collectForm();
@@ -11962,8 +11973,8 @@ window.cardOpenCam=cardOpenCam;
 function _showInbox(){ var v=document.getElementById("inboxView"); if(v) v.style.display="block"; renderInboxBody(); }
 function closeInbox(){ if(window._inboxReturnToCam){ window._inboxReturnToCam=false; try{ location.href="AibisCam.html"; return; }catch(e){} } document.getElementById("inboxView").style.display="none"; var a=_inboxAttach; _inboxAttach=null; if(a){ openCard(a); } }
 function _cardById(id){ return (typeof cards!=="undefined"&&cards)?cards.find(function(c){return c.id===id;}):null; }
-function _cardName(id){ var c=_cardById(id); if(c){ var n=(c.name||"無名"); return n+(n==="土地見込み"?"":"様"); } return "カード "+String(id).slice(0,8)+"…"; }
-function _linkName(s){ var c=_cardById(s&&s.cardId); var n=c?(c.name||""):((s&&s.cardName)?String(s.cardName):""); n=(n||"").trim(); return n?(e(n)+(n==="土地見込み"?"":"様")):""; }
+function _cardName(id){ var c=_cardById(id); if(c){ var n=String(c.name||"無名").trim().replace(/様+$/,""); if(!n) n="無名"; return n+(n==="土地見込み"?"":"様"); } return "カード "+String(id).slice(0,8)+"…"; }
+function _linkName(s){ var c=_cardById(s&&s.cardId); var n=c?(c.name||""):((s&&s.cardName)?String(s.cardName):""); n=String(n||"").trim().replace(/様+$/,""); return n?(e(n)+(n==="土地見込み"?"":"様")):""; }
 function _fmtWhen(ts){ var d=new Date(ts),p=function(n){return String(n).padStart(2,"0");}; return d.getFullYear()+"/"+p(d.getMonth()+1)+"/"+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes()); }
 
 function _inrow(s){
