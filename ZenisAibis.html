@@ -1819,7 +1819,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.02";
+var APP_VERSION = "v9.03";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -10228,13 +10228,12 @@ function openGeoMap(targetId){
     // まず既定中心ですぐ地図を開く（GPS待ちで真っ白にならないように）
     var ov=document.getElementById('geoMapOv'); if(ov){ ov.classList.add('show'); try{ history.pushState({zv:(history.state&&history.state.zv)||null,id:(history.state&&history.state.id)||null,geomap:1},''); }catch(e){} }
     setTimeout(function(){ _geoInit(_geoDefault[0],_geoDefault[1]); },60);
-    // 取れたら現在地へ寄せる（拒否/失敗時は既定のまま）
-    if(navigator.geolocation){
-      navigator.geolocation.getCurrentPosition(
-        function(pos){ try{ if(_geoLeaf) _geoLeaf.setView([pos.coords.latitude,pos.coords.longitude],18); }catch(e){} },
-        function(){},
-        {enableHighAccuracy:true,timeout:8000,maximumAge:0});
-    }
+    var _av=''; try{ var _ae=document.getElementById(targetId); _av=((_ae&&_ae.value)||'').trim(); }catch(e){}
+    var _ctr=function(lat,lng){ var fn=function(){ if(_geoLeaf){ try{_geoLeaf.setView([lat,lng],18);}catch(e){} } else { setTimeout(fn,60); } }; fn(); };
+    var _toGps=function(){ if(navigator.geolocation){ navigator.geolocation.getCurrentPosition(function(pos){ _ctr(pos.coords.latitude,pos.coords.longitude); },function(){},{enableHighAccuracy:true,timeout:8000,maximumAge:0}); } };
+    if(_av){
+      fetch('https://msearch.gsi.go.jp/address-search/AddressSearch?q='+encodeURIComponent(_av)).then(function(r){return r.json();}).then(function(arr){ if(arr&&arr[0]&&arr[0].geometry&&arr[0].geometry.coordinates&&arr[0].geometry.coordinates.length>=2){ _ctr(arr[0].geometry.coordinates[1],arr[0].geometry.coordinates[0]); } else { _toGps(); } }).catch(function(){ _toGps(); });
+    } else { _toGps(); }
   }).catch(function(){ toast('\u5730\u56f3\u3092\u8aad\u307f\u8fbc\u3081\u307e\u305b\u3093\u3067\u3057\u305f\uff08\u901a\u4fe1\u74b0\u5883\u3092\u3054\u78ba\u8a8d\u304f\u3060\u3055\u3044\uff09'); });
 }
 function geoMapHere(){
@@ -12724,7 +12723,7 @@ function renderInboxBody(){
     var html="";
     if(_inboxAttach){
       html+='<div class="isend"><button class="ibtn pri big" onclick="closeInbox()">✓ 完了して「'+e(_cardName(_inboxAttach))+'」へ戻る</button></div>';
-      html+='<div class="ihint">🔗 紐付けたい写真を選択（複数OK）→ 即このカードへ反映。</div>';
+      html+='<div class="ihint">🔗 紐付けたい写真を選択（複数OK）<br>→ 即このカードへ反映</div>';
       var _att=all.filter(function(s){return s.cardId===_inboxAttach;}).sort(byTs);
       var _oth=all.filter(function(s){return !s.cardId||s.cardId!==_inboxAttach;}).sort(byTs);
       if(_att.length){ html+='<div class="isec2">このカードの写真（'+_att.length+'）</div>'+_att.map(_inrowSafe).join(""); }
@@ -12758,7 +12757,7 @@ function renderInboxBody(){
     if(host) host.innerHTML='<div class="iempty">読み込みに時間がかかっています（接続を作り直します）。<br><br><button class="ibtn pri" onclick="renderInboxBody()">🔄 再読み込み</button><br><br><span style="font-size:11px;color:#c53030">'+e(String((err&&err.message)||err))+'</span></div>';
   });
 }
-function _attachToCard(id){ if(!_inboxAttach) return; var cid=_inboxAttach; mGet(id).then(function(s){ if(!s) return; s.cardId=cid; s.cardName=_cardName(cid); mPut(s).then(function(){ try{ toast("✓ "+_cardName(cid)+" の計画地写真に追加"); }catch(e){} renderInboxBody(); try{ if(typeof renderCardPhotos==="function" && typeof curId!=="undefined" && curId===cid) renderCardPhotos(cid); }catch(e){} try{ updateInboxBadge(); }catch(e){} }); }); }
+function _attachToCard(id){ if(!_inboxAttach) return; var cid=_inboxAttach; mGet(id).then(function(s){ if(!s) return; s.cardId=cid; s.cardName=_cardName(cid); mPut(s).then(function(){ try{ toast(_cardName(cid)+"の計画地写真を追加"); }catch(e){} renderInboxBody(); try{ if(typeof renderCardPhotos==="function" && typeof curId!=="undefined" && curId===cid) renderCardPhotos(cid); }catch(e){} try{ updateInboxBadge(); }catch(e){} }); }); }
 function _unlinkSet(id){ var go=function(){ mGet(id).then(function(s){ if(!s) return; s.cardId=MEDIA_INBOX; mPut(s).then(function(){ toast("インボックスに戻しました"); renderInboxBody(); }); }); };
   if(typeof aibisConfirm==="function") aibisConfirm("このカードから写真を外してインボックスに戻しますか？",go,"外す","やめる"); else if(confirm("インボックスに戻しますか？")) go(); }
 function _afterPhotoChange(){ try{ renderInboxBody(); }catch(e){} try{ if(typeof curId!=="undefined" && curId) renderCardPhotos(curId); }catch(e){} try{ updateInboxBadge(); }catch(e){} }
