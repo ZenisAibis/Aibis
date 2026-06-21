@@ -168,6 +168,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:#2c5282;box-sh
 textarea{resize:vertical;min-height:80px}
 .cg{display:flex;gap:6px;flex-wrap:wrap}
 .ci{display:inline-flex;align-items:center;gap:4px;padding:8px 12px;background:white;border:1px solid #cbd5e0;border-radius:6px;cursor:pointer;font-size:13px;min-height:38px}
+#materials .ci,#maefuri .ci{justify-content:center;padding:4px 4px;white-space:nowrap;overflow:hidden}
 #rusuRow{gap:4px;width:100%}
 #rusuRow .ci{flex:1 1 0;min-width:0;padding:8px 2px;justify-content:center;gap:3px}
 #rusuRow .ci span{font-size:13px}
@@ -197,7 +198,7 @@ textarea{resize:vertical;min-height:80px}
 .tab[data-tab="tr"].done{background:#276749!important;color:#fff!important}
 .tab[data-tab="tp"].done{background:#c53030!important;color:#fff!important}
 .stbtn .n{font-size:16px;display:block;margin-bottom:2px}
-.shint{font-size:11px;color:#c05621;margin-top:6px;padding:6px;background:#fffaf0;border-left:3px solid #d69e2e;border-radius:4px}
+.shint{font-size:11px;color:#c05621;margin-top:6px;padding:6px;background:#fffaf0;border-left:3px solid #d69e2e;border-radius:4px;text-wrap:balance}
 .psel{display:flex;gap:6px;flex-wrap:wrap}
 .pbtn{padding:10px 14px;border:2px solid #cbd5e0;background:white;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;min-width:60px;min-height:42px;text-align:center;touch-action:manipulation}
 .pbtn.active{background:#2c5282;color:white;border-color:#2c5282;font-weight:700}
@@ -1748,7 +1749,7 @@ function _landLeadAgeDays(c){ if(!c||!c.discovery_date)return 0; var d=new Date(
 function _landLeadStatus(c){ var d=_landLeadAgeDays(c); return d<=LANDLEAD_FRESH?'fresh':(d<=LANDLEAD_STALE?'stale':'abandoned'); }
 function _landLeadTag(c){ var st=_landLeadStatus(c),d=_landLeadAgeDays(c); var m={fresh:['🌱 発掘直後','#2f855a','#f0fff4','#9ae6b4'],stale:['⏳ 停滞ぎみ','#b7791f','#fffaf0','#f6e05e'],abandoned:['⚠ 放置（要昇格）','#c53030','#fff5f5','#feb2b2']}; var x=m[st]; return '<span style=\"font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:'+x[2]+';color:'+x[1]+';border:1px solid '+x[3]+';white-space:nowrap\">'+x[0]+' '+d+'日</span>'; }
 function _llNameLocked(){ var el=document.getElementById('f_name'); var n=el?(el.value||'').trim():''; return n===''||n==='土地見込み'; }
-var LL_LOCK_MSGS=['🗺 お客様と会話を交わせたら、心理ステージと会話状況を入力しよう！','🌱 まだ発掘段階だね。実際にお話しできたら、ここを埋めていこう✨','😊 お客様と言葉を交わしたら、そのときの心理と会話を記録してね','🚪 ピンポンして会話できたら、心理・会話が入力できるようになるよ','💬 会って話せたら、その手応えを心理ステージに残そう！','🤝 お客様と接点ができたら心理・会話をつけてね。発掘おつかれさま'];
+var LL_LOCK_MSGS=['🗺 会話できたら心理と会話を入力しよう','🌱 発掘段階。話せたら埋めていこう','😊 言葉を交わせたら心理と会話を記録','🚪 会話できたら心理・会話を入力可能に','💬 話せたら手応えを心理ステージに','🤝 接点ができたら心理・会話をつけてね'];
 function _refreshLandLeadLock(){ var ll=_llNameLocked(); document.querySelectorAll('#editView .stbtn, #editView .pbtn[data-pill=\"kaiwa\"]').forEach(function(b){ b.style.opacity=ll?'.4':''; b.style.pointerEvents=ll?'none':''; }); var h=document.getElementById('llLockHint'); if(!h)return; if(ll){ if(h.style.display!=='block') h.textContent=LL_LOCK_MSGS[Math.floor(Math.random()*LL_LOCK_MSGS.length)]; h.style.display='block'; } else { h.style.display='none'; } }
 window._refreshLandLeadLock=_refreshLandLeadLock;
 function calcScore(c){ return calcScoreParts(c).total; }
@@ -1817,7 +1818,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.89";
+var APP_VERSION = "v8.92";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -5210,7 +5211,7 @@ function renderCards() {
     var si=(c.stage!==''&&c.stage!=null)?+c.stage:-1;
     var sl=si>=0?stl[si]:'未設定', sc=si>=0?clr[si]:'#718096';
     var lv=getLastVD(c), area=getArea(c.address||'');
-    var own=[c.branch,c.section,c.manager].filter(Boolean).join(' ');
+    var own=[String(c.branch||'').replace(/支店\s*$/,''),c.section,c.manager].filter(Boolean).join(' ');
     var isSelected=!!selectedIds[c.id];
     var cardBg=selectMode&&isSelected?'background:#ebf8ff;':'';
     var karr=Array.isArray(c.kaiwa)?c.kaiwa:(c.kaiwa?[c.kaiwa]:[]);
@@ -5229,7 +5230,7 @@ function renderCards() {
       +'<div class="lname">'+(c.name?(_isLandLead(c)?'<span style="color:#b7791f">🗺 土地見込み</span>':(c.name.length>7?e(c.name.slice(0,7))+'…':e(c.name)+'様')):'(名前未入力)')+'</div>'
       +'<div class="lmeta">'+e(c.discovery_date||'日付未設定')+(own?' / '+e(own):'')+'</div>'
       +'</div>'
-      +'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'+(_isLandLead(c)?_landLeadTag(c):(sb+_mikomiTag(c,si,sc,stl)+_tempoFollowerTag(c)+ekiTag+kTag))+'</div>'+'<div style="display:flex;align-items:center;gap:8px;margin-top:4px"><span style="font-size:12px;color:#718096;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">📍 '+(c.address?e(_shortAddr(_han(c.address))):'<span style="color:#cbd5e0">住所未設定</span>')+'</span>'+(lv?'<span style="font-size:11px;color:#a0aec0;flex-shrink:0;white-space:nowrap">🚶 '+lv+'</span>':'')+'</div>'+'</div>'
+      +'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'+(_isLandLead(c)?_landLeadTag(c):(sb+_mikomiTag(c,si,sc,stl)+ekiTag+kTag))+'</div>'+'<div style="display:flex;align-items:center;gap:8px;margin-top:4px"><span style="font-size:12px;color:#718096;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">📍 '+(c.address?e(_shortAddr(_han(c.address))):'<span style="color:#cbd5e0">住所未設定</span>')+'</span>'+(lv?'<span style="font-size:11px;color:#a0aec0;flex-shrink:0;white-space:nowrap">🚶 '+lv+'</span>':'')+'</div>'+'</div>'
       +'<button onclick="delCard(\''+c.id+'\',\''+e(c.name||'(名前未入力)')+'\')" style="margin-left:2px;background:none;border:none;color:#cbd5e0;font-size:20px;cursor:pointer;padding:4px 6px;border-radius:6px;align-self:center;flex-shrink:0" title="見込みから外す">🗑</button>'
       +'</div>';
   }).join('');
@@ -10665,7 +10666,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <div class="stbtn" data-s="7"><span class="n">7</span>決心</div>
       </div>
       <div class="shint">★ 3「連想」段階で提案依頼を取得しよう！</div>
-      <div id="llLockHint" class="shint" style="display:none;color:#b7791f;font-weight:700">🗺 お客様と会話を交わせたら、心理ステージと会話状況を入力しよう！</div>
+      <div id="llLockHint" class="shint" style="display:none;color:#b7791f;font-weight:700">🗺 会話できたら心理と会話を入力しよう</div>
     </div>
     <!-- 行動プロセス -->
     <div class="sec">
@@ -10684,7 +10685,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <div id="actCols" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
         <div>
           <label style="font-size:11px">提示資料</label>
-          <div class="cg" id="materials" style="gap:3px;margin-top:2px">
+          <div class="cg" id="materials" style="display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-top:2px">
             <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="路線価"><span>路線価</span></label>
             <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="エリアマーケ"><span>エリアマーケ</span></label>
             <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="アプローチブック"><span>APブック</span></label>
@@ -10697,7 +10698,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         </div>
         <div>
           <label style="font-size:11px">前フリ</label>
-          <div class="cg" id="maefuri" style="gap:3px;margin-top:2px">
+          <div class="cg" id="maefuri" style="display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-top:2px">
             <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="上司"><span>上司</span></label>
             <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="セミナー"><span>セミナー</span></label>
             <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="物件案内"><span>物件案内</span></label>
