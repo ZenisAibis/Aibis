@@ -1688,7 +1688,9 @@ function calcScoreParts(c){
   // ⑩ 連続留守（4点スタートで減算）
   var rusuMap=[4,3,2,1,0,0];
   var rusuN=Math.max(0,Math.min(5,parseInt(c.rusu,10)||0));
+  var _hasContact=(si>0)||(k>0)||!!c.proposal_req||String(c.initial_content||'').trim()!==''||(Array.isArray(c.revisits)&&c.revisits.some(function(v){return v&&(v.date||v.content);}))||(Array.isArray(c.pursuits)&&c.pursuits.length>0);
   var rusuScore=rusuMap[rusuN];
+  if(rusuN===0 && !_hasContact) rusuScore=0; // 未着手カードは留守満点(4)を付けない（新規=0点スタート）
   // ⑪ 案件化充足（A見込みのみ・必須項目の取得状況／見かけAは上がらない・最大6点）
   var _isA=(c.pursuit_judge==='A'||c.pursuit_judge==='S'||c.pursuit_judge_sel==='A見込み');
   var _amSc=_amScore(c);
@@ -1703,19 +1705,20 @@ function calcScoreParts(c){
    {lb:'🌍 土地×路線価',pt:landFinal,mx:7.5,why:c.asset_type?'アセット系のため対象外':(tsubo>0?(Math.round(tsubo)+'坪 × 係数'+rosenCoef):'面積未入力')},
    {lb:'👪 KP/所有者面談',pt:famScore,mx:6,why:'所有者'+(hasOwnerMet?'✓':'未')+'・KP'+(hasKpMet?'✓':'未')},
    {lb:'✅ 案件化充足',pt:amCardPt,mx:6,why:_isA?(_amSc>=3?'必須項目を取得（家族合意ほか）':(_amSc>0?'A見込みだが取得不足':'A見込みだが未取得＝見かけA')):'A見込み確定で対象'},
-   {lb:'🚪 連続留守',pt:rusuScore,mx:4,why:'留守'+rusuN+'回（減点式・留守ゼロで満点）'},
+   {lb:'🚪 連続留守',pt:rusuScore,mx:4,why:(rusuN===0&&!_hasContact)?'未着手（訪問後に加点）':'留守'+rusuN+'回（減点式・留守ゼロで満点）'},
    {lb:'🚉 駅徒歩',pt:ekiScore,mx:2,why:c.ekitoho||'未確認（±2点）'}
   ];
   var total=Math.max(0, Math.round(s+r+k+landFinal+famScore+assetScore+ekiScore+proposalScore+rusuScore+amCardPt));
   return {total:total,parts:parts};
 }
 function _isLandLead(c){ return !!(c && c.name==='土地見込み'); }
-var LANDLEAD_FRESH=14, LANDLEAD_STALE=30, LANDABAND_GREED_MIN=5; // 発掘から:〜14日=直後/〜30日=停滞/31日〜=放置 ; 放置5件以上かつ全体3割以上で雑欲
+var LANDLEAD_FRESH=14, LANDLEAD_STALE=30, LANDABAND_GREED_MIN=5, LANDABAND_PENALTY=3, LANDABAND_PENALTY_CAP=20; // 発掘から:〜14日=直後/〜30日=停滞/31日〜=放置 ; 放置5件以上かつ全体3割以上で雑欲
 function _landLeadAgeDays(c){ if(!c||!c.discovery_date)return 0; var d=new Date(c.discovery_date+'T00:00:00'); if(isNaN(d.getTime()))return 0; return Math.floor((Date.now()-d.getTime())/86400000); }
 function _landLeadStatus(c){ var d=_landLeadAgeDays(c); return d<=LANDLEAD_FRESH?'fresh':(d<=LANDLEAD_STALE?'stale':'abandoned'); }
 function _landLeadTag(c){ var st=_landLeadStatus(c),d=_landLeadAgeDays(c); var m={fresh:['🌱 発掘直後','#2f855a','#f0fff4','#9ae6b4'],stale:['⏳ 停滞ぎみ','#b7791f','#fffaf0','#f6e05e'],abandoned:['⚠ 放置（要昇格）','#c53030','#fff5f5','#feb2b2']}; var x=m[st]; return '<span style=\"font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:'+x[2]+';color:'+x[1]+';border:1px solid '+x[3]+';white-space:nowrap\">'+x[0]+' '+d+'日</span>'; }
 function _llNameLocked(){ var el=document.getElementById('f_name'); return !!(el && (el.value||'').trim()==='土地見込み'); }
-function _refreshLandLeadLock(){ var ll=_llNameLocked(); document.querySelectorAll('#editView .stbtn, #editView .pbtn[data-pill=\"kaiwa\"]').forEach(function(b){ b.style.opacity=ll?'.4':''; b.style.pointerEvents=ll?'none':''; }); var h=document.getElementById('llLockHint'); if(h) h.style.display=ll?'block':'none'; }
+var LL_LOCK_MSGS=['🗺 お客様と会話を交わせたら、心理ステージと会話状況を入力しよう！','🌱 まだ発掘段階だね。実際にお話しできたら、ここを埋めていこう✨','😊 お客様と言葉を交わしたら、そのときの心理と会話を記録してね','🚪 ピンポンして会話できたら、心理・会話が入力できるようになるよ','💬 会って話せたら、その手応えを心理ステージに残そう！','🤝 お客様と接点ができたら心理・会話をつけてね。発掘おつかれさま'];
+function _refreshLandLeadLock(){ var ll=_llNameLocked(); document.querySelectorAll('#editView .stbtn, #editView .pbtn[data-pill=\"kaiwa\"]').forEach(function(b){ b.style.opacity=ll?'.4':''; b.style.pointerEvents=ll?'none':''; }); var h=document.getElementById('llLockHint'); if(!h)return; if(ll){ if(h.style.display!=='block') h.textContent=LL_LOCK_MSGS[Math.floor(Math.random()*LL_LOCK_MSGS.length)]; h.style.display='block'; } else { h.style.display='none'; } }
 window._refreshLandLeadLock=_refreshLandLeadLock;
 function calcScore(c){ return calcScoreParts(c).total; }
 function paintScoreWhy(){
@@ -1783,7 +1786,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.50";
+var APP_VERSION = "v8.52";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -3805,6 +3808,8 @@ function j9DetermineJob(cards, repName, popScale){ var PS=(popScale&&popScale>0)
   }
   var ns=strong.length;
   var avg9=Math.round(J9_ORDER.reduce(function(s,k){return s+corr[k];},0)/J9_ORDER.length);
+  var _abandPen=Math.min(LANDABAND_PENALTY_CAP,(r.landAband||0)*LANDABAND_PENALTY); // 放置土地見込みは減点式（雑欲ゲート未満でもジョブスコアを段階的に減点）
+  avg9=Math.max(0,avg9-_abandPen); res.abandPen=_abandPen;
   res.avg=avg9;
   var loadR=(typeof ZWL!=='undefined'&&ZWL.load)?(ZWL.load(cards).overrate/PS):0; // 負荷率(dev:1人換算)
   // 初心者帯の行き先：35枚以上＋平均55以上なら見込士、それ以外は初陣士
@@ -10241,7 +10246,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <div class="stbtn" data-s="7"><span class="n">7</span>決心</div>
       </div>
       <div class="shint">★ 3「連想」段階で提案依頼を取得しよう！</div>
-      <div id="llLockHint" class="shint" style="display:none;color:#b7791f;font-weight:700">🗺 土地見込みです。謄本などで氏名を入れると、心理ステージ・会話状況が入力できます</div>
+      <div id="llLockHint" class="shint" style="display:none;color:#b7791f;font-weight:700">🗺 お客様と会話を交わせたら、心理ステージと会話状況を入力しよう！</div>
     </div>
     <!-- 資産背景 -->
     <div class="sec">
