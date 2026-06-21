@@ -1817,7 +1817,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v8.88";
+var APP_VERSION = "v8.89";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -5681,7 +5681,7 @@ function fillForm(c) {
   document.querySelectorAll('.pbtn[data-pill="setsudo"]').forEach(function(b){ b.classList.toggle('active', sarr.indexOf(b.dataset.val)>=0); });
   var harr=Array.isArray(c.houbun)?c.houbun:(c.houbun?[c.houbun]:[]);
   document.querySelectorAll('.pbtn[data-pill="houbun"]').forEach(function(b){ b.classList.toggle('active', harr.indexOf(b.dataset.val)>=0); });
-  ['kodo','bouka','next_aim'].forEach(function(p){
+  ['kodo','bouka'].forEach(function(p){
     document.querySelectorAll('.pbtn[data-pill="'+p+'"]').forEach(function(b){ b.classList.toggle('active', b.dataset.val===(c[p]||'')); });
   });
   // kaiwaは複数選択（配列・後方互換で文字列も対応）
@@ -5747,7 +5747,7 @@ function collectForm() {
   var sb=document.querySelector('.stbtn.active'); c.stage=sb?sb.dataset.s:'';
   c.setsudo=Array.from(document.querySelectorAll('.pbtn[data-pill="setsudo"].active')).map(function(b){return b.dataset.val;});
   c.houbun=Array.from(document.querySelectorAll('.pbtn[data-pill="houbun"].active')).map(function(b){return b.dataset.val;});
-  ['kodo','bouka','next_aim'].forEach(function(p){
+  ['kodo','bouka'].forEach(function(p){
     var ab=document.querySelector('.pbtn[data-pill="'+p+'"].active');
     c[p]=ab?ab.dataset.val:'';
   });
@@ -5816,6 +5816,7 @@ document.addEventListener('click',function(ev){
   if(sb){if(_llNameLocked())return; var wasOn=sb.classList.contains('active'); document.querySelectorAll('.stbtn').forEach(function(b){b.classList.remove('active');}); if(!wasOn) sb.classList.add('active'); return;}
   var pb=ev.target.closest('.pbtn');
   if(pb){
+    if(!pb.dataset.pill) return;
     if(_llNameLocked()&&pb.dataset.pill==='kaiwa')return;
     if(pb.dataset.multi==='1'){pb.classList.toggle('active');}
     else{document.querySelectorAll('.pbtn[data-pill="'+pb.dataset.pill+'"]').forEach(function(b){b.classList.remove('active');}); pb.classList.add('active');}
@@ -10666,37 +10667,47 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <div class="shint">★ 3「連想」段階で提案依頼を取得しよう！</div>
       <div id="llLockHint" class="shint" style="display:none;color:#b7791f;font-weight:700">🗺 お客様と会話を交わせたら、心理ステージと会話状況を入力しよう！</div>
     </div>
-    <!-- 資産背景 -->
+    <!-- 行動プロセス -->
     <div class="sec">
-      <div class="stitle">資産背景</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px">
-        <div>
-          <label>老朽賃貸</label>
-          <div style="display:flex;gap:3px;align-items:center"><select id="f_oldrent" style="flex:1"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="5以上">5以上</option></select><span style="font-size:11px;color:#718096;flex-shrink:0">棟</span></div>
+      <div class="stitle">行動プロセス</div>
+      <div>
+        <label style="font-size:11px">会話状況 <span style="color:#718096;font-weight:400">（複数選択可）</span></label>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:3px;margin-top:3px">
+          <button type="button" class="pbtn kaiwa-btn" data-pill="kaiwa" data-multi="1" data-val="ピンポン">ピンポン</button>
+          <button type="button" class="pbtn kaiwa-btn" data-pill="kaiwa" data-multi="1" data-val="立ち話">立ち話</button>
+          <button type="button" class="pbtn kaiwa-btn" data-pill="kaiwa" data-multi="1" data-val="玄関内">玄関内</button>
+          <button type="button" class="pbtn kaiwa-btn" data-pill="kaiwa" data-multi="1" data-val="連れ出し">連れ出し</button>
+          <button type="button" class="pbtn kaiwa-btn" data-pill="kaiwa" data-multi="1" data-val="上り込み">上り込み</button>
         </div>
-        <div>
-          <label>駐車場</label>
-          <div style="display:flex;gap:3px;align-items:center"><select id="f_parking" style="flex:1"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="5以上">5以上</option></select><span style="font-size:11px;color:#718096;flex-shrink:0">ヵ所</span></div>
-        </div>
-        <div>
-          <label>自宅</label>
-          <div style="display:flex;gap:3px;align-items:center"><select id="f_jitaku" style="flex:1"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="5以上">5以上</option></select><span style="font-size:11px;color:#718096;flex-shrink:0">軒</span></div>
-        </div>
-        <div>
-          <label>生産緑地</label>
-          <div style="display:flex;gap:3px;align-items:center"><select id="f_ryokuchi" style="flex:1" onchange="updateRyokuchiBtn()"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="5以上">5以上</option></select><span style="font-size:11px;color:#718096;flex-shrink:0">枚</span></div>
-        </div>
+        <div style="font-size:9px;color:#a0aec0;text-align:center;margin-top:2px">ピンポン ➤ 立ち話 ➤ 玄関内 ➤ 連れ出し ➤ 上り込み</div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:6px;margin-top:8px;align-items:end">
+      <div id="actCols" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
         <div>
-          <label>土地資産規模</label>
-          <select id="f_landasset"><option value="">未確認</option><option value="1億以下">1億以下</option><option value="3億以下">3億以下</option><option value="5億以下">5億以下</option><option value="10億未満">10億未満</option><option value="10億以上">10億以上</option></select>
+          <label style="font-size:11px">提示資料</label>
+          <div class="cg" id="materials" style="gap:3px;margin-top:2px">
+            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="路線価"><span>路線価</span></label>
+            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="エリアマーケ"><span>エリアマーケ</span></label>
+            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="アプローチブック"><span>APブック</span></label>
+            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="パンフレット"><span>パンフ</span></label>
+            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="会社案内"><span>会社案内</span></label>
+            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="リスク本"><span>リスク本</span></label>
+            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="チラシ系"><span>チラシ系</span></label>
+          </div>
+          <div style="font-size:10px;color:#a0aec0;margin-top:3px">APブック＝アプローチブック／パンフ＝パンフレット</div>
         </div>
         <div>
-          <label>想定</label>
-          <select id="f_soutei"><option value="">-</option><option value="相続">相続</option><option value="承継">承継</option><option value="収支">収支</option><option value="売却">売却</option><option value="緑地解除">緑地解除</option><option value="信託">信託</option></select>
+          <label style="font-size:11px">前フリ</label>
+          <div class="cg" id="maefuri" style="gap:3px;margin-top:2px">
+            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="上司"><span>上司</span></label>
+            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="セミナー"><span>セミナー</span></label>
+            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="物件案内"><span>物件案内</span></label>
+            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="見学会"><span>見学会</span></label>
+            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="ショールーム"><span>本社・SR</span></label>
+            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="税理士同行"><span>税理士同行</span></label>
+            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="信託"><span>信託</span></label>
+          </div>
+          <div style="font-size:10px;color:#a0aec0;margin-top:3px">本社・SR＝本社ショールーム</div>
         </div>
-        <div id="ryokuchiBtnCell" style="visibility:hidden"><button type="button" onclick="openRyokuchiNavi()" style="display:block;width:100%;border:1.5px solid #2f7a57;background:#2f7a57;color:#fff;border-radius:8px;padding:9px 10px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap">🌿 生産緑地</button></div>
       </div>
     </div>
     <!-- 家族構成 -->
@@ -10770,59 +10781,37 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         </div>
       </div>
     </div>
-    <!-- 行動プロセス -->
+    <!-- 資産背景 -->
     <div class="sec">
-      <div class="stitle">行動プロセス</div>
-      <div>
-        <label style="font-size:11px">会話状況 <span style="color:#718096;font-weight:400">（複数選択可）</span></label>
-        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:3px;margin-top:3px">
-          <button type="button" class="pbtn kaiwa-btn" data-pill="kaiwa" data-multi="1" data-val="ピンポン">ピンポン</button>
-          <button type="button" class="pbtn kaiwa-btn" data-pill="kaiwa" data-multi="1" data-val="立ち話">立ち話</button>
-          <button type="button" class="pbtn kaiwa-btn" data-pill="kaiwa" data-multi="1" data-val="玄関内">玄関内</button>
-          <button type="button" class="pbtn kaiwa-btn" data-pill="kaiwa" data-multi="1" data-val="連れ出し">連れ出し</button>
-          <button type="button" class="pbtn kaiwa-btn" data-pill="kaiwa" data-multi="1" data-val="上り込み">上り込み</button>
-        </div>
-        <div style="font-size:9px;color:#a0aec0;text-align:center;margin-top:2px">ピンポン ➤ 立ち話 ➤ 玄関内 ➤ 連れ出し ➤ 上り込み</div>
-      </div>
-      <div style="margin-top:11px">
-        <label style="font-size:11px">🎯 次回の狙い <span style="color:#8b7cff;font-weight:700">担当の自己判断</span> <span style="color:#718096;font-weight:400">（次に狙うことを1つ決める）</span></label>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-top:3px">
-          <button type="button" class="pbtn" data-pill="next_aim" data-val="家族を聞く">家族を聞く</button>
-          <button type="button" class="pbtn" data-pill="next_aim" data-val="土地・資産を聞く">土地・資産</button>
-          <button type="button" class="pbtn" data-pill="next_aim" data-val="悩みを深掘る">悩みを深掘る</button>
-          <button type="button" class="pbtn" data-pill="next_aim" data-val="提案依頼を取る">提案依頼</button>
-          <button type="button" class="pbtn" data-pill="next_aim" data-val="課長同行に進める">課長同行へ</button>
-          <button type="button" class="pbtn" data-pill="next_aim" data-val="">未設定</button>
-        </div>
-        <div style="font-size:9px;color:#a0aec0;margin-top:2px">自分の仮説を持って訪問。課長はAI分析と見比べ指導します。</div>
-      </div>
-      <div id="actCols" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+      <div class="stitle">資産背景</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px">
         <div>
-          <label style="font-size:11px">提示資料</label>
-          <div class="cg" id="materials" style="gap:3px;margin-top:2px">
-            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="路線価"><span>路線価</span></label>
-            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="エリアマーケ"><span>エリアマーケ</span></label>
-            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="アプローチブック"><span>APブック</span></label>
-            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="パンフレット"><span>パンフ</span></label>
-            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="会社案内"><span>会社案内</span></label>
-            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="リスク本"><span>リスク本</span></label>
-            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="チラシ系"><span>チラシ系</span></label>
-          </div>
-          <div style="font-size:10px;color:#a0aec0;margin-top:3px">APブック＝アプローチブック／パンフ＝パンフレット</div>
+          <label>老朽賃貸</label>
+          <div style="display:flex;gap:3px;align-items:center"><select id="f_oldrent" style="flex:1"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="5以上">5以上</option></select><span style="font-size:11px;color:#718096;flex-shrink:0">棟</span></div>
         </div>
         <div>
-          <label style="font-size:11px">前フリ</label>
-          <div class="cg" id="maefuri" style="gap:3px;margin-top:2px">
-            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="上司"><span>上司</span></label>
-            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="セミナー"><span>セミナー</span></label>
-            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="物件案内"><span>物件案内</span></label>
-            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="見学会"><span>見学会</span></label>
-            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="ショールーム"><span>本社・SR</span></label>
-            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="税理士同行"><span>税理士同行</span></label>
-            <label class="ci" style="font-size:11px;padding:4px 6px"><input type="checkbox" value="信託"><span>信託</span></label>
-          </div>
-          <div style="font-size:10px;color:#a0aec0;margin-top:3px">本社・SR＝本社ショールーム</div>
+          <label>駐車場</label>
+          <div style="display:flex;gap:3px;align-items:center"><select id="f_parking" style="flex:1"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="5以上">5以上</option></select><span style="font-size:11px;color:#718096;flex-shrink:0">ヵ所</span></div>
         </div>
+        <div>
+          <label>自宅</label>
+          <div style="display:flex;gap:3px;align-items:center"><select id="f_jitaku" style="flex:1"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="5以上">5以上</option></select><span style="font-size:11px;color:#718096;flex-shrink:0">軒</span></div>
+        </div>
+        <div>
+          <label>生産緑地</label>
+          <div style="display:flex;gap:3px;align-items:center"><select id="f_ryokuchi" style="flex:1" onchange="updateRyokuchiBtn()"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="5以上">5以上</option></select><span style="font-size:11px;color:#718096;flex-shrink:0">枚</span></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:6px;margin-top:8px;align-items:end">
+        <div>
+          <label>土地資産規模</label>
+          <select id="f_landasset"><option value="">未確認</option><option value="1億以下">1億以下</option><option value="3億以下">3億以下</option><option value="5億以下">5億以下</option><option value="10億未満">10億未満</option><option value="10億以上">10億以上</option></select>
+        </div>
+        <div>
+          <label>想定</label>
+          <select id="f_soutei"><option value="">-</option><option value="相続">相続</option><option value="承継">承継</option><option value="収支">収支</option><option value="売却">売却</option><option value="緑地解除">緑地解除</option><option value="信託">信託</option></select>
+        </div>
+        <div id="ryokuchiBtnCell" style="visibility:hidden"><button type="button" onclick="openRyokuchiNavi()" style="display:block;width:100%;border:1.5px solid #2f7a57;background:#2f7a57;color:#fff;border-radius:8px;padding:9px 10px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap">🌿 生産緑地</button></div>
       </div>
     </div>
     <div class="sec" id="secTochi">
@@ -10867,7 +10856,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <div style="margin-bottom:8px">
         <label>接道方位 <span style="font-size:10px;color:#a0aec0;font-weight:400">（方角の位置で配置）</span></label>
         <input type="checkbox" id="f_hatazao" style="display:none">
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:2px;max-width:300px">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin:2px auto 0;max-width:300px">
           <button type="button" class="pbtn" data-pill="setsudo" data-multi="1" data-val="北西">北西</button>
           <button type="button" class="pbtn" data-pill="setsudo" data-multi="1" data-val="北">北</button>
           <button type="button" class="pbtn" data-pill="setsudo" data-multi="1" data-val="北東">北東</button>
@@ -11032,17 +11021,6 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <label style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:150px;font-size:11px;font-weight:700;color:#718096">提案後ステータス<select id="f_post_proposal" style="padding:8px;border:1px solid #cbd5e0;border-radius:7px;font-family:inherit;font-size:13px;min-height:38px;background:#fff"><option value="">—（任意）</option><option>提案書作成中</option><option>提案済</option><option>再提案必要</option><option>家族説明待ち</option><option>税理士確認待ち</option><option>融資確認待ち</option><option>競合比較中</option><option>申込前</option><option>契約準備</option></select></label>
         </div>
     <div id="revisitList"></div>
-    <div style="margin-top:10px;padding:9px 11px;border:1px solid #e2e8f0;border-radius:8px;background:#fafbfc">
-      <label style="font-size:11px;margin:0">🎯 次回の狙い <span style="color:#8b7cff;font-weight:700">担当の自己判断</span></label>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-top:4px">
-        <button type="button" class="pbtn" data-pill="next_aim" data-val="家族を聞く">家族を聞く</button>
-        <button type="button" class="pbtn" data-pill="next_aim" data-val="土地・資産を聞く">土地・資産</button>
-        <button type="button" class="pbtn" data-pill="next_aim" data-val="悩みを深掘る">悩みを深掘る</button>
-        <button type="button" class="pbtn" data-pill="next_aim" data-val="提案依頼を取る">提案依頼</button>
-        <button type="button" class="pbtn" data-pill="next_aim" data-val="課長同行に進める">課長同行へ</button>
-        <button type="button" class="pbtn" data-pill="next_aim" data-val="">未設定</button>
-      </div>
-    </div>
     <div class="jsec">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:10px">
         <h3 style="margin:0">♦ 再訪 Judgment <span style="font-size:11px;font-weight:700;color:#2c5282;background:#ebf4ff;border:1px solid #bee3f8;border-radius:999px;padding:2px 9px;letter-spacing:.05em;vertical-align:middle">フォーアイズジャッジ</span></h3>
@@ -11075,17 +11053,6 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
     <div class="ht" style="margin-bottom:10px">★ 追客は週1回、継続は2ヵ月に1回 / 留守でも足跡を残そう</div>
     <div id="pursuitList"></div>
     <button class="addbtn" id="addPursuitBtn" onclick="addPursuit()">＋ 追撃訪問を追加（14回超はJudgment記入後）</button>
-    <div style="margin-top:10px;padding:9px 11px;border:1px solid #e2e8f0;border-radius:8px;background:#fafbfc">
-      <label style="font-size:11px;margin:0">🎯 次回の狙い <span style="color:#8b7cff;font-weight:700">担当の自己判断</span></label>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-top:4px">
-        <button type="button" class="pbtn" data-pill="next_aim" data-val="家族を聞く">家族を聞く</button>
-        <button type="button" class="pbtn" data-pill="next_aim" data-val="土地・資産を聞く">土地・資産</button>
-        <button type="button" class="pbtn" data-pill="next_aim" data-val="悩みを深掘る">悩みを深掘る</button>
-        <button type="button" class="pbtn" data-pill="next_aim" data-val="提案依頼を取る">提案依頼</button>
-        <button type="button" class="pbtn" data-pill="next_aim" data-val="課長同行に進める">課長同行へ</button>
-        <button type="button" class="pbtn" data-pill="next_aim" data-val="">未設定</button>
-      </div>
-    </div>
     <div class="jsec">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:10px">
         <h3 style="margin:0">♦ 追撃 Judgment <span style="font-size:11px;font-weight:700;color:#553c9a;background:#f3effc;border:1px solid #d6bcfa;border-radius:999px;padding:2px 9px;letter-spacing:.05em;vertical-align:middle">シックスアイズジャッジ</span></h3>
