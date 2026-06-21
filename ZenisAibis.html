@@ -1819,7 +1819,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.06";
+var APP_VERSION = "v9.07";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -7193,7 +7193,8 @@ function cfg(role){
   return M[role]||{gender:'m',age:'mid',hair:'#6b6157',style:'short',cloth:'#a7b0bd'};
 }
 
-  return function(role,expr){var c=cfg(role);c.expr=expr||"smile";return mkPerson(50,46,26,c);};
+  var FAM_FILE={'祖父':'grandfather','祖母':'grandmother','世帯主（男）':'father','夫':'father','名義人（夫）':'father','妻':'mother','世帯主（女）':'mother','配偶者':'mother','名義人（妻）':'mother','嫁':'daughter_in_law','婿':'son_in_law','兄':'uncle','弟':'uncle','姉':'aunt','妹':'aunt','長男':'son','次男':'son','三男':'teen_boy','長女':'daughter','次女':'daughter','三女':'teen_girl','孫(男)':'child_boy','孫(女)':'child_girl','小学生(男)':'schoolkid_boy','小学生(女)':'schoolkid_girl','幼児(男)':'child_boy','幼児(女)':'child_girl','幼児':'child_boy','乳児(男)':'baby','乳児(女)':'baby','乳児':'baby'};
+  return function(role,expr){var c=cfg(role);c.expr=expr||"smile";var f=FAM_FILE[role]||'father';return mkPerson(50,46,26,c)+'<image href="img/family/fam_'+f+'.png?v='+APP_VERSION+'" x="0" y="0" width="100" height="112" preserveAspectRatio="xMidYMid slice" onerror="this.remove()"/>';};
 })();
 
 function buildFamTreeSVG(fam, opts){
