@@ -409,7 +409,7 @@
    ※ prospect_cards_v1 には書き込まない（新規カード作成・PC連携は本体側）
    データ(set): {id,cardId,ts,addrType:'plan',lat,lng,acc,addr,addrPending,banchi,note,sent,photos:[{pid,full(Blob),thumb,w,h,size}]}
    ========================================================= */
-const APP_VERSION = "cam-v1.53";
+const APP_VERSION = "cam-v1.54";
 
 /* ===== PWA：単一ファイルでインストール可能化（外部ファイル不要） ===== */
 function _pwaIcon(size,maskable){
@@ -485,6 +485,7 @@ let DB=null, stream=null, track=null, geoWatch=null, lastPos=null;
 let mode="quick", targetCard=INBOX, curSet=null, fromAibis=false, facing="environment", torchOn=false, capturing=false;
 let sendSel=new Set(), sendSeen=new Set();   // 未紐付けの送信選択（idのSet）
 let qaReturnMode=false;                       // 光速入力から ?ret=qa で来たとき true（完了で住所をアイビスへ返す）
+let _launchedFromMain=false;                  // 本体側（?cardId / ?ret=qa）から起動した＝完了で反映してクローズ。直接起動は完了でインボックスへ
 let viewPhoto=null, pickMode="open", linkTargetId=null, linkFromInbox=false, MUNI=null, micRec=null, kpVal="";
 var _scr="cam";
 function _aibisBack(){
@@ -595,6 +596,7 @@ async function boot(){
   const p=new URLSearchParams(location.search), cid=p.get("cardId");
   if(p.get("ret")==="qa") qaReturnMode=true;
   if(cid){ fromAibis=true; enterCamera(cid); } else { enterQuick(); }
+  _launchedFromMain = !!cid || qaReturnMode;
   try{ history.pushState({ac:1},""); }catch(e){}
 }
 
@@ -808,9 +810,8 @@ async function _ensureAddr(id){
   if(s && !s.addr && s.lat!=null){ try{ await resolveAddr(id); s=await idbGet(id); }catch(e){} }
   return s;
 }
-function _finishAndClose(){
+function _closeToMain(){
   try{ stopCamera(); }catch(e){}
-  try{ mediaPing(); }catch(e){}
   var go=function(){ try{
     if(qaReturnMode){ location.href="ZenisAibis.html"; return; }
     if(targetCard && targetCard!==INBOX){ location.href="ZenisAibis.html?card="+encodeURIComponent(targetCard)+"&from=cam"; return; }
@@ -830,7 +831,9 @@ $("doneBtn").addEventListener("click",async()=>{
     try{ localStorage.setItem("aibis_qa_return", JSON.stringify(payload)); }catch(e){}
   }
   curSet=null;
-  _finishAndClose();
+  try{ mediaPing(); }catch(e){}
+  if(_launchedFromMain){ _closeToMain(); }   // 本体側から起動＝反映してクローズ
+  else { try{ stopCamera(); }catch(e){} openInbox(); }  // 直接起動＝インボックスページへ
 });
 
 /* ---------- 仕分けパネル ---------- */
