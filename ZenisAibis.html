@@ -1825,7 +1825,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.17";
+var APP_VERSION = "v9.18";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -6500,16 +6500,24 @@ function normalizeImportedCards(arr){
   });
 }
 function openFSAWithConfirm(){
-  window.showOpenFilePicker({types:[{description:'z.Aibis (.txt/.json)',accept:{'text/plain':['.txt'],'application/json':['.json']}}]}).then(function(files){
-    var handle=files[0];
-    // ファイル内容を先読みして確認ダイアログ
-    handle.getFile().then(function(f){
-      f.text().then(function(txt){
-        try{
-          var imp=normalizeImportedCards(JSON.parse(txt));
-          if(!Array.isArray(imp)||imp.length===0){toast('データがありません');return;}
-          confirmImport(imp);
-        }catch(ex){toast('読み込み失敗');}
+  window.showOpenFilePicker({multiple:true, types:[{description:'z.Aibis (.txt/.json)',accept:{'text/plain':['.txt'],'application/json':['.json']}}]}).then(function(handles){
+    var readers=handles.map(function(h){ return h.getFile().then(function(f){ return f.text(); }).catch(function(){ return null; }); });
+    Promise.all(readers).then(function(texts){
+      var photoBundles=[], cardArrays=[], bad=0;
+      texts.forEach(function(t){
+        if(t==null){ bad++; return; }
+        var data; try{ data=JSON.parse(t); }catch(e){ bad++; return; }
+        if(data && data.type==="aibis_photos"){ photoBundles.push(data); }
+        else { var imp=normalizeImportedCards(data); if(Array.isArray(imp)&&imp.length){ cardArrays.push(imp); } else { bad++; } }
+      });
+      var hasCards=cardArrays.length>0;
+      var multiPhoto=photoBundles.length>1||hasCards;
+      var pchain=Promise.resolve();
+      photoBundles.forEach(function(pb){ pchain=pchain.then(function(){ return importPhotoBundle(pb, multiPhoto); }); });
+      pchain.then(function(){
+        if(hasCards){ var merged=[]; cardArrays.forEach(function(a){ merged=merged.concat(a); }); confirmImport(merged); }
+        else if(photoBundles.length){ if(multiPhoto){ try{ toast('📥 写真ファイル'+photoBundles.length+'件を読み込みました'); if(typeof updateInboxBadge==='function')updateInboxBadge(); }catch(e){} } }
+        else { toast(bad?'読み込み失敗：ファイル形式が正しくありません':'読み込むデータがありません'); }
       });
     });
   }).catch(function(ex){ if(ex.name!=='AbortError') toast('ファイルを開けませんでした'); });
