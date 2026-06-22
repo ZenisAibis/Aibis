@@ -284,6 +284,9 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 .sortbar{background:white;border:1px solid #e2e8f0;border-radius:6px;padding:8px 10px;margin:0 8px 8px;display:flex;gap:6px;align-items:center;flex-wrap:nowrap;overflow:hidden}
 .sortbar-lab{font-size:12px;color:#4a5568;font-weight:600;white-space:nowrap;flex-shrink:0}
 .sortbar-scroll{display:flex;gap:4px;flex-wrap:nowrap;overflow-x:auto;flex:1;min-width:0;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.sortbar-nav{display:none;flex-shrink:0;width:26px;height:30px;align-items:center;justify-content:center;border:1px solid #cbd5e0;background:#f7fafc;color:#4a5568;border-radius:6px;font-size:17px;font-weight:700;cursor:pointer;font-family:inherit;line-height:1;padding:0}
+.sortbar-nav:hover{background:#edf2f7}
+html.pczoom .sortbar-nav{display:inline-flex}
 .sortbar-scroll::-webkit-scrollbar{display:none}
 .sortbar::-webkit-scrollbar{display:none}
 #staffFilterBtns{scrollbar-width:none}
@@ -1085,6 +1088,8 @@ body.is-mob .mob-menu{display:inline-block}
         <button class="sbtn" id="sb_dt" onclick="toggleSort('dt')">📅 初訪</button>
         <button class="sbtn" id="sb_lm" onclick="toggleSort('lm')">🗺 土地</button>
       </div>
+      <button type="button" class="sortbar-nav" onclick="_sortScroll(-1)" title="左へ">‹</button>
+      <button type="button" class="sortbar-nav" onclick="_sortScroll(1)" title="右へ">›</button>
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:6px;margin:0 8px 6px">
@@ -1820,7 +1825,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.15";
+var APP_VERSION = "v9.17";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -4825,6 +4830,8 @@ function updateFileDisp(){
 }
 
 // ===== ソート =====
+function _sortScroll(dir){ var el=document.querySelector('.sortbar-scroll'); if(el) el.scrollBy({left:dir*150,behavior:'smooth'}); }
+window._sortScroll=_sortScroll;
 function getLastVD(c) {
   var dates=[];
   (c.pursuits||[]).forEach(function(v){ if(v.date) dates.push(v.date); });
@@ -12432,8 +12439,8 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   #cardPhotoBody .cps-set{margin-bottom:12px}
   #cardPhotoBody .cps-grid{display:grid;gap:4px}
   #cardPhotoBody .cps-th{position:relative;aspect-ratio:4/3;background:#edf2f7;border-radius:8px;overflow:hidden;cursor:pointer}
-  #cardPhotoBody .cps-grid.fix4{grid-template-columns:1fr 1fr;gap:5px;max-width:300px}
-  body.is-mob #cardPhotoBody .cps-grid.fix4{max-width:none;gap:8px}
+  #cardPhotoBody .cps-grid.fix4{grid-template-columns:repeat(4,1fr);gap:8px;max-width:none}
+  body.is-mob #cardPhotoBody .cps-grid.fix4{grid-template-columns:1fr 1fr;max-width:none;gap:8px}
   #cardPhotoBody .cps-grid.fix4 .cps-th{aspect-ratio:4/3}
   #cardPhotoBody .cps-th.empty{background:#f1f5f9;border:1px dashed #cbd5e0;cursor:default;display:flex;align-items:center;justify-content:center}
   #cardPhotoBody .cps-th.empty .cps-noimg{color:#cbd5e0;font-size:22px}
