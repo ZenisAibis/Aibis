@@ -420,7 +420,7 @@
    ※ prospect_cards_v1 には書き込まない（新規カード作成・PC連携は本体側）
    データ(set): {id,cardId,ts,addrType:'plan',lat,lng,acc,addr,addrPending,banchi,note,sent,photos:[{pid,full(Blob),thumb,w,h,size}]}
    ========================================================= */
-const APP_VERSION = "cam-v1.63";
+const APP_VERSION = "cam-v1.64";
 
 /* ===== PWA：単一ファイルでインストール可能化（外部ファイル不要） ===== */
 function _pwaIcon(size,maskable){
@@ -659,7 +659,8 @@ async function startCamera(){
   $("camErr").classList.add("hide"); stopCamera();
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ showCamErr("このブラウザはカメラに対応していません。"); return; }
   try{
-    stream=await navigator.mediaDevices.getUserMedia({ audio:false, video:{ facingMode:{ideal:facing}, width:{ideal:3840}, height:{ideal:2160}, frameRate:{ideal:30} } });
+    try{ stream=await navigator.mediaDevices.getUserMedia({ audio:false, video:{ facingMode:{ideal:facing}, width:{ideal:2560}, height:{ideal:1440} } }); }
+    catch(_e1){ stream=await navigator.mediaDevices.getUserMedia({ audio:false, video:{ facingMode:{ideal:facing} } }); } // 高解像度で固まる端末向けフォールバック
     const v=$("video"); v.srcObject=stream; await v.play().catch(()=>{});
     track=stream.getVideoTracks()[0];
     const caps=track.getCapabilities?track.getCapabilities():{};
