@@ -287,6 +287,13 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 .sortbar-nav{display:none;flex-shrink:0;width:26px;height:30px;align-items:center;justify-content:center;border:1px solid #cbd5e0;background:#f7fafc;color:#4a5568;border-radius:6px;font-size:17px;font-weight:700;cursor:pointer;font-family:inherit;line-height:1;padding:0}
 .sortbar-nav:hover{background:#edf2f7}
 html.pczoom .sortbar-nav{display:inline-flex}
+/* PCコンパクト：上部固定3バー（タイトル/ページ/訪問タブ）を省スペース化 */
+html.pczoom header{padding:8px 12px}
+html.pczoom #cardNav{padding:3px 12px!important}
+html.pczoom #cardNav button{min-height:30px!important;padding:5px 14px!important;font-size:12px!important}
+html.pczoom #cardNav #cardNavPos{font-size:11px!important}
+html.pczoom .tabs .tab{flex-direction:row;gap:6px;min-height:0;padding:8px 7px}
+html.pczoom .tabs .tab .ic{font-size:15px}
 .sortbar-scroll::-webkit-scrollbar{display:none}
 .sortbar::-webkit-scrollbar{display:none}
 #staffFilterBtns{scrollbar-width:none}
@@ -680,7 +687,7 @@ body.is-mob .mob-menu{display:inline-block}
   border-radius:16px;padding:16px;color:var(--z-ink);font-family:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;line-height:1.5}
 .z-fullov{position:fixed;inset:0;z-index:2147482000;background:rgba(8,15,30,0.55);-webkit-backdrop-filter:blur(7px) saturate(120%);backdrop-filter:blur(7px) saturate(120%)}
 .z-dashcard{width:calc(100% - 32px);max-width:980px;margin:24px auto;max-height:calc(100dvh - 48px);display:flex;flex-direction:column;background:#fff;border-radius:18px;box-shadow:0 28px 80px -16px rgba(0,0,0,.65);overflow:hidden}
-.z-dashcard > :last-child{flex:1;min-height:0;overflow-y:auto;padding-bottom:calc(28px + env(safe-area-inset-bottom,0px))}
+.z-dashcard > :last-child{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-bottom:calc(64px + env(safe-area-inset-bottom,0px))}
 @media(max-width:760px){
   .z-dashcard{width:100%;max-width:none;margin:0;max-height:100dvh;border-radius:0}
   #analysisContent,#selfDashContent{padding:10px !important}
@@ -1113,7 +1120,7 @@ body.is-mob .mob-menu{display:inline-block}
   <!-- 自己分析ダッシュボード（担当本人向け） -->
   <div id="selfDashPanel" class="z-fullov" onclick="dashOverlayClick(event)" style="display:none;position:fixed;inset:0;overflow:hidden">
     <div class="z-dashcard">
-    <div style="position:sticky;top:0;z-index:2;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;background:rgba(240,245,255,.72);-webkit-backdrop-filter:blur(14px) saturate(140%);backdrop-filter:blur(14px) saturate(140%);border-bottom:1px solid rgba(195,218,254,.6)">
+    <div style="position:sticky;top:0;z-index:2;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 12px;display:flex;justify-content:space-between;align-items:center;background:rgba(240,245,255,.72);-webkit-backdrop-filter:blur(14px) saturate(140%);backdrop-filter:blur(14px) saturate(140%);border-bottom:1px solid rgba(195,218,254,.6)">
       <span style="font-size:15px;font-weight:700;color:#2c5282">🔭 自己分析ダッシュボード</span>
       <button onclick="closeSelfDash()" style="border:1px solid #c3dafe;background:#fff;border-radius:8px;padding:6px 13px;font-size:13px;font-weight:700;color:#2c5282;cursor:pointer;font-family:inherit">✕ 閉じる</button>
     </div>
@@ -1825,7 +1832,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.18";
+var APP_VERSION = "v9.20";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -12390,6 +12397,7 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   .ibadge{display:inline-block;font-size:10px;font-weight:800;border-radius:6px;padding:1px 6px;background:rgba(44,82,130,.12);color:#2c5282}
   .ibadge.un{background:rgba(245,158,11,.18);color:#b7791f}
   .ibadge.sent{background:rgba(56,161,105,.16);color:#2f855a}
+  .ibadge.who{background:rgba(124,58,237,.14);color:#6b46c1}
   .iacts{display:flex;gap:6px;flex-wrap:wrap}
   .ibtn{border:1px solid #cbd5e0;background:#fff;color:#2d3748;border-radius:8px;padding:7px 11px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer}
   .ibtn.pri{background:#2c5282;border-color:#2c5282;color:#fff}
@@ -12557,6 +12565,7 @@ function importPhotoBundle(bundle, silent){
   return mediaOpen().then(function(){ return (async function(){
     var sets=(bundle&&bundle.sets)||[]; if(!sets.length){ toast("写真データが0件です"); return; }
     var linkedN=0, unlinkedN=0, updated=0;
+    var _bsender=(bundle&&bundle.sender)||"";
     for(var i=0;i<sets.length;i++){
       var s=sets[i];
       var existing=null; try{ if(s.id) existing=await mGet(s.id); }catch(e){}
@@ -12571,7 +12580,7 @@ function importPhotoBundle(bundle, silent){
       }
       var cardId=_resolveCardIdOnImport(s)||((s.cardId&&s.cardId!==MEDIA_INBOX)?s.cardId:MEDIA_INBOX); // 元cardIdを保持（カード未取込なら迷子→後でカード取込時に自動紐付け）
       if(existing && existing.cardId && existing.cardId!==MEDIA_INBOX && cardId===MEDIA_INBOX){ cardId=existing.cardId; } // 既存の紐付けは維持（誤って未紐付けに戻さない）
-      var rec={ id:s.id||("s_"+Date.now()+"_"+i), cardId:cardId, ts:s.ts||Date.now(), addrType:"plan",
+      var rec={ id:s.id||("s_"+Date.now()+"_"+i), cardId:cardId, ts:s.ts||Date.now(), addrType:"plan", sender:(s.sender||_bsender||((existing&&existing.sender)||"")),
         lat:s.lat, lng:s.lng, acc:s.acc, addr:s.addr||"", addrPending:false, banchi:s.banchi||"", note:s.note||"", sent:false,
         cardName:s.cardName||((existing&&existing.cardName)||""), homeAddr:s.homeAddr||"", planAddr:s.planAddr||(s.addr||""), photos:photos };
       try{ await mPut(rec); if(existing){ updated++; } else if(cardId===MEDIA_INBOX){ unlinkedN++; } else { linkedN++; } }catch(e){}
@@ -12629,7 +12638,7 @@ function _inrow(s){
   else if(linked) acts='<button class="ibtn pri" data-act="attach" data-id="'+e(s.id)+'">🔗 付け替え</button>';
   else acts='<button class="ibtn pri" data-act="attach" data-id="'+e(s.id)+'">🔗 紐付け</button>';
   return '<div class="irow2'+(isThis?' on':'')+'">'+th+'<div class="ibd"><div class="iadr">'+addr+'</div>'+
-    '<div class="imeta">'+badge+sent+' ・ '+_fmtWhen(s.ts)+'</div>'+
+    '<div class="imeta">'+who+badge+sent+' ・ '+_fmtWhen(s.ts)+'</div>'+
     '<div class="iacts">'+acts+'</div></div></div>';
 }
 function _inrowSafe(s){ try{ return _inrow(s); }catch(err){ return '<div class="irow"><div class="ibd"><div class="iadr">（このデータは表示できません）</div><div class="imeta">'+e(String((s&&s.id)||""))+'</div></div></div>'; } }
@@ -12646,6 +12655,7 @@ function _inbStamp(){ var d=new Date(),p=function(n){return ("0"+n).slice(-2);};
 function _inboxThumb(s){ var ph=Array.isArray(s.photos)?s.photos:[]; return (ph[0]&&ph[0].thumb)?ph[0].thumb:""; }
 function _inrow2(s, isUnlinked){
   var ph=Array.isArray(s.photos)?s.photos:[];
+  var who=(s.sender&&String(s.sender).trim())?('<span class="ibadge who">👤 '+e(String(s.sender).trim())+'</span> ・ '):"";
   var addr=s.addr?e(s.addr+(s.banchi?(" "+s.banchi):"")):(isUnlinked?"位置情報なし":"住所未取得");
   var thumb=_inboxThumb(s);
   var sent=s.sent?' <span class="ibadge sent">書き出し済</span>':"";
@@ -12670,7 +12680,7 @@ function _inrow2(s, isUnlinked){
   }
   var lnm=_linkName(s);
   return '<div class="irow2"><div class="istar" aria-hidden="true">★</div>'+th+'<div class="ibd"><div class="iadr">'+addr+'</div>'+
-    '<div class="imeta">'+(s.sent?'<span class="ibadge sent">書き出し済</span> ・ ':'')+_fmtWhen(s.ts)+'</div>'+
+    '<div class="imeta">'+who+(s.sent?'<span class="ibadge sent">書き出し済</span> ・ ':'')+_fmtWhen(s.ts)+'</div>'+
     '<div class="iacts iacts-lr"><button class="ibtn" data-act="gotocard" data-id="'+e(s.id)+'">🪪 遷移</button>'+(lnm?'<span class="ilinkname">'+lnm+'</span>':'')+'<button class="ibtn ret" data-act="unlink" data-id="'+e(s.id)+'" title="インボックスへ戻す">📥</button></div></div></div>';
 }
 function _inrowOrphan(s){
