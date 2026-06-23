@@ -1013,6 +1013,58 @@ body.is-mob .mob-menu{display:inline-block}
   #f_content,#f_analog,#f_content_rec,#f_ai_summary,#f_ai_memo,
   #editView textarea{ width:100%!important; max-width:100%; text-align:left; }
 }
+
+/* =========================================================
+   PCフォーム行コンパクト化 v9.24 — Step1.6（dev検証）
+   - 狭くした入力欄の右の空白を詰める：入力欄を含むグリッド行を左詰めflexに
+   - 除外：ボタン群(.pbtn)行・住所(f_addr)/計画地(f_plan)行・textarea行（広いまま）
+   - @media screen and (min-width:769px) 限定／スマホ・印刷・HTML・JS不変
+========================================================= */
+@media screen and (min-width:769px){
+  #editView div[style*="grid-template-columns"]:has(input:not([type=checkbox]):not([type=radio]), select):not(:has(.pbtn)):not(:has(#f_addr)):not(:has(#f_plan)):not(:has(textarea)){
+    display:flex!important;
+    flex-wrap:wrap!important;
+    gap:10px 16px!important;
+    justify-content:flex-start!important;
+    align-items:flex-start!important;
+  }
+}
+/* =========================================================
+   PCフォーム・ボタン密度補正 v9.24 — Step1.6b（dev検証）
+   - 高度地区・防火地域の短い選択ボタンだけを内容幅で左詰めに
+   - data-pill限定（権利関係/接道方位/ステージ/判定・スマホ・印刷には非干渉）
+   - @media screen and (min-width:769px) 限定／HTML・JS不変
+========================================================= */
+@media screen and (min-width:769px){
+  :root{ --pc-btn-xs:82px; --pc-btn-s:110px; --pc-btn-m:140px; --pc-btn-l:180px; }
+  /* 高度地区・防火地域：均等割りを解除し、内容幅で左詰め */
+  #editView div:has(> .pbtn[data-pill="kodo"]),
+  #editView div:has(> .pbtn[data-pill="bouka"]){
+    display:flex !important;
+    flex-wrap:wrap !important;
+    justify-content:flex-start !important;
+    align-items:center !important;
+    gap:8px !important;
+  }
+  /* 高度地区：1種 / 2種 / 3種 / なし */
+  #editView .pbtn[data-pill="kodo"]{
+    flex:0 0 auto !important;
+    width:auto !important;
+    min-width:var(--pc-btn-xs) !important;
+    padding-left:16px !important;
+    padding-right:16px !important;
+    white-space:nowrap;
+  }
+  /* 防火地域：準防火 / 新防火 / 防火 */
+  #editView .pbtn[data-pill="bouka"]{
+    flex:0 0 auto !important;
+    width:auto !important;
+    min-width:var(--pc-btn-s) !important;
+    padding-left:18px !important;
+    padding-right:18px !important;
+    white-space:nowrap;
+  }
+}
 </style>
 </head>
 <body>
