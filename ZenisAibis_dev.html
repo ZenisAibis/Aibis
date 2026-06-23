@@ -1021,7 +1021,7 @@ body.is-mob .mob-menu{display:inline-block}
    - @media screen and (min-width:769px) 限定／スマホ・印刷・HTML・JS不変
 ========================================================= */
 @media screen and (min-width:769px){
-  #editView div[style*="grid-template-columns"]:has(input:not([type=checkbox]):not([type=radio]), select):not(:has(.pbtn)):not(:has(#f_addr)):not(:has(#f_plan)):not(:has(textarea)):not(:has(#f_kouzou)):not(:has(#f_m2tanka)):not(:has(#f_oldrent)):not(:has(#f_landasset)):not(:has(#f_rosenka)){
+  #editView div[style*="grid-template-columns"]:has(input:not([type=checkbox]):not([type=radio]), select):not(:has(.pbtn)):not(:has(#f_addr)):not(:has(#f_plan)):not(:has(textarea)):not(:has(#f_kouzou)):not(:has(#f_m2tanka)):not(:has(#f_oldrent)):not(:has(#f_landasset)):not(:has(#f_rosenka)):not(:has(#f_kb)):not(:has(#f_kuushitsu)){
     display:flex!important;
     flex-wrap:wrap!important;
     gap:10px 16px!important;
@@ -1145,6 +1145,57 @@ body.is-mob .mob-menu{display:inline-block}
     align-items:start;
   }
   #editView .pc-pill-pair > div{ margin-bottom:0 !important; }
+}
+/* ============================================================
+   PCセクション密度再設計 v9.24 — Step D（土地情報まわり 2グリッド）
+   D1 接道方向2グリッド：左=接道3×3／右=用途地域＋権利関係チェック
+   D2 満室/空きを築年数の行へ：建蔽row・満室row を contents で 4列1行
+      [建蔽・容積 / 築年数 / 満室 / 空き]、高度/防火pill-pairは下段full幅(order)
+   いずれも PC のみ。スマホ=block素通り（順序不変）／印刷=別生成HTML非干渉。
+   ※ 満室/空きは視覚的に上段へ寄せるためTab順とズレあり（短い数値欄・空白解消優先）。
+   ※ 建蔽row・満室row・路線価/資産行は Step1.6 のflex対象から除外済み。
+   ============================================================ */
+@media screen and (min-width:769px){
+  /* --- D1 接道方向 2グリッド --- */
+  #secTochi .pc-land-2grid{
+    display:grid;
+    grid-template-columns:minmax(280px,340px) minmax(0,1fr);
+    column-gap:28px;
+    align-items:start;
+  }
+  #secTochi .pc-road-left{ min-width:0; }
+  #secTochi .pc-road-left > div{ margin-bottom:0 !important; }
+  #secTochi .pc-road-right{
+    min-width:0;
+    display:grid;
+    row-gap:12px;
+    align-content:start;
+  }
+  #secTochi .pc-road-right > div{ margin-bottom:0 !important; }
+
+  /* --- D2 満室/空きを築年数の行へ（4列1行＋pill-pairは下段full幅） --- */
+  #secTochi .pc-land-meta{
+    display:grid;
+    grid-template-columns:repeat(4, minmax(0,1fr));
+    column-gap:16px;
+    row-gap:10px;
+    align-items:end;
+  }
+  #secTochi .pc-land-meta > .metarow{ display:contents !important; }
+  #secTochi .pc-land-meta > .metarow > div{ min-width:0; margin-bottom:0 !important; }
+  /* 高度/防火（pill-pair）は満室/空きの後＝下段にfull幅で配置 */
+  #secTochi .pc-land-meta > .pc-pill-pair{
+    order:10;
+    grid-column:1 / -1;
+    margin-bottom:0 !important;
+  }
+  /* 満室/空きの数値はセル幅いっぱい */
+  #secTochi .pc-land-meta #f_kuushitsu,
+  #secTochi .pc-land-meta #f_kuushitsu_aki{
+    width:100% !important;
+    max-width:none !important;
+    text-align:left !important;
+  }
 }
 </style>
 </head>
@@ -11157,6 +11208,8 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         </div>
         <div><label>間口（m）</label><input type="number" id="f_maguchi" placeholder="12" inputmode="numeric" pattern="[0-9]*" style="width:100%"></div>
       </div>
+      <div class="pc-land-2grid">
+      <div class="pc-road-left">
       <!-- 接道方位（8方位コンパス・北上／中央=旗竿） -->
       <div style="margin-bottom:8px">
         <label>接道方位 <span style="font-size:10px;color:#a0aec0;font-weight:400">（方角の位置で配置）</span></label>
@@ -11173,6 +11226,8 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <button type="button" class="pbtn" data-pill="setsudo" data-multi="1" data-val="南東">南東</button>
         </div>
       </div>
+      </div>
+      <div class="pc-road-right">
       <!-- 用途地域（フル幅） -->
       <div style="margin-bottom:8px">
         <label>用途地域</label>
@@ -11204,8 +11259,11 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="借地">借地</button>
         </div>
       </div>
+      </div>
+      </div>
+      <div class="pc-land-meta">
       <!-- 建蔽容積・築年数 -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div class="metarow" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
         <div>
           <label>建蔽 / 容積（%）</label>
           <div style="display:flex;gap:4px;align-items:center">
@@ -11256,9 +11314,10 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       </div>
       </div>
       <!-- 満室・空き -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div class="metarow" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
         <div><label>満室数（戸）</label><input type="number" id="f_kuushitsu" placeholder="例: 10" inputmode="numeric" pattern="[0-9]*"></div>
         <div><label>空き数（戸）</label><input type="number" id="f_kuushitsu_aki" placeholder="例: 2" inputmode="numeric" pattern="[0-9]*"></div>
+      </div>
       </div>
     </div>
     <div class="sec" id="secKeikaku">
