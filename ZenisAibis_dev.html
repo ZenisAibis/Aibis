@@ -1068,7 +1068,8 @@ body.is-mob .mob-menu{display:inline-block}
 /* ============================================================
    PC計画規模コンパクト化 v9.24 — Step A
    計画規模イメージの2行を PC のみ 4+2 にまとめる。
-   セル移動なし（DOM順=スマホ入力順は不変）。display:contents+order で視覚再配置。
+   セル移動なし（DOM順=スマホ入力順は不変）。display:contents で .pc-plan の4列グリッドへ流し込む。
+   B案：order不使用 → DOM順そのまま＝Tab順と見た目順が一致（連続入力重視）。
    ※ 計画規模2行は Step1.6 のflex対象から除外済み。display:contents!important で各行の
      インライン display:grid を上書きし、セルを .pc-plan グリッドへ流し込む。
    ============================================================ */
@@ -1082,10 +1083,13 @@ body.is-mob .mob-menu{display:inline-block}
     align-items:end;
   }
   #editView .pc-plan > div{ display:contents !important; }
-  /* DOM順 構造0・戸並び0・階数0・賃料・駐車料・P率 → 視覚順 構造/戸並び/階数/P率 ‖ 賃料/駐車料 */
+  /* B案：order指定なし → DOM順そのまま 4列グリッドで
+     1行目[構造/戸並び/階数/賃料] 2行目[駐車料/P率]。Tab順=見た目順で一致。
+     ▼A案（P率を1行目末尾へ視覚移動）に戻す場合は下記3行のコメントを解除：
   #editView .pc-plan div:has(> #f_prate){    order:4; }
   #editView .pc-plan div:has(> #f_m2tanka){  order:5; }
   #editView .pc-plan div:has(> #f_chusharyo){order:6; }
+  */
 }
 </style>
 </head>
