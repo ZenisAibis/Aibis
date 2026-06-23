@@ -1035,6 +1035,23 @@ body.is-mob .mob-menu{display:inline-block}
 }
 
 /* =========================================================
+   StepA v9.25dev — PC版 一覧カードを2列表示（row-wise／左右左右）
+   - @media screen and (min-width:769px) 限定（スマホ・印刷は1列維持）
+   - #cardList を grid 2列化。HTML/JS不変・.lcard構造不変。
+   - gridのデフォルト並びが行方向（左→右→次の行）= 左右左右で降りる。
+   ========================================================= */
+@media screen and (min-width:769px){
+  #cardList{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    align-items:start; /* 高さ可変カードの行頭ガタつき防止 */
+  }
+  #cardList > .lcard{ margin-bottom:0; } /* gapと二重マージン防止 */
+  #cardList > .empty{ grid-column:1 / -1; } /* 空・該当なしは2列ぶち抜き中央 */
+}
+
+/* =========================================================
    PCフォーム幅バランス補正 v9.24 — Step1.5（編集フォームの幅整理）
    - @media screen and (min-width:769px) 限定（スマホ・印刷に非干渉）
    - HTML/JS不変・grid(.r2/.r3/.r4)不変。各入力欄の width/max-width のみ
@@ -2210,7 +2227,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.24dev";
+var APP_VERSION = "v9.25dev";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
