@@ -1021,7 +1021,7 @@ body.is-mob .mob-menu{display:inline-block}
    - @media screen and (min-width:769px) 限定／スマホ・印刷・HTML・JS不変
 ========================================================= */
 @media screen and (min-width:769px){
-  #editView div[style*="grid-template-columns"]:has(input:not([type=checkbox]):not([type=radio]), select):not(:has(.pbtn)):not(:has(#f_addr)):not(:has(#f_plan)):not(:has(textarea)):not(:has(#f_kouzou)):not(:has(#f_m2tanka)):not(:has(#f_oldrent)):not(:has(#f_landasset)):not(:has(#f_rosenka)):not(:has(#f_kb)):not(:has(#f_kuushitsu)){
+  #editView div[style*="grid-template-columns"]:has(input:not([type=checkbox]):not([type=radio]), select):not(:has(.pbtn)):not(:has(#f_addr)):not(:has(#f_plan)):not(:has(textarea)):not(:has(#f_kouzou)):not(:has(#f_m2tanka)):not(:has(#f_oldrent)):not(:has(#f_landasset)):not(:has(#f_rosenka)):not(:has(#f_kb)):not(:has(#f_kuushitsu)):not(:has(#f_name)):not(:has(#f_tel)){
     display:flex!important;
     flex-wrap:wrap!important;
     gap:10px 16px!important;
@@ -1072,15 +1072,14 @@ body.is-mob .mob-menu{display:inline-block}
    ※ 計画規模2行は Step1.6 のflex対象から除外済み。
    ============================================================ */
 @media screen and (min-width:769px){
-  #editView .pc-plan{ display:contents; }
-  #editView .pc-plan > div{
-    display:grid !important;
-    grid-template-columns:repeat(3, minmax(0,1fr)) !important;
-    column-gap:16px !important;
-    row-gap:10px !important;
-    align-items:end !important;
-    margin-bottom:10px !important;
+  #editView .pc-plan{
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0,1fr));
+    column-gap:16px;
+    row-gap:10px;
+    align-items:end;
   }
+  #editView .pc-plan > div{ display:contents !important; }
   #editView .pc-plan > div > div{ min-width:0; }
   /* 入力欄はセル幅いっぱい（フォーム自体が約940px上限なので横長になりすぎない） */
   #secKeikaku .pc-plan select,
@@ -1110,6 +1109,12 @@ body.is-mob .mob-menu{display:inline-block}
   #editView .pc-asset > div > div{ min-width:0; }
   /* 生産緑地ナビ隠しセルは非表示中は枠を取らない（JSのvisibility:hiddenを読む。空行を作らない） */
   #editView .pc-asset #ryokuchiBtnCell[style*="hidden"]{ display:none !important; }
+  /* Step E精密化：生産緑地を最右に。DOM順 老朽/駐車/自宅/緑地/規模/想定
+     → 視覚順 老朽/駐車/自宅/土地資産規模/想定/生産緑地（緑地のみorderで後送り） */
+  #editView .pc-asset > div > div:has(> #f_landasset){ order:4; }
+  #editView .pc-asset > div > div:has(> #f_soutei){ order:5; }
+  #editView .pc-asset > div > div:has(#f_ryokuchi){ order:6; }
+  #editView .pc-asset #ryokuchiBtnCell{ order:7; }
   /* プルダウンはセル幅いっぱい：1行目(接尾辞付き)はflex、2行目(直下select)はwidth:100% */
   #editView .pc-asset > div:first-child select{
     width:auto !important;
@@ -1196,6 +1201,34 @@ body.is-mob .mob-menu{display:inline-block}
     max-width:none !important;
     text-align:left !important;
   }
+}
+/* ============================================================
+   PC版 精密グリッド調整 v9.24 — Step E（名前/家族＋一行化の仕上げ）
+   ・名前エリア：mk-row(2fr1fr1fr / 1fr1fr)を維持し、ソーシャル/現状/TELをセル幅いっぱいに
+   ・家族構成：人数確定ボタン行を 左=ボタン / 右=凡例(意向・居住) の2グリッドに
+   ・計画規模/資産背景：≥1200pxで6項目1行、769〜1199pxは3列×2行（下の1200pxブロック）
+   PCのみ・スマホ/印刷非干渉。
+   ============================================================ */
+@media screen and (min-width:769px){
+  /* 名前エリア：短いプルダウン/TELをセル幅いっぱいに（右空白解消） */
+  #secMikomi .mk-row #f_social,
+  #secMikomi .mk-row #f_genjo,
+  #secMikomi .mk-row #f_tel{
+    width:100% !important;
+    max-width:none !important;
+  }
+  /* 家族構成：人数確定ボタン(左) / 凡例・状態(右) の2グリッド */
+  #editView div:has(> #famHeadcountBtn){
+    display:grid !important;
+    grid-template-columns:auto minmax(0,1fr) !important;
+    column-gap:14px !important;
+    align-items:center !important;
+  }
+}
+/* 計画規模・資産背景：横幅が広いPC(≥1200px)では6項目を1行に */
+@media screen and (min-width:1200px){
+  #editView .pc-plan{ grid-template-columns:repeat(6, minmax(0,1fr)) !important; }
+  #editView .pc-asset{ grid-template-columns:repeat(6, minmax(0,1fr)) !important; }
 }
 </style>
 </head>
