@@ -1021,7 +1021,7 @@ body.is-mob .mob-menu{display:inline-block}
    - @media screen and (min-width:769px) 限定／スマホ・印刷・HTML・JS不変
 ========================================================= */
 @media screen and (min-width:769px){
-  #editView div[style*="grid-template-columns"]:has(input:not([type=checkbox]):not([type=radio]), select):not(:has(.pbtn)):not(:has(#f_addr)):not(:has(#f_plan)):not(:has(textarea)){
+  #editView div[style*="grid-template-columns"]:has(input:not([type=checkbox]):not([type=radio]), select):not(:has(.pbtn)):not(:has(#f_addr)):not(:has(#f_plan)):not(:has(textarea)):not(:has(#f_kouzou)):not(:has(#f_m2tanka)){
     display:flex!important;
     flex-wrap:wrap!important;
     gap:10px 16px!important;
@@ -1064,6 +1064,28 @@ body.is-mob .mob-menu{display:inline-block}
     padding-right:18px !important;
     white-space:nowrap;
   }
+}
+/* ============================================================
+   PC計画規模コンパクト化 v9.24 — Step A
+   計画規模イメージの2行を PC のみ 4+2 にまとめる。
+   セル移動なし（DOM順=スマホ入力順は不変）。display:contents+order で視覚再配置。
+   ※ 計画規模2行は Step1.6 のflex対象から除外済み。display:contents!important で各行の
+     インライン display:grid を上書きし、セルを .pc-plan グリッドへ流し込む。
+   ============================================================ */
+@media screen and (min-width:769px){
+  #editView .pc-plan{
+    display:grid;
+    grid-template-columns:repeat(4, max-content);
+    justify-content:start;
+    column-gap:16px;
+    row-gap:10px;
+    align-items:end;
+  }
+  #editView .pc-plan > div{ display:contents !important; }
+  /* DOM順 構造0・戸並び0・階数0・賃料・駐車料・P率 → 視覚順 構造/戸並び/階数/P率 ‖ 賃料/駐車料 */
+  #editView .pc-plan div:has(> #f_prate){    order:4; }
+  #editView .pc-plan div:has(> #f_m2tanka){  order:5; }
+  #editView .pc-plan div:has(> #f_chusharyo){order:6; }
 }
 </style>
 </head>
@@ -11178,6 +11200,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
     </div>
     <div class="sec" id="secKeikaku">
       <div class="stitle">計画規模イメージ</div>
+      <div class="pc-plan">
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
         <div><label>構造</label><select id="f_kouzou"><option value="">-</option><option value="2×4">2×4</option><option value="鉄骨">鉄骨</option><option value="RC">RC</option></select></div>
         <div><label>戸並び</label><select id="f_kosu"><option value="">-</option><option value="1">1戸</option><option value="2">2戸</option><option value="3">3戸</option><option value="4">4戸</option><option value="5">5戸</option><option value="6">6戸</option><option value="7">7戸</option><option value="8">8戸</option><option value="8以上">8以上</option></select></div>
@@ -11187,6 +11210,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <div><label>賃料㎡単価（円）</label><input type="text" id="f_m2tanka" placeholder="例: 8,000" inputmode="numeric" onblur="fmtMoney('f_m2tanka')"></div>
         <div><label>駐車料（円）</label><input type="text" id="f_chusharyo" placeholder="例: 8,000" inputmode="numeric" onblur="fmtMoney('f_chusharyo')"></div>
         <div><label>P率</label><select id="f_prate"><option value="">-</option><option value="あり">あり</option><option value="なし">なし</option></select></div>
+      </div>
       </div>
     </div>
     <div class="sec">
