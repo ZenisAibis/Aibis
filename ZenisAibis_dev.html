@@ -2227,7 +2227,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.25dev";
+var APP_VERSION = "v9.26dev";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -11174,10 +11174,10 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       </div>
     </div>
     <!-- 📷 計画地写真（アイビスカメラ連携・表示専用） -->
-    <div class="sec no-print" id="cardPhotoSec" style="display:none">
-      <div class="stitle" style="display:flex;align-items:center;gap:8px"><span style="flex:1">📷 計画地写真 <span id="cardPhotoCount" style="font-weight:600;color:#718096;font-size:12px"></span></span><button type="button" id="cardCamBtn" class="cps-hdr-btn cps-hdr-cam" onclick="cardOpenCam(curId)" title="カメラで撮影（このカードに紐付く）">📷</button><button type="button" id="cardInbBtn" class="cps-hdr-btn" onclick="openInboxForCard()" title="インボックスから写真を選ぶ・管理">📥</button></div>
+    <details class="sec no-print cps-acc" id="cardPhotoSec" style="display:none">
+      <summary class="stitle cps-sum" style="display:flex;align-items:center;gap:8px"><span style="flex:1">📷 計画地写真 <span id="cardPhotoCount" style="font-weight:600;color:#718096;font-size:12px"></span></span><button type="button" id="cardCamBtn" class="cps-hdr-btn cps-hdr-cam" onclick="cardOpenCam(curId)" title="カメラで撮影（このカードに紐付く）">📷</button><button type="button" id="cardInbBtn" class="cps-hdr-btn" onclick="openInboxForCard()" title="インボックスから写真を選ぶ・管理">📥</button></summary>
       <div id="cardPhotoBody"></div>
-    </div>
+    </details>
     <!-- 購買ステージ + 資産背景 -->
     <div class="sec">
       <!-- 購買ステージ -->
@@ -12871,6 +12871,11 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   #inboxPickList .ipr:active{background:#edf2f7}
   #inboxPickList .ipr .nm{font-size:14px;font-weight:800;color:#2d3748}
   #inboxPickList .ipr .mt{font-size:11px;color:#718096;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* StepB v9.26dev: 計画地写真セクションのアコーディオン化（開閉のみ追加・既定は閉） */
+  .cps-acc>summary.cps-sum{list-style:none;cursor:pointer}
+  .cps-acc>summary.cps-sum::-webkit-details-marker{display:none}
+  .cps-acc>summary.cps-sum::before{content:"\25B6";font-size:11px;color:#718096;margin-right:6px;flex-shrink:0}
+  .cps-acc[open]>summary.cps-sum::before{content:"\25BC"}
   /* 計画地写真（カード内・表示専用） */
   #cardPhotoBody .cps-set{margin-bottom:12px}
   #cardPhotoBody .cps-grid{display:grid;gap:4px}
