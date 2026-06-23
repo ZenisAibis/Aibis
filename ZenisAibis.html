@@ -1161,8 +1161,12 @@ body.is-mob .mob-menu{display:inline-block}
    いずれも PC のみ・DOM順=Tab順一致（order不使用）。スマホ/印刷は非干渉。
    ※ 資産2行・路線価行は Step1.6 のflex対象から除外済み。
    ============================================================ */
+/* 生産緑地：スマホ=フォームの下にボタン全幅（規模/想定と同サイズ）、PC=横半分ずつ */
+.ryoku-pair{display:flex;flex-direction:column;gap:4px}
+.ryoku-pair select{width:100%}
+.ryoku-pair button{width:100%;border:1.5px solid #2f7a57;background:#2f7a57;color:#fff;border-radius:8px;padding:9px 6px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit;box-sizing:border-box}
 @media screen and (min-width:769px){
-  /* --- C2 資産背景：6項目を 3列×2行 --- */
+  /* --- C2 資産背景：老朽/駐車/自宅(3列) ＋ 規模/想定/生産緑地(3列) --- */
   #editView .pc-asset{
     display:grid;
     grid-template-columns:repeat(3, minmax(0,1fr));
@@ -1172,24 +1176,12 @@ body.is-mob .mob-menu{display:inline-block}
   }
   #editView .pc-asset > div{ display:contents !important; }
   #editView .pc-asset > div > div{ min-width:0; }
-  /* 生産緑地ナビ隠しセルは非表示中は枠を取らない（JSのvisibility:hiddenを読む。空行を作らない） */
-  #editView .pc-asset #ryokuchiBtnCell[style*="hidden"]{ display:none !important; }
-  /* Step E精密化：生産緑地を最右に。DOM順 老朽/駐車/自宅/緑地/規模/想定
-     → 視覚順 老朽/駐車/自宅/土地資産規模/想定/生産緑地（緑地のみorderで後送り） */
-  #editView .pc-asset > div > div:has(> #f_landasset){ order:4; }
-  #editView .pc-asset > div > div:has(> #f_soutei){ order:5; }
-  #editView .pc-asset > div > div:has(#f_ryokuchi){ order:6; }
-  #editView .pc-asset #ryokuchiBtnCell{ order:7; }
-  /* プルダウンはセル幅いっぱい：1行目(接尾辞付き)はflex、2行目(直下select)はwidth:100% */
-  #editView .pc-asset > div:first-child select{
-    width:auto !important;
-    max-width:none !important;
-    flex:1 1 auto !important;
-  }
-  #editView .pc-asset > div:nth-child(2) select{
-    width:100% !important;
-    max-width:none !important;
-  }
+  /* プルダウンはセル幅いっぱい（生産緑地は.ryoku-pairで上書き） */
+  #editView .pc-asset select{ width:100%; max-width:none; }
+  /* 生産緑地：PCはフォーム半分＋ボタン半分で1セル */
+  #editView .pc-asset .ryoku-pair{ flex-direction:row; align-items:stretch; }
+  #editView .pc-asset .ryoku-pair select{ flex:1 1 0; width:auto !important; min-width:0; }
+  #editView .pc-asset .ryoku-pair button{ flex:1 1 0; width:auto; min-width:0; }
 
   /* --- C3 土地情報 主要数値：路線価＋借地割合 / 面積 / 間口（行は既に3列fr、入力欄をセル幅に） --- */
   #secTochi .pc-land-main > div{ min-width:0; }
@@ -1950,7 +1942,7 @@ body.is-mob .mob-menu{display:inline-block}
       <div class="ht" style="margin:-2px 0 10px">※ カードの担当欄に自動入力（スペース不可）<br>※ 「支店」は自動除去されます</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
         <div><label>自分のメールアドレス</label><input type="email" id="sSelf" autocomplete="email" placeholder="dt0000001@kentaku.co.jp" oninput="autoSaveSetup()"><p class="ht">「📧 PCへ」で送る宛先</p></div>
-        <div><label>上司のメールアドレス <span class="req">*</span></label><input type="text" inputmode="email" autocomplete="off" autocapitalize="none" spellcheck="false" id="sMgr" placeholder="to071024@kentaku.co.jp" oninput="autoSaveSetup()"><p class="ht">📧 課長報告の宛先</p></div>
+        <div><label>上司のメールアドレス <span class="req">*</span></label><input type="text" inputmode="email" autocomplete="off" autocapitalize="none" spellcheck="false" id="sMgr" readonly onfocus="this.removeAttribute('readonly')" placeholder="to071024@kentaku.co.jp" oninput="autoSaveSetup()"><p class="ht">📧 課長報告の宛先</p></div>
       </div>
       <div id="staffMailSection" style="display:none;margin-top:10px">
         <details class="setup-acc">
@@ -2227,7 +2219,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.35";
+var APP_VERSION = "v9.38";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -3140,7 +3132,7 @@ function renderStaffMailRows(){
   box.innerHTML = (staffMails&&staffMails.length) ? staffMails.map(function(s,i){
     return '<div style="display:grid;grid-template-columns:1fr 1.4fr auto;gap:6px;margin-bottom:6px;align-items:center">'
       +'<input type="text" placeholder="担当者名" value="'+eAttr(s.name||'')+'" oninput="onStaffMailInput('+i+',\'name\',this.value)" style="font-size:13px">'
-      +'<input type="text" inputmode="email" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="メールアドレス" value="'+eAttr(s.email||'')+'" oninput="onStaffMailInput('+i+',\'email\',this.value)" style="font-size:13px">'
+      +'<input type="text" inputmode="email" autocomplete="off" autocapitalize="none" spellcheck="false" readonly onfocus="this.removeAttribute(\'readonly\')" placeholder="メールアドレス" value="'+eAttr(s.email||'')+'" oninput="onStaffMailInput('+i+',\'email\',this.value)" style="font-size:13px">'
       +'<button type="button" onclick="removeStaffMailRow('+i+')" title="削除" style="background:#fff5f5;border:1px solid #feb2b2;color:#c53030;border-radius:6px;padding:6px 9px;font-size:12px;cursor:pointer;font-family:inherit">✕</button>'
       +'</div>';
   }).join('') : '<p class="ht" style="margin:4px 0">まだ登録がありません。「＋ 担当者を追加」または下の候補から追加してね。</p>';
@@ -5241,6 +5233,14 @@ function getLastVD(c) {
   if(c.discovery_date) dates.push(c.discovery_date);
   return dates.length ? dates.sort(function(a,b){return b.localeCompare(a);})[0] : '';
 }
+// 同日タイブレーク用：カードの「最後に編集した時刻」。updated_at→created_at→id埋込ts→0
+function _cTs(c){
+  if(!c) return 0;
+  if(c.updated_at){ var u=new Date(c.updated_at).getTime(); if(!isNaN(u)) return u; }
+  if(c.created_at){ var t=new Date(c.created_at).getTime(); if(!isNaN(t)) return t; }
+  var m=/^c_(\d+)/.exec(c.id||''); if(m) return +m[1];
+  return 0;
+}
 function _han(s){ return s?String(s).replace(/[０-９]/g,function(d){return String.fromCharCode(d.charCodeAt(0)-0xFEE0);}):s; }
 function cleanAddr(s){ if(!s) return s; var a=String(s); a=a.replace(/〒\s*\d{3}[-－ー‐]?\d{4}/g,''); a=a.replace(/〒/g,''); a=a.replace(/^[\s　]*\d{3}[-－ー‐]?\d{4}(?!\d)/,''); a=a.replace(/[\s　]+/g,''); return a.trim(); }
 function _shortAddr(a){ if(!a) return ''; var i=a.indexOf('丁目'); if(i>=0) return a.slice(0,i+2); return a.replace(/[0-9０-９]+[‐ー\-－][0-9０-９]+.*$/,'').trim()||a; }
@@ -5489,7 +5489,7 @@ function getSorted() {
   var arr = cards.slice();
   var dir = sortDir[sortKey]==='desc' ? -1 : 1;
   if (sortKey==='lv') {
-    arr.sort(function(a,b){ return dir * getLastVD(b).localeCompare(getLastVD(a)); });
+    arr.sort(function(a,b){ var d=dir * getLastVD(b).localeCompare(getLastVD(a)); return d!==0?d:(_cTs(b)-_cTs(a)); });
   } else if (sortKey==='ad') {
     var adDir = sortDir['ad']==='desc' ? -1 : 1;
     arr.sort(function(a,b){ return adDir * getArea(a.address||'').localeCompare(getArea(b.address||''),'ja'); });
@@ -5516,7 +5516,7 @@ function getSorted() {
     arr.sort(function(a,b){ return dir * (_revisitCount(b) - _revisitCount(a)); });
   } else if (sortKey==='jw') {
     arr = arr.filter(_judgeMissing);  // 再訪を進めた（=フェーズ終了）のにランク未判定
-    arr.sort(function(a,b){ return getLastVD(b).localeCompare(getLastVD(a)); }); // 更新の最新順
+    arr.sort(function(a,b){ var d=getLastVD(b).localeCompare(getLastVD(a)); return d!==0?d:(_cTs(b)-_cTs(a)); }); // 更新の最新順
   } else if (sortKey==='pace') {
     arr.sort(function(a,b){
       var ra=calcPaceOverrate(a), rb=calcPaceOverrate(b);
@@ -5531,7 +5531,7 @@ function getSorted() {
     var _dk=function(c){ return c.discovery_date || '9999-99-99'; };
     arr.sort(function(a,b){ return _dk(a).localeCompare(_dk(b)); }); // 古い発掘順
   } else { // dt
-    arr.sort(function(a,b){ return dir * (b.discovery_date||'').localeCompare(a.discovery_date||''); });
+    arr.sort(function(a,b){ var d=dir * (b.discovery_date||'').localeCompare(a.discovery_date||''); return d!==0?d:(_cTs(b)-_cTs(a)); });
   }
   return arr;
 }
@@ -11411,25 +11411,21 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
     <div class="sec">
       <div class="stitle">資産背景</div>
       <div class="pc-asset">
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
         <div>
           <label>老朽賃貸</label>
-          <div style="display:flex;gap:3px;align-items:center"><select id="f_oldrent" style="flex:1"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="5以上">5以上</option></select><span style="font-size:11px;color:#718096;flex-shrink:0">棟</span></div>
+          <select id="f_oldrent" style="width:100%"><option value="">-</option><option value="1">1棟</option><option value="2">2棟</option><option value="3">3棟</option><option value="4">4棟</option><option value="5">5棟</option><option value="5以上">5棟以上</option></select>
         </div>
         <div>
           <label>駐車場</label>
-          <div style="display:flex;gap:3px;align-items:center"><select id="f_parking" style="flex:1"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="5以上">5以上</option></select><span style="font-size:11px;color:#718096;flex-shrink:0">ヵ所</span></div>
+          <select id="f_parking" style="width:100%"><option value="">-</option><option value="1">1ヵ所</option><option value="2">2ヵ所</option><option value="3">3ヵ所</option><option value="4">4ヵ所</option><option value="5">5ヵ所</option><option value="5以上">5ヵ所以上</option></select>
         </div>
         <div>
           <label>自宅</label>
-          <div style="display:flex;gap:3px;align-items:center"><select id="f_jitaku" style="flex:1"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="5以上">5以上</option></select><span style="font-size:11px;color:#718096;flex-shrink:0">軒</span></div>
-        </div>
-        <div>
-          <label>生産緑地</label>
-          <div style="display:flex;gap:3px;align-items:center"><select id="f_ryokuchi" style="flex:1" onchange="updateRyokuchiBtn()"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="5以上">5以上</option></select><span style="font-size:11px;color:#718096;flex-shrink:0">枚</span></div>
+          <select id="f_jitaku" style="width:100%"><option value="">-</option><option value="1">1軒</option><option value="2">2軒</option><option value="3">3軒</option><option value="4">4軒</option><option value="5">5軒</option><option value="5以上">5軒以上</option></select>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:6px;margin-top:8px;align-items:end">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px;align-items:end">
         <div>
           <label>土地資産規模</label>
           <select id="f_landasset"><option value="">未確認</option><option value="1億以下">1億以下</option><option value="3億以下">3億以下</option><option value="5億以下">5億以下</option><option value="10億未満">10億未満</option><option value="10億以上">10億以上</option></select>
@@ -11438,7 +11434,13 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <label>想定</label>
           <select id="f_soutei"><option value="">-</option><option value="相続">相続</option><option value="承継">承継</option><option value="収支">収支</option><option value="売却">売却</option><option value="緑地解除">緑地解除</option><option value="信託">信託</option></select>
         </div>
-        <div id="ryokuchiBtnCell" style="visibility:hidden"><button type="button" onclick="openRyokuchiNavi()" style="display:block;width:100%;border:1.5px solid #2f7a57;background:#2f7a57;color:#fff;border-radius:8px;padding:9px 10px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap">🌿 生産緑地</button></div>
+        <div>
+          <label>生産緑地</label>
+          <div class="ryoku-pair">
+            <select id="f_ryokuchi" onchange="updateRyokuchiBtn()"><option value="">-</option><option value="1">1枚</option><option value="2">2枚</option><option value="3">3枚</option><option value="4">4枚</option><option value="5">5枚</option><option value="5以上">5枚以上</option></select>
+            <button type="button" id="ryokuchiBtn" onclick="openRyokuchiNavi()" style="display:none">🌿緑地</button>
+          </div>
+        </div>
       </div>
       </div>
     </div>
@@ -11474,10 +11476,10 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <div>
           <label class="pc-area-label">面積<span id="tsuboDisp" style="font-size:11px;color:#64748b;font-weight:600;white-space:nowrap">- 坪</span></label>
           <div style="display:flex;gap:4px;align-items:center">
-            <input type="number" id="f_m2" placeholder="㎡" style="flex:1" inputmode="numeric" pattern="[0-9]*">
+            <input type="number" id="f_m2" placeholder="例:240" style="flex:1;min-width:0" inputmode="numeric" pattern="[0-9]*"><span style="font-size:11px;color:#718096;flex-shrink:0">㎡</span>
           </div>
         </div>
-        <div><label>間口（m）</label><input type="number" id="f_maguchi" placeholder="12" inputmode="numeric" pattern="[0-9]*" style="width:100%"></div>
+        <div><label>間口</label><div style="display:flex;gap:4px;align-items:center"><input type="number" id="f_maguchi" placeholder="12" inputmode="numeric" pattern="[0-9]*" style="flex:1;min-width:0"><span style="font-size:11px;color:#718096;flex-shrink:0">m</span></div></div>
       </div>
       <div class="pc-land-2grid">
       <div class="pc-road-left">
@@ -12504,7 +12506,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f);line-he
 `;
 window.openRyokuchiNavi=function(){var a=document.getElementById("aibisModal");if(a)a.style.display="none";var m=document.getElementById("ryokuchiModal");if(!m)return;m.style.display="flex";var f=document.getElementById("ryokuchiFrame");if(f&&!f.getAttribute("data-loaded")){f.srcdoc=RYOKUCHI_HTML;f.setAttribute("data-loaded","1");}};
 window.closeRyokuchiNavi=function(){var m=document.getElementById("ryokuchiModal");if(m)m.style.display="none";};
-window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBtnCell");if(!cell)return;var sel=document.getElementById("f_ryokuchi");var v=sel?sel.value:"";cell.style.visibility=(v&&v!=="0")?"visible":"hidden";};
+window.updateRyokuchiBtn=function(){var btn=document.getElementById("ryokuchiBtn");if(!btn)return;var sel=document.getElementById("f_ryokuchi");var v=sel?sel.value:"";btn.style.display=(v&&v!=="0")?"":"none";};
 </script>
 <!-- ============================================================
      Aibis 音声入力アドオン（貼り足し用ブロック）
