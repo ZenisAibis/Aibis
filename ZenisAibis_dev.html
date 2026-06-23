@@ -987,6 +987,32 @@ body.is-mob .mob-menu{display:inline-block}
   button{ line-height:1.25; }
   .ha button{ white-space:nowrap; }
 }
+
+/* =========================================================
+   PCフォーム幅バランス補正 v9.24 — Step1.5（編集フォームの幅整理）
+   - @media screen and (min-width:769px) 限定（スマホ・印刷に非干渉）
+   - HTML/JS不変・grid(.r2/.r3/.r4)不変。各入力欄の width/max-width のみ
+   - 用途地域(f_youto)は長い選択肢確保のためXL／備考memo(f_kuubi)は広いまま
+========================================================= */
+@media screen and (min-width:769px){
+  :root{ --pc-field-xs:86px; --pc-field-s:120px; --pc-field-m:170px; --pc-field-l:240px; --pc-field-xl:360px; }
+  /* L：氏名・メールID */
+  #f_name,#f_email_local{ width:var(--pc-field-l)!important; max-width:var(--pc-field-l)!important; flex:0 1 auto; }
+  /* M：短いプルダウン＋TEL＋日付（selectを含む。right-alignしない） */
+  #f_tel,#f_disc,#f_rjdate,#f_pjdate,
+  #f_social,#f_genjo,#f_oldrent,#f_parking,#f_jitaku,#f_ryokuchi,#f_landasset,#f_soutei,
+  #f_kb,#f_ky,#f_chiku,#f_kouzou,#f_kosu,#f_prate{ width:var(--pc-field-m)!important; max-width:var(--pc-field-m)!important; flex:0 1 auto; }
+  /* S：複数桁の数値（右寄せ） */
+  #f_rosenka,#f_m2,#f_m2tanka,#f_chusharyo{ width:var(--pc-field-s)!important; max-width:var(--pc-field-s)!important; flex:0 1 auto; text-align:right; font-variant-numeric:tabular-nums; }
+  /* XS：1〜2桁の数値（右寄せ） */
+  #f_maguchi,#f_kuushitsu,#f_kuushitsu_aki,#f_kai{ width:var(--pc-field-xs)!important; max-width:var(--pc-field-xs)!important; flex:0 1 auto; text-align:right; font-variant-numeric:tabular-nums; }
+  /* XL：用途地域（長い選択肢を確保） */
+  #f_youto{ width:var(--pc-field-xl)!important; max-width:var(--pc-field-xl)!important; flex:0 1 auto; }
+  /* 広いまま：住所・計画地・備考memo・本文・textarea */
+  #f_addr,#f_plan,#f_fambiko,#f_kuubi,
+  #f_content,#f_analog,#f_content_rec,#f_ai_summary,#f_ai_memo,
+  #editView textarea{ width:100%!important; max-width:100%; text-align:left; }
+}
 </style>
 </head>
 <body>
@@ -1868,7 +1894,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.23dev";
+var APP_VERSION = "v9.24dev";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
