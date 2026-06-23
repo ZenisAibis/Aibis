@@ -522,6 +522,52 @@ html.pczoom .tabs .tab .ic{font-size:15px}
   #mikomiTop .mk-addr{grid-column:1/-1;order:6}
   #mikomiTop .mk-plan{grid-column:1/-1;order:7}
 }
+/* =========================================================
+   スマホ版 見込みカード・家族構成微修正 v9.24 — Mobile Fix 1
+   - スマホ版のみ（max-width:600px）／PC版(min-width:769px)・印刷に非干渉
+   - PC用 .pc-name-contact ラッパーで遮断された #mikomiTop の流し込みを復旧
+   - ソーシャル/現状を2列化／家族構成下部をコンパクト化
+   ========================================================= */
+@media(max-width:600px){
+  /* PC用ラッパーをスマホでは透過 → #mikomiTop グリッドへ流し込み復旧 */
+  #mikomiTop .pc-name-contact{ display:contents !important; }
+  /* ソーシャル｜現状 を2列、氏名・TEL・メールは全幅 */
+  #mikomiTop{ grid-template-columns:1fr 1fr !important; }
+  #mikomiTop .mk-name{ grid-column:1/-1 !important; order:1 !important; }
+  #mikomiTop .mk-social{ grid-column:1 !important; order:2 !important; }
+  #mikomiTop .mk-genjo{ grid-column:2 !important; order:3 !important; }
+  #mikomiTop .mk-tel{ grid-column:1/-1 !important; order:4 !important; }
+  #mikomiTop .mk-email{ grid-column:1/-1 !important; order:5 !important; }
+
+  /* 家族構成下部：左=家族全体バー(75%) / 右=構成確定ボタン(25%)、凡例は上段フル — Fix G */
+  #editView .pc-fam-status{
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) minmax(96px,26%);
+    gap:8px;
+    align-items:stretch;
+  }
+  #editView .pc-fam-status > div:has(> #famHeadcountBtn){ display:contents !important; }
+  /* 凡例：上段フル幅 */
+  #editView .pc-fam-status > div:has(> #famHeadcountBtn) > div{ order:1; grid-column:1 / -1; font-size:11px; line-height:1.35; }
+  /* 家族全体バー：左 */
+  #editView .pc-fam-status > #famSummary{ order:2; grid-column:1; align-self:center; margin:0 !important; }
+  /* 構成確定ボタン：右25% */
+  #editView .pc-fam-status #famHeadcountBtn{ order:3; grid-column:2; width:100% !important; box-sizing:border-box; min-height:48px; white-space:nowrap; align-self:stretch; }
+  /* 家族全体バーが非表示(家族未登録)のときはボタンを全幅 */
+  #editView .pc-fam-status:has(> #famSummary[style*="none"]) #famHeadcountBtn{ grid-column:1 / -1; }
+
+  /* 家族全体バーは狭い時は折り返して文字切れ回避 */
+  #editView #famSummary > div{ white-space:normal !important; }
+
+  /* 土地情報の幅バランス：路線価+借地割合=長め / 面積=中 / 間口=短 */
+  #secTochi .pc-land-main{ grid-template-columns:1.5fr 1fr 0.6fr !important; }
+}
+/* 360px前後：家族全体バー＋構成確定ボタンを縦積み（文字切れ回避優先） */
+@media(max-width:380px){
+  #editView .pc-fam-status{ grid-template-columns:1fr !important; }
+  #editView .pc-fam-status > #famSummary{ grid-column:1 !important; }
+  #editView .pc-fam-status #famHeadcountBtn{ grid-column:1 !important; }
+}
 .addr-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .addr-acts{display:flex;gap:4px;flex:0 0 auto}
 .addr-row{display:flex;gap:4px;align-items:center;margin-top:4px}
@@ -953,7 +999,356 @@ body.is-mob .mob-menu{display:inline-block}
 .paste-at{font-size:11px;color:#5a6b85;font-weight:600;margin-top:4px;text-align:right}.zdash .z-stamp{font-size:10px;color:var(--z-dim);text-align:right;margin-top:6px}
 #planSvBtn:disabled{opacity:.38;cursor:not-allowed}
 /* Phase6: 編集ヘッダーの窮屈さ解消（狭い画面で中央ロゴを隠し、画面名に余白） */@media(max-width:520px){.ehdr-logo{display:none!important}.ehdr-l{max-width:64%!important}}
-/* z.Aibis dashboard polish (scoped, additive) */.zdash-mgr,.zdash-rep{-webkit-font-smoothing:antialiased}.zdash .z-card{border-radius:16px}.zdash-mgr .z-card,.zdash-rep .z-card{background:#fff;border-color:#e6eaf2;box-shadow:0 1px 2px rgba(20,40,80,.04),0 8px 22px -12px rgba(20,40,80,.18)}.zdash .z-kpi .z-klab{display:block;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.02em}.zdash .z-num,.zdash .z-kval,.zdash .stat-num,.zdash .bar-num,.zdash .z-pno,.zdash .z-ptemp{font-variant-numeric:tabular-nums}.zdash-mgr .z-cmdhead{letter-spacing:.13em}.zdash-mgr .z-cmdhead span{letter-spacing:.03em}.zdash .z-sec-h{border-radius:14px;font-size:13.5px}.zdash .z-secsub{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.job-card{border-radius:16px}.zdash-rep .job-card,.zdash-mgr .job-card,.zjf-wrap .job-card{box-shadow:0 1px 2px rgba(20,40,80,.05),0 10px 28px -14px rgba(20,40,80,.22)}.job-card::before{content:'';position:absolute;left:0;right:0;top:0;height:3px;border-radius:16px 16px 0 0;background:linear-gradient(90deg,var(--jc-accent,#8b7cff),transparent 88%);opacity:.85;pointer-events:none}.jc-tier-0::before{opacity:.4}.jc-tier-king::before{background:linear-gradient(90deg,#ffd43b,transparent 80%);opacity:1}.job-name{min-width:0;row-gap:2px;font-size:clamp(18px,4.8vw,22px)}.job-name .jn-txt{min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis}.job-title{min-width:0;overflow:hidden;text-overflow:ellipsis;box-shadow:0 1px 0 rgba(0,0,0,.05)}.job-strong{min-width:0}.stat-row,.bar-row{min-width:0}.stat-lab{width:84px}.bar-lab{width:84px}.stat-num,.bar-num{text-align:right;min-width:30px}.z-jobgrid{gap:14px}.z-jobcell{min-width:0}.zjz-card{border-radius:18px}.zdash-rep .z-self-job{border-color:#cfe0ff;box-shadow:0 1px 2px rgba(20,40,80,.05),0 12px 30px -14px rgba(43,108,176,.28)}.zdash .z-sec-body{padding:10px 7px 3px}.zdash-mgr .z-card,.zdash-rep .z-card{padding:14px}.zdash .z-actrow{display:flex;flex-wrap:nowrap;gap:5px;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch}.zdash .z-actrow .z-chip{flex:0 0 auto;margin:0;font-size:10.5px;padding:5px 9px}.zdash-mgr .z-axking{display:flex;align-items:center;gap:8px;padding:7px 2px;border-bottom:1px solid #edf2f7}.zdash-mgr .z-axk-st{font-size:12px;font-weight:700;color:#2d3748;min-width:78px;display:inline-flex;align-items:center}.zdash-mgr .z-axk-ic{display:inline-block;width:1.5em;text-align:center;margin-right:3px;flex:none}.zdash-mgr .z-axk-t{font-size:10.5px;font-weight:800;background:rgba(212,175,55,.16);color:#b7791f;border-radius:8px;padding:2px 8px;white-space:nowrap}.zdash-mgr .z-axk-nm{font-size:12.5px;font-weight:700;color:#1a365d;margin-left:auto}.zdash-mgr .z-axk-v{font-variant-numeric:tabular-nums;font-weight:700;color:#5b6b85;min-width:26px;text-align:right}@media(max-width:620px){.zdash .z-sec-body{padding:9px 5px 2px}.zdash-mgr .z-card,.zdash-rep .z-card{padding:12px}}body.is-dev button[onclick="openAibisChat()"]{background:#7c3aed!important;box-shadow:0 0 0 2px rgba(124,58,237,.25)}body.is-dev .dev-selfacc{margin-top:16px}body.is-dev .dev-selfacc>summary{list-style:none;cursor:pointer;background:#fde68a;color:#7c2d12;font-size:12px;font-weight:800;padding:9px 13px;border-radius:10px;display:flex;align-items:center;gap:8px}body.is-dev .dev-selfacc>summary::-webkit-details-marker{display:none}body.is-dev .dev-selfacc>summary::after{content:"\25B6";margin-left:auto;font-size:10px}body.is-dev .dev-selfacc[open]>summary::after{content:"\25BC"}body.is-dev .dev-selfacc>div{border:1px solid #fcd34d;border-top:none;border-radius:0 0 10px 10px;padding:10px}.zdash .z-sec-h{flex-wrap:nowrap}@media(max-width:620px){.zdash .z-sec-h .z-secsub{display:none}.zdash .z-sec-h{white-space:nowrap}}@media(max-width:620px){.zdash .z-card{padding:13px}.job-card{padding:12px}.job-name{font-size:19px}.z-jobgrid{grid-template-columns:1fr;gap:11px}.zdash-mgr .z-cmdhead{font-size:14px}}</style>
+/* z.Aibis dashboard polish (scoped, additive) */.zdash-mgr,.zdash-rep{-webkit-font-smoothing:antialiased}.zdash .z-card{border-radius:16px}.zdash-mgr .z-card,.zdash-rep .z-card{background:#fff;border-color:#e6eaf2;box-shadow:0 1px 2px rgba(20,40,80,.04),0 8px 22px -12px rgba(20,40,80,.18)}.zdash .z-kpi .z-klab{display:block;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.02em}.zdash .z-num,.zdash .z-kval,.zdash .stat-num,.zdash .bar-num,.zdash .z-pno,.zdash .z-ptemp{font-variant-numeric:tabular-nums}.zdash-mgr .z-cmdhead{letter-spacing:.13em}.zdash-mgr .z-cmdhead span{letter-spacing:.03em}.zdash .z-sec-h{border-radius:14px;font-size:13.5px}.zdash .z-secsub{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.job-card{border-radius:16px}.zdash-rep .job-card,.zdash-mgr .job-card,.zjf-wrap .job-card{box-shadow:0 1px 2px rgba(20,40,80,.05),0 10px 28px -14px rgba(20,40,80,.22)}.job-card::before{content:'';position:absolute;left:0;right:0;top:0;height:3px;border-radius:16px 16px 0 0;background:linear-gradient(90deg,var(--jc-accent,#8b7cff),transparent 88%);opacity:.85;pointer-events:none}.jc-tier-0::before{opacity:.4}.jc-tier-king::before{background:linear-gradient(90deg,#ffd43b,transparent 80%);opacity:1}.job-name{min-width:0;row-gap:2px;font-size:clamp(18px,4.8vw,22px)}.job-name .jn-txt{min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis}.job-title{min-width:0;overflow:hidden;text-overflow:ellipsis;box-shadow:0 1px 0 rgba(0,0,0,.05)}.job-strong{min-width:0}.stat-row,.bar-row{min-width:0}.stat-lab{width:84px}.bar-lab{width:84px}.stat-num,.bar-num{text-align:right;min-width:30px}.z-jobgrid{gap:14px}.z-jobcell{min-width:0}.zjz-card{border-radius:18px}.zdash-rep .z-self-job{border-color:#cfe0ff;box-shadow:0 1px 2px rgba(20,40,80,.05),0 12px 30px -14px rgba(43,108,176,.28)}.zdash .z-sec-body{padding:10px 7px 3px}.zdash-mgr .z-card,.zdash-rep .z-card{padding:14px}.zdash .z-actrow{display:flex;flex-wrap:nowrap;gap:5px;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch}.zdash .z-actrow .z-chip{flex:0 0 auto;margin:0;font-size:10.5px;padding:5px 9px}.zdash-mgr .z-axking{display:flex;align-items:center;gap:8px;padding:7px 2px;border-bottom:1px solid #edf2f7}.zdash-mgr .z-axk-st{font-size:12px;font-weight:700;color:#2d3748;min-width:78px;display:inline-flex;align-items:center}.zdash-mgr .z-axk-ic{display:inline-block;width:1.5em;text-align:center;margin-right:3px;flex:none}.zdash-mgr .z-axk-t{font-size:10.5px;font-weight:800;background:rgba(212,175,55,.16);color:#b7791f;border-radius:8px;padding:2px 8px;white-space:nowrap}.zdash-mgr .z-axk-nm{font-size:12.5px;font-weight:700;color:#1a365d;margin-left:auto}.zdash-mgr .z-axk-v{font-variant-numeric:tabular-nums;font-weight:700;color:#5b6b85;min-width:26px;text-align:right}@media(max-width:620px){.zdash .z-sec-body{padding:9px 5px 2px}.zdash-mgr .z-card,.zdash-rep .z-card{padding:12px}}body.is-dev button[onclick="openAibisChat()"]{background:#7c3aed!important;box-shadow:0 0 0 2px rgba(124,58,237,.25)}body.is-dev .dev-selfacc{margin-top:16px}body.is-dev .dev-selfacc>summary{list-style:none;cursor:pointer;background:#fde68a;color:#7c2d12;font-size:12px;font-weight:800;padding:9px 13px;border-radius:10px;display:flex;align-items:center;gap:8px}body.is-dev .dev-selfacc>summary::-webkit-details-marker{display:none}body.is-dev .dev-selfacc>summary::after{content:"\25B6";margin-left:auto;font-size:10px}body.is-dev .dev-selfacc[open]>summary::after{content:"\25BC"}body.is-dev .dev-selfacc>div{border:1px solid #fcd34d;border-top:none;border-radius:0 0 10px 10px;padding:10px}.zdash .z-sec-h{flex-wrap:nowrap}@media(max-width:620px){.zdash .z-sec-h .z-secsub{display:none}.zdash .z-sec-h{white-space:nowrap}}@media(max-width:620px){.zdash .z-card{padding:13px}.job-card{padding:12px}.job-name{font-size:19px}.z-jobgrid{grid-template-columns:1fr;gap:11px}.zdash-mgr .z-cmdhead{font-size:14px}}
+/* =========================================================
+   PC専用 安全補正パッチ v9.23（dev検証用）
+   - スマホ版・印刷版には影響させない（screen限定）
+   - HTML/JSは変更しない
+========================================================= */
+@media screen{ html.pczoom{ zoom:1 !important; } }
+@media screen and (min-width:769px){
+  :root{ --pc-list-width: min(1080px, calc(100vw - 32px)); --pc-card-width: min(940px, calc(100vw - 32px)); }
+  #listView,#helpView,#setupView,#editView{ background:#e8ecf0; overflow-x:hidden; }
+  #listView > *:not(.fam-mo):not(.mo):not(.z-fullov){ width:var(--pc-list-width)!important; max-width:var(--pc-list-width)!important; margin-left:auto!important; margin-right:auto!important; box-sizing:border-box; }
+  #editView > *:not(.fam-mo):not(.mo):not(.z-fullov),
+  #helpView > *:not(.fam-mo):not(.mo):not(.z-fullov),
+  #setupView > *:not(.fam-mo):not(.mo):not(.z-fullov){ width:var(--pc-card-width)!important; max-width:var(--pc-card-width)!important; margin-left:auto!important; margin-right:auto!important; box-sizing:border-box; }
+  header{ border-radius:10px 10px 0 0; }
+  .panel{ border-radius:0 0 10px 10px; }
+  .sec{ margin-bottom:14px; }
+  .sortbar{ margin-left:0!important; margin-right:0!important; max-width:100%; overflow:hidden; gap:6px; }
+  .sortbar-scroll{ min-width:0; max-width:100%; overflow-x:auto; overflow-y:hidden; flex-wrap:nowrap; scrollbar-width:none; }
+  .sortbar-scroll::-webkit-scrollbar{ display:none; }
+  .sortbar-lab{ flex-shrink:0; white-space:nowrap; font-size:12px; }
+  .sortbar-nav{ display:inline-flex; width:30px; height:34px; min-height:34px; flex-shrink:0; align-items:center; justify-content:center; padding:0; }
+  .sbtn{ min-height:34px; padding:6px 9px; font-size:11.5px; white-space:nowrap; flex-shrink:0; line-height:1.2; }
+  #staffFilterBtns{ min-width:0; overflow-x:auto; overflow-y:hidden; flex-wrap:nowrap; scrollbar-width:none; }
+  #staffFilterBtns::-webkit-scrollbar{ display:none; }
+  .lcard{ width:100%; min-width:0; }
+  .lname{ max-width:22em; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .lmeta{ min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  /* 広すぎる全子孫指定は使わず対象を限定（アイコン/バッジ/小ボタンの意図せぬ縮みを防ぐ） */
+  .lcard,
+  .lcard > div,
+  .lcard .lname,
+  .lcard .lmeta{ min-width:0; }
+  button{ line-height:1.25; }
+  .ha button{ white-space:nowrap; }
+}
+
+/* =========================================================
+   StepA v9.25dev — PC版 一覧カードを2列表示（row-wise／左右左右）
+   - @media screen and (min-width:769px) 限定（スマホ・印刷は1列維持）
+   - #cardList を grid 2列化。HTML/JS不変・.lcard構造不変。
+   - gridのデフォルト並びが行方向（左→右→次の行）= 左右左右で降りる。
+   ========================================================= */
+@media screen and (min-width:769px){
+  #cardList{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    align-items:start; /* 高さ可変カードの行頭ガタつき防止 */
+  }
+  #cardList > .lcard{ margin-bottom:0; } /* gapと二重マージン防止 */
+  #cardList > .empty{ grid-column:1 / -1; } /* 空・該当なしは2列ぶち抜き中央 */
+}
+
+/* =========================================================
+   PCフォーム幅バランス補正 v9.24 — Step1.5（編集フォームの幅整理）
+   - @media screen and (min-width:769px) 限定（スマホ・印刷に非干渉）
+   - HTML/JS不変・grid(.r2/.r3/.r4)不変。各入力欄の width/max-width のみ
+   - 用途地域(f_youto)は長い選択肢確保のためXL／備考memo(f_kuubi)は広いまま
+========================================================= */
+@media screen and (min-width:769px){
+  :root{ --pc-field-xs:86px; --pc-field-s:120px; --pc-field-m:170px; --pc-field-l:240px; --pc-field-xl:360px; }
+  /* L：氏名・メールID */
+  #f_name,#f_email_local{ width:var(--pc-field-l)!important; max-width:var(--pc-field-l)!important; flex:0 1 auto; }
+  /* M：短いプルダウン＋TEL＋日付（selectを含む。right-alignしない） */
+  #f_tel,#f_disc,#f_rjdate,#f_pjdate,
+  #f_social,#f_genjo,#f_oldrent,#f_parking,#f_jitaku,#f_ryokuchi,#f_landasset,#f_soutei,
+  #f_kb,#f_ky,#f_chiku,#f_kouzou,#f_kosu,#f_prate{ width:var(--pc-field-m)!important; max-width:var(--pc-field-m)!important; flex:0 1 auto; }
+  /* S：複数桁の数値（右寄せ） */
+  #f_rosenka,#f_m2,#f_m2tanka,#f_chusharyo{ width:var(--pc-field-s)!important; max-width:var(--pc-field-s)!important; flex:0 1 auto; text-align:center; font-variant-numeric:tabular-nums; }
+  /* XS：1〜2桁の数値（右寄せ） */
+  #f_maguchi,#f_kuushitsu,#f_kuushitsu_aki,#f_kai{ width:var(--pc-field-xs)!important; max-width:var(--pc-field-xs)!important; flex:0 1 auto; text-align:center; font-variant-numeric:tabular-nums; }
+  /* XL：用途地域（長い選択肢を確保） */
+  #f_youto{ width:var(--pc-field-xl)!important; max-width:var(--pc-field-xl)!important; flex:0 1 auto; }
+  /* 広いまま：住所・計画地・備考memo・本文・textarea */
+  #f_addr,#f_plan,#f_fambiko,#f_kuubi,
+  #f_content,#f_analog,#f_content_rec,#f_ai_summary,#f_ai_memo,
+  #editView textarea{ width:100%!important; max-width:100%; text-align:left; }
+}
+
+/* =========================================================
+   PCフォーム行コンパクト化 v9.24 — Step1.6（dev検証）
+   - 狭くした入力欄の右の空白を詰める：入力欄を含むグリッド行を左詰めflexに
+   - 除外：ボタン群(.pbtn)行・住所(f_addr)/計画地(f_plan)行・textarea行（広いまま）
+   - @media screen and (min-width:769px) 限定／スマホ・印刷・HTML・JS不変
+========================================================= */
+@media screen and (min-width:769px){
+  #editView div[style*="grid-template-columns"]:has(input:not([type=checkbox]):not([type=radio]), select):not(:has(.pbtn)):not(:has(#f_addr)):not(:has(#f_plan)):not(:has(textarea)):not(:has(#f_kouzou)):not(:has(#f_m2tanka)):not(:has(#f_oldrent)):not(:has(#f_landasset)):not(:has(#f_rosenka)):not(:has(#f_kb)):not(:has(#f_kuushitsu)):not(:has(#f_name)):not(:has(#f_tel)){
+    display:flex!important;
+    flex-wrap:wrap!important;
+    gap:10px 16px!important;
+    justify-content:flex-start!important;
+    align-items:flex-start!important;
+  }
+}
+/* =========================================================
+   PCフォーム・ボタン密度補正 v9.24 — Step1.6b（dev検証）
+   - 高度地区・防火地域の短い選択ボタンだけを内容幅で左詰めに
+   - data-pill限定（権利関係/接道方位/ステージ/判定・スマホ・印刷には非干渉）
+   - @media screen and (min-width:769px) 限定／HTML・JS不変
+========================================================= */
+@media screen and (min-width:769px){
+  :root{ --pc-btn-xs:82px; --pc-btn-s:110px; --pc-btn-m:140px; --pc-btn-l:180px; }
+  /* 高度地区・防火地域：均等割りを解除し、内容幅で左詰め */
+  #editView div:has(> .pbtn[data-pill="kodo"]),
+  #editView div:has(> .pbtn[data-pill="bouka"]){
+    display:flex !important;
+    flex-wrap:wrap !important;
+    justify-content:flex-start !important;
+    align-items:center !important;
+    gap:8px !important;
+  }
+  /* 高度地区：1種 / 2種 / 3種 / なし */
+  #editView .pbtn[data-pill="kodo"]{
+    flex:0 0 auto !important;
+    width:auto !important;
+    min-width:var(--pc-btn-xs) !important;
+    padding-left:16px !important;
+    padding-right:16px !important;
+    white-space:nowrap;
+  }
+  /* 防火地域：準防火 / 新防火 / 防火 */
+  #editView .pbtn[data-pill="bouka"]{
+    flex:0 0 auto !important;
+    width:auto !important;
+    min-width:var(--pc-btn-s) !important;
+    padding-left:18px !important;
+    padding-right:18px !important;
+    white-space:nowrap;
+  }
+}
+/* ============================================================
+   PCセクション密度再設計 v9.24 — Step C1（計画規模イメージ）
+   旧Step A（4+2／order）を廃止し、PCのみ 3列×2行 に。
+   DOM順=Tab順=見た目順が一致（order不使用）。セル幅いっぱいに入力欄を伸ばし右空白を解消。
+   ※ 計画規模2行は Step1.6 のflex対象から除外済み。
+   ============================================================ */
+@media screen and (min-width:769px){
+  #editView .pc-plan{
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0,1fr));
+    column-gap:16px;
+    row-gap:10px;
+    align-items:end;
+  }
+  #editView .pc-plan > div{ display:contents !important; }
+  #editView .pc-plan > div > div{ min-width:0; }
+  /* 入力欄はセル幅いっぱい（フォーム自体が約940px上限なので横長になりすぎない） */
+  #secKeikaku .pc-plan select,
+  #secKeikaku .pc-plan input{
+    width:100% !important;
+    max-width:none !important;
+    flex:1 1 auto !important;
+    text-align:center !important;
+  }
+}
+/* ============================================================
+   PCセクション密度再設計 v9.24 — Step C2/C3/C4
+   C2 資産背景：3列×2行／C3 土地情報 主要数値：3列を埋める／C4 高度地区・防火を左右2ブロック
+   いずれも PC のみ・DOM順=Tab順一致（order不使用）。スマホ/印刷は非干渉。
+   ※ 資産2行・路線価行は Step1.6 のflex対象から除外済み。
+   ============================================================ */
+@media screen and (min-width:769px){
+  /* --- C2 資産背景：6項目を 3列×2行 --- */
+  #editView .pc-asset{
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0,1fr));
+    column-gap:16px;
+    row-gap:10px;
+    align-items:end;
+  }
+  #editView .pc-asset > div{ display:contents !important; }
+  #editView .pc-asset > div > div{ min-width:0; }
+  /* 生産緑地ナビ隠しセルは非表示中は枠を取らない（JSのvisibility:hiddenを読む。空行を作らない） */
+  #editView .pc-asset #ryokuchiBtnCell[style*="hidden"]{ display:none !important; }
+  /* Step E精密化：生産緑地を最右に。DOM順 老朽/駐車/自宅/緑地/規模/想定
+     → 視覚順 老朽/駐車/自宅/土地資産規模/想定/生産緑地（緑地のみorderで後送り） */
+  #editView .pc-asset > div > div:has(> #f_landasset){ order:4; }
+  #editView .pc-asset > div > div:has(> #f_soutei){ order:5; }
+  #editView .pc-asset > div > div:has(#f_ryokuchi){ order:6; }
+  #editView .pc-asset #ryokuchiBtnCell{ order:7; }
+  /* プルダウンはセル幅いっぱい：1行目(接尾辞付き)はflex、2行目(直下select)はwidth:100% */
+  #editView .pc-asset > div:first-child select{
+    width:auto !important;
+    max-width:none !important;
+    flex:1 1 auto !important;
+  }
+  #editView .pc-asset > div:nth-child(2) select{
+    width:100% !important;
+    max-width:none !important;
+  }
+
+  /* --- C3 土地情報 主要数値：路線価＋借地割合 / 面積 / 間口（行は既に3列fr、入力欄をセル幅に） --- */
+  #secTochi .pc-land-main > div{ min-width:0; }
+  #secTochi .pc-land-main #f_rosenka,
+  #secTochi .pc-land-main #f_m2{
+    width:100% !important;
+    max-width:none !important;
+    flex:1 1 auto !important;
+  }
+  #secTochi .pc-land-main #f_maguchi{
+    width:100% !important;
+    max-width:none !important;
+    text-align:center !important;
+  }
+
+  /* --- C4 高度地区・防火地域：左右2ブロック（各ブロック内のボタンは内容幅のまま=Step1.6b） --- */
+  #editView .pc-pill-pair{
+    display:grid;
+    grid-template-columns:auto auto;
+    justify-content:start;
+    column-gap:36px;
+    row-gap:8px;
+    align-items:start;
+  }
+  #editView .pc-pill-pair > div{ margin-bottom:0 !important; }
+}
+/* ============================================================
+   PCセクション密度再設計 v9.24 — Step D（土地情報まわり 2グリッド）
+   D1 接道方向2グリッド：左=接道3×3／右=用途地域＋権利関係チェック
+   D2 満室/空きを築年数の行へ：建蔽row・満室row を contents で 4列1行
+      [建蔽・容積 / 築年数 / 満室 / 空き]、高度/防火pill-pairは下段full幅(order)
+   いずれも PC のみ。スマホ=block素通り（順序不変）／印刷=別生成HTML非干渉。
+   ※ 満室/空きは視覚的に上段へ寄せるためTab順とズレあり（短い数値欄・空白解消優先）。
+   ※ 建蔽row・満室row・路線価/資産行は Step1.6 のflex対象から除外済み。
+   ============================================================ */
+@media screen and (min-width:769px){
+  /* --- D1 接道方向 2グリッド --- */
+  #secTochi .pc-land-2grid{
+    display:grid;
+    grid-template-columns:minmax(280px,340px) minmax(0,1fr);
+    column-gap:28px;
+    align-items:start;
+  }
+  #secTochi .pc-road-left{ min-width:0; }
+  #secTochi .pc-road-left > div{ margin-bottom:0 !important; }
+  #secTochi .pc-road-right{
+    min-width:0;
+    display:grid;
+    row-gap:12px;
+    align-content:start;
+  }
+  #secTochi .pc-road-right > div{ margin-bottom:0 !important; }
+
+  /* --- D2 満室/空きを築年数の行へ（4列1行＋pill-pairは下段full幅） --- */
+  #secTochi .pc-land-meta{
+    display:grid;
+    grid-template-columns:repeat(4, minmax(0,1fr));
+    column-gap:16px;
+    row-gap:10px;
+    align-items:end;
+  }
+  #secTochi .pc-land-meta > .metarow{ display:contents !important; }
+  #secTochi .pc-land-meta > .metarow > div{ min-width:0; margin-bottom:0 !important; }
+  /* 高度/防火（pill-pair）は満室/空きの後＝下段にfull幅で配置 */
+  #secTochi .pc-land-meta > .pc-pill-pair{
+    order:10;
+    grid-column:1 / -1;
+    margin-bottom:0 !important;
+  }
+  /* 満室/空きの数値はセル幅いっぱい */
+  #secTochi .pc-land-meta #f_kuushitsu,
+  #secTochi .pc-land-meta #f_kuushitsu_aki{
+    width:100% !important;
+    max-width:none !important;
+    text-align:center !important;
+  }
+}
+/* ============================================================
+   PC版 精密グリッド調整 v9.24 — Step E（名前/家族＋一行化の仕上げ）
+   ・名前エリア：mk-row(2fr1fr1fr / 1fr1fr)を維持し、ソーシャル/現状/TELをセル幅いっぱいに
+   ・家族構成：人数確定ボタン行を 左=ボタン / 右=凡例(意向・居住) の2グリッドに
+   ・計画規模/資産背景：≥1200pxで6項目1行、769〜1199pxは3列×2行（下の1200pxブロック）
+   PCのみ・スマホ/印刷非干渉。
+   ============================================================ */
+@media screen and (min-width:769px){
+  /* 名前エリア：短いプルダウン/TELをセル幅いっぱいに（右空白解消） */
+  #secMikomi .mk-row #f_social,
+  #secMikomi .mk-row #f_genjo,
+  #secMikomi .mk-row #f_tel{
+    width:100% !important;
+    max-width:none !important;
+  }
+  /* 家族構成の一行化は下の Step F（.pc-fam-status）で実装 */
+}
+/* 計画規模・資産背景：横幅が広いPC(≥1200px)では6項目を1行に */
+@media screen and (min-width:1200px){
+  #editView .pc-plan{ grid-template-columns:repeat(6, minmax(0,1fr)) !important; }
+  #editView .pc-asset{ grid-template-columns:repeat(6, minmax(0,1fr)) !important; }
+}
+/* ============================================================
+   PC版 最終整列調整 v9.24 — Step F（名前再配置/最寄/家族一行）
+   ※ ご指定の作業名は「Step E」。前ラウンドのStep Eブロックと区別するためStep F表記。
+   ・名前：左[氏名 / ソーシャル・現状] 右[TEL / メール]（grid-areas、DOM順不変）
+   ・最寄駅徒歩：PCで「タップで切替」を非表示
+   ・家族構成：人数確定ボタン / 凡例 / 家族全体サマリ を一行
+   PCのみ・スマホ/印刷非干渉。
+   ============================================================ */
+@media screen and (min-width:769px){
+  /* 名前：氏名(左上)・ソーシャル/現状(左下)・TEL(右上)・メール(右下) */
+  #secMikomi .pc-name-contact{
+    display:grid;
+    grid-template-columns:repeat(4, minmax(0,1fr));
+    grid-template-areas:
+      "nm nm tl tl"
+      "so ge ml ml";
+    column-gap:14px;
+    row-gap:10px;
+    align-items:end;
+  }
+  #secMikomi .pc-name-contact > div{ display:contents !important; }
+  #secMikomi .pc-name-contact .mk-name{ grid-area:nm; min-width:0; }
+  #secMikomi .pc-name-contact .mk-social{ grid-area:so; min-width:0; }
+  #secMikomi .pc-name-contact .mk-genjo{ grid-area:ge; min-width:0; }
+  #secMikomi .pc-name-contact .mk-tel{ grid-area:tl; min-width:0; }
+  #secMikomi .pc-name-contact .mk-email{ grid-area:ml; min-width:0; }
+
+  /* 最寄駅徒歩：PCでは「タップで切替」を非表示 */
+  #editView .pc-hide-tap{ display:none !important; }
+
+  /* 家族構成：人数確定ボタン / 凡例 / 家族全体サマリ を一行 */
+  #editView .pc-fam-status{
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr) auto;
+    column-gap:14px;
+    align-items:center;
+  }
+  #editView .pc-fam-status > div:has(> #famHeadcountBtn){ display:contents !important; }
+  #editView .pc-fam-status #famHeadcountBtn{ order:1; }
+  #editView .pc-fam-status > div:has(> #famHeadcountBtn) > div{ order:2; }
+  #editView .pc-fam-status > #famSummary{ order:3; margin:0 !important; }
+}
+/* =========================================================
+   家族構成ボタン名・スマホ表示・面積坪換算位置修正 v9.24 — Fix F
+   - 「人数を確定」→「構成確定」（HTML+JS文言、PC/スマホ共通）
+   - スマホ：構成確定ボタンを全幅（Mobile Fix 1 内で対応）
+   - 面積：坪換算(#tsuboDisp)を「面積（㎡）」タイトル横へ（入力欄横から移動）
+     ※ PC/スマホ共通。印刷は別生成テンプレートのため非干渉。
+   ========================================================= */
+.pc-area-label{ display:flex; align-items:baseline; gap:6px; flex-wrap:wrap; }
+/* =========================================================
+   数字系・プルダウンの文字を中央寄せ（PC/スマホ共通）— Center Fix
+   - 数字入力(type=number / inputmode=numeric) と select を中央寄せ
+   - 氏名・メール・住所などのテキスト入力／textarea は対象外
+   - 印刷は別生成テンプレートのため非干渉
+   ========================================================= */
+#editView input[type="number"],
+#editView input[inputmode="numeric"],
+#editView select{ text-align:center !important; text-align-last:center !important; }
+</style>
 </head>
 <body>
 <div class="container">
@@ -991,8 +1386,6 @@ body.is-mob .mob-menu{display:inline-block}
         <button onclick="togglePcMenu(event)" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:6px;font-size:16px;padding:4px 8px;cursor:pointer;font-family:inherit;line-height:1.6;min-height:36px;width:36px">⋮</button>
         <div class="mob-dropdown" id="pcDropdown" style="right:0;left:auto;min-width:170px">
           <button onclick="closePcMenu();openPlannerToday()">📅 本日の予定表</button>
-          <button onclick="closePcMenu();openListPrintMenu()">📋 リスト印刷</button>
-          <button onclick="closePcMenu();printSelected()">🗂 個別カード印刷</button>
           <button onclick="closePcMenu();restoreBackup()">⏪ 1つ前に戻す</button>
           <div style="height:1px;background:#e2e8f0;margin:4px 0"></div>
           <button onclick="closePcMenu();showSetup()">⚙ 初期設定</button>
@@ -1004,6 +1397,7 @@ body.is-mob .mob-menu{display:inline-block}
           </div>
         </div>
       </div>
+      <button onclick="openListPrintMenu()" title="印刷（リスト／個別カード）" style="background:#0d9488;color:white;border:1px solid rgba(255,255,255,0.25);border-radius:6px;font-size:15px;padding:4px 8px;cursor:pointer;font-family:inherit;line-height:1.6;min-height:36px;width:36px">🖨</button>
       <button onclick="openAibisChat()" style="background:#d97706;color:white;border:none;border-radius:6px;font-size:11px;padding:4px 8px;cursor:pointer;font-family:inherit;line-height:1.2">🧚<br><span class="aibisVer" style="font-size:8px;opacity:0.8;font-weight:700">v3.3</span></button>
     </div>
   </header>
@@ -1032,8 +1426,7 @@ body.is-mob .mob-menu{display:inline-block}
             <button onclick="closeMobMenu();openBook()">📕 みんなへ</button>
             <div id="mobMgrPrint" style="display:none">
             <div style="height:1px;background:#e2e8f0;margin:4px 0"></div>
-            <button onclick="closeMobMenu();openListPrintMenu()">📋 リスト印刷</button>
-            <button onclick="closeMobMenu();printSelected()">🗂 個別カード印刷</button>
+            <button onclick="closeMobMenu();openListPrintMenu()">🖨 印刷（リスト／個別カード）</button>
             </div>
             <div style="height:1px;background:#e2e8f0;margin:4px 0"></div>
             <button onclick="closeMobMenu();resetSmartphone()" style="color:#c53030;font-size:11px">🗑 スマホをリセット</button>
@@ -1834,7 +2227,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.21";
+var APP_VERSION = "v9.34";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -6911,6 +7304,7 @@ function buildPrintCSS(){
     +'.pbtn{padding:2pt 6pt;border:0.5pt solid #cbd5e0;border-radius:10pt;font-size:8.5pt;background:#f7fafc;color:#718096}'
     +'.pbtn.active{background:#276749;color:white;border-color:#276749;font-weight:700}'
     +'.pgbrk{page-break-before:always}'
+    +'.cardclip{height:250mm;overflow:hidden}'
     +'.hint{font-size:8pt;color:#a0aec0;text-align:right;margin-top:1mm}'
     +'.jsec{border:1pt solid #553c9a;border-radius:2mm;padding:2mm 3mm;background:#faf5ff}'
     +'.jsec-title{font-size:10pt;font-weight:800;color:#553c9a;margin-bottom:1.5mm}';
@@ -6954,39 +7348,44 @@ function execPrint(){
   }
 
   if(window._listPrint){
-    // 一覧印刷：全対象カードを1つのHTMLに結合して一括印刷
+    // 一覧印刷：チェックした種別を、チェックしたカード分だけ結合して一括印刷
     var allCards=window._batchPrintCards||[cur];
+    var _bopt=window._batchPrintOpts||{card:true,family:false};
     var combinedHtml='<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><style>'
       +buildPrintCSS()
       +'</style></head><body>';
-    allCards.forEach(function(card,idx){
-      var ch=card;
+    var _pages=[];
+    allCards.forEach(function(ch){
       var chdrTxt=e((ch.branch||'')+' '+(ch.section||'')+' '+(ch.manager||'')+' ／ '+(ch.name||'')+' / 発掘日:'+(ch.discovery_date||'-')+' / 印刷:'+dateStr);
-      if(idx>0) combinedHtml+='<div class="pgbrk"></div>';
       var _hdr='<div class="prhdr"><div class="prhdr-left">z.Aibis</div><div class="prhdr-right">'+chdrTxt+'</div></div>';
-      combinedHtml+=_hdr+buildInitVisitHTML(ch);
-      combinedHtml+='<div class="pgbrk"></div>'+_hdr+buildRevisitHTML(ch);
-      var _pp=ch.pursuits||[];
-      if(_pp.some(function(p){return p.content||p.date||p.rec||p.interviewer||p.appo||p.next_appo_date||p.visit_type||p.instruction;})){ combinedHtml+='<div class="pgbrk"></div>'+_hdr+buildPursuitHTML(ch); }
+      if(_bopt.card){
+        _pages.push(_hdr+buildInitVisitHTML(ch,{noTitle:true,clip:true}));   /* 表＝見込み */
+        _pages.push(_hdr+buildRevisitHTML(ch,{noTitle:true,clip:true}));     /* 裏＝再訪（両面1枚） */
+      }
+      if(_bopt.family){
+        _pages.push(_hdr+buildFamilyHTML(ch));                                /* 家族構成 */
+      }
     });
+    combinedHtml+=_pages.join('<div class="pgbrk"></div>');
     combinedHtml+='</body></html>';
     closePrintModal();
     window._listPrint=false;
     window._printQueue=[];
     window._batchPrintCards=[];
+    if(!_pages.length){ toast('印刷する種類を選んでね'); return; }
     printHTMLDocument(combinedHtml);
     return;
   } else {
     if(printCard){
-      addPage(buildInitVisitHTML(c));
-      // 再訪カード（裏面）：追撃があれば続けて配置し、余白とページ数を抑制
-      addPage(buildRevisitHTML(c));
+      addPage(buildInitVisitHTML(c,{noTitle:true,clip:true}));
+      // 再訪カード（裏面）：1ページに収める。追撃は独立ページへ。
+      addPage(buildRevisitHTML(c,{noTitle:true,clip:true}));
       var pursuits=c.pursuits||[];
       var hasPursuit=pursuits.some(function(p){return p.content||p.date||p.rec||p.interviewer||p.appo||p.next_appo_date||p.visit_type||p.instruction;});
-      if(hasPursuit){ html+=buildPursuitHTML(c); }
+      if(hasPursuit){ addPage(buildPursuitHTML(c)); }
     }
     if(printFamily){ addPage(buildFamilyHTML(c)); }
-    if(printStrategy){ addPage(buildStrategyHTML(c)); }
+    if(printStrategy){ addPage(buildStrategyHTML(c,{only:"general"})); }
   }
 
   html+='</body></html>';
@@ -6995,7 +7394,8 @@ function execPrint(){
   printHTMLDocument(html);
 }
 
-function buildInitVisitHTML(c){
+function buildInitVisitHTML(c,opt){
+  opt=opt||{};
   var e=function(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
   var STAGES=['0:面識','1:注意','2:興味','3:連想','4:欲求','5:比較','6:信念','7:決心'];
   var si=+(c.stage||0);
@@ -7014,7 +7414,7 @@ function buildInitVisitHTML(c){
   var maeHTML=maeList.map(function(m){return '<span class="pbtn'+(maefuri.indexOf(m)>=0?' active':'')+'">'+e(m)+'</span>';}).join('');
   var pj=c.pursuit_judge||'';
   var pjColor=(typeof RANK_COLOR!=="undefined"&&RANK_COLOR[pj])||'rgba(255,255,255,0.4)';
-  var html='<div class="h2 init">📋 見込みカード'+(pj?'<span style="margin-left:auto;font-size:22pt;font-weight:900;color:'+pjColor+'">'+pj+'</span>':'')+'</div>';
+  var html=opt.noTitle?'':('<div class="h2 init">📋 見込みカード'+(pj?'<span style="margin-left:auto;font-size:22pt;font-weight:900;color:'+pjColor+'">'+pj+'</span>':'')+'</div>');
   html+='<div class="sec"><div class="row3">'
     +'<div class="field"><span class="label">氏名</span><span class="val">'+(c.name?e(c.name)+'様':'')+'</span></div>'
     +'<div class="field"><span class="label">ソーシャル</span><span class="val">'+e(c.social)+'</span></div>'
@@ -7026,74 +7426,57 @@ function buildInitVisitHTML(c){
     +'<div class="field"><span class="label">住所（自宅）</span><span class="val">'+e(c.address)+'</span></div>'
     +'<div class="field"><span class="label">計画地</span><span class="val">'+e(c.plan_address)+'</span></div>'
     +'</div></div>';
-  html+='<div class="row2" style="gap:3mm">'
-    +'<div>'
-    +'<div class="sec"><div class="stitle">📊 購買心理ステージ</div>'+stageBar+'<div class="stsel">'+stageHTML+'</div>'
+  html+='<div class="sec"><div class="stitle">📊 購買心理ステージ</div>'+stageBar+'<div class="stsel" style="display:grid;grid-template-columns:repeat(8,1fr);gap:2pt">'+stageHTML+'</div>'
     +'<div class="row3" style="margin-top:2mm">'
     +'<div class="field"><span class="label">老朽賃貸</span><span class="val">'+e(c.old_rent)+(c.old_rent?'棟':'')+'</span></div>'
     +'<div class="field"><span class="label">駐車場</span><span class="val">'+e(c.parking_lot)+(c.parking_lot?'ヵ所':'')+'</span></div>'
     +'<div class="field"><span class="label">自宅</span><span class="val">'+e(c.jitaku)+(c.jitaku?'軒':'')+'</span></div>'
-    +'</div>'
-    +'<div class="row3" style="margin-top:1mm">'
     +'<div class="field"><span class="label">生産緑地</span><span class="val">'+e(c.ryokuchi)+(c.ryokuchi?'枚':'')+'</span></div>'
     +'<div class="field"><span class="label">土地資産規模</span><span class="val">'+e(c.land_asset)+'</span></div>'
     +'<div class="field"><span class="label">想定</span><span class="val">'+e(c.souteim)+'</span></div>'
     +'</div></div>'
-    +'<div class="sec green"><div class="stitle">🚶 行動プロセス</div>'
-    +'<div style="margin-bottom:1.5mm"><span class="label">会話状況</span><div class="stsel">'+kaiwaHTML+'</div></div>'
-    +'<div style="margin-bottom:1.5mm"><span class="label">提示資料</span><div class="stsel">'+matHTML+'</div></div>'
-    +'<div><span class="label">前フリ</span><div class="stsel">'+maeHTML+'</div></div>'
-    +'</div></div>'
-    +'<div>'
-    +'<div class="sec yellow"><div class="stitle">🏛 土地情報（優先計画地）</div>'
+    +'<div class="row2" style="gap:3mm;align-items:start">'
+    +'<div class="sec yellow" style="margin-bottom:0"><div class="stitle">🏛 土地情報（優先計画地）</div>'
     +'<div class="row3">'
-    +'<div class="field"><span class="label">路線価（千円/㎡）</span><span class="val">'+e(c.rosenka)+(c.chishaku?' '+e(c.chishaku):'')+'</span></div>'
-    +'<div class="field"><span class="label">面積（㎡）</span><span class="val">'+e(c.m2)+'</span></div>'
-    +'<div class="field"><span class="label">間口（m）</span><span class="val">'+e(c.maguchi)+'</span></div>'
+    +'<div class="field"><span class="label">路線価</span><span class="val">'+e(c.rosenka)+(c.chishaku?' '+e(c.chishaku):'')+'</span></div>'
+    +'<div class="field"><span class="label">面積㎡</span><span class="val">'+e(c.m2)+'</span></div>'
+    +'<div class="field"><span class="label">間口m</span><span class="val">'+e(c.maguchi)+'</span></div>'
     +'</div>'
     +'<div class="field" style="margin-top:1.5mm"><span class="label">用途地域</span><span class="val">'+e(c.youto)+'</span></div>'
     +'<div class="row2" style="margin-top:1.5mm">'
     +'<div class="field"><span class="label">建蔽/容積</span><span class="val">'+e(c.kenpei_b)+'/'+e(c.kenpei_y)+'</span></div>'
     +'<div class="field"><span class="label">築年数</span><span class="val">'+(c.chikunen?e(c.chikunen)+'年':'')+'</span></div>'
-    +'</div></div>'
-    +'<div class="sec"><div class="stitle">🏗 計画規模イメージ</div>'
+    +'</div>'
+    +'<div style="margin-top:1.5mm;border-top:0.5pt dashed #cbd5e0;padding-top:1.5mm"><div class="stitle" style="font-size:9pt;margin-bottom:1mm">🏗 計画規模イメージ</div>'
     +'<div class="row3">'
     +'<div class="field"><span class="label">構造</span><span class="val">'+e(c.kouzou)+'</span></div>'
     +'<div class="field"><span class="label">戸並び</span><span class="val">'+e(c.kosu)+'</span></div>'
     +'<div class="field"><span class="label">階数</span><span class="val">'+e(c.kaisuu)+'</span></div>'
     +'</div></div>'
-    +'</div></div>';
-  var family=c.family||[];
-  if(family.length>0){
-    var genLabel=['祖父母','現役世代','子世代'];
-    html+='<div class="sec purple"><div class="stitle">👨‍👩‍👧‍👦 家族構成</div>';
-    [0,1,2].forEach(function(gen){
-      var members=family.filter(function(m){return m.role&&famGetGen(m.role||"")===gen;});
-      if(!members.length) return;
-      html+='<div style="display:flex;align-items:center;gap:2mm;margin-bottom:1.5mm"><span style="font-size:7.5pt;color:#718096;min-width:14mm">'+genLabel[gen]+'</span>';
-      members.forEach(function(m){
-        var bg=m.stance==='positive'?'#c6f6d5':m.stance==='negative'?'#fed7d7':'#edf2f7';
-        var border=m.kp?'1.5pt solid #3182ce':m.owner?'1.5pt solid #c53030':'0.5pt solid #cbd5e0';
-        html+='<div style="border:'+border+';background:'+bg+';border-radius:4pt;padding:1.5pt 4pt;font-size:8pt;font-weight:600">'+(m.owner?'★':'')+e(m.role||'')+'</div>';
-      });
-      html+='</div>';
-    });
-    html+='<div class="hint">※詳細は家族構成印刷を参照</div></div>';
-  }
+    +'</div>'
+    +'<div class="sec green" style="margin-bottom:0"><div class="stitle">🚶 行動プロセス</div>'
+    +'<div style="margin-bottom:1.5mm"><span class="label">会話状況</span><div class="stsel">'+kaiwaHTML+'</div></div>'
+    +'<div style="margin-bottom:1.5mm"><span class="label">提示資料</span><div class="stsel">'+matHTML+'</div></div>'
+    +'<div><span class="label">前フリ</span><div class="stsel">'+maeHTML+'</div></div>'
+    +'</div>'
+    +'</div>';
+  /* StepF: 家族エリアは見込みカード印刷から削除（家族は別印刷）。 */
   html+='<div class="sec"><div class="stitle">✍ 初訪内容（見込み候補だと判断した理由）</div>'
     +'<div style="min-height:22mm;border:0.5pt solid #e2e8f0;padding:2mm;font-size:10.5pt;line-height:1.55;border-radius:1.5mm;background:white">'+e(c.initial_content||'').replace(/\n/g,'<br>')+'</div>'
     +'</div>';
+  if(opt.clip) return '<div class="cardclip">'+html+'</div>';
   return html;
 }
 
-function buildRevisitHTML(c){
+function buildRevisitHTML(c,opt){
+  opt=opt||{};
   var e=function(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
   var revisits=c.revisits||[];
   var checks=c.jchecks||{};
   var rusu=String(c.rusu||'0');
   var CHKLIST=['building_amount','souzoku','material_ok','company','questions','land','future','seminar','family','reason','kanri','invest'];
   var CHKLABEL={building_amount:'建物・金額など具体的な話',souzoku:'相続や活用に関心',material_ok:'資料作成の了承',company:'大東や競合他社について',questions:'質問を多くいただけた',land:'土地を守りたい又は売りたい',future:'将来的にはという言葉',seminar:'セミナー・物件見学に興味',family:'家族からの意見も聞けた',reason:'営業を断る理由を聞けた',kanri:'賃貸管理の苦悩を聞けた',invest:'投資に興味又はやっている'};
-  var html='<div class="h2 revis">📅 再訪カード</div>';
+  var html=opt.noTitle?'':'<div class="h2 revis">📅 再訪カード</div>';
   // チェックリスト（全幅）
   var ckHTML=CHKLIST.map(function(k){
     return '<div class="jitem"><span class="chk'+(checks[k]?' on':'')+'">'+( checks[k]?'✓':'')+'</span>'+e(CHKLABEL[k])+'</div>';
@@ -7130,6 +7513,7 @@ function buildRevisitHTML(c){
     +'<div class="field" style="margin-top:1.5mm"><span class="label">課長協議内容・判断理由</span>'
     +'<div style="min-height:10mm;border:0.5pt solid #aaa;padding:2mm;font-size:9.5pt;line-height:1.5">'+e(c.revisit_judge_reason||'').replace(/\n/g,'<br>')+'</div>'
     +'</div></div>';
+  if(opt.clip) return '<div class="cardclip">'+html+'</div>';
   return html;
 }
 
@@ -7512,14 +7896,22 @@ function buildFamilyHTML(c){
   return html;
 }
 
-function buildStrategyHTML(c){
+function buildStrategyHTML(c,opt){
+  opt=opt||{};
   var e=function(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
   var THEMES={general:'総合分析',next_visit:'次回作戦',motivation:'動機引上げ',personality:'性格応対',objection:'反論対応',hearing:'聞取補充',training:'会話訓練',inheritance:'相続シナリオ'};
-  var html='<div class="h2 strat">💭 戦略協議</div>';
+  var only=opt.only||'';
+  var titleSuffix=(only&&THEMES[only])?(' − '+THEMES[only]):'';
+  var html='<div class="h2 strat">💭 戦略協議'+titleSuffix+'</div>';
+  var keys=only?[only]:Object.keys(THEMES);
   var hasContent=false;
-  Object.keys(THEMES).forEach(function(key){
+  keys.forEach(function(key){
+    if(!THEMES[key]) return;
     var val=c['ai_'+key]||'';
-    if(!val) return;
+    if(!val){
+      if(only){ hasContent=true; html+='<div class="sec" style="margin-bottom:3mm"><div class="stitle">'+THEMES[key]+'</div><div style="font-size:9pt;color:#aaa">記録なし</div></div>'; }
+      return;
+    }
     hasContent=true;
     html+='<div class="sec" style="margin-bottom:3mm;page-break-inside:auto;break-inside:auto">'
       +'<div class="stitle">'+THEMES[key]+'</div>'
@@ -7536,6 +7928,23 @@ window.buildRevisitHTML=buildRevisitHTML;
 window.buildPursuitHTML=buildPursuitHTML;
 window.buildFamilyHTML=buildFamilyHTML;
 window.buildStrategyHTML=buildStrategyHTML;
+/* StepE: 戦略協議タブから「開いているテーマ」だけを印刷（案1） */
+function printStrategyTheme(){
+  if(typeof cur==='undefined' || !cur){ if(window.toast)toast('カードを開いてね'); return; }
+  if(typeof collectForm==='function'){ try{ collectForm(); }catch(e){} }
+  var sel=document.getElementById('promptPreset');
+  var key=(sel&&sel.value)||'general';
+  var c=cur, dateStr=new Date().toISOString().slice(0,10);
+  var e=function(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
+  var hdrTxt=e((c.branch||'')+' '+(c.section||'')+' '+(c.manager||'')+' ／ '+(c.name?c.name+'様':'')+(c.discovery_date?' ／ 発掘日:'+c.discovery_date:'')+' ／ 印刷:'+dateStr);
+  var pj=c.pursuit_judge||'', pjColor=(typeof RANK_COLOR!=='undefined'&&RANK_COLOR[pj])||'rgba(255,255,255,0.4)';
+  var html='<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><style>'+buildPrintCSS()+'</style></head><body>'
+    +'<div class="prhdr"><div class="prhdr-left">z.Aibis</div><div class="prhdr-right">'+hdrTxt+'</div>'+(pj?'<div class="prhdr-rank" style="color:'+pjColor+'">'+pj+'</div>':'')+'</div>'
+    +buildStrategyHTML(c,{only:key})
+    +'</body></html>';
+  printHTMLDocument(html);
+}
+window.printStrategyTheme=printStrategyTheme;
 // 印刷完了後クリーンアップ（iframe方式）
 window.addEventListener('afterprint',function(){
   // 印刷用iframeを後始末（プレビュー表示中に消すと空白印刷になるため、ここで破棄）
@@ -9148,6 +9557,14 @@ function _navToList(){
   ['editView','plannerView','helpView','setupView'].forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display='none'; });
   var lv=document.getElementById('listView'); if(lv) lv.style.display=(hasFSA&&!isMob)?'flex':'block';
 }
+/* 編集→一覧：履歴の積み重なりに依存せず必ず1回で一覧へ。履歴の先頭をlistに正規化 */
+function editGoList(){
+  try{ if(typeof autoCommitEdit==='function') autoCommitEdit(); }catch(e){}
+  try{ history.replaceState({zv:'list',id:null},''); }catch(e){}
+  _navToList();
+  try{ if(typeof renderCards==='function') renderCards(); }catch(e){}
+}
+window.editGoList=editGoList;
 window.addEventListener('popstate',function(ev){
   var _gov=document.getElementById('geoMapOv'); if(_gov && _gov.classList.contains('show')){ _gov.classList.remove('show'); return; } // 地図オーバーレイは閉じるだけ（土台のカード/光速を維持）
   try{ autoCommitEdit(); }catch(_e){}
@@ -10037,6 +10454,15 @@ function migrateRosenka(){
 window.normalizeRosenka=normalizeRosenka; window.updateRosenkaDisp=updateRosenkaDisp;
 window.mapSingle=mapSingle;
 
+function _doCheckPrint(){
+  var cb=document.getElementById('bpChkCard'), fb=document.getElementById('bpChkFamily');
+  var opts={card:cb?cb.checked:true, family:fb?fb.checked:false};
+  if(!opts.card && !opts.family){ if(window.toast)toast('印刷する種類を選んでね'); return; }
+  window._batchPrintOpts=opts;
+  closeAibisAlert();
+  printSelected();
+}
+window._doCheckPrint=_doCheckPrint;
 function openListPrintMenu(){
   var scope=(staffFilter==='all')?'全員':staffFilter;
   var scopeEsc=String(scope).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -10048,6 +10474,11 @@ function openListPrintMenu(){
     +'<button onclick="closeAibisAlert();doListPrint(\'top50\')" style="padding:10px;background:#2c5282;color:white;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600">⭐ 優先40客</button>'
     +'<button onclick="closeAibisAlert();doListPrint(\'tel\')" style="padding:10px;background:#276749;color:white;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600">📞 テレコールリスト</button>'
     +'<button onclick="closeAibisAlert();doListPrint(\'all\')" style="padding:10px;background:#553c9a;color:white;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600">📄 全件リスト</button>'
+    +'<div style="height:1px;background:#e2e8f0;margin:2px 0"></div>'
+    +'<div style="text-align:left;font-size:12px;font-weight:800;color:#276749;margin:0 2px 2px">🗂 チェック印刷<span style="font-weight:500;color:#718096;font-size:11px">（チェックを入れたカードが対象）</span></div>'
+    +'<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#f0fff4;border:1px solid #c6f6d5;border-radius:6px;font-size:13px;cursor:pointer;color:#2d3748"><input type="checkbox" id="bpChkCard" checked style="width:18px;height:18px;flex-shrink:0">見込み・再訪カード（両面1枚）</label>'
+    +'<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#f0fff4;border:1px solid #c6f6d5;border-radius:6px;font-size:13px;cursor:pointer;color:#2d3748"><input type="checkbox" id="bpChkFamily" style="width:18px;height:18px;flex-shrink:0">家族構成</label>'
+    +'<button onclick="_doCheckPrint()" style="padding:10px;background:#276749;color:white;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:700">🖨 チェック印刷する</button>'
     +'<button onclick="closeAibisAlert()" style="padding:8px;background:#e2e8f0;color:#2d3748;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit">キャンセル</button>'
     +'</div>'
   );
@@ -10458,7 +10889,7 @@ function startBatchPrint(){
   cur=JSON.parse(JSON.stringify(targets[0]));
   window._printQueue=targets.slice(1);
   window._listPrint=true;
-  openPrintModal();
+  execPrint();
 }
 window.startBatchPrint=startBatchPrint;
 window.printSelected=printSelected;
@@ -10479,6 +10910,87 @@ function buildPlanPhotosHTML(thumbs){
   var cells=thumbs.slice(0,4).map(function(t){ return '<div style="border:0.5pt solid #888;border-radius:2mm;overflow:hidden;background:#fff"><img src="'+t+'" style="width:100%;height:auto;display:block"></div>'; }).join('');
   return '<div style="page-break-inside:avoid"><div class="h2 init">📷 計画地写真</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:4mm;margin-top:2mm">'+cells+'</div></div>';
 }
+/* ===== StepC: 計画地写真の別印刷（筆を選んでA4縦・1筆=1ページ） ===== */
+function _pppEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function _pppNum(i){ return i<20?String.fromCharCode(0x2460+i):('('+(i+1)+')'); }
+function _pppLoadSets(cardId){
+  return mAll().then(function(all){
+    var sets=(all||[]).filter(function(s){ return s && s.cardId===cardId; });
+    sets.sort(function(a,b){ return (a.ts||0)-(b.ts||0); }); /* 筆順=画面と同じ昇順 */
+    sets.forEach(function(s,i){ s._fude=i; });
+    return sets;
+  });
+}
+function openPlanPhotoPrint(){
+  if(typeof curId==='undefined' || !curId){ if(window.toast)toast('カードを開いてから印刷してね'); return; }
+  _pppLoadSets(curId).then(function(sets){
+    if(!sets.length){ if(window.toast)toast('計画地写真がありません'); return; }
+    var rows=sets.map(function(s){
+      var p=(s.photos&&s.photos[0]); var src=(p&&(p.thumb||p.full))||'';
+      var addr=_pppEsc((s.addr||'')+(s.banchi?(' '+s.banchi):''))||'(住所未設定)';
+      var cnt=(s.photos&&s.photos.length)||0;
+      return '<label class="ppp-row"><input type="checkbox" class="ppp-cb" value="'+_pppEsc(s.id)+'" checked>'
+        +'<span class="ppp-thumb">'+(src?'<img src="'+src+'">':'📷')+'</span>'
+        +'<span class="ppp-rowtxt"><b>'+_pppNum(s._fude)+'筆</b>　'+addr+'<span class="ppp-rowsub">写真'+cnt+'枚'+(s.note?(' ・ '+_pppEsc(s.note)):'')+'</span></span></label>';
+    }).join('');
+    var ov=document.getElementById('pppSelOv');
+    if(!ov){ ov=document.createElement('div'); ov.id='pppSelOv'; ov.className='no-print'; document.body.appendChild(ov); }
+    ov.innerHTML='<div class="ppp-sheet"><div class="ppp-shead">🖨 計画地写真を印刷<span class="ppp-shsub">印刷する筆を選んでね（A4縦・1筆1ページ）</span></div>'
+      +'<div class="ppp-list">'+rows+'</div>'
+      +'<div class="ppp-sfoot"><button type="button" class="ppp-btn ghost" onclick="closePlanPhotoPrint()">閉じる</button><button type="button" class="ppp-btn go" onclick="doPlanPhotoPrint()">印刷する</button></div></div>';
+    ov.style.display='flex';
+    ov._sets=sets;
+  }).catch(function(e){ if(window.toast)toast('写真を開けませんでした'); });
+}
+function closePlanPhotoPrint(){ var ov=document.getElementById('pppSelOv'); if(ov){ ov.style.display='none'; ov.innerHTML=''; ov._sets=null; } }
+function doPlanPhotoPrint(){
+  var ov=document.getElementById('pppSelOv'); if(!ov||!ov._sets) return;
+  var checked={}; ov.querySelectorAll('.ppp-cb:checked').forEach(function(cb){ checked[cb.value]=1; });
+  var sel=ov._sets.filter(function(s){ return checked[s.id]; });
+  if(!sel.length){ if(window.toast)toast('筆を1つ以上選んでね'); return; }
+  var c=(typeof cur!=='undefined'&&cur)?cur:{};
+  var root=document.getElementById('browserPrintRoot'); if(!root) return;
+  window._appPrinting=true;
+  root.innerHTML='<style>'+planPhotoPrintCSS()+'</style>'+buildPlanPhotoPrintHTML(sel,c);
+  document.body.classList.add('bp-active');
+  closePlanPhotoPrint();
+  var _reset=function(){ window._appPrinting=false; window.removeEventListener('afterprint',_reset); };
+  window.addEventListener('afterprint',_reset);
+  setTimeout(function(){ try{ window.print(); }catch(e){ _reset(); } }, 60);
+}
+function planPhotoPrintCSS(){
+  return '@page{size:A4 portrait;margin:10mm}'
+    +'#browserPrintRoot .ppp-page{page-break-after:always;height:277mm;display:flex;flex-direction:column;font-family:sans-serif}'
+    +'#browserPrintRoot .ppp-page:last-child{page-break-after:auto}'
+    +'#browserPrintRoot .ppp-phdr{border-bottom:1.5pt solid #2c5282;padding-bottom:2mm;margin-bottom:3mm;flex:0 0 auto}'
+    +'#browserPrintRoot .ppp-ptitle{font-size:13pt;font-weight:800;color:#1a365d}'
+    +'#browserPrintRoot .ppp-pmeta{font-size:9.5pt;color:#444;margin-top:1mm;line-height:1.5}'
+    +'#browserPrintRoot .ppp-area{flex:1 1 auto;min-height:0}'
+    +'#browserPrintRoot .ppp-g{display:grid;gap:4mm;height:100%}'
+    +'#browserPrintRoot .ppp-g.n1{grid-template-columns:1fr;grid-template-rows:1fr}'
+    +'#browserPrintRoot .ppp-g.n2{grid-template-columns:1fr;grid-template-rows:1fr 1fr}'
+    +'#browserPrintRoot .ppp-g.n34{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}'
+    +'#browserPrintRoot .ppp-cell{border:0.5pt solid #999;border-radius:2mm;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#fff}'
+    +'#browserPrintRoot .ppp-cell img{max-width:100%;max-height:100%;object-fit:contain;display:block}';
+}
+function buildPlanPhotoPrintHTML(sets,c){
+  var dateStr=new Date().toISOString().slice(0,10);
+  var owner=_pppEsc((c.branch||'')+' '+(c.section||'')+' '+(c.manager||'')).trim();
+  var nm=c.name?_pppEsc(c.name)+'様':'';
+  return sets.map(function(s){
+    var ph=(s.photos||[]).filter(function(p){return p&&(p.full||p.thumb);});
+    var n=ph.length;
+    var gcls=n<=1?'n1':(n===2?'n2':'n34');
+    var cells='';
+    for(var i=0;i<n && i<4;i++){ var src=ph[i].full||ph[i].thumb; cells+='<div class="ppp-cell"><img src="'+src+'"></div>'; }
+    if(!n){ cells='<div class="ppp-cell"></div>'; }
+    var addr=_pppEsc((s.addr||'')+(s.banchi?(' '+s.banchi):''));
+    var meta=[nm,addr,(s.note?_pppEsc(s.note):''),'印刷:'+dateStr,owner].filter(Boolean).join('　／　');
+    return '<div class="ppp-page"><div class="ppp-phdr"><div class="ppp-ptitle">📷 計画地写真　'+_pppNum(s._fude)+'筆</div><div class="ppp-pmeta">'+meta+'</div></div>'
+      +'<div class="ppp-area"><div class="ppp-g '+gcls+'">'+cells+'</div></div></div>';
+  }).join('');
+}
+window.openPlanPhotoPrint=openPlanPhotoPrint; window.closePlanPhotoPrint=closePlanPhotoPrint; window.doPlanPhotoPrint=doPlanPhotoPrint;
 function buildBrowserPrintReport(c){
   var e2=function(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
   var dateStr=new Date().toISOString().slice(0,10);
@@ -10488,13 +11000,13 @@ function buildBrowserPrintReport(c){
   var firstPage=true,html='';
   function prh(){return '<div class="prhdr"><div class="prhdr-left">z.Aibis</div><div class="prhdr-right">'+hdrTxt+'</div>'+(pj?'<div class="prhdr-rank" style="color:'+pjColor+'">'+pj+'</div>':'')+'</div>';}
   function addPage(content){ if(firstPage){html+=prh();firstPage=false;} else {html+='<div class="pgbrk"></div>'+prh();} html+=content; }
-  addPage(buildInitVisitHTML(c));
-  try{ var _ppt=(window._curCardPhotoThumbs && window._curCardPhotoThumbs.cardId===c.id)?(window._curCardPhotoThumbs.thumbs||[]):[]; if(_ppt.length){ addPage(buildPlanPhotosHTML(_ppt)); } }catch(_e){}
-  addPage(buildRevisitHTML(c));
+  addPage(buildInitVisitHTML(c,{noTitle:true,clip:true}));
+  /* StepC: 計画地写真は本文カードから分離（🖨で筆ごとA4縦の別印刷）。本文には載せない。 */
+  addPage(buildRevisitHTML(c,{noTitle:true,clip:true}));
   var pp=c.pursuits||[];
-  if(pp.some(function(x){return x.content||x.date||x.rec||x.interviewer||x.appo||x.next_appo_date||x.visit_type||x.instruction;})){ html+=buildPursuitHTML(c); }
+  if(pp.some(function(x){return x.content||x.date||x.rec||x.interviewer||x.appo||x.next_appo_date||x.visit_type||x.instruction;})){ addPage(buildPursuitHTML(c)); }
   addPage(buildFamilyHTML(c));
-  addPage(buildStrategyHTML(c));
+  addPage(buildStrategyHTML(c,{only:"general"}));
   return html;
 }
 window.addEventListener('beforeprint',function(){
@@ -10526,7 +11038,7 @@ function toggleFamHeadcount(){
 function updateFamHeadcountBtn(){
   var btn=document.getElementById('famHeadcountBtn'); if(!btn) return;
   var on=cur&&cur.family_headcount;
-  btn.innerHTML='👥<br>'+(on?'確定済 ✓':'人数を確定');
+  btn.innerHTML='👥<br>'+(on?'確定済 ✓':'構成確定');
   if(on){
     btn.style.background='linear-gradient(135deg,#2c5282,#553c9a)';
     btn.style.borderColor='#553c9a';
@@ -10655,10 +11167,10 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
   <header>
     <div class="ha" style="width:100%;display:flex;justify-content:space-between;align-items:center">
       <div class="ehdr-l" style="display:flex;align-items:center;gap:6px;flex-shrink:0;max-width:30%">
-        <button class="bg" onclick="history.back()" style="flex-shrink:0">← 一覧</button>
-        <div onclick="history.back()" title="タップで一覧に戻る" style="font-size:12px;color:rgba(255,255,255,0.75);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer" id="editTitle">-</div>
+        <button class="bg" onclick="editGoList()" style="flex-shrink:0">← 一覧</button>
+        <div onclick="editGoList()" title="タップで一覧に戻る" style="font-size:12px;color:rgba(255,255,255,0.75);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer" id="editTitle">-</div>
       </div>
-      <svg class="ehdr-logo" onclick="history.back()" title="タップで一覧に戻る" width="130" height="40" viewBox="0 0 130 40" xmlns="http://www.w3.org/2000/svg" style="position:absolute;left:50%;transform:translateX(-50%);flex-shrink:0;cursor:pointer"><defs><linearGradient id="tg3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#ffffff"/><stop offset="60%" style="stop-color:#e0e7ff"/><stop offset="100%" style="stop-color:#c7d2fe"/></linearGradient></defs><text x="4" y="32" font-family="'Dancing Script','Brush Script MT','Comic Sans MS',cursive" font-size="30" font-weight="700" fill="url(#tg3)" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.4))">z.Aibis</text></svg>
+      <svg class="ehdr-logo" onclick="editGoList()" title="タップで一覧に戻る" width="130" height="40" viewBox="0 0 130 40" xmlns="http://www.w3.org/2000/svg" style="position:absolute;left:50%;transform:translateX(-50%);flex-shrink:0;cursor:pointer"><defs><linearGradient id="tg3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#ffffff"/><stop offset="60%" style="stop-color:#e0e7ff"/><stop offset="100%" style="stop-color:#c7d2fe"/></linearGradient></defs><text x="4" y="32" font-family="'Dancing Script','Brush Script MT','Comic Sans MS',cursive" font-size="30" font-weight="700" fill="url(#tg3)" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.4))">z.Aibis</text></svg>
       <div style="display:flex;gap:4px;flex-shrink:0;align-items:center">
         <span id="dirtyDot" style="display:none;width:8px;height:8px;background:#ed8936;border-radius:50%;margin-right:2px" title="未保存"></span>
         <button id="saveCardBtn" class="bs" onclick="saveCard()" style="font-size:11px;padding:6px 10px">💾 保存</button>
@@ -10666,12 +11178,12 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <button onclick="toggleCardMenu(event)" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:6px;font-size:16px;padding:4px 8px;cursor:pointer;font-family:inherit;line-height:1.6;min-height:36px;width:36px">⋮</button>
           <div class="mob-dropdown" id="cardDropdown" style="right:0;left:auto;min-width:150px">
             <button onclick="closeCardMenu();undoCardEdit()">⏪ 1つ前に戻す</button>
-            <button id="cardPrintBtn" onclick="closeCardMenu();openPrintModal()">🖨 印刷</button>
             <div style="height:1px;background:#e2e8f0;margin:4px 0"></div>
             <button onclick="closeCardMenu();showSetup()">⚙ 初期設定</button>
             <button onclick="closeCardMenu();setTimeout(function(){showHelp();},50)">📖 マニュアル</button>
           </div>
         </div>
+        <button id="cardPrintBtn" onclick="openPrintModal()" title="印刷（カード・家族・戦略を選択）" style="background:#0d9488;color:white;border:1px solid rgba(255,255,255,0.25);border-radius:6px;font-size:15px;padding:4px 8px;cursor:pointer;font-family:inherit;line-height:1.6;min-height:36px;width:36px">🖨</button>
         <button onclick="openAibisChat()" style="background:#d97706;color:white;border:none;border-radius:6px;font-size:11px;padding:4px 8px;cursor:pointer;font-family:inherit;line-height:1.2">🧚<br><span class="aibisVer" style="font-size:8px;opacity:0.8;font-weight:700">v3.3</span></button>
       </div>
     </div>
@@ -10706,6 +11218,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
     <h2>《 見込みカード 》</h2>
     <div class="sec" id="secMikomi">
       <div id="mikomiTop">
+      <div class="pc-name-contact">
       <!-- 上段：氏名50%・ソーシャル25%・現状25% -->
       <div class="mk-row" style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:8px">
         <div class="mk-name"><label>氏名 <span class="req">*</span></label><div style="display:flex;gap:6px;align-items:center"><input type="text" id="f_name" placeholder="お客様名" style="flex:1" oninput="if(window._refreshLandLeadLock)_refreshLandLeadLock()"><button type="button" id="doukouBtn" onclick="toggleDoukou()" style="flex-shrink:0;padding:8px 10px;border:2px solid #e2e8f0;border-radius:6px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;color:#718096;white-space:nowrap;min-height:38px;min-width:78px;text-align:center">単独</button></div></div>
@@ -10731,6 +11244,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <div class="mk-row" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:8px">
         <div class="mk-tel"><label>TEL</label><input type="tel" id="f_tel" inputmode="numeric" placeholder="ハイフン無し" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
         <div class="mk-email"><label>メールアドレス</label><div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap"><input type="email" inputmode="email" autocapitalize="none" autocomplete="off" spellcheck="false" id="f_email_local" placeholder="ID" style="flex:1;min-width:70px"><span style="color:#718096;flex-shrink:0">@</span><select id="f_email_domain" onchange="onEmailDomainChange()" style="width:108px;min-width:0;flex-shrink:0"><option value="gmail.com">gmail.com</option><option value="yahoo.co.jp">yahoo.co.jp</option><option value="icloud.com">icloud.com</option><option value="docomo.ne.jp">docomo.ne.jp</option><option value="ezweb.ne.jp">ezweb.ne.jp(au)</option><option value="au.com">au.com</option><option value="softbank.ne.jp">softbank.ne.jp</option><option value="i.softbank.jp">i.softbank.jp</option><option value="outlook.jp">outlook.jp</option><option value="hotmail.com">hotmail.com</option><option value="ybb.ne.jp">ybb.ne.jp</option><option value="__custom__">その他(入力)</option></select><input type="text" inputmode="url" autocapitalize="none" autocomplete="off" spellcheck="false" id="f_email_domain_custom" placeholder="ドメイン" style="display:none;width:auto;min-width:110px;flex-shrink:0"></div></div>
+      </div>
       </div>
       <!-- 下段：住所・計画地 + 地図ボタン -->
       <div class="mk-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px">
@@ -10767,14 +11281,14 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
         <span style="font-size:12px;color:#4a5568;flex-shrink:0">🚉 最寄り駅 徒歩</span>
         <button type="button" id="ekitohoBtn" onclick="toggleEkitoho()" style="flex-shrink:0;padding:9px 18px;border:2px solid #cbd5e0;border-radius:7px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:13px;color:#718096;white-space:nowrap;min-height:40px;min-width:104px">🚉 未確認</button>
-        <span style="font-size:10px;color:#a0aec0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">タップで切替</span>
+        <span class="pc-hide-tap" style="font-size:10px;color:#a0aec0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">タップで切替</span>
       </div>
     </div>
     <!-- 📷 計画地写真（アイビスカメラ連携・表示専用） -->
-    <div class="sec no-print" id="cardPhotoSec" style="display:none">
-      <div class="stitle" style="display:flex;align-items:center;gap:8px"><span style="flex:1">📷 計画地写真 <span id="cardPhotoCount" style="font-weight:600;color:#718096;font-size:12px"></span></span><button type="button" id="cardCamBtn" class="cps-hdr-btn cps-hdr-cam" onclick="cardOpenCam(curId)" title="カメラで撮影（このカードに紐付く）">📷</button><button type="button" id="cardInbBtn" class="cps-hdr-btn" onclick="openInboxForCard()" title="インボックスから写真を選ぶ・管理">📥</button></div>
+    <details class="sec no-print cps-acc" id="cardPhotoSec" style="display:none">
+      <summary class="stitle cps-sum" style="display:flex;align-items:center;gap:8px"><span style="flex:1">📷 計画地写真 <span id="cardPhotoCount" style="font-weight:600;color:#718096;font-size:12px"></span></span><button type="button" id="cardCamBtn" class="cps-hdr-btn cps-hdr-cam" onclick="cardOpenCam(curId)" title="カメラで撮影（このカードに紐付く）">📷</button><button type="button" id="cardInbBtn" class="cps-hdr-btn" onclick="openInboxForCard()" title="インボックスから写真を選ぶ・管理">📥</button><button type="button" id="cardPhotoPrintBtn" class="cps-hdr-btn" onclick="openPlanPhotoPrint()" title="計画地写真を印刷（筆を選んでA4縦）">🖨</button></summary>
       <div id="cardPhotoBody"></div>
-    </div>
+    </details>
     <!-- 購買ステージ + 資産背景 -->
     <div class="sec">
       <!-- 購買ステージ -->
@@ -10856,9 +11370,10 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
             <div class="fam-gen-members" id="famGen2"></div>
             <button type="button" class="fam-add-btn" onclick="famOpenAdd(2)">＋</button>
           </div>
+          <div class="pc-fam-status">
           <div class="fam-summary" id="famSummary" style="display:none"></div>
           <div style="margin-top:8px;display:flex;gap:8px 14px;align-items:center;flex-wrap:wrap">
-            <button type="button" id="famHeadcountBtn" onclick="toggleFamHeadcount()" style="flex-shrink:0;padding:6px 16px;border:2px solid #e2e8f0;border-radius:8px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;color:#718096;line-height:1.3">👥<br>人数を確定</button>
+            <button type="button" id="famHeadcountBtn" onclick="toggleFamHeadcount()" style="flex-shrink:0;padding:6px 16px;border:2px solid #e2e8f0;border-radius:8px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;color:#718096;line-height:1.3">👥<br>構成確定</button>
             <div style="display:flex;flex-direction:column;gap:3px;font-size:10px;color:#4a5568">
               <div style="display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center">
                 <span style="font-weight:700;color:#4a5568">意向</span>
@@ -10878,6 +11393,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
               </div>
             </div>
           </div>
+          </div>
           <details class="setup-acc" style="margin-top:9px">
             <summary>🌳 <span>家系図（世代ツリー）</span><span class="setup-acc-arrow">▾</span></summary>
             <div class="setup-acc-body" style="padding:8px 2px 2px"><div id="famTreeBox" style="overflow-x:auto"></div></div>
@@ -10894,6 +11410,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
     <!-- 資産背景 -->
     <div class="sec">
       <div class="stitle">資産背景</div>
+      <div class="pc-asset">
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px">
         <div>
           <label>老朽賃貸</label>
@@ -10923,6 +11440,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         </div>
         <div id="ryokuchiBtnCell" style="visibility:hidden"><button type="button" onclick="openRyokuchiNavi()" style="display:block;width:100%;border:1.5px solid #2f7a57;background:#2f7a57;color:#fff;border-radius:8px;padding:9px 10px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap">🌿 生産緑地</button></div>
       </div>
+      </div>
     </div>
     <div class="sec" id="secTochi">
       <div class="stitle" style="display:flex;align-items:center;gap:8px">土地情報（優先計画地）<button type="button" id="assetBtn" onclick="toggleAssetType()">アセット系</button></div>
@@ -10935,7 +11453,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         </div>
       </div>
       <!-- 路線価・面積・間口 -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 0.5fr;gap:8px;margin-bottom:8px">
+      <div class="pc-land-main" style="display:grid;grid-template-columns:1fr 1fr 0.5fr;gap:8px;margin-bottom:8px">
         <div>
           <label>路線価<span style="font-size:10px;color:#718096">（千円/㎡）</span></label>
           <div style="display:flex;gap:4px;align-items:center">
@@ -10954,14 +11472,15 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <div id="rosenkaDisp" style="font-size:10px;color:#718096;margin-top:2px"></div>
         </div>
         <div>
-          <label>面積（㎡）<span style="font-size:10px;color:#718096">→坪</span></label>
+          <label class="pc-area-label">面積<span id="tsuboDisp" style="font-size:11px;color:#64748b;font-weight:600;white-space:nowrap">- 坪</span></label>
           <div style="display:flex;gap:4px;align-items:center">
             <input type="number" id="f_m2" placeholder="㎡" style="flex:1" inputmode="numeric" pattern="[0-9]*">
-            <span id="tsuboDisp" style="font-size:11px;color:#2c5282;font-weight:600;white-space:nowrap;min-width:40px">- 坪</span>
           </div>
         </div>
         <div><label>間口（m）</label><input type="number" id="f_maguchi" placeholder="12" inputmode="numeric" pattern="[0-9]*" style="width:100%"></div>
       </div>
+      <div class="pc-land-2grid">
+      <div class="pc-road-left">
       <!-- 接道方位（8方位コンパス・北上／中央=旗竿） -->
       <div style="margin-bottom:8px">
         <label>接道方位 <span style="font-size:10px;color:#a0aec0;font-weight:400">（方角の位置で配置）</span></label>
@@ -10978,6 +11497,8 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <button type="button" class="pbtn" data-pill="setsudo" data-multi="1" data-val="南東">南東</button>
         </div>
       </div>
+      </div>
+      <div class="pc-road-right">
       <!-- 用途地域（フル幅） -->
       <div style="margin-bottom:8px">
         <label>用途地域</label>
@@ -11009,8 +11530,11 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="借地">借地</button>
         </div>
       </div>
+      </div>
+      </div>
+      <div class="pc-land-meta">
       <!-- 建蔽容積・築年数 -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div class="metarow" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
         <div>
           <label>建蔽 / 容積（%）</label>
           <div style="display:flex;gap:4px;align-items:center">
@@ -11039,6 +11563,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           </div>
         </div>
       </div>
+      <div class="pc-pill-pair">
       <!-- 高度地区（フル幅1行） -->
       <div style="margin-bottom:8px">
         <label>高度地区</label>
@@ -11058,14 +11583,17 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <button type="button" class="pbtn" data-pill="bouka" data-val="防火地域">防火</button>
         </div>
       </div>
+      </div>
       <!-- 満室・空き -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div class="metarow" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
         <div><label>満室数（戸）</label><input type="number" id="f_kuushitsu" placeholder="例: 10" inputmode="numeric" pattern="[0-9]*"></div>
         <div><label>空き数（戸）</label><input type="number" id="f_kuushitsu_aki" placeholder="例: 2" inputmode="numeric" pattern="[0-9]*"></div>
+      </div>
       </div>
     </div>
     <div class="sec" id="secKeikaku">
       <div class="stitle">計画規模イメージ</div>
+      <div class="pc-plan">
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
         <div><label>構造</label><select id="f_kouzou"><option value="">-</option><option value="2×4">2×4</option><option value="鉄骨">鉄骨</option><option value="RC">RC</option></select></div>
         <div><label>戸並び</label><select id="f_kosu"><option value="">-</option><option value="1">1戸</option><option value="2">2戸</option><option value="3">3戸</option><option value="4">4戸</option><option value="5">5戸</option><option value="6">6戸</option><option value="7">7戸</option><option value="8">8戸</option><option value="8以上">8以上</option></select></div>
@@ -11075,6 +11603,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <div><label>賃料㎡単価（円）</label><input type="text" id="f_m2tanka" placeholder="例: 8,000" inputmode="numeric" onblur="fmtMoney('f_m2tanka')"></div>
         <div><label>駐車料（円）</label><input type="text" id="f_chusharyo" placeholder="例: 8,000" inputmode="numeric" onblur="fmtMoney('f_chusharyo')"></div>
         <div><label>P率</label><select id="f_prate"><option value="">-</option><option value="あり">あり</option><option value="なし">なし</option></select></div>
+      </div>
       </div>
     </div>
     <div class="sec">
@@ -11275,6 +11804,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <button type="button" style="padding:11px;font-size:13px;background:#2d3748;color:white;border:none;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600" onclick="copyPromptAnon()">🤖 分析用に抽出</button>
       <button type="button" style="padding:11px;font-size:13px;background:#553c9a;color:white;border:none;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600" onclick="promptToFile()">📎 ファイルで抽出</button>
       <button type="button" style="grid-column:1/3;padding:11px;font-size:13px;background:#0078d4;color:white;border:none;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:500" onclick="openCopilot()">🤖 AI分析</button>
+      <button type="button" class="no-print" style="grid-column:1/3;padding:11px;font-size:13px;background:#2c5282;color:white;border:none;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600" onclick="printStrategyTheme()">🖨 このテーマを印刷</button>
     </div>
     <div id="strategyTabs">
       <div id="st_general" class="st-panel">
@@ -12431,6 +12961,11 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   .seltools button{border:none;background:none;color:#2c5282;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;margin-left:10px}
   .isend{margin:2px 0 8px}
   .istore{text-align:center;color:#a0aec0;font-size:12px;padding:14px 0 6px}
+  @media(min-width:769px){
+    #inboxBody{max-width:1120px}
+    #inboxBody .igrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;align-items:start;margin-bottom:9px}
+    #inboxBody .igrid>.irow2,#inboxBody .igrid>.irow{margin-bottom:0;min-width:0}
+  }
   #inboxViewer{display:none;position:fixed;inset:0;background:rgba(7,12,20,.97);z-index:1600;flex-direction:column}
   #inboxViewer .ivt{display:flex;align-items:center;gap:10px;padding:12px 14px;color:#fff}
   #inboxViewer .ivt b{flex:1;font-size:13px;color:#cbd5e0;font-weight:600}
@@ -12453,6 +12988,11 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   #inboxPickList .ipr:active{background:#edf2f7}
   #inboxPickList .ipr .nm{font-size:14px;font-weight:800;color:#2d3748}
   #inboxPickList .ipr .mt{font-size:11px;color:#718096;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* StepB v9.26dev: 計画地写真セクションのアコーディオン化（開閉のみ追加・既定は閉） */
+  .cps-acc>summary.cps-sum{list-style:none;cursor:pointer}
+  .cps-acc>summary.cps-sum::-webkit-details-marker{display:none}
+  .cps-acc>summary.cps-sum::before{content:"\25B6";font-size:11px;color:#718096;margin-right:6px;flex-shrink:0}
+  .cps-acc[open]>summary.cps-sum::before{content:"\25BC"}
   /* 計画地写真（カード内・表示専用） */
   #cardPhotoBody .cps-set{margin-bottom:12px}
   #cardPhotoBody .cps-grid{display:grid;gap:4px}
@@ -12473,6 +13013,26 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   .cps-hdr-btn:active{background:#edf2f7}
   body:not(.is-mob) .cps-hdr-cam{display:none}
   #cardPhotoBody .cps-stage{position:relative;overflow:hidden}
+  #cardPhotoBody .cps-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+  #cardPhotoBody .cps-chip{min-width:32px;height:32px;border:1px solid #cbd5e0;border-radius:8px;background:#fff;color:#4a5568;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0 8px;font-family:inherit}
+  #cardPhotoBody .cps-chip.on{background:#2c5282;border-color:#2c5282;color:#fff}
+  #cardPhotoBody .cps-chip:active{opacity:.8}
+  /* StepC: 計画地写真 印刷の筆選択オーバーレイ */
+  #pppSelOv{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:3000;display:none;align-items:center;justify-content:center;padding:16px}
+  #pppSelOv .ppp-sheet{background:#fff;border-radius:14px;max-width:460px;width:100%;max-height:84vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+  #pppSelOv .ppp-shead{padding:14px 16px;font-size:15px;font-weight:800;color:#1a365d;border-bottom:1px solid #edf2f7;display:flex;flex-direction:column;gap:2px}
+  #pppSelOv .ppp-shsub{font-size:11.5px;font-weight:600;color:#718096}
+  #pppSelOv .ppp-list{overflow-y:auto;padding:8px 10px;flex:1 1 auto}
+  #pppSelOv .ppp-row{display:flex;align-items:center;gap:10px;padding:9px 8px;border-radius:10px;cursor:pointer}
+  #pppSelOv .ppp-row:active{background:#f1f5f9}
+  #pppSelOv .ppp-cb{width:20px;height:20px;flex-shrink:0;cursor:pointer}
+  #pppSelOv .ppp-thumb{width:46px;height:46px;border-radius:8px;background:#edf2f7;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px}
+  #pppSelOv .ppp-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  #pppSelOv .ppp-rowtxt{font-size:13.5px;color:#2d3748;min-width:0;display:flex;flex-direction:column}
+  #pppSelOv .ppp-rowsub{font-size:11px;color:#718096;margin-top:2px}
+  #pppSelOv .ppp-sfoot{display:flex;gap:10px;padding:12px 16px;border-top:1px solid #edf2f7}
+  #pppSelOv .ppp-btn{flex:1;border-radius:10px;padding:11px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;border:1px solid #cbd5e0;background:#fff;color:#4a5568}
+  #pppSelOv .ppp-btn.go{background:#2c5282;border-color:#2c5282;color:#fff}
   #cardPhotoBody .cps-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px}
   #cardPhotoBody .cps-pager{display:flex;align-items:center;gap:10px}
   #cardPhotoBody .cps-date{font-size:11px;color:#718096;text-align:right;white-space:nowrap}
@@ -12842,8 +13402,8 @@ function renderInboxBody(){
       html+='<div class="ihint">🔗 紐付けたい写真を選択（複数OK）<br>→ 即このカードへ反映</div>';
       var _att=all.filter(function(s){return s.cardId===_inboxAttach;}).sort(byTs);
       var _oth=all.filter(function(s){return !s.cardId||s.cardId!==_inboxAttach;}).sort(byTs);
-      if(_att.length){ html+='<div class="isec2">このカードの写真（'+_att.length+'）</div>'+_att.map(_inrowSafe).join(""); }
-      if(_oth.length){ html+='<div class="isec2">追加できる写真（'+_oth.length+'）</div>'+_oth.map(_inrowSafe).join(""); }
+      if(_att.length){ html+='<div class="isec2">このカードの写真（'+_att.length+'）</div><div class="igrid">'+_att.map(_inrowSafe).join("")+'</div>'; }
+      if(_oth.length){ html+='<div class="isec2">追加できる写真（'+_oth.length+'）</div><div class="igrid">'+_oth.map(_inrowSafe).join("")+'</div>'; }
       if(!_att.length && !_oth.length){ html+='<div class="iempty">写真がありません。</div>'; }
       host.innerHTML=html; _wireInbox(host); _applyInboxBadge(all); return;
     }
@@ -12853,15 +13413,15 @@ function renderInboxBody(){
     // 写真の書き出しはカードの📧送信に統合（インボックスは紐付け専用）
     if(unlinked.length){
       html+='<div class="isec2">未紐付け（'+unlinked.length+'）<span class="seltools"><button onclick="inboxSelAll()">☑ 全選択</button><button onclick="inboxSelNone()">解除</button></span></div>';
-      html+=unlinked.map(function(s){return _inrow2(s,true);}).join("");
+      html+='<div class="igrid">'+unlinked.map(function(s){return _inrow2(s,true);}).join("")+'</div>';
     }
     if(linked.length){
       html+='<div class="isec2">紐付け済み（'+linked.length+'）</div>';
-      html+=linked.map(function(s){return _inrow2(s,false);}).join("");
+      html+='<div class="igrid">'+linked.map(function(s){return _inrow2(s,false);}).join("")+'</div>';
     }
     if(orphan.length){
       html+='<div class="isec2">🔍 迷子写真（'+orphan.length+'）<span style="font-weight:400;font-size:10.5px;color:#94a3b8">　元カードが消失</span></div>';
-      html+=orphan.map(_inrowOrphan).join("");
+      html+='<div class="igrid">'+orphan.map(_inrowOrphan).join("")+'</div>';
     }
     html+='<div class="istore" id="inbStoreMeter">使用容量を計算中…</div>';
     host.innerHTML=html;
@@ -12967,15 +13527,17 @@ function _cpRender(dir){
   var s=sets[_cpIdx];
   var ph=(s&&s.photos&&s.photos.length)?s.photos:[];
   var cells="";
-  for(var i=0;i<4;i++){ var p=ph[i]; if(p){ var src=(p&&p.thumb)||(p&&typeof p.full==="string"?p.full:""); cells+='<div class="cps-th" data-sid="'+esc((s&&s.id)||"")+'" data-idx="'+i+'">'+(src?'<img src="'+src+'" alt="">':'<span class="cps-noimg">📷</span>')+'</div>'; } else { cells+='<div class="cps-th empty"><span class="cps-noimg">＋</span></div>'; } }
+  for(var i=0;i<ph.length;i++){ var p=ph[i]; var src=(p&&p.thumb)||(p&&typeof p.full==="string"?p.full:""); cells+='<div class="cps-th" data-sid="'+esc((s&&s.id)||"")+'" data-idx="'+i+'">'+(src?'<img src="'+src+'" alt="">':'<span class="cps-noimg">📷</span>')+'</div>'; }
+  if(!ph.length){ cells='<div class="cps-th empty"><span class="cps-noimg">＋</span></div>'; }
   var info=[]; if(s.addr) info.push(esc(s.addr+(s.banchi?(" "+s.banchi):""))); if(s.note) info.push(esc(s.note));
   var dateTxt=esc(fmtW(s.ts));
-  var pager=sets.length>1?('<div class="cps-pager"><button type="button" class="cps-nav" data-cp="prev">◀</button><span class="cps-pg">'+(_cpIdx+1)+' / '+sets.length+'</span><button type="button" class="cps-nav" data-cp="next">▶</button></div>'):'<span></span>';
+  var chips="";
+  if(sets.length>1){ chips='<div class="cps-chips">'; for(var ci=0;ci<sets.length;ci++){ var lab=ci<20?String.fromCharCode(0x2460+ci):("("+(ci+1)+")"); chips+='<button type="button" class="cps-chip'+(ci===_cpIdx?" on":"")+'" data-cp-set="'+ci+'">'+lab+'</button>'; } chips+='</div>'; }
   var metaLine=info.length?('<div class="cps-meta">'+info.join(" ・ ")+'</div>'):'';
-  body.innerHTML='<div class="cps-stage"><div class="cps-slide"><div class="cps-grid fix4">'+cells+'</div>'+metaLine+'</div><div class="cps-bottom">'+pager+'<div class="cps-right"><span class="cps-date">'+dateTxt+'</span><button type="button" class="cps-del" data-cp-del="'+esc((s&&s.id)||"")+'" title="削除／インボックスへ戻す">🗑</button></div></div></div>';
+  body.innerHTML='<div class="cps-stage">'+chips+'<div class="cps-slide"><div class="cps-grid fix4">'+cells+'</div>'+metaLine+'</div><div class="cps-bottom"><span></span><div class="cps-right"><span class="cps-date">'+dateTxt+'</span><button type="button" class="cps-del" data-cp-del="'+esc((s&&s.id)||"")+'" title="削除／インボックスへ戻す">🗑</button></div></div></div>';
   body.querySelectorAll(".cps-th[data-sid]").forEach(function(el){ el.addEventListener("click",function(){ openInboxPhoto(el.getAttribute("data-sid"), parseInt(el.getAttribute("data-idx"),10)||0); }); });
   body.querySelectorAll("[data-cp-del]").forEach(function(el){ el.addEventListener("click",function(){ _delSet(el.getAttribute("data-cp-del")); }); });
-  body.querySelectorAll("[data-cp]").forEach(function(el){ el.addEventListener("click",function(){ cardPhotoStep(el.getAttribute("data-cp")==="next"?1:-1); }); });
+  body.querySelectorAll("[data-cp-set]").forEach(function(el){ el.addEventListener("click",function(){ var i=parseInt(el.getAttribute("data-cp-set"),10)||0; var d=i>_cpIdx?1:(i<_cpIdx?-1:0); _cpIdx=i; _cpRender(d); }); });
   var stage=body.querySelector(".cps-stage");
   if(stage && sets.length>1){ var x0=null; stage.addEventListener("touchstart",function(ev){ x0=ev.touches[0].clientX; },{passive:true}); stage.addEventListener("touchend",function(ev){ if(x0==null) return; var dx=ev.changedTouches[0].clientX-x0; x0=null; if(Math.abs(dx)>40) cardPhotoStep(dx<0?1:-1); },{passive:true}); }
   if(dir){ var sl=body.querySelector(".cps-slide"); if(sl){ sl.style.transform="translateX("+(dir>0?"28px":"-28px")+")"; sl.style.opacity="0"; requestAnimationFrame(function(){ requestAnimationFrame(function(){ sl.style.transition="transform .22s ease, opacity .22s ease"; sl.style.transform="translateX(0)"; sl.style.opacity="1"; }); }); } }
@@ -13024,7 +13586,7 @@ function renderCardPhotos(cardId){
     try{
       var sets=(all||[]).filter(function(s){ return s && s.cardId===cardId; });
       try{ var _pt=[]; sets.forEach(function(s){ (s.photos||[]).forEach(function(p){ var t=(p&&p.thumb)||(p&&typeof p.full==="string"?p.full:""); if(t) _pt.push(t); }); }); window._curCardPhotoThumbs={cardId:cardId, thumbs:_pt}; }catch(_e){}
-      sets.sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
+      sets.sort(function(a,b){ return (a.ts||0)-(b.ts||0); }); /* 古い順＝筆①が最初の土地で固定（番号が入れ替わらない） */
       var total=sets.reduce(function(n,s){ return n+((s.photos&&s.photos.length)||0); },0);
       if(cnt) cnt.textContent=sets.length?("（"+sets.length+"件 / 計"+total+"枚）"):"";
       _cpSets=sets; _cpIdx=0; _cpCard=cardId;
