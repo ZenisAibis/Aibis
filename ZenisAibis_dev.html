@@ -2227,7 +2227,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.26dev";
+var APP_VERSION = "v9.28dev";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -10880,6 +10880,87 @@ function buildPlanPhotosHTML(thumbs){
   var cells=thumbs.slice(0,4).map(function(t){ return '<div style="border:0.5pt solid #888;border-radius:2mm;overflow:hidden;background:#fff"><img src="'+t+'" style="width:100%;height:auto;display:block"></div>'; }).join('');
   return '<div style="page-break-inside:avoid"><div class="h2 init">📷 計画地写真</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:4mm;margin-top:2mm">'+cells+'</div></div>';
 }
+/* ===== StepC: 計画地写真の別印刷（筆を選んでA4縦・1筆=1ページ） ===== */
+function _pppEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function _pppNum(i){ return i<20?String.fromCharCode(0x2460+i):('('+(i+1)+')'); }
+function _pppLoadSets(cardId){
+  return mAll().then(function(all){
+    var sets=(all||[]).filter(function(s){ return s && s.cardId===cardId; });
+    sets.sort(function(a,b){ return (a.ts||0)-(b.ts||0); }); /* 筆順=画面と同じ昇順 */
+    sets.forEach(function(s,i){ s._fude=i; });
+    return sets;
+  });
+}
+function openPlanPhotoPrint(){
+  if(typeof curId==='undefined' || !curId){ if(window.toast)toast('カードを開いてから印刷してね'); return; }
+  _pppLoadSets(curId).then(function(sets){
+    if(!sets.length){ if(window.toast)toast('計画地写真がありません'); return; }
+    var rows=sets.map(function(s){
+      var p=(s.photos&&s.photos[0]); var src=(p&&(p.thumb||p.full))||'';
+      var addr=_pppEsc((s.addr||'')+(s.banchi?(' '+s.banchi):''))||'(住所未設定)';
+      var cnt=(s.photos&&s.photos.length)||0;
+      return '<label class="ppp-row"><input type="checkbox" class="ppp-cb" value="'+_pppEsc(s.id)+'" checked>'
+        +'<span class="ppp-thumb">'+(src?'<img src="'+src+'">':'📷')+'</span>'
+        +'<span class="ppp-rowtxt"><b>'+_pppNum(s._fude)+'筆</b>　'+addr+'<span class="ppp-rowsub">写真'+cnt+'枚'+(s.note?(' ・ '+_pppEsc(s.note)):'')+'</span></span></label>';
+    }).join('');
+    var ov=document.getElementById('pppSelOv');
+    if(!ov){ ov=document.createElement('div'); ov.id='pppSelOv'; ov.className='no-print'; document.body.appendChild(ov); }
+    ov.innerHTML='<div class="ppp-sheet"><div class="ppp-shead">🖨 計画地写真を印刷<span class="ppp-shsub">印刷する筆を選んでね（A4縦・1筆1ページ）</span></div>'
+      +'<div class="ppp-list">'+rows+'</div>'
+      +'<div class="ppp-sfoot"><button type="button" class="ppp-btn ghost" onclick="closePlanPhotoPrint()">閉じる</button><button type="button" class="ppp-btn go" onclick="doPlanPhotoPrint()">印刷する</button></div></div>';
+    ov.style.display='flex';
+    ov._sets=sets;
+  }).catch(function(e){ if(window.toast)toast('写真を開けませんでした'); });
+}
+function closePlanPhotoPrint(){ var ov=document.getElementById('pppSelOv'); if(ov){ ov.style.display='none'; ov.innerHTML=''; ov._sets=null; } }
+function doPlanPhotoPrint(){
+  var ov=document.getElementById('pppSelOv'); if(!ov||!ov._sets) return;
+  var checked={}; ov.querySelectorAll('.ppp-cb:checked').forEach(function(cb){ checked[cb.value]=1; });
+  var sel=ov._sets.filter(function(s){ return checked[s.id]; });
+  if(!sel.length){ if(window.toast)toast('筆を1つ以上選んでね'); return; }
+  var c=(typeof cur!=='undefined'&&cur)?cur:{};
+  var root=document.getElementById('browserPrintRoot'); if(!root) return;
+  window._appPrinting=true;
+  root.innerHTML='<style>'+planPhotoPrintCSS()+'</style>'+buildPlanPhotoPrintHTML(sel,c);
+  document.body.classList.add('bp-active');
+  closePlanPhotoPrint();
+  var _reset=function(){ window._appPrinting=false; window.removeEventListener('afterprint',_reset); };
+  window.addEventListener('afterprint',_reset);
+  setTimeout(function(){ try{ window.print(); }catch(e){ _reset(); } }, 60);
+}
+function planPhotoPrintCSS(){
+  return '@page{size:A4 portrait;margin:10mm}'
+    +'#browserPrintRoot .ppp-page{page-break-after:always;height:277mm;display:flex;flex-direction:column;font-family:sans-serif}'
+    +'#browserPrintRoot .ppp-page:last-child{page-break-after:auto}'
+    +'#browserPrintRoot .ppp-phdr{border-bottom:1.5pt solid #2c5282;padding-bottom:2mm;margin-bottom:3mm;flex:0 0 auto}'
+    +'#browserPrintRoot .ppp-ptitle{font-size:13pt;font-weight:800;color:#1a365d}'
+    +'#browserPrintRoot .ppp-pmeta{font-size:9.5pt;color:#444;margin-top:1mm;line-height:1.5}'
+    +'#browserPrintRoot .ppp-area{flex:1 1 auto;min-height:0}'
+    +'#browserPrintRoot .ppp-g{display:grid;gap:4mm;height:100%}'
+    +'#browserPrintRoot .ppp-g.n1{grid-template-columns:1fr;grid-template-rows:1fr}'
+    +'#browserPrintRoot .ppp-g.n2{grid-template-columns:1fr;grid-template-rows:1fr 1fr}'
+    +'#browserPrintRoot .ppp-g.n34{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}'
+    +'#browserPrintRoot .ppp-cell{border:0.5pt solid #999;border-radius:2mm;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#fff}'
+    +'#browserPrintRoot .ppp-cell img{max-width:100%;max-height:100%;object-fit:contain;display:block}';
+}
+function buildPlanPhotoPrintHTML(sets,c){
+  var dateStr=new Date().toISOString().slice(0,10);
+  var owner=_pppEsc((c.branch||'')+' '+(c.section||'')+' '+(c.manager||'')).trim();
+  var nm=c.name?_pppEsc(c.name)+'様':'';
+  return sets.map(function(s){
+    var ph=(s.photos||[]).filter(function(p){return p&&(p.full||p.thumb);});
+    var n=ph.length;
+    var gcls=n<=1?'n1':(n===2?'n2':'n34');
+    var cells='';
+    for(var i=0;i<n && i<4;i++){ var src=ph[i].full||ph[i].thumb; cells+='<div class="ppp-cell"><img src="'+src+'"></div>'; }
+    if(!n){ cells='<div class="ppp-cell"></div>'; }
+    var addr=_pppEsc((s.addr||'')+(s.banchi?(' '+s.banchi):''));
+    var meta=[nm,addr,(s.note?_pppEsc(s.note):''),'印刷:'+dateStr,owner].filter(Boolean).join('　／　');
+    return '<div class="ppp-page"><div class="ppp-phdr"><div class="ppp-ptitle">📷 計画地写真　'+_pppNum(s._fude)+'筆</div><div class="ppp-pmeta">'+meta+'</div></div>'
+      +'<div class="ppp-area"><div class="ppp-g '+gcls+'">'+cells+'</div></div></div>';
+  }).join('');
+}
+window.openPlanPhotoPrint=openPlanPhotoPrint; window.closePlanPhotoPrint=closePlanPhotoPrint; window.doPlanPhotoPrint=doPlanPhotoPrint;
 function buildBrowserPrintReport(c){
   var e2=function(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
   var dateStr=new Date().toISOString().slice(0,10);
@@ -10890,7 +10971,7 @@ function buildBrowserPrintReport(c){
   function prh(){return '<div class="prhdr"><div class="prhdr-left">z.Aibis</div><div class="prhdr-right">'+hdrTxt+'</div>'+(pj?'<div class="prhdr-rank" style="color:'+pjColor+'">'+pj+'</div>':'')+'</div>';}
   function addPage(content){ if(firstPage){html+=prh();firstPage=false;} else {html+='<div class="pgbrk"></div>'+prh();} html+=content; }
   addPage(buildInitVisitHTML(c));
-  try{ var _ppt=(window._curCardPhotoThumbs && window._curCardPhotoThumbs.cardId===c.id)?(window._curCardPhotoThumbs.thumbs||[]):[]; if(_ppt.length){ addPage(buildPlanPhotosHTML(_ppt)); } }catch(_e){}
+  /* StepC: 計画地写真は本文カードから分離（🖨で筆ごとA4縦の別印刷）。本文には載せない。 */
   addPage(buildRevisitHTML(c));
   var pp=c.pursuits||[];
   if(pp.some(function(x){return x.content||x.date||x.rec||x.interviewer||x.appo||x.next_appo_date||x.visit_type||x.instruction;})){ html+=buildPursuitHTML(c); }
@@ -11175,7 +11256,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
     </div>
     <!-- 📷 計画地写真（アイビスカメラ連携・表示専用） -->
     <details class="sec no-print cps-acc" id="cardPhotoSec" style="display:none">
-      <summary class="stitle cps-sum" style="display:flex;align-items:center;gap:8px"><span style="flex:1">📷 計画地写真 <span id="cardPhotoCount" style="font-weight:600;color:#718096;font-size:12px"></span></span><button type="button" id="cardCamBtn" class="cps-hdr-btn cps-hdr-cam" onclick="cardOpenCam(curId)" title="カメラで撮影（このカードに紐付く）">📷</button><button type="button" id="cardInbBtn" class="cps-hdr-btn" onclick="openInboxForCard()" title="インボックスから写真を選ぶ・管理">📥</button></summary>
+      <summary class="stitle cps-sum" style="display:flex;align-items:center;gap:8px"><span style="flex:1">📷 計画地写真 <span id="cardPhotoCount" style="font-weight:600;color:#718096;font-size:12px"></span></span><button type="button" id="cardCamBtn" class="cps-hdr-btn cps-hdr-cam" onclick="cardOpenCam(curId)" title="カメラで撮影（このカードに紐付く）">📷</button><button type="button" id="cardInbBtn" class="cps-hdr-btn" onclick="openInboxForCard()" title="インボックスから写真を選ぶ・管理">📥</button><button type="button" id="cardPhotoPrintBtn" class="cps-hdr-btn" onclick="openPlanPhotoPrint()" title="計画地写真を印刷（筆を選んでA4縦）">🖨</button></summary>
       <div id="cardPhotoBody"></div>
     </details>
     <!-- 購買ステージ + 資産背景 -->
@@ -12896,6 +12977,26 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   .cps-hdr-btn:active{background:#edf2f7}
   body:not(.is-mob) .cps-hdr-cam{display:none}
   #cardPhotoBody .cps-stage{position:relative;overflow:hidden}
+  #cardPhotoBody .cps-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+  #cardPhotoBody .cps-chip{min-width:32px;height:32px;border:1px solid #cbd5e0;border-radius:8px;background:#fff;color:#4a5568;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0 8px;font-family:inherit}
+  #cardPhotoBody .cps-chip.on{background:#2c5282;border-color:#2c5282;color:#fff}
+  #cardPhotoBody .cps-chip:active{opacity:.8}
+  /* StepC: 計画地写真 印刷の筆選択オーバーレイ */
+  #pppSelOv{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:3000;display:none;align-items:center;justify-content:center;padding:16px}
+  #pppSelOv .ppp-sheet{background:#fff;border-radius:14px;max-width:460px;width:100%;max-height:84vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+  #pppSelOv .ppp-shead{padding:14px 16px;font-size:15px;font-weight:800;color:#1a365d;border-bottom:1px solid #edf2f7;display:flex;flex-direction:column;gap:2px}
+  #pppSelOv .ppp-shsub{font-size:11.5px;font-weight:600;color:#718096}
+  #pppSelOv .ppp-list{overflow-y:auto;padding:8px 10px;flex:1 1 auto}
+  #pppSelOv .ppp-row{display:flex;align-items:center;gap:10px;padding:9px 8px;border-radius:10px;cursor:pointer}
+  #pppSelOv .ppp-row:active{background:#f1f5f9}
+  #pppSelOv .ppp-cb{width:20px;height:20px;flex-shrink:0;cursor:pointer}
+  #pppSelOv .ppp-thumb{width:46px;height:46px;border-radius:8px;background:#edf2f7;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px}
+  #pppSelOv .ppp-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  #pppSelOv .ppp-rowtxt{font-size:13.5px;color:#2d3748;min-width:0;display:flex;flex-direction:column}
+  #pppSelOv .ppp-rowsub{font-size:11px;color:#718096;margin-top:2px}
+  #pppSelOv .ppp-sfoot{display:flex;gap:10px;padding:12px 16px;border-top:1px solid #edf2f7}
+  #pppSelOv .ppp-btn{flex:1;border-radius:10px;padding:11px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;border:1px solid #cbd5e0;background:#fff;color:#4a5568}
+  #pppSelOv .ppp-btn.go{background:#2c5282;border-color:#2c5282;color:#fff}
   #cardPhotoBody .cps-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px}
   #cardPhotoBody .cps-pager{display:flex;align-items:center;gap:10px}
   #cardPhotoBody .cps-date{font-size:11px;color:#718096;text-align:right;white-space:nowrap}
@@ -13390,15 +13491,17 @@ function _cpRender(dir){
   var s=sets[_cpIdx];
   var ph=(s&&s.photos&&s.photos.length)?s.photos:[];
   var cells="";
-  for(var i=0;i<4;i++){ var p=ph[i]; if(p){ var src=(p&&p.thumb)||(p&&typeof p.full==="string"?p.full:""); cells+='<div class="cps-th" data-sid="'+esc((s&&s.id)||"")+'" data-idx="'+i+'">'+(src?'<img src="'+src+'" alt="">':'<span class="cps-noimg">📷</span>')+'</div>'; } else { cells+='<div class="cps-th empty"><span class="cps-noimg">＋</span></div>'; } }
+  for(var i=0;i<ph.length;i++){ var p=ph[i]; var src=(p&&p.thumb)||(p&&typeof p.full==="string"?p.full:""); cells+='<div class="cps-th" data-sid="'+esc((s&&s.id)||"")+'" data-idx="'+i+'">'+(src?'<img src="'+src+'" alt="">':'<span class="cps-noimg">📷</span>')+'</div>'; }
+  if(!ph.length){ cells='<div class="cps-th empty"><span class="cps-noimg">＋</span></div>'; }
   var info=[]; if(s.addr) info.push(esc(s.addr+(s.banchi?(" "+s.banchi):""))); if(s.note) info.push(esc(s.note));
   var dateTxt=esc(fmtW(s.ts));
-  var pager=sets.length>1?('<div class="cps-pager"><button type="button" class="cps-nav" data-cp="prev">◀</button><span class="cps-pg">'+(_cpIdx+1)+' / '+sets.length+'</span><button type="button" class="cps-nav" data-cp="next">▶</button></div>'):'<span></span>';
+  var chips="";
+  if(sets.length>1){ chips='<div class="cps-chips">'; for(var ci=0;ci<sets.length;ci++){ var lab=ci<20?String.fromCharCode(0x2460+ci):("("+(ci+1)+")"); chips+='<button type="button" class="cps-chip'+(ci===_cpIdx?" on":"")+'" data-cp-set="'+ci+'">'+lab+'</button>'; } chips+='</div>'; }
   var metaLine=info.length?('<div class="cps-meta">'+info.join(" ・ ")+'</div>'):'';
-  body.innerHTML='<div class="cps-stage"><div class="cps-slide"><div class="cps-grid fix4">'+cells+'</div>'+metaLine+'</div><div class="cps-bottom">'+pager+'<div class="cps-right"><span class="cps-date">'+dateTxt+'</span><button type="button" class="cps-del" data-cp-del="'+esc((s&&s.id)||"")+'" title="削除／インボックスへ戻す">🗑</button></div></div></div>';
+  body.innerHTML='<div class="cps-stage">'+chips+'<div class="cps-slide"><div class="cps-grid fix4">'+cells+'</div>'+metaLine+'</div><div class="cps-bottom"><span></span><div class="cps-right"><span class="cps-date">'+dateTxt+'</span><button type="button" class="cps-del" data-cp-del="'+esc((s&&s.id)||"")+'" title="削除／インボックスへ戻す">🗑</button></div></div></div>';
   body.querySelectorAll(".cps-th[data-sid]").forEach(function(el){ el.addEventListener("click",function(){ openInboxPhoto(el.getAttribute("data-sid"), parseInt(el.getAttribute("data-idx"),10)||0); }); });
   body.querySelectorAll("[data-cp-del]").forEach(function(el){ el.addEventListener("click",function(){ _delSet(el.getAttribute("data-cp-del")); }); });
-  body.querySelectorAll("[data-cp]").forEach(function(el){ el.addEventListener("click",function(){ cardPhotoStep(el.getAttribute("data-cp")==="next"?1:-1); }); });
+  body.querySelectorAll("[data-cp-set]").forEach(function(el){ el.addEventListener("click",function(){ var i=parseInt(el.getAttribute("data-cp-set"),10)||0; var d=i>_cpIdx?1:(i<_cpIdx?-1:0); _cpIdx=i; _cpRender(d); }); });
   var stage=body.querySelector(".cps-stage");
   if(stage && sets.length>1){ var x0=null; stage.addEventListener("touchstart",function(ev){ x0=ev.touches[0].clientX; },{passive:true}); stage.addEventListener("touchend",function(ev){ if(x0==null) return; var dx=ev.changedTouches[0].clientX-x0; x0=null; if(Math.abs(dx)>40) cardPhotoStep(dx<0?1:-1); },{passive:true}); }
   if(dir){ var sl=body.querySelector(".cps-slide"); if(sl){ sl.style.transform="translateX("+(dir>0?"28px":"-28px")+")"; sl.style.opacity="0"; requestAnimationFrame(function(){ requestAnimationFrame(function(){ sl.style.transition="transform .22s ease, opacity .22s ease"; sl.style.transform="translateX(0)"; sl.style.opacity="1"; }); }); } }
@@ -13447,7 +13550,7 @@ function renderCardPhotos(cardId){
     try{
       var sets=(all||[]).filter(function(s){ return s && s.cardId===cardId; });
       try{ var _pt=[]; sets.forEach(function(s){ (s.photos||[]).forEach(function(p){ var t=(p&&p.thumb)||(p&&typeof p.full==="string"?p.full:""); if(t) _pt.push(t); }); }); window._curCardPhotoThumbs={cardId:cardId, thumbs:_pt}; }catch(_e){}
-      sets.sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
+      sets.sort(function(a,b){ return (a.ts||0)-(b.ts||0); }); /* 古い順＝筆①が最初の土地で固定（番号が入れ替わらない） */
       var total=sets.reduce(function(n,s){ return n+((s.photos&&s.photos.length)||0); },0);
       if(cnt) cnt.textContent=sets.length?("（"+sets.length+"件 / 計"+total+"枚）"):"";
       _cpSets=sets; _cpIdx=0; _cpCard=cardId;
