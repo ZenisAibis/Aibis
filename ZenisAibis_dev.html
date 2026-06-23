@@ -539,17 +539,34 @@ html.pczoom .tabs .tab .ic{font-size:15px}
   #mikomiTop .mk-tel{ grid-column:1/-1 !important; order:4 !important; }
   #mikomiTop .mk-email{ grid-column:1/-1 !important; order:5 !important; }
 
-  /* 家族構成下部：構成確定ボタンは全幅（押しやすさ優先）、説明・家族全体はその下 — Fix F */
+  /* 家族構成下部：左=家族全体バー(75%) / 右=構成確定ボタン(25%)、凡例は上段フル — Fix G */
   #editView .pc-fam-status{
-    display:flex !important;
-    flex-direction:column;
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) minmax(96px,26%);
     gap:8px;
     align-items:stretch;
   }
   #editView .pc-fam-status > div:has(> #famHeadcountBtn){ display:contents !important; }
-  #editView .pc-fam-status #famHeadcountBtn{ order:1; width:100% !important; box-sizing:border-box; min-height:44px; }
-  #editView .pc-fam-status > div:has(> #famHeadcountBtn) > div{ order:2; font-size:11px; line-height:1.35; }
-  #editView .pc-fam-status > #famSummary{ order:3; margin:0 !important; font-size:11px; line-height:1.35; }
+  /* 凡例：上段フル幅 */
+  #editView .pc-fam-status > div:has(> #famHeadcountBtn) > div{ order:1; grid-column:1 / -1; font-size:11px; line-height:1.35; }
+  /* 家族全体バー：左 */
+  #editView .pc-fam-status > #famSummary{ order:2; grid-column:1; align-self:center; margin:0 !important; }
+  /* 構成確定ボタン：右25% */
+  #editView .pc-fam-status #famHeadcountBtn{ order:3; grid-column:2; width:100% !important; box-sizing:border-box; min-height:48px; white-space:nowrap; align-self:stretch; }
+  /* 家族全体バーが非表示(家族未登録)のときはボタンを全幅 */
+  #editView .pc-fam-status:has(> #famSummary[style*="none"]) #famHeadcountBtn{ grid-column:1 / -1; }
+
+  /* 家族全体バーは狭い時は折り返して文字切れ回避 */
+  #editView #famSummary > div{ white-space:normal !important; }
+
+  /* 土地情報の幅バランス：路線価+借地割合=長め / 面積=中 / 間口=短 */
+  #secTochi .pc-land-main{ grid-template-columns:1.5fr 1fr 0.6fr !important; }
+}
+/* 360px前後：家族全体バー＋構成確定ボタンを縦積み（文字切れ回避優先） */
+@media(max-width:380px){
+  #editView .pc-fam-status{ grid-template-columns:1fr !important; }
+  #editView .pc-fam-status > #famSummary{ grid-column:1 !important; }
+  #editView .pc-fam-status #famHeadcountBtn{ grid-column:1 !important; }
 }
 .addr-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .addr-acts{display:flex;gap:4px;flex:0 0 auto}
@@ -11318,7 +11335,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <div id="rosenkaDisp" style="font-size:10px;color:#718096;margin-top:2px"></div>
         </div>
         <div>
-          <label class="pc-area-label">面積（㎡）<span id="tsuboDisp" style="font-size:11px;color:#64748b;font-weight:600;white-space:nowrap">- 坪</span></label>
+          <label class="pc-area-label">面積<span id="tsuboDisp" style="font-size:11px;color:#64748b;font-weight:600;white-space:nowrap">- 坪</span></label>
           <div style="display:flex;gap:4px;align-items:center">
             <input type="number" id="f_m2" placeholder="㎡" style="flex:1" inputmode="numeric" pattern="[0-9]*">
           </div>
