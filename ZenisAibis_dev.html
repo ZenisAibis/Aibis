@@ -1049,9 +1049,9 @@ body.is-mob .mob-menu{display:inline-block}
   #f_social,#f_genjo,#f_oldrent,#f_parking,#f_jitaku,#f_ryokuchi,#f_landasset,#f_soutei,
   #f_kb,#f_ky,#f_chiku,#f_kouzou,#f_kosu,#f_prate{ width:var(--pc-field-m)!important; max-width:var(--pc-field-m)!important; flex:0 1 auto; }
   /* S：複数桁の数値（右寄せ） */
-  #f_rosenka,#f_m2,#f_m2tanka,#f_chusharyo{ width:var(--pc-field-s)!important; max-width:var(--pc-field-s)!important; flex:0 1 auto; text-align:right; font-variant-numeric:tabular-nums; }
+  #f_rosenka,#f_m2,#f_m2tanka,#f_chusharyo{ width:var(--pc-field-s)!important; max-width:var(--pc-field-s)!important; flex:0 1 auto; text-align:center; font-variant-numeric:tabular-nums; }
   /* XS：1〜2桁の数値（右寄せ） */
-  #f_maguchi,#f_kuushitsu,#f_kuushitsu_aki,#f_kai{ width:var(--pc-field-xs)!important; max-width:var(--pc-field-xs)!important; flex:0 1 auto; text-align:right; font-variant-numeric:tabular-nums; }
+  #f_maguchi,#f_kuushitsu,#f_kuushitsu_aki,#f_kai{ width:var(--pc-field-xs)!important; max-width:var(--pc-field-xs)!important; flex:0 1 auto; text-align:center; font-variant-numeric:tabular-nums; }
   /* XL：用途地域（長い選択肢を確保） */
   #f_youto{ width:var(--pc-field-xl)!important; max-width:var(--pc-field-xl)!important; flex:0 1 auto; }
   /* 広いまま：住所・計画地・備考memo・本文・textarea */
@@ -1133,7 +1133,7 @@ body.is-mob .mob-menu{display:inline-block}
     width:100% !important;
     max-width:none !important;
     flex:1 1 auto !important;
-    text-align:left !important;
+    text-align:center !important;
   }
 }
 /* ============================================================
@@ -1183,7 +1183,7 @@ body.is-mob .mob-menu{display:inline-block}
   #secTochi .pc-land-main #f_maguchi{
     width:100% !important;
     max-width:none !important;
-    text-align:left !important;
+    text-align:center !important;
   }
 
   /* --- C4 高度地区・防火地域：左右2ブロック（各ブロック内のボタンは内容幅のまま=Step1.6b） --- */
@@ -1245,7 +1245,7 @@ body.is-mob .mob-menu{display:inline-block}
   #secTochi .pc-land-meta #f_kuushitsu_aki{
     width:100% !important;
     max-width:none !important;
-    text-align:left !important;
+    text-align:center !important;
   }
 }
 /* ============================================================
@@ -1320,6 +1320,15 @@ body.is-mob .mob-menu{display:inline-block}
      ※ PC/スマホ共通。印刷は別生成テンプレートのため非干渉。
    ========================================================= */
 .pc-area-label{ display:flex; align-items:baseline; gap:6px; flex-wrap:wrap; }
+/* =========================================================
+   数字系・プルダウンの文字を中央寄せ（PC/スマホ共通）— Center Fix
+   - 数字入力(type=number / inputmode=numeric) と select を中央寄せ
+   - 氏名・メール・住所などのテキスト入力／textarea は対象外
+   - 印刷は別生成テンプレートのため非干渉
+   ========================================================= */
+#editView input[type="number"],
+#editView input[inputmode="numeric"],
+#editView select{ text-align:center !important; text-align-last:center !important; }
 </style>
 </head>
 <body>
