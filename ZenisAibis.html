@@ -1949,8 +1949,8 @@ body.is-mob .mob-menu{display:inline-block}
       </div>
       <div class="ht" style="margin:-2px 0 10px">※ カードの担当欄に自動入力（スペース不可）<br>※ 「支店」は自動除去されます</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <div><label>自分のメールアドレス</label><input type="email" id="sSelf" placeholder="dt0000001@kentaku.co.jp" oninput="autoSaveSetup()"><p class="ht">「📧 PCへ」で送る宛先</p></div>
-        <div><label>上司のメールアドレス <span class="req">*</span></label><input type="email" id="sMgr" placeholder="to071024@kentaku.co.jp" oninput="autoSaveSetup()"><p class="ht">📧 課長報告の宛先</p></div>
+        <div><label>自分のメールアドレス</label><input type="email" id="sSelf" autocomplete="email" placeholder="dt0000001@kentaku.co.jp" oninput="autoSaveSetup()"><p class="ht">「📧 PCへ」で送る宛先</p></div>
+        <div><label>上司のメールアドレス <span class="req">*</span></label><input type="text" inputmode="email" autocomplete="off" autocapitalize="none" spellcheck="false" id="sMgr" placeholder="to071024@kentaku.co.jp" oninput="autoSaveSetup()"><p class="ht">📧 課長報告の宛先</p></div>
       </div>
       <div id="staffMailSection" style="display:none;margin-top:10px">
         <details class="setup-acc">
@@ -2227,7 +2227,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.34";
+var APP_VERSION = "v9.35";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -3140,7 +3140,7 @@ function renderStaffMailRows(){
   box.innerHTML = (staffMails&&staffMails.length) ? staffMails.map(function(s,i){
     return '<div style="display:grid;grid-template-columns:1fr 1.4fr auto;gap:6px;margin-bottom:6px;align-items:center">'
       +'<input type="text" placeholder="担当者名" value="'+eAttr(s.name||'')+'" oninput="onStaffMailInput('+i+',\'name\',this.value)" style="font-size:13px">'
-      +'<input type="email" inputmode="email" autocapitalize="none" spellcheck="false" placeholder="メールアドレス" value="'+eAttr(s.email||'')+'" oninput="onStaffMailInput('+i+',\'email\',this.value)" style="font-size:13px">'
+      +'<input type="text" inputmode="email" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="メールアドレス" value="'+eAttr(s.email||'')+'" oninput="onStaffMailInput('+i+',\'email\',this.value)" style="font-size:13px">'
       +'<button type="button" onclick="removeStaffMailRow('+i+')" title="削除" style="background:#fff5f5;border:1px solid #feb2b2;color:#c53030;border-radius:6px;padding:6px 9px;font-size:12px;cursor:pointer;font-family:inherit">✕</button>'
       +'</div>';
   }).join('') : '<p class="ht" style="margin:4px 0">まだ登録がありません。「＋ 担当者を追加」または下の候補から追加してね。</p>';
@@ -11243,7 +11243,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <!-- 中段：TEL・メアド -->
       <div class="mk-row" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:8px">
         <div class="mk-tel"><label>TEL</label><input type="tel" id="f_tel" inputmode="numeric" placeholder="ハイフン無し" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
-        <div class="mk-email"><label>メールアドレス</label><div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap"><input type="email" inputmode="email" autocapitalize="none" autocomplete="off" spellcheck="false" id="f_email_local" placeholder="ID" style="flex:1;min-width:70px"><span style="color:#718096;flex-shrink:0">@</span><select id="f_email_domain" onchange="onEmailDomainChange()" style="width:108px;min-width:0;flex-shrink:0"><option value="gmail.com">gmail.com</option><option value="yahoo.co.jp">yahoo.co.jp</option><option value="icloud.com">icloud.com</option><option value="docomo.ne.jp">docomo.ne.jp</option><option value="ezweb.ne.jp">ezweb.ne.jp(au)</option><option value="au.com">au.com</option><option value="softbank.ne.jp">softbank.ne.jp</option><option value="i.softbank.jp">i.softbank.jp</option><option value="outlook.jp">outlook.jp</option><option value="hotmail.com">hotmail.com</option><option value="ybb.ne.jp">ybb.ne.jp</option><option value="__custom__">その他(入力)</option></select><input type="text" inputmode="url" autocapitalize="none" autocomplete="off" spellcheck="false" id="f_email_domain_custom" placeholder="ドメイン" style="display:none;width:auto;min-width:110px;flex-shrink:0"></div></div>
+        <div class="mk-email"><label>メールアドレス</label><div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap"><input type="text" inputmode="email" autocapitalize="none" autocomplete="off" spellcheck="false" id="f_email_local" placeholder="ID" style="flex:1;min-width:70px"><span style="color:#718096;flex-shrink:0">@</span><select id="f_email_domain" onchange="onEmailDomainChange()" style="width:108px;min-width:0;flex-shrink:0"><option value="gmail.com">gmail.com</option><option value="yahoo.co.jp">yahoo.co.jp</option><option value="icloud.com">icloud.com</option><option value="docomo.ne.jp">docomo.ne.jp</option><option value="ezweb.ne.jp">ezweb.ne.jp(au)</option><option value="au.com">au.com</option><option value="softbank.ne.jp">softbank.ne.jp</option><option value="i.softbank.jp">i.softbank.jp</option><option value="outlook.jp">outlook.jp</option><option value="hotmail.com">hotmail.com</option><option value="ybb.ne.jp">ybb.ne.jp</option><option value="__custom__">その他(入力)</option></select><input type="text" inputmode="url" autocapitalize="none" autocomplete="off" spellcheck="false" id="f_email_domain_custom" placeholder="ドメイン" style="display:none;width:auto;min-width:110px;flex-shrink:0"></div></div>
       </div>
       </div>
       <!-- 下段：住所・計画地 + 地図ボタン -->
