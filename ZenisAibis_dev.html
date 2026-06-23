@@ -1217,18 +1217,54 @@ body.is-mob .mob-menu{display:inline-block}
     width:100% !important;
     max-width:none !important;
   }
-  /* 家族構成：人数確定ボタン(左) / 凡例・状態(右) の2グリッド */
-  #editView div:has(> #famHeadcountBtn){
-    display:grid !important;
-    grid-template-columns:auto minmax(0,1fr) !important;
-    column-gap:14px !important;
-    align-items:center !important;
-  }
+  /* 家族構成の一行化は下の Step F（.pc-fam-status）で実装 */
 }
 /* 計画規模・資産背景：横幅が広いPC(≥1200px)では6項目を1行に */
 @media screen and (min-width:1200px){
   #editView .pc-plan{ grid-template-columns:repeat(6, minmax(0,1fr)) !important; }
   #editView .pc-asset{ grid-template-columns:repeat(6, minmax(0,1fr)) !important; }
+}
+/* ============================================================
+   PC版 最終整列調整 v9.24 — Step F（名前再配置/最寄/家族一行）
+   ※ ご指定の作業名は「Step E」。前ラウンドのStep Eブロックと区別するためStep F表記。
+   ・名前：左[氏名 / ソーシャル・現状] 右[TEL / メール]（grid-areas、DOM順不変）
+   ・最寄駅徒歩：PCで「タップで切替」を非表示
+   ・家族構成：人数確定ボタン / 凡例 / 家族全体サマリ を一行
+   PCのみ・スマホ/印刷非干渉。
+   ============================================================ */
+@media screen and (min-width:769px){
+  /* 名前：氏名(左上)・ソーシャル/現状(左下)・TEL(右上)・メール(右下) */
+  #secMikomi .pc-name-contact{
+    display:grid;
+    grid-template-columns:repeat(4, minmax(0,1fr));
+    grid-template-areas:
+      "nm nm tl tl"
+      "so ge ml ml";
+    column-gap:14px;
+    row-gap:10px;
+    align-items:end;
+  }
+  #secMikomi .pc-name-contact > div{ display:contents !important; }
+  #secMikomi .pc-name-contact .mk-name{ grid-area:nm; min-width:0; }
+  #secMikomi .pc-name-contact .mk-social{ grid-area:so; min-width:0; }
+  #secMikomi .pc-name-contact .mk-genjo{ grid-area:ge; min-width:0; }
+  #secMikomi .pc-name-contact .mk-tel{ grid-area:tl; min-width:0; }
+  #secMikomi .pc-name-contact .mk-email{ grid-area:ml; min-width:0; }
+
+  /* 最寄駅徒歩：PCでは「タップで切替」を非表示 */
+  #editView .pc-hide-tap{ display:none !important; }
+
+  /* 家族構成：人数確定ボタン / 凡例 / 家族全体サマリ を一行 */
+  #editView .pc-fam-status{
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr) auto;
+    column-gap:14px;
+    align-items:center;
+  }
+  #editView .pc-fam-status > div:has(> #famHeadcountBtn){ display:contents !important; }
+  #editView .pc-fam-status #famHeadcountBtn{ order:1; }
+  #editView .pc-fam-status > div:has(> #famHeadcountBtn) > div{ order:2; }
+  #editView .pc-fam-status > #famSummary{ order:3; margin:0 !important; }
 }
 </style>
 </head>
@@ -9425,6 +9461,14 @@ function _navToList(){
   ['editView','plannerView','helpView','setupView'].forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display='none'; });
   var lv=document.getElementById('listView'); if(lv) lv.style.display=(hasFSA&&!isMob)?'flex':'block';
 }
+/* 編集→一覧：履歴の積み重なりに依存せず必ず1回で一覧へ。履歴の先頭をlistに正規化 */
+function editGoList(){
+  try{ if(typeof autoCommitEdit==='function') autoCommitEdit(); }catch(e){}
+  try{ history.replaceState({zv:'list',id:null},''); }catch(e){}
+  _navToList();
+  try{ if(typeof renderCards==='function') renderCards(); }catch(e){}
+}
+window.editGoList=editGoList;
 window.addEventListener('popstate',function(ev){
   var _gov=document.getElementById('geoMapOv'); if(_gov && _gov.classList.contains('show')){ _gov.classList.remove('show'); return; } // 地図オーバーレイは閉じるだけ（土台のカード/光速を維持）
   try{ autoCommitEdit(); }catch(_e){}
@@ -10932,10 +10976,10 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
   <header>
     <div class="ha" style="width:100%;display:flex;justify-content:space-between;align-items:center">
       <div class="ehdr-l" style="display:flex;align-items:center;gap:6px;flex-shrink:0;max-width:30%">
-        <button class="bg" onclick="history.back()" style="flex-shrink:0">← 一覧</button>
-        <div onclick="history.back()" title="タップで一覧に戻る" style="font-size:12px;color:rgba(255,255,255,0.75);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer" id="editTitle">-</div>
+        <button class="bg" onclick="editGoList()" style="flex-shrink:0">← 一覧</button>
+        <div onclick="editGoList()" title="タップで一覧に戻る" style="font-size:12px;color:rgba(255,255,255,0.75);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer" id="editTitle">-</div>
       </div>
-      <svg class="ehdr-logo" onclick="history.back()" title="タップで一覧に戻る" width="130" height="40" viewBox="0 0 130 40" xmlns="http://www.w3.org/2000/svg" style="position:absolute;left:50%;transform:translateX(-50%);flex-shrink:0;cursor:pointer"><defs><linearGradient id="tg3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#ffffff"/><stop offset="60%" style="stop-color:#e0e7ff"/><stop offset="100%" style="stop-color:#c7d2fe"/></linearGradient></defs><text x="4" y="32" font-family="'Dancing Script','Brush Script MT','Comic Sans MS',cursive" font-size="30" font-weight="700" fill="url(#tg3)" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.4))">z.Aibis</text></svg>
+      <svg class="ehdr-logo" onclick="editGoList()" title="タップで一覧に戻る" width="130" height="40" viewBox="0 0 130 40" xmlns="http://www.w3.org/2000/svg" style="position:absolute;left:50%;transform:translateX(-50%);flex-shrink:0;cursor:pointer"><defs><linearGradient id="tg3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#ffffff"/><stop offset="60%" style="stop-color:#e0e7ff"/><stop offset="100%" style="stop-color:#c7d2fe"/></linearGradient></defs><text x="4" y="32" font-family="'Dancing Script','Brush Script MT','Comic Sans MS',cursive" font-size="30" font-weight="700" fill="url(#tg3)" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.4))">z.Aibis</text></svg>
       <div style="display:flex;gap:4px;flex-shrink:0;align-items:center">
         <span id="dirtyDot" style="display:none;width:8px;height:8px;background:#ed8936;border-radius:50%;margin-right:2px" title="未保存"></span>
         <button id="saveCardBtn" class="bs" onclick="saveCard()" style="font-size:11px;padding:6px 10px">💾 保存</button>
@@ -10983,6 +11027,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
     <h2>《 見込みカード 》</h2>
     <div class="sec" id="secMikomi">
       <div id="mikomiTop">
+      <div class="pc-name-contact">
       <!-- 上段：氏名50%・ソーシャル25%・現状25% -->
       <div class="mk-row" style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:8px">
         <div class="mk-name"><label>氏名 <span class="req">*</span></label><div style="display:flex;gap:6px;align-items:center"><input type="text" id="f_name" placeholder="お客様名" style="flex:1" oninput="if(window._refreshLandLeadLock)_refreshLandLeadLock()"><button type="button" id="doukouBtn" onclick="toggleDoukou()" style="flex-shrink:0;padding:8px 10px;border:2px solid #e2e8f0;border-radius:6px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;color:#718096;white-space:nowrap;min-height:38px;min-width:78px;text-align:center">単独</button></div></div>
@@ -11008,6 +11053,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <div class="mk-row" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:8px">
         <div class="mk-tel"><label>TEL</label><input type="tel" id="f_tel" inputmode="numeric" placeholder="ハイフン無し" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
         <div class="mk-email"><label>メールアドレス</label><div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap"><input type="email" inputmode="email" autocapitalize="none" autocomplete="off" spellcheck="false" id="f_email_local" placeholder="ID" style="flex:1;min-width:70px"><span style="color:#718096;flex-shrink:0">@</span><select id="f_email_domain" onchange="onEmailDomainChange()" style="width:108px;min-width:0;flex-shrink:0"><option value="gmail.com">gmail.com</option><option value="yahoo.co.jp">yahoo.co.jp</option><option value="icloud.com">icloud.com</option><option value="docomo.ne.jp">docomo.ne.jp</option><option value="ezweb.ne.jp">ezweb.ne.jp(au)</option><option value="au.com">au.com</option><option value="softbank.ne.jp">softbank.ne.jp</option><option value="i.softbank.jp">i.softbank.jp</option><option value="outlook.jp">outlook.jp</option><option value="hotmail.com">hotmail.com</option><option value="ybb.ne.jp">ybb.ne.jp</option><option value="__custom__">その他(入力)</option></select><input type="text" inputmode="url" autocapitalize="none" autocomplete="off" spellcheck="false" id="f_email_domain_custom" placeholder="ドメイン" style="display:none;width:auto;min-width:110px;flex-shrink:0"></div></div>
+      </div>
       </div>
       <!-- 下段：住所・計画地 + 地図ボタン -->
       <div class="mk-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px">
@@ -11044,7 +11090,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
         <span style="font-size:12px;color:#4a5568;flex-shrink:0">🚉 最寄り駅 徒歩</span>
         <button type="button" id="ekitohoBtn" onclick="toggleEkitoho()" style="flex-shrink:0;padding:9px 18px;border:2px solid #cbd5e0;border-radius:7px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:13px;color:#718096;white-space:nowrap;min-height:40px;min-width:104px">🚉 未確認</button>
-        <span style="font-size:10px;color:#a0aec0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">タップで切替</span>
+        <span class="pc-hide-tap" style="font-size:10px;color:#a0aec0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">タップで切替</span>
       </div>
     </div>
     <!-- 📷 計画地写真（アイビスカメラ連携・表示専用） -->
@@ -11133,6 +11179,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
             <div class="fam-gen-members" id="famGen2"></div>
             <button type="button" class="fam-add-btn" onclick="famOpenAdd(2)">＋</button>
           </div>
+          <div class="pc-fam-status">
           <div class="fam-summary" id="famSummary" style="display:none"></div>
           <div style="margin-top:8px;display:flex;gap:8px 14px;align-items:center;flex-wrap:wrap">
             <button type="button" id="famHeadcountBtn" onclick="toggleFamHeadcount()" style="flex-shrink:0;padding:6px 16px;border:2px solid #e2e8f0;border-radius:8px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;color:#718096;line-height:1.3">👥<br>人数を確定</button>
@@ -11154,6 +11201,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
                 <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:50%;background:#ebf8ff;border:1.5px solid #3182ce;display:inline-block"></span>KP</span>
               </div>
             </div>
+          </div>
           </div>
           <details class="setup-acc" style="margin-top:9px">
             <summary>🌳 <span>家系図（世代ツリー）</span><span class="setup-acc-arrow">▾</span></summary>
