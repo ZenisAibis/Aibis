@@ -2227,7 +2227,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.28dev";
+var APP_VERSION = "v9.30dev";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -7304,6 +7304,7 @@ function buildPrintCSS(){
     +'.pbtn{padding:2pt 6pt;border:0.5pt solid #cbd5e0;border-radius:10pt;font-size:8.5pt;background:#f7fafc;color:#718096}'
     +'.pbtn.active{background:#276749;color:white;border-color:#276749;font-weight:700}'
     +'.pgbrk{page-break-before:always}'
+    +'.cardclip{height:250mm;overflow:hidden}'
     +'.hint{font-size:8pt;color:#a0aec0;text-align:right;margin-top:1mm}'
     +'.jsec{border:1pt solid #553c9a;border-radius:2mm;padding:2mm 3mm;background:#faf5ff}'
     +'.jsec-title{font-size:10pt;font-weight:800;color:#553c9a;margin-bottom:1.5mm}';
@@ -7357,8 +7358,8 @@ function execPrint(){
       var chdrTxt=e((ch.branch||'')+' '+(ch.section||'')+' '+(ch.manager||'')+' ／ '+(ch.name||'')+' / 発掘日:'+(ch.discovery_date||'-')+' / 印刷:'+dateStr);
       if(idx>0) combinedHtml+='<div class="pgbrk"></div>';
       var _hdr='<div class="prhdr"><div class="prhdr-left">z.Aibis</div><div class="prhdr-right">'+chdrTxt+'</div></div>';
-      combinedHtml+=_hdr+buildInitVisitHTML(ch);
-      combinedHtml+='<div class="pgbrk"></div>'+_hdr+buildRevisitHTML(ch);
+      combinedHtml+=_hdr+buildInitVisitHTML(ch,{noTitle:true,clip:true});
+      combinedHtml+='<div class="pgbrk"></div>'+_hdr+buildRevisitHTML(ch,{noTitle:true,clip:true});
       var _pp=ch.pursuits||[];
       if(_pp.some(function(p){return p.content||p.date||p.rec||p.interviewer||p.appo||p.next_appo_date||p.visit_type||p.instruction;})){ combinedHtml+='<div class="pgbrk"></div>'+_hdr+buildPursuitHTML(ch); }
     });
@@ -7371,15 +7372,15 @@ function execPrint(){
     return;
   } else {
     if(printCard){
-      addPage(buildInitVisitHTML(c));
-      // 再訪カード（裏面）：追撃があれば続けて配置し、余白とページ数を抑制
-      addPage(buildRevisitHTML(c));
+      addPage(buildInitVisitHTML(c,{noTitle:true,clip:true}));
+      // 再訪カード（裏面）：1ページに収める。追撃は独立ページへ。
+      addPage(buildRevisitHTML(c,{noTitle:true,clip:true}));
       var pursuits=c.pursuits||[];
       var hasPursuit=pursuits.some(function(p){return p.content||p.date||p.rec||p.interviewer||p.appo||p.next_appo_date||p.visit_type||p.instruction;});
-      if(hasPursuit){ html+=buildPursuitHTML(c); }
+      if(hasPursuit){ addPage(buildPursuitHTML(c)); }
     }
     if(printFamily){ addPage(buildFamilyHTML(c)); }
-    if(printStrategy){ addPage(buildStrategyHTML(c)); }
+    if(printStrategy){ addPage(buildStrategyHTML(c,{only:"general"})); }
   }
 
   html+='</body></html>';
@@ -7388,7 +7389,8 @@ function execPrint(){
   printHTMLDocument(html);
 }
 
-function buildInitVisitHTML(c){
+function buildInitVisitHTML(c,opt){
+  opt=opt||{};
   var e=function(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
   var STAGES=['0:面識','1:注意','2:興味','3:連想','4:欲求','5:比較','6:信念','7:決心'];
   var si=+(c.stage||0);
@@ -7407,7 +7409,7 @@ function buildInitVisitHTML(c){
   var maeHTML=maeList.map(function(m){return '<span class="pbtn'+(maefuri.indexOf(m)>=0?' active':'')+'">'+e(m)+'</span>';}).join('');
   var pj=c.pursuit_judge||'';
   var pjColor=(typeof RANK_COLOR!=="undefined"&&RANK_COLOR[pj])||'rgba(255,255,255,0.4)';
-  var html='<div class="h2 init">📋 見込みカード'+(pj?'<span style="margin-left:auto;font-size:22pt;font-weight:900;color:'+pjColor+'">'+pj+'</span>':'')+'</div>';
+  var html=opt.noTitle?'':('<div class="h2 init">📋 見込みカード'+(pj?'<span style="margin-left:auto;font-size:22pt;font-weight:900;color:'+pjColor+'">'+pj+'</span>':'')+'</div>');
   html+='<div class="sec"><div class="row3">'
     +'<div class="field"><span class="label">氏名</span><span class="val">'+(c.name?e(c.name)+'様':'')+'</span></div>'
     +'<div class="field"><span class="label">ソーシャル</span><span class="val">'+e(c.social)+'</span></div>'
@@ -7476,17 +7478,19 @@ function buildInitVisitHTML(c){
   html+='<div class="sec"><div class="stitle">✍ 初訪内容（見込み候補だと判断した理由）</div>'
     +'<div style="min-height:22mm;border:0.5pt solid #e2e8f0;padding:2mm;font-size:10.5pt;line-height:1.55;border-radius:1.5mm;background:white">'+e(c.initial_content||'').replace(/\n/g,'<br>')+'</div>'
     +'</div>';
+  if(opt.clip) return '<div class="cardclip">'+html+'</div>';
   return html;
 }
 
-function buildRevisitHTML(c){
+function buildRevisitHTML(c,opt){
+  opt=opt||{};
   var e=function(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
   var revisits=c.revisits||[];
   var checks=c.jchecks||{};
   var rusu=String(c.rusu||'0');
   var CHKLIST=['building_amount','souzoku','material_ok','company','questions','land','future','seminar','family','reason','kanri','invest'];
   var CHKLABEL={building_amount:'建物・金額など具体的な話',souzoku:'相続や活用に関心',material_ok:'資料作成の了承',company:'大東や競合他社について',questions:'質問を多くいただけた',land:'土地を守りたい又は売りたい',future:'将来的にはという言葉',seminar:'セミナー・物件見学に興味',family:'家族からの意見も聞けた',reason:'営業を断る理由を聞けた',kanri:'賃貸管理の苦悩を聞けた',invest:'投資に興味又はやっている'};
-  var html='<div class="h2 revis">📅 再訪カード</div>';
+  var html=opt.noTitle?'':'<div class="h2 revis">📅 再訪カード</div>';
   // チェックリスト（全幅）
   var ckHTML=CHKLIST.map(function(k){
     return '<div class="jitem"><span class="chk'+(checks[k]?' on':'')+'">'+( checks[k]?'✓':'')+'</span>'+e(CHKLABEL[k])+'</div>';
@@ -7523,6 +7527,7 @@ function buildRevisitHTML(c){
     +'<div class="field" style="margin-top:1.5mm"><span class="label">課長協議内容・判断理由</span>'
     +'<div style="min-height:10mm;border:0.5pt solid #aaa;padding:2mm;font-size:9.5pt;line-height:1.5">'+e(c.revisit_judge_reason||'').replace(/\n/g,'<br>')+'</div>'
     +'</div></div>';
+  if(opt.clip) return '<div class="cardclip">'+html+'</div>';
   return html;
 }
 
@@ -7905,14 +7910,22 @@ function buildFamilyHTML(c){
   return html;
 }
 
-function buildStrategyHTML(c){
+function buildStrategyHTML(c,opt){
+  opt=opt||{};
   var e=function(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
   var THEMES={general:'総合分析',next_visit:'次回作戦',motivation:'動機引上げ',personality:'性格応対',objection:'反論対応',hearing:'聞取補充',training:'会話訓練',inheritance:'相続シナリオ'};
-  var html='<div class="h2 strat">💭 戦略協議</div>';
+  var only=opt.only||'';
+  var titleSuffix=(only&&THEMES[only])?(' − '+THEMES[only]):'';
+  var html='<div class="h2 strat">💭 戦略協議'+titleSuffix+'</div>';
+  var keys=only?[only]:Object.keys(THEMES);
   var hasContent=false;
-  Object.keys(THEMES).forEach(function(key){
+  keys.forEach(function(key){
+    if(!THEMES[key]) return;
     var val=c['ai_'+key]||'';
-    if(!val) return;
+    if(!val){
+      if(only){ hasContent=true; html+='<div class="sec" style="margin-bottom:3mm"><div class="stitle">'+THEMES[key]+'</div><div style="font-size:9pt;color:#aaa">記録なし</div></div>'; }
+      return;
+    }
     hasContent=true;
     html+='<div class="sec" style="margin-bottom:3mm;page-break-inside:auto;break-inside:auto">'
       +'<div class="stitle">'+THEMES[key]+'</div>'
@@ -7929,6 +7942,23 @@ window.buildRevisitHTML=buildRevisitHTML;
 window.buildPursuitHTML=buildPursuitHTML;
 window.buildFamilyHTML=buildFamilyHTML;
 window.buildStrategyHTML=buildStrategyHTML;
+/* StepE: 戦略協議タブから「開いているテーマ」だけを印刷（案1） */
+function printStrategyTheme(){
+  if(typeof cur==='undefined' || !cur){ if(window.toast)toast('カードを開いてね'); return; }
+  if(typeof collectForm==='function'){ try{ collectForm(); }catch(e){} }
+  var sel=document.getElementById('promptPreset');
+  var key=(sel&&sel.value)||'general';
+  var c=cur, dateStr=new Date().toISOString().slice(0,10);
+  var e=function(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
+  var hdrTxt=e((c.branch||'')+' '+(c.section||'')+' '+(c.manager||'')+' ／ '+(c.name?c.name+'様':'')+(c.discovery_date?' ／ 発掘日:'+c.discovery_date:'')+' ／ 印刷:'+dateStr);
+  var pj=c.pursuit_judge||'', pjColor=(typeof RANK_COLOR!=='undefined'&&RANK_COLOR[pj])||'rgba(255,255,255,0.4)';
+  var html='<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><style>'+buildPrintCSS()+'</style></head><body>'
+    +'<div class="prhdr"><div class="prhdr-left">z.Aibis</div><div class="prhdr-right">'+hdrTxt+'</div>'+(pj?'<div class="prhdr-rank" style="color:'+pjColor+'">'+pj+'</div>':'')+'</div>'
+    +buildStrategyHTML(c,{only:key})
+    +'</body></html>';
+  printHTMLDocument(html);
+}
+window.printStrategyTheme=printStrategyTheme;
 // 印刷完了後クリーンアップ（iframe方式）
 window.addEventListener('afterprint',function(){
   // 印刷用iframeを後始末（プレビュー表示中に消すと空白印刷になるため、ここで破棄）
@@ -10970,13 +11000,13 @@ function buildBrowserPrintReport(c){
   var firstPage=true,html='';
   function prh(){return '<div class="prhdr"><div class="prhdr-left">z.Aibis</div><div class="prhdr-right">'+hdrTxt+'</div>'+(pj?'<div class="prhdr-rank" style="color:'+pjColor+'">'+pj+'</div>':'')+'</div>';}
   function addPage(content){ if(firstPage){html+=prh();firstPage=false;} else {html+='<div class="pgbrk"></div>'+prh();} html+=content; }
-  addPage(buildInitVisitHTML(c));
+  addPage(buildInitVisitHTML(c,{noTitle:true,clip:true}));
   /* StepC: 計画地写真は本文カードから分離（🖨で筆ごとA4縦の別印刷）。本文には載せない。 */
-  addPage(buildRevisitHTML(c));
+  addPage(buildRevisitHTML(c,{noTitle:true,clip:true}));
   var pp=c.pursuits||[];
-  if(pp.some(function(x){return x.content||x.date||x.rec||x.interviewer||x.appo||x.next_appo_date||x.visit_type||x.instruction;})){ html+=buildPursuitHTML(c); }
+  if(pp.some(function(x){return x.content||x.date||x.rec||x.interviewer||x.appo||x.next_appo_date||x.visit_type||x.instruction;})){ addPage(buildPursuitHTML(c)); }
   addPage(buildFamilyHTML(c));
-  addPage(buildStrategyHTML(c));
+  addPage(buildStrategyHTML(c,{only:"general"}));
   return html;
 }
 window.addEventListener('beforeprint',function(){
@@ -11774,6 +11804,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <button type="button" style="padding:11px;font-size:13px;background:#2d3748;color:white;border:none;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600" onclick="copyPromptAnon()">🤖 分析用に抽出</button>
       <button type="button" style="padding:11px;font-size:13px;background:#553c9a;color:white;border:none;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600" onclick="promptToFile()">📎 ファイルで抽出</button>
       <button type="button" style="grid-column:1/3;padding:11px;font-size:13px;background:#0078d4;color:white;border:none;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:500" onclick="openCopilot()">🤖 AI分析</button>
+      <button type="button" class="no-print" style="grid-column:1/3;padding:11px;font-size:13px;background:#2c5282;color:white;border:none;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600" onclick="printStrategyTheme()">🖨 このテーマを印刷</button>
     </div>
     <div id="strategyTabs">
       <div id="st_general" class="st-panel">
