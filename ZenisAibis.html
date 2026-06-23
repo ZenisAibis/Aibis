@@ -562,6 +562,15 @@ html.pczoom .tabs .tab .ic{font-size:15px}
   /* 土地情報の幅バランス：路線価+借地割合=長め / 面積=中 / 間口=短 */
   #secTochi .pc-land-main{ grid-template-columns:1.5fr 1fr 0.6fr !important; }
 }
+/* スマホ(≤768)：構成確定ボタンを左・家族全体バーを右の余白いっぱいに（凡例は下段フル） */
+@media screen and (min-width:381px) and (max-width:768px){
+  #editView .pc-fam-status{ display:grid; grid-template-columns:auto minmax(0,1fr); gap:8px; align-items:center; }
+  #editView .pc-fam-status > div:has(> #famHeadcountBtn){ display:contents !important; }
+  #editView .pc-fam-status #famHeadcountBtn{ order:1; grid-column:1; align-self:stretch; margin:0; }
+  #editView .pc-fam-status > #famSummary{ order:2; grid-column:2; margin:0 !important; }
+  #editView .pc-fam-status > div:has(> #famHeadcountBtn) > div{ order:3; grid-column:1 / -1; }
+  #editView .pc-fam-status:has(> #famSummary[style*="none"]) #famHeadcountBtn{ grid-column:1 / -1; }
+}
 /* 360px前後：家族全体バー＋構成確定ボタンを縦積み（文字切れ回避優先） */
 @media(max-width:380px){
   #editView .pc-fam-status{ grid-template-columns:1fr !important; }
@@ -1161,10 +1170,17 @@ body.is-mob .mob-menu{display:inline-block}
    いずれも PC のみ・DOM順=Tab順一致（order不使用）。スマホ/印刷は非干渉。
    ※ 資産2行・路線価行は Step1.6 のflex対象から除外済み。
    ============================================================ */
-/* 生産緑地：スマホ=フォームの下にボタン全幅（規模/想定と同サイズ）、PC=横半分ずつ */
-.ryoku-pair{display:flex;flex-direction:column;gap:4px}
-.ryoku-pair select{width:100%}
-.ryoku-pair button{width:100%;border:1.5px solid #2f7a57;background:#2f7a57;color:#fff;border-radius:8px;padding:9px 6px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit;box-sizing:border-box}
+/* 生産緑地：スマホ・PCとも横一列（フォーム半分＋ボタン半分） */
+.ryoku-pair{display:flex;flex-direction:row;gap:4px;align-items:stretch}
+.ryoku-pair select{flex:1 1 0;min-width:0;width:auto}
+.ryoku-pair button{flex:1 1 0;min-width:0;width:auto;border:1.5px solid #2f7a57;background:#2f7a57;color:#fff;border-radius:8px;padding:9px 4px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit;box-sizing:border-box}
+/* 数値＋単位を1つの枠に。数字を入れると単位が表示される（空＝プレースホルダ表示中は隠す） */
+.unit-field{display:flex;align-items:center;gap:3px;border:1px solid #cbd5e0;border-radius:8px;background:#fff;padding:0 11px;box-sizing:border-box}
+.unit-field:focus-within{border-color:#2B6CB0;box-shadow:0 0 0 3px rgba(43,108,176,.16)}
+.unit-field input{border:none !important;background:transparent !important;box-shadow:none !important;flex:1 1 auto;min-width:0;padding:9px 0;min-height:38px}
+.unit-field .usuf{color:#718096;font-size:13px;font-weight:600;flex-shrink:0;white-space:nowrap}
+.unit-field input:placeholder-shown + .usuf{visibility:hidden}
+#editView #secTochi .unit-field input{ width:auto !important; text-align:right !important; text-align-last:right !important; }
 @media screen and (min-width:769px){
   /* --- C2 資産背景：老朽/駐車/自宅(3列) ＋ 規模/想定/生産緑地(3列) --- */
   #editView .pc-asset{
@@ -2219,7 +2235,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.38";
+var APP_VERSION = "v9.39";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -11380,6 +11396,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
                 <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:50%;background:#38a169;display:inline-block"></span>前向</span>
                 <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:50%;background:#e53e3e;display:inline-block"></span>否定</span>
                 <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:50%;background:#fff;border:1px solid #aaa;display:inline-block"></span>不明</span>
+                <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:50%;background:#ebf8ff;border:1.5px solid #3182ce;display:inline-block"></span>KP</span>
               </div>
               <div style="display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center">
                 <span style="font-weight:700;color:#4a5568">居住</span>
@@ -11389,7 +11406,6 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
                 <span style="color:#cbd5e0">｜</span>
                 <span style="display:inline-flex;align-items:center;gap:3px"><span style="color:#c53030;font-weight:700">★</span>所有者</span>
                 <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:50%;background:#fff;border:1.5px solid #c53030;display:inline-block"></span>面談済</span>
-                <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:50%;background:#ebf8ff;border:1.5px solid #3182ce;display:inline-block"></span>KP</span>
               </div>
             </div>
           </div>
@@ -11475,11 +11491,11 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         </div>
         <div>
           <label class="pc-area-label">面積<span id="tsuboDisp" style="font-size:11px;color:#64748b;font-weight:600;white-space:nowrap">- 坪</span></label>
-          <div style="display:flex;gap:4px;align-items:center">
-            <input type="number" id="f_m2" placeholder="例:240" style="flex:1;min-width:0" inputmode="numeric" pattern="[0-9]*"><span style="font-size:11px;color:#718096;flex-shrink:0">㎡</span>
+          <div class="unit-field">
+            <input type="number" id="f_m2" placeholder="例:240" inputmode="numeric" pattern="[0-9]*"><span class="usuf">㎡</span>
           </div>
         </div>
-        <div><label>間口</label><div style="display:flex;gap:4px;align-items:center"><input type="number" id="f_maguchi" placeholder="12" inputmode="numeric" pattern="[0-9]*" style="flex:1;min-width:0"><span style="font-size:11px;color:#718096;flex-shrink:0">m</span></div></div>
+        <div><label>間口</label><div class="unit-field"><input type="number" id="f_maguchi" placeholder="12" inputmode="numeric" pattern="[0-9]*"><span class="usuf">m</span></div></div>
       </div>
       <div class="pc-land-2grid">
       <div class="pc-road-left">
@@ -11983,24 +11999,21 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       </div>
     </div>
     <div style="font-size:10.5px;color:#718096;margin:-4px 0 8px 2px">※「兄／弟／姉／妹」は世帯主から見た続柄です</div>
-    <!-- 3行目：面談済・所有者・KP -->
-    <div class="fam-grid3" style="margin-bottom:6px">
-      <button type="button" class="fam-fbtn" id="famFMet" onclick="famToggleFlag('met')">面談済</button>
-      <button type="button" class="fam-fbtn" id="famFOwner" onclick="famToggleFlag('owner')">☆所有者</button>
+    <!-- 意向：前向き・否定・不明・キーパーソン（4個） -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;margin-bottom:6px">
+      <button type="button" class="fam-tbtn" id="famSPos" onclick="famSetStance('pos')"><div class="fdot" style="background:#38a169"></div>前向き</button>
+      <button type="button" class="fam-tbtn" id="famSNeg" onclick="famSetStance('neg')"><div class="fdot" style="background:#e53e3e"></div>否定</button>
+      <button type="button" class="fam-tbtn fa-unk" id="famSUnk" onclick="famSetStance('unk')"><div class="fdot" style="background:white;border:1px solid #cbd5e0"></div>不明</button>
       <button type="button" class="fam-fbtn" id="famFKp" onclick="famToggleFlag('kp')">KP</button>
     </div>
-    <!-- 4行目：スタンス -->
-    <div class="fam-grid3" style="margin-bottom:6px">
-      <button type="button" class="fam-tbtn" id="famSPos" onclick="famSetStance('pos')"><div class="fdot" style="background:#38a169"></div>ポジティブ</button>
-      <button type="button" class="fam-tbtn" id="famSNeg" onclick="famSetStance('neg')"><div class="fdot" style="background:#e53e3e"></div>ネガティブ</button>
-      <button type="button" class="fam-tbtn fa-unk" id="famSUnk" onclick="famSetStance('unk')"><div class="fdot" style="background:white;border:1px solid #cbd5e0"></div>不明</button>
-    </div>
-    <!-- 5行目：居住 -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;margin-bottom:8px">
+    <!-- 居住：同居・別居・死亡 ｜ 所有者・面談済 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 11px 1fr 1fr;gap:4px;margin-bottom:8px;align-items:stretch">
       <button type="button" class="fam-bbtn lv-同居" id="famL同居" onclick="famSetLiving('同居')">同居</button>
       <button type="button" class="fam-bbtn lv-別居" id="famL別居" onclick="famSetLiving('別居')">別居</button>
       <button type="button" class="fam-bbtn lv-死亡" id="famL死亡" onclick="famSetLiving('死亡')">死亡</button>
-      <button type="button" class="fam-bbtn lv-未確認" id="famL未確認" onclick="famSetLiving('未確認')">未確認</button>
+      <div style="border-left:2px solid #e2e8f0;width:0;justify-self:center" aria-hidden="true"></div>
+      <button type="button" class="fam-fbtn" id="famFOwner" onclick="famToggleFlag('owner')">☆所有者</button>
+      <button type="button" class="fam-fbtn" id="famFMet" onclick="famToggleFlag('met')">面談済</button>
     </div>
     <!-- 6行目：名前と年齢（横並び） -->
     <div style="display:grid;grid-template-columns:1fr 72px;gap:8px;align-items:flex-end;margin-bottom:8px">
