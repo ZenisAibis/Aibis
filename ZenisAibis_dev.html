@@ -2225,7 +2225,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.32dev";
+var APP_VERSION = "v9.33dev";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -7346,25 +7346,31 @@ function execPrint(){
   }
 
   if(window._listPrint){
-    // 一覧印刷：全対象カードを1つのHTMLに結合して一括印刷
+    // 一覧印刷：チェックした種別を、チェックしたカード分だけ結合して一括印刷
     var allCards=window._batchPrintCards||[cur];
+    var _bopt=window._batchPrintOpts||{card:true,family:false};
     var combinedHtml='<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><style>'
       +buildPrintCSS()
       +'</style></head><body>';
-    allCards.forEach(function(card,idx){
-      var ch=card;
+    var _pages=[];
+    allCards.forEach(function(ch){
       var chdrTxt=e((ch.branch||'')+' '+(ch.section||'')+' '+(ch.manager||'')+' ／ '+(ch.name||'')+' / 発掘日:'+(ch.discovery_date||'-')+' / 印刷:'+dateStr);
-      if(idx>0) combinedHtml+='<div class="pgbrk"></div>';
       var _hdr='<div class="prhdr"><div class="prhdr-left">z.Aibis</div><div class="prhdr-right">'+chdrTxt+'</div></div>';
-      combinedHtml+=_hdr+buildInitVisitHTML(ch,{noTitle:true,clip:true});
-      combinedHtml+='<div class="pgbrk"></div>'+_hdr+buildRevisitHTML(ch,{noTitle:true,clip:true});
-      /* StepF: 一覧の個別カードは見込み+再訪だけ（両面1枚）。追撃は含めない。 */
+      if(_bopt.card){
+        _pages.push(_hdr+buildInitVisitHTML(ch,{noTitle:true,clip:true}));   /* 表＝見込み */
+        _pages.push(_hdr+buildRevisitHTML(ch,{noTitle:true,clip:true}));     /* 裏＝再訪（両面1枚） */
+      }
+      if(_bopt.family){
+        _pages.push(_hdr+buildFamilyHTML(ch));                                /* 家族構成 */
+      }
     });
+    combinedHtml+=_pages.join('<div class="pgbrk"></div>');
     combinedHtml+='</body></html>';
     closePrintModal();
     window._listPrint=false;
     window._printQueue=[];
     window._batchPrintCards=[];
+    if(!_pages.length){ toast('印刷する種類を選んでね'); return; }
     printHTMLDocument(combinedHtml);
     return;
   } else {
@@ -10446,6 +10452,15 @@ function migrateRosenka(){
 window.normalizeRosenka=normalizeRosenka; window.updateRosenkaDisp=updateRosenkaDisp;
 window.mapSingle=mapSingle;
 
+function _doCheckPrint(){
+  var cb=document.getElementById('bpChkCard'), fb=document.getElementById('bpChkFamily');
+  var opts={card:cb?cb.checked:true, family:fb?fb.checked:false};
+  if(!opts.card && !opts.family){ if(window.toast)toast('印刷する種類を選んでね'); return; }
+  window._batchPrintOpts=opts;
+  closeAibisAlert();
+  printSelected();
+}
+window._doCheckPrint=_doCheckPrint;
 function openListPrintMenu(){
   var scope=(staffFilter==='all')?'全員':staffFilter;
   var scopeEsc=String(scope).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -10458,7 +10473,10 @@ function openListPrintMenu(){
     +'<button onclick="closeAibisAlert();doListPrint(\'tel\')" style="padding:10px;background:#276749;color:white;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600">📞 テレコールリスト</button>'
     +'<button onclick="closeAibisAlert();doListPrint(\'all\')" style="padding:10px;background:#553c9a;color:white;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600">📄 全件リスト</button>'
     +'<div style="height:1px;background:#e2e8f0;margin:2px 0"></div>'
-    +'<button onclick="closeAibisAlert();printSelected()" style="padding:9px 10px;background:#276749;color:white;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:700;line-height:1.3"><div>🗂 個別カード</div><div style="font-size:10.5px;font-weight:500;opacity:0.85;margin-top:1px">チェック分のみ（見込み+再訪 両面1枚）</div></button>'
+    +'<div style="text-align:left;font-size:12px;font-weight:800;color:#276749;margin:0 2px 2px">🗂 チェック印刷<span style="font-weight:500;color:#718096;font-size:11px">（チェックを入れたカードが対象）</span></div>'
+    +'<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#f0fff4;border:1px solid #c6f6d5;border-radius:6px;font-size:13px;cursor:pointer;color:#2d3748"><input type="checkbox" id="bpChkCard" checked style="width:18px;height:18px;flex-shrink:0">見込み・再訪カード（両面1枚）</label>'
+    +'<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#f0fff4;border:1px solid #c6f6d5;border-radius:6px;font-size:13px;cursor:pointer;color:#2d3748"><input type="checkbox" id="bpChkFamily" style="width:18px;height:18px;flex-shrink:0">家族構成</label>'
+    +'<button onclick="_doCheckPrint()" style="padding:10px;background:#276749;color:white;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:700">🖨 チェック印刷する</button>'
     +'<button onclick="closeAibisAlert()" style="padding:8px;background:#e2e8f0;color:#2d3748;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit">キャンセル</button>'
     +'</div>'
   );
@@ -10869,7 +10887,7 @@ function startBatchPrint(){
   cur=JSON.parse(JSON.stringify(targets[0]));
   window._printQueue=targets.slice(1);
   window._listPrint=true;
-  openPrintModal();
+  execPrint();
 }
 window.startBatchPrint=startBatchPrint;
 window.printSelected=printSelected;
@@ -12941,6 +12959,11 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   .seltools button{border:none;background:none;color:#2c5282;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;margin-left:10px}
   .isend{margin:2px 0 8px}
   .istore{text-align:center;color:#a0aec0;font-size:12px;padding:14px 0 6px}
+  @media(min-width:769px){
+    #inboxBody{max-width:1120px}
+    #inboxBody .igrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;align-items:start;margin-bottom:9px}
+    #inboxBody .igrid>.irow2,#inboxBody .igrid>.irow{margin-bottom:0;min-width:0}
+  }
   #inboxViewer{display:none;position:fixed;inset:0;background:rgba(7,12,20,.97);z-index:1600;flex-direction:column}
   #inboxViewer .ivt{display:flex;align-items:center;gap:10px;padding:12px 14px;color:#fff}
   #inboxViewer .ivt b{flex:1;font-size:13px;color:#cbd5e0;font-weight:600}
@@ -13377,8 +13400,8 @@ function renderInboxBody(){
       html+='<div class="ihint">🔗 紐付けたい写真を選択（複数OK）<br>→ 即このカードへ反映</div>';
       var _att=all.filter(function(s){return s.cardId===_inboxAttach;}).sort(byTs);
       var _oth=all.filter(function(s){return !s.cardId||s.cardId!==_inboxAttach;}).sort(byTs);
-      if(_att.length){ html+='<div class="isec2">このカードの写真（'+_att.length+'）</div>'+_att.map(_inrowSafe).join(""); }
-      if(_oth.length){ html+='<div class="isec2">追加できる写真（'+_oth.length+'）</div>'+_oth.map(_inrowSafe).join(""); }
+      if(_att.length){ html+='<div class="isec2">このカードの写真（'+_att.length+'）</div><div class="igrid">'+_att.map(_inrowSafe).join("")+'</div>'; }
+      if(_oth.length){ html+='<div class="isec2">追加できる写真（'+_oth.length+'）</div><div class="igrid">'+_oth.map(_inrowSafe).join("")+'</div>'; }
       if(!_att.length && !_oth.length){ html+='<div class="iempty">写真がありません。</div>'; }
       host.innerHTML=html; _wireInbox(host); _applyInboxBadge(all); return;
     }
@@ -13388,15 +13411,15 @@ function renderInboxBody(){
     // 写真の書き出しはカードの📧送信に統合（インボックスは紐付け専用）
     if(unlinked.length){
       html+='<div class="isec2">未紐付け（'+unlinked.length+'）<span class="seltools"><button onclick="inboxSelAll()">☑ 全選択</button><button onclick="inboxSelNone()">解除</button></span></div>';
-      html+=unlinked.map(function(s){return _inrow2(s,true);}).join("");
+      html+='<div class="igrid">'+unlinked.map(function(s){return _inrow2(s,true);}).join("")+'</div>';
     }
     if(linked.length){
       html+='<div class="isec2">紐付け済み（'+linked.length+'）</div>';
-      html+=linked.map(function(s){return _inrow2(s,false);}).join("");
+      html+='<div class="igrid">'+linked.map(function(s){return _inrow2(s,false);}).join("")+'</div>';
     }
     if(orphan.length){
       html+='<div class="isec2">🔍 迷子写真（'+orphan.length+'）<span style="font-weight:400;font-size:10.5px;color:#94a3b8">　元カードが消失</span></div>';
-      html+=orphan.map(_inrowOrphan).join("");
+      html+='<div class="igrid">'+orphan.map(_inrowOrphan).join("")+'</div>';
     }
     html+='<div class="istore" id="inbStoreMeter">使用容量を計算中…</div>';
     host.innerHTML=html;
