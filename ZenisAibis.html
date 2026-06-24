@@ -277,7 +277,7 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 .toast .tf-spark{position:absolute;z-index:1;font-size:9px;animation:abSpark 1.3s ease-in-out infinite}
 .toast .tf-s1{top:-3px;left:-4px}
 .toast .tf-s2{bottom:-3px;right:-4px;animation-delay:.65s}
-.toast .toast-msg{flex:1 1 auto;min-width:0}
+.toast .toast-msg{flex:1 1 auto;min-width:0;word-break:keep-all;overflow-wrap:anywhere}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.show{opacity:1}
 #pwaBanner{display:none;position:fixed;bottom:80px;left:12px;right:12px;background:#1e3a5f;color:white;border-radius:10px;padding:12px 14px;z-index:150;box-shadow:0 4px 12px rgba(0,0,0,0.3)}
@@ -2239,7 +2239,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.51";
+var APP_VERSION = "v9.54";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -3108,19 +3108,26 @@ function pwaShortcut(){
             : '🔗 ショートカットの作り方（PC）<br><br>ブラウザの <b>⋮メニュー</b> →「保存して共有」→「<b>ショートカットを作成</b>」。');
   if(window.aibisAlert) aibisAlert(msg); else alert(msg.replace(/<[^>]+>/g,''));
 }
+function camShortcut(){
+  var msg='🔗 アイビスカメラもホーム画面に追加できます<br><br>OKを押すとカメラ画面へ移動します。<br>そのあとブラウザ右上の <b>⋮メニュー</b> →「<b>ホーム画面に追加</b>」で、カメラ専用アイコンを作れます。<br><br><button class="zfa-ok" onclick="location.href=\'AibisCam.html\'">OK（カメラへ）</button>';
+  if(window.aibisAlert) aibisAlert(msg); else { if(confirm('アイビスカメラへ移動しますか？')) location.href='AibisCam.html'; }
+}
 function _pwaSyncBtns(){
   var host=document.getElementById('pwaBtns'); if(!host) return;
-  var hint=document.getElementById('pwaHint'); var html='';
+  var hint=document.getElementById('pwaHint');
+  var iconHome='<span style="width:54px;height:54px;border-radius:14px;background:#1a365d;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.22);line-height:1.05"><b style="color:#fff;font-size:21px;font-weight:900">z.</b><b style="color:#d97706;font-size:10px;font-weight:900;letter-spacing:.5px">AIBIS</b></span>';
+  var iconCam='<span style="width:54px;height:54px;border-radius:14px;background:#0e4a45;display:flex;align-items:center;justify-content:center;font-size:27px;box-shadow:0 2px 6px rgba(0,0,0,.22)">📷</span>';
+  var tile=function(onclk,icon,label,col){ return '<button type="button" onclick="'+onclk+'" style="appearance:none;-webkit-appearance:none;background:none;border:none;padding:4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;font-family:inherit">'+icon+'<span style="font-size:11px;font-weight:700;color:'+col+'">'+label+'</span></button>'; };
+  host.style.gap='18px'; host.style.alignItems='flex-start';
   if(isMob){
-    html+='<button type="button" class="bp" onclick="pwaShortcut()" style="font-size:12px;padding:8px 12px">🔗 ショートカット作成の手順</button>';
-    if(hint) hint.innerHTML='ブラウザの <b>⋮</b> →「<b>ホーム画面に追加</b>」で作成。';
+    host.innerHTML=tile('pwaShortcut()',iconHome,'本体を追加','#2c5282')+tile('camShortcut()',iconCam,'カメラを追加','#0e4a45');
+    if(hint) hint.innerHTML='アイコンをタップ → ホーム画面への追加方法が出ます。本体とカメラ、それぞれ置けます。';
   } else {
-    html+='<button type="button" class="bp" onclick="pwaShortcut()" style="font-size:12px;padding:8px 12px">🔗 ショートカット作成の手順</button>';
-    if(hint) hint.innerHTML='ブラウザのメニューから、デスクトップにショートカットを作成できます。';
+    host.innerHTML=tile('pwaShortcut()',iconHome,'本体を追加','#2c5282');
+    if(hint) hint.innerHTML='アイコンをタップ → デスクトップへの追加方法が出ます。';
   }
-  host.innerHTML=html;
 }
-window.pwaShortcut=pwaShortcut; window.pwaInstall=pwaShortcut; window._pwaSyncBtns=_pwaSyncBtns;
+window.pwaShortcut=pwaShortcut; window.pwaInstall=pwaShortcut; window._pwaSyncBtns=_pwaSyncBtns; window.camShortcut=camShortcut;
 window.addEventListener('load',function(){ try{ _pwaSyncBtns(); }catch(e){} });
 function autoSaveSetup(){
   // フォーム入力を即時LocalStorageに仮保存
@@ -6654,7 +6661,7 @@ function renderRevisits(){
         +'<span style="display:inline-flex;align-items:center;gap:4px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">アポ</label><select data-f="appo" style="width:auto;min-height:32px;padding:4px 4px;font-size:13px"><option value="">-</option><option value="アポ有り"'+(v.appo==='アポ有り'?' selected':'')+'>アポ有り</option><option value="仮アポ"'+(v.appo==='仮アポ'?' selected':'')+'>仮アポ</option><option value="アポ無し"'+(v.appo==='アポ無し'?' selected':'')+'>アポ無し</option></select></span>'
         +_doukouBtnHTML(v.visit_type)
       +'</div>'
-      +'<textarea id="'+rid+'_c" data-f="content" rows="3" placeholder="投げかけ→相手の反応を書く。例：税金の話→身を乗り出した。断り・他社・税額・時期の発言は「」でそのまま">'+e(v.content||'')+'</textarea>'
+      +'<textarea id="'+rid+'_c" data-f="content" rows="4" placeholder="When（いつ） Where（どこで） Who（誰が） What（何を） Why（なぜ） How（どうする）&#10;テスクロに対し、相手の反応を書く。">'+e(v.content||'')+'</textarea>'
       +'<div style="margin-top:6px;padding:7px 10px;background:#f0fff4;border:1px solid #c6f6d5;border-radius:6px">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px"><label style="margin:0;font-size:12px;font-weight:600;color:#276749">🎙 録音要約・メール等貼り付け</label><button type="button" onclick="clearStrategyField(\''+rid+'_rec\')" style="background:none;border:none;color:#c53030;font-size:15px;padding:0 2px;cursor:pointer;font-family:inherit;flex-shrink:0;line-height:1">🗑</button></div>'
       +'<textarea id="'+rid+'_rec" data-f="rec" rows="2" placeholder="録音要約・メールなどを貼り付け" style="font-size:13px;background:transparent;border-color:#c6f6d5">'+e(v.rec||'')+'</textarea>'
@@ -10286,7 +10293,7 @@ function qaRender(){
     return '<button onclick="qaToggleKaiwa(\''+k+'\')" style="'+dis+'border:1px solid '+(on?'#276749':'#cbd5e0')+';background:'+(on?'#276749':'#f7fafc')+';color:'+(on?'#fff':'#2d3748')+';border-radius:7px;padding:8px 1px;font-size:10.5px;font-weight:'+(on?'700':'500')+';font-family:inherit;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+k+'</button>';
   }).join('');
 }
-function _qaLockMsg(){ toast(qaLandMode?'🟫 土地見込みでは心理・会話は使いません':'👤 お名前を入力するか、\n🟫 土地ボタンを押してね'); }
+function _qaLockMsg(){ toast(qaLandMode?'🟫 土地見込みでは、\n心理・会話は使いません':'👤 お名前を入力するか、\n🟫 土地ボタンを押してね'); }
 function qaSetStage(i){ if(_qaLocked()){ _qaLockMsg(); return; } qaStageSel=(qaStageSel===i?-1:i); qaRender(); }
 function qaToggleKaiwa(k){ if(_qaLocked()){ _qaLockMsg(); return; } var p=qaKaiwaSel.indexOf(k); if(p>=0) qaKaiwaSel.splice(p,1); else qaKaiwaSel.push(k); qaRender(); }
 function _focusNoKb(el){
@@ -11677,7 +11684,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <button type="button" class="mic-btn hb" onclick="micStart('f_content',this)" style="margin-top:0;flex-shrink:0">🎤</button>
         <div class="stitle" style="margin-bottom:0">初訪内容（見込み候補だと判断した理由）<span class="req">*</span></div>
       </div>
-      <textarea id="f_content" rows="5" placeholder="相手の反応を書く。例：相続の話→「税理士に聞かないと」と真顔。発言は「」でそのまま"></textarea>
+      <textarea id="f_content" rows="5" placeholder="When（いつ） Where（どこで） Who（誰が） What（何を） Why（なぜ） How（どうする）&#10;テスクロに対し、相手の反応を書く。"></textarea>
       <div class="no-print" style="margin-top:8px;padding:8px 10px;background:#f0fff4;border:1px solid #c6f6d5;border-radius:6px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><label style="margin:0;font-size:12px;font-weight:600;color:#276749">🎙 録音要約・メール等貼り付け</label><button type="button" onclick="clearStrategyField('f_content_rec')" style="background:none;border:none;color:#c53030;font-size:15px;padding:0 2px;cursor:pointer;font-family:inherit;flex-shrink:0;line-height:1">🗑</button></div>
         <textarea id="f_content_rec" rows="3" placeholder="録音要約・メールなどを貼り付け" style="font-size:13px;background:transparent;border-color:#c6f6d5"></textarea>
@@ -12938,7 +12945,7 @@ window.updateRyokuchiBtn=function(){var btn=document.getElementById("ryokuchiBtn
   .zfa-s1{top:-1px;left:-1px;font-size:13px;animation:abSpark 1.4s ease-in-out infinite}
   .zfa-s2{bottom:0;right:-1px;font-size:11px;animation:abSpark 1.4s ease-in-out infinite .5s}
   .zfa-name{font-size:11px;font-weight:800;letter-spacing:.1em;color:#2c5282;margin-bottom:8px}
-  .zfa-msg{font-size:14px;color:#2d3748;font-weight:500;line-height:1.7;margin-bottom:18px;text-wrap:balance;line-break:strict;word-break:normal}
+  .zfa-msg{font-size:14px;color:#2d3748;font-weight:500;line-height:1.7;margin-bottom:18px;text-wrap:balance;line-break:strict;word-break:keep-all;overflow-wrap:anywhere}
   .zfa-ok{width:100%;padding:11px;border:none;border-radius:10px;background:#1a365d;color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer}
   .zfa-toast{position:fixed;left:50%;bottom:22%;transform:translateX(-50%) translateY(16px);z-index:2147483646;
     display:flex;align-items:center;gap:6px;opacity:0;transition:opacity .3s,transform .3s;max-width:94vw;pointer-events:none}
