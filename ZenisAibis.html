@@ -2235,7 +2235,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.39";
+var APP_VERSION = "v9.40";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -5551,7 +5551,7 @@ function getSorted() {
   }
   return arr;
 }
-var PAGE_SIZE=10;
+var PAGE_SIZE=20;
 var currentPage=1;
 
 var _searchTimer=null;
