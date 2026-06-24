@@ -278,6 +278,12 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 .toast .tf-s1{top:-3px;left:-4px}
 .toast .tf-s2{bottom:-3px;right:-4px;animation-delay:.65s}
 .toast .toast-msg{flex:1 1 auto;min-width:0;word-break:keep-all;overflow-wrap:anywhere}
+/* == 再利用アイコングリッド（初期設定のツール群／将来拡張用フレーム） == */
+.aibis-icongrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:14px 8px;align-items:start;justify-items:center}
+.aibis-icontile{appearance:none;-webkit-appearance:none;background:none;border:none;padding:2px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;font-family:inherit;width:100%}
+.aibis-icontile:active{transform:scale(.94)}
+.aibis-iconbox{width:54px;height:54px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.22);line-height:1.05;overflow:hidden}
+.aibis-iconlabel{font-size:11px;font-weight:700;text-align:center;line-height:1.3}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.show{opacity:1}
 #pwaBanner{display:none;position:fixed;bottom:80px;left:12px;right:12px;background:#1e3a5f;color:white;border-radius:10px;padding:12px 14px;z-index:150;box-shadow:0 4px 12px rgba(0,0,0,0.3)}
@@ -1994,7 +2000,7 @@ body.is-mob .mob-menu{display:inline-block}
       </div>
       <div id="pwaInstallRow" style="margin-top:10px;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;background:#f7fafc">
         <div style="font-size:12px;font-weight:700;color:#2c5282;margin-bottom:6px">🔗 ホーム画面ショートカット</div>
-        <div id="pwaBtns" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+        <div id="pwaBtns" class="aibis-icongrid"></div>
         <div id="pwaHint" style="font-size:11px;color:#718096;margin-top:6px;line-height:1.55"></div>
       </div>
       <!-- ▼▼ 開発者ツールパネル START（DEV_EMAIL時のみ表示・JSはdev区画と対） ▼▼ -->
@@ -2239,7 +2245,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.54";
+var APP_VERSION = "v9.55";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -3112,22 +3118,24 @@ function camShortcut(){
   var msg='🔗 アイビスカメラもホーム画面に追加できます<br><br>OKを押すとカメラ画面へ移動します。<br>そのあとブラウザ右上の <b>⋮メニュー</b> →「<b>ホーム画面に追加</b>」で、カメラ専用アイコンを作れます。<br><br><button class="zfa-ok" onclick="location.href=\'AibisCam.html\'">OK（カメラへ）</button>';
   if(window.aibisAlert) aibisAlert(msg); else { if(confirm('アイビスカメラへ移動しますか？')) location.href='AibisCam.html'; }
 }
+// 再利用タイル生成：アイコン箱(bg色)＋ラベル。将来ツールを増やすときは tiles.push(aibisIconTile(...)) するだけ。
+function aibisIconTile(onclk,iconInner,bg,label,col){
+  return '<button type="button" class="aibis-icontile" onclick="'+onclk+'">'
+    +'<span class="aibis-iconbox" style="background:'+bg+'">'+iconInner+'</span>'
+    +'<span class="aibis-iconlabel" style="color:'+(col||'#4a5568')+'">'+label+'</span></button>';
+}
 function _pwaSyncBtns(){
   var host=document.getElementById('pwaBtns'); if(!host) return;
   var hint=document.getElementById('pwaHint');
-  var iconHome='<span style="width:54px;height:54px;border-radius:14px;background:#1a365d;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.22);line-height:1.05"><b style="color:#fff;font-size:21px;font-weight:900">z.</b><b style="color:#d97706;font-size:10px;font-weight:900;letter-spacing:.5px">AIBIS</b></span>';
-  var iconCam='<span style="width:54px;height:54px;border-radius:14px;background:#0e4a45;display:flex;align-items:center;justify-content:center;font-size:27px;box-shadow:0 2px 6px rgba(0,0,0,.22)">📷</span>';
-  var tile=function(onclk,icon,label,col){ return '<button type="button" onclick="'+onclk+'" style="appearance:none;-webkit-appearance:none;background:none;border:none;padding:4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;font-family:inherit">'+icon+'<span style="font-size:11px;font-weight:700;color:'+col+'">'+label+'</span></button>'; };
-  host.style.gap='18px'; host.style.alignItems='flex-start';
-  if(isMob){
-    host.innerHTML=tile('pwaShortcut()',iconHome,'本体を追加','#2c5282')+tile('camShortcut()',iconCam,'カメラを追加','#0e4a45');
-    if(hint) hint.innerHTML='アイコンをタップ → ホーム画面への追加方法が出ます。本体とカメラ、それぞれ置けます。';
-  } else {
-    host.innerHTML=tile('pwaShortcut()',iconHome,'本体を追加','#2c5282');
-    if(hint) hint.innerHTML='アイコンをタップ → デスクトップへの追加方法が出ます。';
-  }
+  var icHome='<b style="color:#fff;font-size:21px;font-weight:900">z.</b><b style="color:#d97706;font-size:10px;font-weight:900;letter-spacing:.5px">AIBIS</b>';
+  var icCam='<span style="font-size:27px">📷</span>';
+  var tiles=[ aibisIconTile('pwaShortcut()',icHome,'#1a365d','本体を追加','#2c5282') ];
+  if(isMob) tiles.push(aibisIconTile('camShortcut()',icCam,'#0e4a45','カメラを追加','#0e4a45'));
+  // ★将来ツール追加例： tiles.push(aibisIconTile('openXxx()','🧰','#553c9a','ツール名','#553c9a'));
+  host.innerHTML=tiles.join('');
+  if(hint) hint.innerHTML=isMob?'アイコンをタップ → ホーム画面への追加方法が出ます。本体とカメラ、それぞれ置けます。':'アイコンをタップ → デスクトップへの追加方法が出ます。';
 }
-window.pwaShortcut=pwaShortcut; window.pwaInstall=pwaShortcut; window._pwaSyncBtns=_pwaSyncBtns; window.camShortcut=camShortcut;
+window.pwaShortcut=pwaShortcut; window.pwaInstall=pwaShortcut; window._pwaSyncBtns=_pwaSyncBtns; window.camShortcut=camShortcut; window.aibisIconTile=aibisIconTile;
 window.addEventListener('load',function(){ try{ _pwaSyncBtns(); }catch(e){} });
 function autoSaveSetup(){
   // フォーム入力を即時LocalStorageに仮保存
