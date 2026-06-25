@@ -2255,7 +2255,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.68";
+var APP_VERSION = "v9.70";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -6512,19 +6512,29 @@ function famSetFlag(f,v){
 }
 var FAM_CHILD_ROLES=['長男','次男','三男','長女','次女','三女','養子・男','養子・女'];
 var famCurChildren=0;
+var famCurSons=0, famCurDaughters=0;
 var famCurGrandkids=[];
 var GK_LABEL={'小学生(男)':'小学生男','小学生(女)':'小学生女','幼児(男)':'幼児男','幼児(女)':'幼児女','乳児(男)':'乳児男','乳児(女)':'乳児女','乳児':'乳児','孫(男)':'男の子','孫(女)':'女の子','幼児':'幼児'};
+// お子様＝息子/娘の人数で入力。命名は順番(長男/次男…・長女/次女…)、絵は順番で 1-2小学生/3幼児/4以降乳児 v9.69
+var KID_KANJI=['長','次','三','四','五','六','七','八','九','十'];
+function _kidLabel(g,ord){ var k=KID_KANJI[ord-1]||(''+ord); return k+(g==='女'?'女':'男'); }
+function _gkType(g,ord){ return (ord<=2?'小学生':(ord===3?'幼児':'乳児'))+'('+g+')'; }
+function _genGk(sons,daughters){ var a=[],i; for(i=1;i<=sons;i++)a.push(_gkType('男',i)); for(i=1;i<=daughters;i++)a.push(_gkType('女',i)); return a; }
+function _gkLabels(arr){ var mc=0,fc=0; return (arr||[]).map(function(t){ var g=/女/.test(t)?'女':'男'; var n=(g==='女')?(++fc):(++mc); return _kidLabel(g,n); }); }
+function famRenderKidCounts(){ var sm=document.getElementById('famKidMSel'); if(sm)sm.value=famCurSons; var sf=document.getElementById('famKidFSel'); if(sf)sf.value=famCurDaughters; }
+function famSetKid(which,n){ if(which==='m')famCurSons=n; else famCurDaughters=n; famCurGrandkids=_genGk(famCurSons,famCurDaughters); famCurChildren=famCurGrandkids.length; famRenderKidCounts(); famRenderGrandkids(); }
 function famRenderGrandkids(){
   var box=document.getElementById('famGkChips'); if(!box) return;
-  if(!famCurGrandkids.length){ box.innerHTML='<span style="font-size:12px;color:#a0aec0">お子様なし（いる場合は上のボタンで追加）</span>'; return; }
+  if(!famCurGrandkids.length){ box.innerHTML='<span style="font-size:12px;color:#a0aec0">お子様なし（息子・娘の人数を選んでね）</span>'; return; }
+  var labels=_gkLabels(famCurGrandkids);
   box.innerHTML=famCurGrandkids.map(function(t,i){
-    return '<span style="display:inline-flex;align-items:center;gap:2px;background:#f7fafc;border:1px solid #e2e8f0;border-radius:16px;padding:1px 3px 1px 4px"><svg viewBox="0 0 100 100" width="28" height="28" style="display:block">'+famAvatarSVG(t,"smile")+'</svg><span style="font-size:11px;color:#4a5568;white-space:nowrap">'+(GK_LABEL[t]||t)+'</span><button type="button" onclick="famRemoveGrandkid('+i+')" title="削除" style="background:none;border:none;color:#c53030;cursor:pointer;font-size:14px;line-height:1;padding:0 3px">×</button></span>';
+    return '<span style="display:inline-flex;align-items:center;gap:3px;background:#f7fafc;border:1px solid #e2e8f0;border-radius:16px;padding:1px 9px 1px 4px"><svg viewBox="0 0 100 100" width="28" height="28" style="display:block">'+famAvatarSVG(t,"smile")+'</svg><span style="font-size:11px;color:#4a5568;white-space:nowrap">'+labels[i]+'</span></span>';
   }).join('')+'<span style="font-size:11px;color:#718096;margin-left:2px">計'+famCurGrandkids.length+'人</span>';
 }
 function famAddGrandkid(t){ famCurGrandkids.push(t); famCurChildren=famCurGrandkids.length; famRenderGrandkids(); }
 function famRemoveGrandkid(i){ famCurGrandkids.splice(i,1); famCurChildren=famCurGrandkids.length; famRenderGrandkids(); }
-function famClearGrandkids(){ famCurGrandkids=[]; famCurChildren=0; famRenderGrandkids(); }
-window.famAddGrandkid=famAddGrandkid; window.famRemoveGrandkid=famRemoveGrandkid; window.famClearGrandkids=famClearGrandkids;
+function famClearGrandkids(){ famCurSons=0; famCurDaughters=0; famCurGrandkids=[]; famRenderKidCounts(); famRenderGrandkids(); }
+window.famAddGrandkid=famAddGrandkid; window.famRemoveGrandkid=famRemoveGrandkid; window.famClearGrandkids=famClearGrandkids; window.famSetKid=famSetKid;
 function famOnRoleChange(){
   var role=normalizeFamRole(document.getElementById('famRole').value);
   var gen=role?famGetGen(role):-1;
@@ -6550,7 +6560,7 @@ function famResetModal(){
   famCurJutaku=''; famPaintJutaku();
   var hb=document.getElementById('famL同居'); if(hb) hb.textContent='同居';
   famSetStance('unk'); famSetLiving('未確認'); famSetMarriage('不明'); famSetChildren(0);
-  famCurGrandkids=[]; famRenderGrandkids();
+  famCurSons=0; famCurDaughters=0; famCurGrandkids=[]; if(typeof famRenderKidCounts==='function')famRenderKidCounts(); famRenderGrandkids();
   famSetFlag('met',false); famSetFlag('owner',false); famSetFlag('kp',false);
   ['famRole','famName','famAddr'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   var ag=document.getElementById('famAge');if(ag)ag.value='';
@@ -6637,8 +6647,10 @@ function famOpenEdit(idx){
   famSetLiving(m.living||m.kyojuu||'同居');
   famCurJutaku=m.jutaku||''; famPaintJutaku();
   famSetMarriage(m.marriage||'不明');
-  famCurGrandkids=(m.grandkids&&m.grandkids.length)?m.grandkids.slice():((+(m.children)>0)?Array(+m.children).fill('孫(男)'):[]);
-  famCurChildren=famCurGrandkids.length; famRenderGrandkids();
+  var _exGk=(m.grandkids&&m.grandkids.length)?m.grandkids:((+(m.children)>0)?Array(+m.children).fill('孫(男)'):[]);
+  var _exM=0,_exF=0; _exGk.forEach(function(t){ if(/女/.test(t))_exF++; else _exM++; });
+  famCurSons=_exM; famCurDaughters=_exF; famCurGrandkids=_genGk(famCurSons,famCurDaughters);
+  famCurChildren=famCurGrandkids.length; famRenderKidCounts(); famRenderGrandkids();
   famSetFlag('met',!!m.met); famSetFlag('owner',!!m.owner); famSetFlag('kp',!!m.kp);
   var r=document.getElementById('famRole');
   if(r){ r.value=m.role||''; if(m.role&&r.value!==m.role){ var op=document.createElement('option'); op.textContent=m.role; r.appendChild(op); r.value=m.role; } }
@@ -7971,7 +7983,7 @@ function buildFamTreeSVG(fam, opts){
   svg+=lines;
   allAv.forEach(n=>svg+=node(n));
   kidBoxes.forEach(b=>{
-    var n=b.gk.length, startX=b.cx-(n*GKW)/2, busY=gen3Y-GKBUS;
+    var n=b.gk.length, startX=b.cx-(n*GKW)/2, busY=gen3Y-GKBUS; var _gklbl=_gkLabels(b.gk);
     // 横バス（孫が2人以上のとき）と各孫への分岐線
     var firstC=startX+GKW/2, lastC=startX+(n-1)*GKW+GKW/2;
     if(n>1) svg+=L(firstC,busY,lastC,busY);
@@ -7980,7 +7992,7 @@ function buildFamTreeSVG(fam, opts){
       svg+=L(gx,busY,gx,gen3Y);
       var aw=100,ah=112,asc=Math.min((GKW-4)/aw,(GKH-12)/ah),tx=gx-aw*asc/2,ty=gen3Y;
       svg+=`<g transform="translate(${Math.round(tx*100)/100},${ty}) scale(${Math.round(asc*1000)/1000})">${famAvatarSVG(b.gk[gi],"smile")}</g>`;
-      svg+=`<text x="${gx}" y="${gen3Y+GKH-1}" font-size="7.5" fill="#718096" text-anchor="middle">${GK_LBL[b.gk[gi]]||'孫'}</text>`;
+      svg+=`<text x="${gx}" y="${gen3Y+GKH-1}" font-size="7.5" fill="#718096" text-anchor="middle">${(_gklbl&&_gklbl[gi])||GK_LBL[b.gk[gi]]||'孫'}</text>`;
     }
   });
   // タップ編集レイヤー（画面のみ／印刷では opts なしで無効）
@@ -8032,7 +8044,7 @@ function buildFamilyHTML(c){
       if(m.kp)tags.push('<span style="color:#3182ce;font-weight:700">KP</span>');
       if(m.met)tags.push('<span style="color:#276749;font-weight:700">面談済</span>');
       var mc='';
-      if(DEEP.indexOf(m.role)>=0){if(m.marriage&&m.marriage!=='不明')mc+=m.marriage;var _gk=(m.grandkids&&m.grandkids.length)?m.grandkids:null;if(_gk){var _GL={'小学生(男)':'小学生男','小学生(女)':'小学生女','幼児(男)':'幼児男','幼児(女)':'幼児女','乳児(男)':'乳児男','乳児(女)':'乳児女','孫(男)':'男の子','孫(女)':'女の子','幼児':'幼児','乳児':'乳児'};mc+=(mc?'・':'')+'子'+_gk.length+'人（'+_gk.map(function(g){return _GL[g]||'子';}).join('・')+'）';}else if(m.children)mc+=(mc?'・':'')+'子'+m.children+'人';}
+      if(DEEP.indexOf(m.role)>=0){if(m.marriage&&m.marriage!=='不明')mc+=m.marriage;var _gk=(m.grandkids&&m.grandkids.length)?m.grandkids:null;if(_gk){mc+=(mc?'・':'')+'子'+_gk.length+'人（'+_gkLabels(_gk).join('・')+'）';}else if(m.children)mc+=(mc?'・':'')+'子'+m.children+'人';}
       var sep='<span style="color:#cbd5e0;padding:0 1mm">|</span>';
       html+='<div style="display:flex;align-items:baseline;gap:1.5mm;padding:1.2mm 0;border-bottom:0.3pt solid #edf2f7;font-size:9.5pt;flex-wrap:wrap">'
         +'<span style="font-weight:700;min-width:17mm;color:#2d3748">'+(m.owner?'★':'')+e(m.role)+'</span>'
@@ -12205,17 +12217,12 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       </div>
       <div id="famChildRow" style="display:none;margin-bottom:8px">
         <label>👶 お子様（＝ご本人から見たお孫様）</label>
-        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:3px">
-          <button type="button" class="fam-bbtn" onclick="famAddGrandkid('小学生(男)')">＋ 小学生男</button>
-          <button type="button" class="fam-bbtn" onclick="famAddGrandkid('小学生(女)')">＋ 小学生女</button>
-          <button type="button" class="fam-bbtn" onclick="famAddGrandkid('幼児(男)')">＋ 幼児男</button>
-          <button type="button" class="fam-bbtn" onclick="famAddGrandkid('幼児(女)')">＋ 幼児女</button>
-          <button type="button" class="fam-bbtn" onclick="famAddGrandkid('乳児(男)')">＋ 乳児男</button>
-          <button type="button" class="fam-bbtn" onclick="famAddGrandkid('乳児(女)')">＋ 乳児女</button>
-          <button type="button" class="fam-bbtn" onclick="famClearGrandkids()">クリア</button>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-top:6px">
+          <span style="display:inline-flex;align-items:center;gap:7px"><span style="font-size:13px;color:#4a5568;font-weight:700">息子</span><select id="famKidMSel" onchange="famSetKid('m',+this.value)" style="font:inherit;font-size:15px;padding:6px 10px;border-radius:8px;border:1px solid #cbd5e0;background:#fff;color:#2d3748;font-weight:700"><option value="0">0人</option><option value="1">1人</option><option value="2">2人</option><option value="3">3人</option><option value="4">4人</option><option value="5">5人</option><option value="6">6人</option><option value="7">7人</option><option value="8">8人</option><option value="9">9人</option></select></span>
+          <span style="display:inline-flex;align-items:center;gap:7px"><span style="font-size:13px;color:#4a5568;font-weight:700">娘</span><select id="famKidFSel" onchange="famSetKid('f',+this.value)" style="font:inherit;font-size:15px;padding:6px 10px;border-radius:8px;border:1px solid #cbd5e0;background:#fff;color:#2d3748;font-weight:700"><option value="0">0人</option><option value="1">1人</option><option value="2">2人</option><option value="3">3人</option><option value="4">4人</option><option value="5">5人</option><option value="6">6人</option><option value="7">7人</option><option value="8">8人</option><option value="9">9人</option></select></span>
         </div>
         <div id="famGkChips" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:7px;align-items:center"></div>
-        <p class="ht" style="margin:4px 0 0">お孫様は家系図に「子の枝」で表示（独立カードにはなりません）。</p>
+        <p class="ht" style="margin:4px 0 0">お孫様は家系図に「子の枝」で表示（独立カードにはなりません）。息子＝長男・次男…／娘＝長女・次女…で自動表示。絵は1〜2人目＝小学生・3人目＝幼児・4人目以降＝乳児。</p>
       </div>
     </div>
     <div class="fam-sec-lbl">詳細情報</div>
