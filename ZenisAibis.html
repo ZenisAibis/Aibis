@@ -2255,7 +2255,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.73";
+var APP_VERSION = "v9.75";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -6352,7 +6352,7 @@ function renderFam(){
   famRenderSummary();
   if(typeof famUpdateAddButtonState==='function') famUpdateAddButtonState();
   var _tb=document.getElementById('famTreeBox');
-  if(_tb){ try{ var _ff=(cur.family||[]).filter(function(m){return m.role;}); if(_ff.length){var _hasSib=_ff.some(function(m){return ['兄','弟','姉','妹'].indexOf(m.role)>=0;});var _unNote=_hasSib?'<div style="font-size:9.5px;color:#8b95a6;margin:3px 2px 0;line-height:1.4">※「伯父／叔父／伯母／叔母」＝世帯主の兄弟姉妹を、お子様から見た続柄で表示。保存値は兄・弟・姉・妹のままです。</div>':'';_tb.innerHTML='<div style="font-size:10px;color:#a0aec0;margin:0 0 2px 2px">👆 タップで編集</div>'+buildFamTreeSVG(_ff,{interactive:true,src:cur.family})+_unNote;}else{_tb.innerHTML='<div style="color:#a0aec0;font-size:12px;padding:8px">家族を追加すると世代ツリーが表示されます。</div>';} }catch(_e){ _tb.innerHTML='<div style="color:#a0aec0;font-size:12px;padding:8px">家系図を表示できませんでした。</div>'; } }
+  if(_tb){ try{ var _ff=(cur.family||[]).filter(function(m){return m.role;}); _famMarkExcess(cur.family); if(_ff.length){var _hasSib=_ff.some(function(m){return ['兄','弟','姉','妹'].indexOf(m.role)>=0;});var _unNote=_hasSib?'<div style="font-size:9.5px;color:#8b95a6;margin:3px 2px 0;line-height:1.4">※「伯父／叔父／伯母／叔母」＝世帯主の兄弟姉妹を、お子様から見た続柄で表示。保存値は兄・弟・姉・妹のままです。</div>':'';_tb.innerHTML='<div style="font-size:10px;color:#a0aec0;margin:0 0 2px 2px">👆 タップで編集</div>'+buildFamTreeSVG(_ff,{interactive:true,src:cur.family})+_unNote;}else{_tb.innerHTML='<div style="color:#a0aec0;font-size:12px;padding:8px">家族を追加すると世代ツリーが表示されます。</div>';} }catch(_e){ _tb.innerHTML='<div style="color:#a0aec0;font-size:12px;padding:8px">家系図を表示できませんでした。</div>'; } }
 }
 function famRenderSummary(){
   // 表示されているメンバー（roleあり）のみ集計
@@ -6550,6 +6550,16 @@ function famAddGrandkid(t){ famCurGrandkids.push(t); famCurChildren=famCurGrandk
 function famRemoveGrandkid(i){ famCurGrandkids.splice(i,1); famCurChildren=famCurGrandkids.length; famRenderGrandkids(); }
 function famClearGrandkids(){ famCurSons=0; famCurDaughters=0; famCurGrandkids=[]; famCurGkAges=[]; famRenderKidCounts(); famRenderGrandkids(); }
 window.famAddGrandkid=famAddGrandkid; window.famRemoveGrandkid=famRemoveGrandkid; window.famClearGrandkids=famClearGrandkids; window.famSetKid=famSetKid;
+// ===== 子世代（世帯主から人数で追加）v9.75 =====
+var FAM_SON_ROLES=['長男','次男','三男'], FAM_DAU_ROLES=['長女','次女','三女'];
+function _famCountChildren(g){ var roles=(g==='m')?FAM_SON_ROLES:FAM_DAU_ROLES; return ((cur&&cur.family)||[]).filter(function(m){return roles.indexOf(m.role)>=0;}).length; }
+function _famReconcileChildren(){ if(!cur){return;} if(!cur.family)cur.family=[]; [['m',FAM_SON_ROLES],['f',FAM_DAU_ROLES]].forEach(function(p){ var g=p[0],roles=p[1]; var want=(g==='m')?(+cur.kidSons||0):(+cur.kidDaughters||0); var have=_famCountChildren(g); for(var i=have;i<want&&i<roles.length;i++){ cur.family.push({role:roles[i],stance:'unk',living:'未確認'}); } }); _famRenumberChildren(); }
+function _famRenumberChildren(){ if(!cur||!cur.family)return; [FAM_SON_ROLES,FAM_DAU_ROLES].forEach(function(roles){ var kids=cur.family.filter(function(m){return roles.indexOf(m.role)>=0;}); kids.forEach(function(m,i){ if(i<roles.length) m.role=roles[i]; }); }); }
+function _famMarkExcess(fam){ (fam||[]).forEach(function(m){ var si=FAM_SON_ROLES.indexOf(m.role), di=FAM_DAU_ROLES.indexOf(m.role); if(si>=0) m._excess=!!(cur&&cur.kidSons!=null&&si>=cur.kidSons); else if(di>=0) m._excess=!!(cur&&cur.kidDaughters!=null&&di>=cur.kidDaughters); else m._excess=false; }); }
+function _famAfterChildDelete(delRole){ if(!cur)return; var si=FAM_SON_ROLES.indexOf(delRole), di=FAM_DAU_ROLES.indexOf(delRole); if(si>=0){ var it=(+cur.kidSons||0); if(si<it) cur.kidSons=Math.max(0,it-1); } else if(di>=0){ var it2=(+cur.kidDaughters||0); if(di<it2) cur.kidDaughters=Math.max(0,it2-1); } _famRenumberChildren(); }
+function famSetChild(which,n){ if(!cur)return; if(which==='m')cur.kidSons=n; else cur.kidDaughters=n; _famReconcileChildren(); famRenderChildCounts(); if(typeof renderFam==='function')renderFam(); if(typeof setDirty==='function')setDirty(true); }
+function famRenderChildCounts(){ if(cur){ if(cur.kidSons==null)cur.kidSons=_famCountChildren('m'); if(cur.kidDaughters==null)cur.kidDaughters=_famCountChildren('f'); } var sm=document.getElementById('famChMSel'); if(sm)sm.value=(cur&&cur.kidSons)||0; var sf=document.getElementById('famChFSel'); if(sf)sf.value=(cur&&cur.kidDaughters)||0; }
+window.famSetChild=famSetChild; window.famRenderChildCounts=famRenderChildCounts;
 function famOnRoleChange(){
   var role=normalizeFamRole(document.getElementById('famRole').value);
   var gen=role?famGetGen(role):-1;
@@ -6562,6 +6572,9 @@ function famOnRoleChange(){
   var hb=document.getElementById('famL同居');
   if(hb) hb.textContent=isHead?'世帯主':'同居';
   if(isHead && famCurLiving==='未確認') famSetLiving('同居');
+  var showKid=(gen===1 && FAM_SIBLING_ROLES.indexOf(role)<0 && famEditIdx>=0);
+  var _kr=document.getElementById('famKidRow'); if(_kr)_kr.style.display=showKid?'block':'none';
+  if(showKid) famRenderChildCounts();
   if(typeof famRenderJobUI==='function') famRenderJobUI();
 }
 function famSetChildren(n){
@@ -6751,7 +6764,9 @@ function famSave(){
 }
 function famDelete(){
   if(famEditIdx>=0&&cur.family){
+    var _del=cur.family[famEditIdx];
     cur.family.splice(famEditIdx,1);
+    if(_del&&(FAM_SON_ROLES.indexOf(_del.role)>=0||FAM_DAU_ROLES.indexOf(_del.role)>=0)) _famAfterChildDelete(_del.role);
   }
   famClose(); renderFam();
 }
@@ -6761,8 +6776,8 @@ function remFam(i){
   var f=(cur.family||[])[i]||{};
   var nm=String(f.name||f.relation||'').trim();
   if(nm||f.age||f.note){
-    aibisConfirm('家族構成「'+e(nm||'この行')+'」を削除する？🗑<br><span style="font-size:12px;color:#718096">入力した内容は元に戻せないよ。</span>', function(){ cur.family.splice(i,1); renderFam(); if(typeof setDirty==='function') setDirty(true); });
-  } else { cur.family.splice(i,1); renderFam(); }
+    aibisConfirm('家族構成「'+e(nm||'この行')+'」を削除する？🗑<br><span style="font-size:12px;color:#718096">入力した内容は元に戻せないよ。</span>', function(){ cur.family.splice(i,1); if(FAM_SON_ROLES.indexOf(f.role)>=0||FAM_DAU_ROLES.indexOf(f.role)>=0)_famAfterChildDelete(f.role); renderFam(); if(typeof setDirty==='function') setDirty(true); });
+  } else { cur.family.splice(i,1); if(FAM_SON_ROLES.indexOf(f.role)>=0||FAM_DAU_ROLES.indexOf(f.role)>=0)_famAfterChildDelete(f.role); renderFam(); }
 }
 
 // ===== 再訪 =====
@@ -8003,6 +8018,7 @@ function buildFamTreeSVG(fam, opts){
     var stroke='#cbd5e0',sw=1;
     if(!inlaw){if(m.kp){stroke='#3182ce';sw=2;}else if(m.owner){stroke='#c53030';sw=1.8;}else if(m.met){stroke='#38a169';sw=1.6;}}
     if(inlaw){stroke='#d7dee8';}
+    if(!inlaw&&m._excess){ tint='#fde2e2'; stroke='#e53e3e'; sw=2.2; }
     var s=`<rect x="${n.x}" y="${n.y}" width="${NW}" height="${NH}" rx="11" fill="${tint}" stroke="${stroke}" stroke-width="${sw}"${inlaw?' stroke-dasharray="3 2"':''}/>`;
     if(!inlaw&&typeof FAM_HEAD_ROLES!=='undefined'&&FAM_HEAD_ROLES.indexOf(normalizeFamRole(m.role||''))>=0) s+=`<rect x="${n.x-2}" y="${n.y-2}" width="${NW+4}" height="${NH+4}" rx="13" fill="none" stroke="#d4af37" stroke-width="2.4"/>`;
     var aw=100,ah=112,area=NH-36,asc=Math.min((NW-8)/aw,area/ah),tx=n.x+(NW-aw*asc)/2,ty=n.y+3;
@@ -8061,7 +8077,7 @@ function buildFamTreeSVG(fam, opts){
 
 function buildFamilyHTML(c){
   var e=function(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
-  var fam=(c.family||[]).filter(function(m){return m.role;});
+  var fam=(c.family||[]).filter(function(m){return m.role;}); fam.forEach(function(m){m._excess=false;});
   var html='<div class="h2 fam">👨‍👩‍👧‍👦 家族構成</div>';
   if(!fam.length){html+='<p style="color:#aaa;font-size:9pt">家族構成データなし</p>';return html;}
   var svg=buildFamTreeSVG(fam);
@@ -8080,7 +8096,7 @@ function buildFamilyHTML(c){
   [0,1,2].forEach(function(gen){
     var members=fam.filter(function(m){return famGetGen(m.role)===gen;});
     if(!members.length) return;
-    html+='<div class="sec"><div class="stitle">'+genLabel[gen]+'（'+members.length+'名）</div>';
+    html+='<div class="sec"><div class="stitle">'+genLabel[gen]+'（'+members.length+'名）</div><div style="display:grid;grid-template-columns:1fr 1fr;column-gap:6mm">';
     members.forEach(function(m){
       var living=m.living||'未確認';
       var lc=(living==='同居'||living==='近居')?'#2563eb':(living==='別居')?'#b7791f':(living==='死亡')?'#64748b':'#94a3b8';
@@ -8092,7 +8108,7 @@ function buildFamilyHTML(c){
       var mc='';
       if(DEEP.indexOf(m.role)>=0){if(m.marriage&&m.marriage!=='不明')mc+=m.marriage;var _gk=(m.grandkids&&m.grandkids.length)?m.grandkids:null;if(_gk){mc+=(mc?'・':'')+'子'+_gk.length+'人（'+_gkLabels(_gk).join('・')+'）';}else if(m.children)mc+=(mc?'・':'')+'子'+m.children+'人';}
       var sep='<span style="color:#cbd5e0;padding:0 1mm">|</span>';
-      html+='<div style="display:flex;align-items:baseline;gap:1.5mm;padding:1.2mm 0;border-bottom:0.3pt solid #edf2f7;font-size:9.5pt;flex-wrap:wrap">'
+      html+='<div style="display:flex;align-items:baseline;gap:1.5mm;padding:1.2mm 0;border-bottom:0.3pt solid #edf2f7;font-size:9.5pt;flex-wrap:wrap;break-inside:avoid">'
         +'<span style="font-weight:700;min-width:17mm;color:#2d3748">'+(m.owner?'★':'')+e(m.role)+'</span>'
         +(m.name?'<span style="font-weight:600">'+e(m.name)+'</span>':'')
         +(m.age?'<span style="color:#718096">'+e(m.age)+'歳</span>':'')
@@ -8104,7 +8120,7 @@ function buildFamilyHTML(c){
         +(m.note?'<span style="flex-basis:100%;color:#4a5568;font-size:8pt;padding-left:17mm;margin-top:0.3mm">📝 '+e(m.note).replace(/\n/g,' ')+'</span>':'')
         +'</div>';
     });
-    html+='</div>';
+    html+='</div></div>';
   });
   html+='<div class="sec"><div class="stitle">全体</div>'
     +'<div style="font-size:8.5pt">家族人数把握：<b style="color:'+(c.family_headcount?'#276749':'#c53030')+'">'+(c.family_headcount?'確定済':'未確定')+'</b></div>';
@@ -12268,11 +12284,19 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <div id="famChildRow" style="display:none;margin-bottom:8px">
         <label>👶 お子様（＝ご本人から見たお孫様）</label>
         <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-top:6px">
-          <span style="display:inline-flex;align-items:center;gap:7px"><span style="font-size:13px;color:#4a5568;font-weight:700">息子</span><select id="famKidMSel" onchange="famSetKid('m',+this.value)" style="font:inherit;font-size:15px;padding:6px 10px;border-radius:8px;border:1px solid #cbd5e0;background:#fff;color:#2d3748;font-weight:700"><option value="0">0人</option><option value="1">1人</option><option value="2">2人</option><option value="3">3人</option><option value="4">4人</option><option value="5">5人</option><option value="6">6人</option><option value="7">7人</option><option value="8">8人</option><option value="9">9人</option></select></span>
-          <span style="display:inline-flex;align-items:center;gap:7px"><span style="font-size:13px;color:#4a5568;font-weight:700">娘</span><select id="famKidFSel" onchange="famSetKid('f',+this.value)" style="font:inherit;font-size:15px;padding:6px 10px;border-radius:8px;border:1px solid #cbd5e0;background:#fff;color:#2d3748;font-weight:700"><option value="0">0人</option><option value="1">1人</option><option value="2">2人</option><option value="3">3人</option><option value="4">4人</option><option value="5">5人</option><option value="6">6人</option><option value="7">7人</option><option value="8">8人</option><option value="9">9人</option></select></span>
+          <span style="display:inline-flex;align-items:center;gap:7px"><span style="font-size:13px;color:#4a5568;font-weight:700">息子</span><select id="famKidMSel" onchange="famSetKid('m',+this.value)" style="font:inherit;font-size:15px;padding:6px 10px;border-radius:8px;border:1px solid #cbd5e0;background:#fff;color:#2d3748;font-weight:700"><option value="0">0人</option><option value="1">1人</option><option value="2">2人</option><option value="3">3人</option><option value="4">4人</option></select></span>
+          <span style="display:inline-flex;align-items:center;gap:7px"><span style="font-size:13px;color:#4a5568;font-weight:700">娘</span><select id="famKidFSel" onchange="famSetKid('f',+this.value)" style="font:inherit;font-size:15px;padding:6px 10px;border-radius:8px;border:1px solid #cbd5e0;background:#fff;color:#2d3748;font-weight:700"><option value="0">0人</option><option value="1">1人</option><option value="2">2人</option><option value="3">3人</option><option value="4">4人</option></select></span>
         </div>
         <div id="famGkChips" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:7px;align-items:center"></div>
         <p class="ht" style="margin:4px 0 0">お孫様は家系図に「子の枝」で表示（独立カードにはなりません）。息子＝長男・次男…／娘＝長女・次女…で自動表示。絵は1〜2人目＝小学生・3人目＝幼児・4人目以降＝乳児。</p>
+      </div>
+      <div id="famKidRow" style="display:none;margin-bottom:8px">
+        <label>👶 お子様（子世代）</label>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-top:6px">
+          <span style="display:inline-flex;align-items:center;gap:7px"><span style="font-size:13px;color:#4a5568;font-weight:700">息子</span><select id="famChMSel" onchange="famSetChild('m',+this.value)" style="font:inherit;font-size:15px;padding:6px 10px;border-radius:8px;border:1px solid #cbd5e0;background:#fff;color:#2d3748;font-weight:700"><option value="0">0人</option><option value="1">1人</option><option value="2">2人</option><option value="3">3人</option></select></span>
+          <span style="display:inline-flex;align-items:center;gap:7px"><span style="font-size:13px;color:#4a5568;font-weight:700">娘</span><select id="famChFSel" onchange="famSetChild('f',+this.value)" style="font:inherit;font-size:15px;padding:6px 10px;border-radius:8px;border:1px solid #cbd5e0;background:#fff;color:#2d3748;font-weight:700"><option value="0">0人</option><option value="1">1人</option><option value="2">2人</option><option value="3">3人</option></select></span>
+        </div>
+        <p class="ht" style="margin:4px 0 0">長男・次男…／長女・次女…で自動作成。各お子様はツリーをタップして氏名・年齢・職業や、その方のお孫様も入力できます。人数を減らすと超過分は<b style="color:#c53030">赤</b>表示。タップ→削除で消してね。</p>
       </div>
     </div>
     <div class="fam-sec-lbl">詳細情報</div>
