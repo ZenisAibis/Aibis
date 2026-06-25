@@ -566,7 +566,17 @@ html.pczoom .tabs .tab .ic{font-size:15px}
   #editView #famSummary > div{ white-space:normal !important; }
 
   /* 土地情報の幅バランス：路線価+借地割合=長め / 面積=中 / 間口=短 */
-  #secTochi .pc-land-main{ grid-template-columns:1.5fr 1fr 0.6fr !important; }
+  #secTochi .pc-land-main{ grid-template-columns:1.15fr 1fr 0.85fr !important; }
+}
+/* スマホ(≤768)：土地情報「路線価/面積/間口」の入力欄をセル幅に収める（PC=769px以上は別ブロックで指定済・不触） */
+@media screen and (max-width:768px){
+  #secTochi .pc-land-main > div{ min-width:0; }
+  #secTochi .pc-land-main #f_rosenka,
+  #secTochi .pc-land-main #f_m2,
+  #secTochi .pc-land-main #f_maguchi{ width:100% !important; max-width:none !important; min-width:0 !important; box-sizing:border-box; }
+  #editView #secTochi .pc-land-main .unit-field{ width:100%; box-sizing:border-box; }
+  #editView #secTochi .pc-land-main .unit-field input{ width:100% !important; min-width:0 !important; }
+  #secTochi .pc-land-main #f_chishaku{ flex:0 0 44px; min-width:0; }
 }
 /* スマホ(≤768)：構成確定ボタンを左・家族全体バーを右の余白いっぱいに（凡例は下段フル） */
 @media screen and (min-width:381px) and (max-width:768px){
@@ -2245,7 +2255,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.56dev";
+var APP_VERSION = "v9.57dev";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
