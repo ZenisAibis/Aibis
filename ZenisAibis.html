@@ -2255,7 +2255,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.65";
+var APP_VERSION = "v9.68";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -6299,6 +6299,7 @@ var FAM_G1=['祖父','祖母'];
 var FAM_G2=['世帯主（男）','世帯主（女）','夫','妻','名義人（夫）','名義人（妻）','配偶者','兄','弟','姉','妹'];
 var famEditGen=0, famEditIdx=-1;
 var famCurStance='unk', famCurLiving='同居', famCurMarriage='不明';
+var famCurJob='', famCurGyoshu='';
 var famCurFlags={met:false,owner:false,kp:false};
 
 // FAM_G定義をここで確定（グローバルより先に関数内で参照できるよう再定義）
@@ -6412,7 +6413,89 @@ function famSetMarriage(v){
     var b=document.getElementById('famM'+k);
     if(b) b.className='fam-bbtn'+(k===v?' fa-on':'');
   });
+  if(typeof famRenderJobUI==='function') famRenderJobUI();
 }
+// ===== 職業＝続柄×性別×婚姻の巡回ボタン＋業種チップ v9.68 =====
+var FAM_JOB_EMP=['不動産系','製造業','小売業','飲食業','医療系','IT','運送業','金融系','士業','公務員','その他'];
+var FAM_JOB_SELF=['不動産賃貸業','建設業','小売業','飲食店','医療','士業','美容','製造業','その他'];
+var FAM_FEMALE_ROLES=['世帯主・祖母','祖母','世帯主・母','母','妻','世帯主（女）','配偶者','嫁','姉','妹','長女','次女','三女','養子・女','孫(女)','小学生(女)','幼児(女)','乳児(女)'];
+var FAM_KID_ONLY_ROLES=['孫(男)','孫(女)','幼児(男)','幼児(女)','幼児','乳児(男)','乳児(女)','乳児'];
+function _famGender(role){ return FAM_FEMALE_ROLES.indexOf(normalizeFamRole(role))>=0?'f':'m'; }
+function _famJobBucket(role){
+  role=normalizeFamRole(role); if(!role) return 'none';
+  var g=famGetGen(role);
+  if(g===0) return 'grand';
+  if(g===1) return 'active';
+  if(role==='小学生(男)'||role==='小学生(女)') return 'kid';
+  if(FAM_KID_ONLY_ROLES.indexOf(role)>=0) return 'none';
+  return 'child';
+}
+function _famJobOpts(role, married){
+  var b=_famJobBucket(role), gf=(_famGender(role)==='f');
+  if(b==='grand') return ['自営業','会社員','無職'];
+  if(b==='active') return ['会社員','自営業','パート',(gf&&married)?'専業主婦':'無職'];
+  if(b==='child') return ['会社員','自営業','学生','アルバイト',(gf&&married)?'専業主婦':'無職'];
+  if(b==='kid') return ['学生'];
+  return [];
+}
+function _famGyoOpts(job){ return job==='会社員'?FAM_JOB_EMP:(job==='自営業'?FAM_JOB_SELF:null); }
+function _famMigrateJob(m){
+  if(!m) return {job:'',gyoshu:''};
+  if(m.gyoshu!==undefined&&m.gyoshu!==null&&(m.gyoshu!==''||['会社員','自営業','パート','アルバイト','専業主婦','学生','無職'].indexOf(String(m.job||''))>=0))
+    return {job:String(m.job||''),gyoshu:String(m.gyoshu||'')};
+  var old=String((m.job!==undefined&&m.job!=='')?m.job:(m.shokugyou||'')).trim();
+  var b=_famJobBucket(m.role);
+  if(old==='不動産賃貸業') return {job:'自営業',gyoshu:'不動産賃貸業'};
+  if(old==='公務員') return {job:'会社員',gyoshu:'公務員'};
+  if(old==='パート・アルバイト') return {job:(b==='child'||b==='kid')?'アルバイト':'パート',gyoshu:''};
+  if(old==='年金のみ') return {job:'無職',gyoshu:''};
+  if(['会社員','自営業','学生','無職','パート','アルバイト','専業主婦'].indexOf(old)>=0) return {job:old,gyoshu:''};
+  return {job:'',gyoshu:''};
+}
+function famJobLabel(m){
+  var mj=_famMigrateJob(m); if(!mj.job) return '';
+  if((mj.job==='会社員'||mj.job==='自営業')&&mj.gyoshu) return mj.job+'（'+mj.gyoshu+'）';
+  return mj.job;
+}
+function _famJobBtnStyle(on,disabled){
+  var s='padding:10px 18px;border-radius:10px;font-weight:800;font-size:15px;font-family:inherit;line-height:1.2;min-width:120px;cursor:pointer;';
+  if(disabled) return s+'border:2px solid #e2e8f0;background:#f7fafc;color:#a0aec0;cursor:default;';
+  if(on) return s+'border:2px solid #2c5282;background:linear-gradient(135deg,#2c5282,#553c9a);color:#fff;';
+  return s+'border:2px solid #cbd5e0;background:#fff;color:#2d3748;';
+}
+function _famChipStyle(on){
+  var s='padding:7px 12px;border-radius:18px;font-size:12.5px;font-family:inherit;white-space:nowrap;cursor:pointer;';
+  return on?s+'border:1px solid #2c5282;background:#2c5282;color:#fff;font-weight:700;':s+'border:1px solid #cbd5e0;background:#fff;color:#2d3748;';
+}
+function famRenderJobUI(){
+  var rEl=document.getElementById('famRole'); var role=rEl?rEl.value:'';
+  var opts=_famJobOpts(role, famCurMarriage==='既婚');
+  if(famCurJob && opts.indexOf(famCurJob)<0) famCurJob='';
+  var btn=document.getElementById('famJobBtn');
+  if(btn){
+    if(!opts.length){ btn.textContent='－'; btn.disabled=true; btn.style.cssText=_famJobBtnStyle(false,true); }
+    else { btn.disabled=false; btn.textContent=famCurJob||'タップで選択'; btn.style.cssText=_famJobBtnStyle(!!famCurJob,false); }
+  }
+  var gyoOpts=_famGyoOpts(famCurJob);
+  if(gyoOpts && famCurGyoshu && gyoOpts.indexOf(famCurGyoshu)<0) famCurGyoshu='';
+  var wrap=document.getElementById('famGyoWrap'), box=document.getElementById('famGyoChips');
+  if(wrap&&box){
+    if(gyoOpts){
+      wrap.style.display='block';
+      box.innerHTML=gyoOpts.map(function(g){ return '<button type="button" style="'+_famChipStyle(famCurGyoshu===g)+'" onclick="famSetGyoshu(\''+g+'\')">'+g+'</button>'; }).join('');
+    } else { wrap.style.display='none'; famCurGyoshu=''; box.innerHTML=''; }
+  }
+}
+function famCycleJob(){
+  var rEl=document.getElementById('famRole'); var role=rEl?rEl.value:'';
+  var opts=_famJobOpts(role, famCurMarriage==='既婚');
+  if(!opts.length) return;
+  var i=opts.indexOf(famCurJob);
+  famCurJob=opts[(i+1)%opts.length]; famCurGyoshu='';
+  famRenderJobUI();
+}
+function famSetGyoshu(g){ famCurGyoshu=(famCurGyoshu===g?'':g); famRenderJobUI(); }
+window.famCycleJob=famCycleJob; window.famSetGyoshu=famSetGyoshu;
 function famToggleFlag(f){
   famCurFlags[f]=!famCurFlags[f];
   var cls={met:'fa-met',owner:'fa-owner',kp:'fa-kp'};
@@ -6454,6 +6537,7 @@ function famOnRoleChange(){
   var hb=document.getElementById('famL同居');
   if(hb) hb.textContent=isHead?'世帯主':'同居';
   if(isHead && famCurLiving==='未確認') famSetLiving('同居');
+  if(typeof famRenderJobUI==='function') famRenderJobUI();
 }
 function famSetChildren(n){
   famCurChildren=n;
@@ -6471,7 +6555,7 @@ function famResetModal(){
   ['famRole','famName','famAddr'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   var ag=document.getElementById('famAge');if(ag)ag.value='';
   var sc=document.getElementById('famSocial');if(sc)sc.value='';
-  var jb=document.getElementById('famJob');if(jb)jb.value='';
+  famCurJob=''; famCurGyoshu=''; if(typeof famRenderJobUI==='function') famRenderJobUI();
   var nt=document.getElementById('famNote');if(nt)nt.value='';
   document.getElementById('famMarriageRow').style.display='none';
 }
@@ -6562,7 +6646,7 @@ function famOpenEdit(idx){
   var nm=document.getElementById('famName');if(nm)nm.value=m.name||'';
   var sc=document.getElementById('famSocial');if(sc)sc.value=m.social||'';
   var ad=document.getElementById('famAddr');if(ad)ad.value=m.addr2||m.kyojuu||'';
-  var jb=document.getElementById('famJob');if(jb)jb.value=m.job||m.shokugyou||'';
+  var _mj=_famMigrateJob(m); famCurJob=_mj.job; famCurGyoshu=_mj.gyoshu;
   var nt=document.getElementById('famNote');if(nt)nt.value=m.note||m.bikou||'';
   famOnRoleChange();
   document.getElementById('famModal').classList.add('show');
@@ -6625,7 +6709,7 @@ function famSave(){
     children:famCurGrandkids.length, grandkids:famCurGrandkids.slice(),
     met:famCurFlags.met, owner:famCurFlags.owner, kp:famCurFlags.kp,
     addr2:document.getElementById('famAddr').value,
-    job:document.getElementById('famJob').value,
+    job:famCurJob, gyoshu:famCurGyoshu,
     note:document.getElementById('famNote').value,
     jutaku:famCurJutaku,
     // 旧フィールド互換
@@ -7958,7 +8042,7 @@ function buildFamilyHTML(c){
         +sep+st
         +(tags.length?sep+tags.join(' '):'')
         +(mc?sep+'<span style="color:#718096">'+e(mc)+'</span>':'')
-        +(m.job?sep+'<span style="color:#718096">'+e(m.job)+'</span>':'')
+        +(famJobLabel(m)?sep+'<span style="color:#718096">'+e(famJobLabel(m))+'</span>':'')
         +(m.note?'<span style="flex-basis:100%;color:#4a5568;font-size:8pt;padding-left:17mm;margin-top:0.3mm">📝 '+e(m.note).replace(/\n/g,' ')+'</span>':'')
         +'</div>';
     });
@@ -8092,7 +8176,7 @@ function genPrompt(anon){
     if(f.stance&&f.stance!=='unk') sub.push('土地活用：'+(stanceL[f.stance]||''));
     if(f.living&&f.living!=='未確認') sub.push(f.living);
     if(f.marriage&&f.marriage!=='不明') sub.push(f.marriage);
-    if(f.job) sub.push(f.job);
+    var _fj=famJobLabel(f); if(_fj) sub.push(_fj);
     if(f.met) sub.push('面談済');
     if(f.owner) sub.push('★所有者');
     if(f.kp) sub.push('KP');
@@ -12095,7 +12179,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <button type="button" class="fam-bbtn lv-別居" id="famL別居" onclick="famSetLiving('別居')">別居</button>
       <button type="button" class="fam-bbtn lv-死亡" id="famL死亡" onclick="famSetLiving('死亡')">死亡</button>
       <div style="border-left:2px solid #e2e8f0;width:0;justify-self:center" aria-hidden="true"></div>
-      <button type="button" class="fam-fbtn" id="famFOwner" onclick="famToggleFlag('owner')">☆所有者</button>
+      <button type="button" class="fam-fbtn" id="famFOwner" onclick="famToggleFlag('owner')">所有者</button>
       <button type="button" class="fam-fbtn" id="famFMet" onclick="famToggleFlag('met')">面談済</button>
     </div>
     <!-- 6行目：名前と年齢（横並び） -->
@@ -12142,12 +12226,14 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <button type="button" id="famOwnRent" onclick="famToggleJutaku()" style="display:none;flex-shrink:0;min-height:38px;padding:4px 10px;border:1px solid #cbd5e0;border-radius:6px;background:#f7fafc;color:#a0aec0;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">持ち家/賃貸</button>
     </div>
     <label>職業</label>
-    <select id="famJob">
-      <option value="">-</option>
-      <option>不動産賃貸業</option><option>会社員</option><option>自営業</option>
-      <option>パート・アルバイト</option><option>公務員</option><option>年金のみ</option>
-      <option>学生</option><option>無職</option><option>その他</option>
-    </select>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <button type="button" id="famJobBtn" onclick="famCycleJob()" style="padding:10px 18px;border-radius:10px;font-weight:800;font-size:15px;font-family:inherit;border:2px solid #cbd5e0;background:#fff;color:#2d3748;cursor:pointer;min-width:120px">－</button>
+      <span style="font-size:11px;color:#a0aec0">タップで切替</span>
+    </div>
+    <div id="famGyoWrap" style="display:none;margin-bottom:8px">
+      <label style="margin:0 0 4px">業種</label>
+      <div id="famGyoChips" style="display:flex;flex-wrap:wrap;gap:7px"></div>
+    </div>
     <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
       <button type="button" class="mic-btn hb" onclick="micStart('famNote',this)" style="margin-top:0">🎤</button>
       <label style="margin:0;flex:1">備考・特記事項</label>
