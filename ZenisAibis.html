@@ -2255,7 +2255,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.57";
+var APP_VERSION = "v9.58";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -13290,6 +13290,7 @@ function _inrow(s){
   if(isThis) acts='<button class="ibtn ret" data-act="detach" data-id="'+e(s.id)+'" title="このカードから外す">📥 外す</button>';
   else if(linked) acts='<button class="ibtn pri" data-act="attach" data-id="'+e(s.id)+'">🔗 付け替え</button>';
   else acts='<button class="ibtn pri" data-act="attach" data-id="'+e(s.id)+'">🔗 紐付け</button>';
+  var who=(s.sender&&String(s.sender).trim())?('<span class="ibadge who">👤 '+e(String(s.sender).trim())+'</span> ・ '):"";
   return '<div class="irow2'+(isThis?' on':'')+'">'+th+'<div class="ibd"><div class="iadr">'+addr+'</div>'+
     '<div class="imeta">'+who+badge+sent+' ・ '+_fmtWhen(s.ts)+'</div>'+
     '<div class="iacts">'+acts+'</div></div></div>';
