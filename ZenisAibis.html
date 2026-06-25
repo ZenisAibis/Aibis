@@ -2256,7 +2256,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.77";
+var APP_VERSION = "v9.78";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -6639,7 +6639,7 @@ function famBuildRoleOptions(gen,editIdx){
       roles=roles.concat(FAM_SIBLING_ROLES);
     }
   } else {
-    roles=head?['長男','次男','三男','四男','長女','次女','三女','四女','養子・男','養子・女']:[];
+    roles=head?['長男','次男','三男','四男','長女','次女','三女','四女','養子・男','養子・女'].filter(function(r){return !have[r];}):[];
   }
   var html='<option value="">選択</option>';
   if(roles.length){
@@ -6761,6 +6761,7 @@ function famSave(){
   if(famEditIdx>=0) cur.family[famEditIdx]=m;
   else cur.family.push(m);
   famCleanAutoSpouse(m); famAutoAddSpouse(m);
+  if(typeof famGetGen==='function' && famGetGen(m.role)===2){ _famRenumberChildren(); cur.kidSons=_famCountChildren('m'); cur.kidDaughters=_famCountChildren('f'); }
   famClose(); renderFam(); if(typeof setDirty==='function') setDirty(true);
 }
 function famDelete(){
