@@ -2255,7 +2255,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.58dev";
+var APP_VERSION = "v9.63dev";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -4050,6 +4050,7 @@ function j9Axes(cards){
     if(c.doukou)en+=20;
     var metN=_j9Fam(c).filter(function(m){return m.met;}).length; en+=Math.min(25,metN*12);
     if(_j9KpMet(c))en+=15; if(c.mgr_involve&&c.mgr_involve!=='単独')en+=10;
+    if(_j9Filled(c.pursuit_4eyes))en+=6; // シックスアイズ協議=組織的検討による信頼 v9.63
     sum.enmusubi+=Math.min(100,en);
     // 追客
     var _rc=_j9Revisits(c).length;
@@ -4067,6 +4068,7 @@ function j9Axes(cards){
     if(_j9Stage(c)>=3)se+=20; if(_j9Stage(c)>=4)se+=10;
     var rk=c.pursuit_judge; if(rk==='S')se+=20; else if(rk==='A')se+=15; else if(rk==='B')se+=8;
     if(_j9Filled(c.souteim))se+=8; if(Array.isArray(c.maefuri)&&c.maefuri.length)se+=7;
+    if(_j9Filled(c.pursuit_4eyes))se+=12; // シックスアイズ協議=提案直前サイン v9.63
     sum.seian+=Math.min(100,se);
     // 作戦
     var sa=0;
@@ -4076,6 +4078,7 @@ function j9Axes(cards){
     if(_consult&&_judged)sa+=30; else if(_consult)sa+=12; else if(_judged)sa+=10; // 協議して判定まで＝戦略行動の核
     if(_j9Revisits(c).some(function(r){return r.instruction||r.appo;}))sa+=20;
     if(Array.isArray(c.pursuits)&&c.pursuits.length)sa+=10;
+    if(_j9Filled(c.revisit_4eyes))sa+=15; if(_j9Filled(c.pursuit_4eyes))sa+=25; // 担当×課長の協議(フォーアイズ/シックスアイズ)の記録運用 v9.63
     sum.sakujin+=Math.min(100,sa);
     // 記録運用力：入力率を土台(35%)に、訪問内容・再訪ジャッジ・課長協議・判定・自己分析の“記録運用”の充足で差化（単なる入力率はゲート＝土台のみ）
     var kr=Math.round(j9CardTrust(c)*35);
@@ -5317,7 +5320,7 @@ function updateSortBtns() {
     kw:   {desc:'💬 会話 浅→',  asc:'💬 会話 深→'},
     pace: {desc:'⏰ 遅れ 小→',  asc:'⏰ 遅れ 大→'},
     rv:   {desc:'🔁 再訪 0→',   asc:'🔁 再訪 3→'},
-    jw:   {desc:'⚖ ジャッジ（更新新→）', asc:'⚖ ジャッジ（更新新→）'},
+    jw:   {desc:'⚖ ジャッジ（協議未記入）', asc:'⚖ ジャッジ（協議未記入）'},
     lm:   {desc:'🗺 土地（古→）', asc:'🗺 土地（古→）'}
   };
   Object.keys(base).forEach(function(k){
@@ -5528,12 +5531,13 @@ function getKaiwaLevel(c){
   });
   return max; // -1=未選択
 }
-function _revisitCount(c){ return ((c&&c.revisits)||[]).filter(function(v){ return v&&(v.date||v.content||v.rec); }).length; }
+// 訪問した確証＝訪問内容(content) または 録音要約(rec)。日付だけ(本文も録音要約も無い)はカウントしない v9.62
+function _revisitCount(c){ return ((c&&c.revisits)||[]).filter(function(v){ return v&&(String(v.content||'').trim()||String(v.rec||'').trim()); }).length; }
 function _hasPursuitActivity(c){ if(!c) return false; if(c.pursuit_judge) return true; return ((c.pursuits)||[]).some(function(v){ return v&&(v.date||v.content||v.rec||v.appo||v.interviewer); }); }
-// ジャッジ並び替え用：再訪3回まで埋まっているのに追客判定がまだ
-function _jwReady(c){ return !!(c && _revisitCount(c)>=REVISIT_PHASE.times && !c.pursuit_judge); }
-// 再訪並び替え用：初訪内容あり・追撃前（再訪回数0〜3で並べる対象）
-function _rvEligible(c){ return !!(c && !_hasPursuitActivity(c) && String(c.initial_content||'').trim()!==''); }
+// ジャッジ並び替え用：再訪3回(content/rec基準)まで到達しているのにフォーアイズ(協議内容)が空。判定ボタンの有無は問わない v9.62
+function _jwReady(c){ return !!(c && _revisitCount(c)>=REVISIT_PHASE.times && String(c.revisit_4eyes||'').trim()===''); }
+// 再訪並び替え用：初訪内容の記入 または 再訪記録ありで表示。追客判定(ジャッジ)を押した後でも再訪記録があれば外さない。回数=_revisitCount で 3→2→1→0 順 v9.61
+function _rvEligible(c){ if(!c) return false; return String(c.initial_content||'').trim()!==''||_revisitCount(c)>0; }
 function getSorted() {
   var arr = cards.slice();
   var dir = sortDir[sortKey]==='desc' ? -1 : 1;
@@ -8310,16 +8314,21 @@ function genPrompt(anon){
   lines.push('■ 訪問履歴');
   lines.push(histTxt);
   lines.push('');
-  if(c.revisit_judge){
-    lines.push('■ 再訪Judgment');
-    lines.push('  判定：'+(c.revisit_judge||'未')+(c.revisit_judge_date?' （'+c.revisit_judge_date+'）':''));
-    if(c.revisit_4eyes) lines.push('  フォーアイズ内容：'+c.revisit_4eyes);
+  // 担当×課長の協議は判定ボタンの有無に関わらず、内容があれば必ず出力 v9.63
+  if(c.revisit_judge || (c.revisit_4eyes&&String(c.revisit_4eyes).trim())){
+    lines.push('■ 再訪Judgment（担当×課長の協議）');
+    if(c.revisit_judge) lines.push('  判定：'+c.revisit_judge+(c.revisit_judge_date?' （'+c.revisit_judge_date+'）':''));
+    if(c.revisit_4eyes&&String(c.revisit_4eyes).trim()) lines.push('  協議内容（フォーアイズ）：'+c.revisit_4eyes);
     lines.push('');
   }
-  if(c.pursuit_judge){
-    lines.push('■ 追撃Judgment');
-    lines.push('  判定：'+(c.pursuit_judge||'未')+(c.pursuit_judge_date?' （'+c.pursuit_judge_date+'）':''));
-    if(c.pursuit_4eyes) lines.push('  フォーアイズ内容：'+c.pursuit_4eyes);
+  if(c.pursuit_judge || (c.pursuit_4eyes&&String(c.pursuit_4eyes).trim())){
+    lines.push('■ 追撃Judgment（担当×課長の協議）');
+    if(c.pursuit_judge) lines.push('  判定：'+c.pursuit_judge+(c.pursuit_judge_date?' （'+c.pursuit_judge_date+'）':''));
+    if(c.pursuit_4eyes&&String(c.pursuit_4eyes).trim()) lines.push('  協議内容（シックスアイズ）：'+c.pursuit_4eyes);
+    lines.push('');
+  }
+  if((c.revisit_4eyes&&String(c.revisit_4eyes).trim())||(c.pursuit_4eyes&&String(c.pursuit_4eyes).trim())){
+    lines.push('※ 上記の協議内容は「担当者と課長が戦略を擦り合わせた社内協議の記録」です。顧客の温度そのものではなく、組織的に検討された前向きな材料として重視し、次の一手・判定の根拠に反映してください。');
     lines.push('');
   }
   lines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -8328,6 +8337,7 @@ function genPrompt(anon){
   if(preset==='next_visit'){
     lines.push('【次回作戦】次の訪問で何をすべきか具体的に教えてください。');
     lines.push('※ 録音要約・訪問履歴・家族構成・前回サマリーをすべて踏まえて回答してください。');
+    lines.push('※ 課長との協議内容（フォーアイズ/シックスアイズ）があれば、その方針を最優先で踏まえて次の一手を設計してください。');
     lines.push('');
     lines.push('① 訪問タイミング（時間帯・曜日の推奨・訪問ペースの観点も含む）');
     lines.push('② 最初の一言・自然な切り出し方');
@@ -8394,6 +8404,7 @@ function genPrompt(anon){
   } else {
     // general（総合分析）
     lines.push('【総合分析】以下4点について具体的かつ実践的に回答してください。');
+    lines.push('※ 課長との協議内容（フォーアイズ/シックスアイズ）が記録されている場合は、組織的に検討された前向き材料として判定根拠に反映してください。');
     lines.push('');
     lines.push('① 追客可否判定（S〜EとXの7段階）');
     lines.push('   S=積極提案　お客様主体で動いている・クロージング射程内（2日に1回〜毎日）');
