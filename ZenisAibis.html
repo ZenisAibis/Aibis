@@ -2256,7 +2256,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.78";
+var APP_VERSION = "v9.79";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -4007,6 +4007,22 @@ function j9AiAxis(c, axisKey){
   if(!r||!(r in J9_RANK_PT)) return null;
   return J9_RANK_PT[r];
 }
+// 顧客訪問テンポ：顧客カードの最終接触からの経過日数を 0..1 に（1ヶ月以内=1.0／2ヶ月=0.7／4ヶ月で0）。顧客数に非依存の平均。顧客0件はnull＝加点なし。 v9.79
+function _j9CustCadence(cards){
+  var cs=(cards||[]).filter(function(c){return c&&c.cust_type==='顧客';});
+  if(!cs.length) return null;
+  var sum=0;
+  cs.forEach(function(c){
+    var d=(typeof lastContactDays==='function')?lastContactDays(c):-1; var s;
+    if(d<0) s=0;
+    else if(d<=30) s=1;
+    else if(d<=60) s=1-(d-30)/30*0.3;
+    else if(d<=120) s=0.7*(120-d)/60;
+    else s=0;
+    sum+=s;
+  });
+  return sum/cs.length;
+}
 // 担当（カード配列）→ 9軸スコア（0-100, 信頼度補正前）と入力信頼度
 function j9Axes(cards){
   cards=(cards||[]).filter(function(c){return c&&c.pursuit_judge!=='X';}); // ×(打ち切り)=削除予定。保有枚数にも軸計算にも数えない
@@ -4134,6 +4150,9 @@ function j9Axes(cards){
     ax.seian=_clip(ax.seian+seB);
     ax.enmusubi=_clip(ax.enmusubi+enB);
   }
+  // 顧客訪問テンポ（担当レベル・顧客数に非依存）→ 信頼に加点（最大15） v9.79
+  var _cvc=_j9CustCadence(cards);
+  if(_cvc!=null) ax.enmusubi=_clip(ax.enmusubi + _cvc*15);
   // 行動：担当レベル（発掘量30件で満点・直近更新率・訪問量）
   // 行動：枚数(発掘量)は最低条件＝ゲート(j9CardCap)で効くので“価値”には入れない。
   // ここでは「実際に動いた率」＝再訪着手率・追撃着手率・直近の動き・訪問総量で評価。
