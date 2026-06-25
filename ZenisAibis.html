@@ -2255,7 +2255,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.58";
+var APP_VERSION = "v9.60";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -5532,8 +5532,8 @@ function _revisitCount(c){ return ((c&&c.revisits)||[]).filter(function(v){ retu
 function _hasPursuitActivity(c){ if(!c) return false; if(c.pursuit_judge) return true; return ((c.pursuits)||[]).some(function(v){ return v&&(v.date||v.content||v.rec||v.appo||v.interviewer); }); }
 // ジャッジ並び替え用：再訪3回まで埋まっているのに追客判定がまだ
 function _jwReady(c){ return !!(c && _revisitCount(c)>=REVISIT_PHASE.times && !c.pursuit_judge); }
-// 再訪並び替え用：初訪内容あり・追撃前（再訪回数0〜3で並べる対象）
-function _rvEligible(c){ return !!(c && !_hasPursuitActivity(c) && String(c.initial_content||'').trim()!==''); }
+// 再訪並び替え用：初訪内容の記入が入口。追撃前のみ。回数=_revisitCount(0〜3)。再訪記録済みだが初訪欄が空のカードも漏らさない v9.60
+function _rvEligible(c){ if(!c||_hasPursuitActivity(c)) return false; return String(c.initial_content||'').trim()!==''||_revisitCount(c)>0; }
 function getSorted() {
   var arr = cards.slice();
   var dir = sortDir[sortKey]==='desc' ? -1 : 1;
