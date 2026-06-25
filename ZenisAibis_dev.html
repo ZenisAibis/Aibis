@@ -270,14 +270,20 @@ body.is-mob #extraAnalysis{grid-template-columns:1fr}
 .mo{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:9500;padding:12px}
 .mo.show{display:flex!important;align-items:center!important;justify-content:center!important}
 .md{background:white;border-radius:8px;padding:20px;max-width:760px;width:100%;max-height:90vh;overflow-y:auto}
-.toast{position:fixed;top:64px;left:50%;transform:translateX(-50%) translateY(-12px);background:linear-gradient(135deg,#1e3a5f,#2c5282);color:white;padding:11px 18px 11px 14px;border-radius:18px;font-size:13px;font-weight:600;opacity:0;transition:opacity 0.3s,transform 0.3s;z-index:9999;pointer-events:none;white-space:normal;max-width:92vw;display:inline-flex;align-items:center;gap:9px;text-align:left;line-height:1.5;box-shadow:0 4px 16px rgba(0,0,0,0.3);letter-spacing:0.3px}
+.toast{position:fixed;top:64px;left:50%;transform:translateX(-50%) translateY(-12px);background:linear-gradient(135deg,#1e3a5f,#2c5282);color:white;padding:11px 18px 11px 14px;border-radius:18px;font-size:13px;font-weight:600;opacity:0;transition:opacity 0.3s,transform 0.3s;z-index:9999;pointer-events:none;white-space:normal;min-width:min(86vw,248px);max-width:92vw;display:inline-flex;align-items:center;gap:9px;text-align:left;line-height:1.5;box-shadow:0 4px 16px rgba(0,0,0,0.3);letter-spacing:0.3px}
 .toast .toast-fairy{position:relative;flex:0 0 auto;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center}
 .toast .toast-fairy::after{content:'';position:absolute;inset:-7px;border-radius:50%;background:radial-gradient(circle,rgba(246,173,85,.55),rgba(246,173,85,0) 70%);z-index:0;animation:abGlow 1.8s ease-in-out infinite}
 .toast .tf-face{position:relative;z-index:1;font-size:20px;line-height:1;display:inline-block;transform-origin:50% 80%;animation:abFloat 1.5s ease-in-out infinite}
 .toast .tf-spark{position:absolute;z-index:1;font-size:9px;animation:abSpark 1.3s ease-in-out infinite}
 .toast .tf-s1{top:-3px;left:-4px}
 .toast .tf-s2{bottom:-3px;right:-4px;animation-delay:.65s}
-.toast .toast-msg{flex:1 1 auto;min-width:0}
+.toast .toast-msg{flex:1 1 auto;min-width:0;word-break:keep-all;overflow-wrap:anywhere}
+/* == 再利用アイコングリッド（初期設定のツール群／将来拡張用フレーム） == */
+.aibis-icongrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:14px 8px;align-items:start;justify-items:center}
+.aibis-icontile{appearance:none;-webkit-appearance:none;background:none;border:none;padding:2px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;font-family:inherit;width:100%}
+.aibis-icontile:active{transform:scale(.94)}
+.aibis-iconbox{width:54px;height:54px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.22);line-height:1.05;overflow:hidden}
+.aibis-iconlabel{font-size:11px;font-weight:700;text-align:center;line-height:1.3}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.show{opacity:1}
 #pwaBanner{display:none;position:fixed;bottom:80px;left:12px;right:12px;background:#1e3a5f;color:white;border-radius:10px;padding:12px 14px;z-index:150;box-shadow:0 4px 12px rgba(0,0,0,0.3)}
@@ -561,6 +567,15 @@ html.pczoom .tabs .tab .ic{font-size:15px}
 
   /* 土地情報の幅バランス：路線価+借地割合=長め / 面積=中 / 間口=短 */
   #secTochi .pc-land-main{ grid-template-columns:1.5fr 1fr 0.6fr !important; }
+}
+/* スマホ(≤768)：構成確定ボタンを左・家族全体バーを右の余白いっぱいに（凡例は下段フル） */
+@media screen and (min-width:381px) and (max-width:768px){
+  #editView .pc-fam-status{ display:grid; grid-template-columns:auto minmax(0,1fr); gap:8px; align-items:center; }
+  #editView .pc-fam-status > div:has(> #famHeadcountBtn){ display:contents !important; }
+  #editView .pc-fam-status #famHeadcountBtn{ order:1; grid-column:1; align-self:stretch; margin:0; }
+  #editView .pc-fam-status > #famSummary{ order:2; grid-column:2; margin:0 !important; }
+  #editView .pc-fam-status > div:has(> #famHeadcountBtn) > div{ order:3; grid-column:1 / -1; }
+  #editView .pc-fam-status:has(> #famSummary[style*="none"]) #famHeadcountBtn{ grid-column:1 / -1; }
 }
 /* 360px前後：家族全体バー＋構成確定ボタンを縦積み（文字切れ回避優先） */
 @media(max-width:380px){
@@ -1161,8 +1176,19 @@ body.is-mob .mob-menu{display:inline-block}
    いずれも PC のみ・DOM順=Tab順一致（order不使用）。スマホ/印刷は非干渉。
    ※ 資産2行・路線価行は Step1.6 のflex対象から除外済み。
    ============================================================ */
+/* 生産緑地：スマホ・PCとも横一列（フォーム半分＋ボタン半分） */
+.ryoku-pair{display:flex;flex-direction:row;gap:4px;align-items:stretch}
+.ryoku-pair select{flex:1 1 0;min-width:0;width:auto}
+.ryoku-pair button{flex:1 1 0;min-width:0;width:auto;border:1.5px solid #2f7a57;background:#2f7a57;color:#fff;border-radius:8px;padding:9px 4px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit;box-sizing:border-box}
+/* 数値＋単位を1つの枠に。数字を入れると単位が表示される（空＝プレースホルダ表示中は隠す） */
+.unit-field{display:flex;align-items:center;gap:3px;border:1px solid #cbd5e0;border-radius:8px;background:#fff;padding:0 11px;box-sizing:border-box}
+.unit-field:focus-within{border-color:#2B6CB0;box-shadow:0 0 0 3px rgba(43,108,176,.16)}
+.unit-field input{border:none !important;background:transparent !important;box-shadow:none !important;flex:1 1 auto;min-width:0;padding:9px 0;min-height:38px}
+.unit-field .usuf{color:#718096;font-size:13px;font-weight:600;flex-shrink:0;white-space:nowrap}
+.unit-field input:placeholder-shown + .usuf{visibility:hidden}
+#editView #secTochi .unit-field input{ width:auto !important; text-align:right !important; text-align-last:right !important; }
 @media screen and (min-width:769px){
-  /* --- C2 資産背景：6項目を 3列×2行 --- */
+  /* --- C2 資産背景：老朽/駐車/自宅(3列) ＋ 規模/想定/生産緑地(3列) --- */
   #editView .pc-asset{
     display:grid;
     grid-template-columns:repeat(3, minmax(0,1fr));
@@ -1172,24 +1198,12 @@ body.is-mob .mob-menu{display:inline-block}
   }
   #editView .pc-asset > div{ display:contents !important; }
   #editView .pc-asset > div > div{ min-width:0; }
-  /* 生産緑地ナビ隠しセルは非表示中は枠を取らない（JSのvisibility:hiddenを読む。空行を作らない） */
-  #editView .pc-asset #ryokuchiBtnCell[style*="hidden"]{ display:none !important; }
-  /* Step E精密化：生産緑地を最右に。DOM順 老朽/駐車/自宅/緑地/規模/想定
-     → 視覚順 老朽/駐車/自宅/土地資産規模/想定/生産緑地（緑地のみorderで後送り） */
-  #editView .pc-asset > div > div:has(> #f_landasset){ order:4; }
-  #editView .pc-asset > div > div:has(> #f_soutei){ order:5; }
-  #editView .pc-asset > div > div:has(#f_ryokuchi){ order:6; }
-  #editView .pc-asset #ryokuchiBtnCell{ order:7; }
-  /* プルダウンはセル幅いっぱい：1行目(接尾辞付き)はflex、2行目(直下select)はwidth:100% */
-  #editView .pc-asset > div:first-child select{
-    width:auto !important;
-    max-width:none !important;
-    flex:1 1 auto !important;
-  }
-  #editView .pc-asset > div:nth-child(2) select{
-    width:100% !important;
-    max-width:none !important;
-  }
+  /* プルダウンはセル幅いっぱい（生産緑地は.ryoku-pairで上書き） */
+  #editView .pc-asset select{ width:100%; max-width:none; }
+  /* 生産緑地：PCはフォーム半分＋ボタン半分で1セル */
+  #editView .pc-asset .ryoku-pair{ flex-direction:row; align-items:stretch; }
+  #editView .pc-asset .ryoku-pair select{ flex:1 1 0; width:auto !important; min-width:0; }
+  #editView .pc-asset .ryoku-pair button{ flex:1 1 0; width:auto; min-width:0; }
 
   /* --- C3 土地情報 主要数値：路線価＋借地割合 / 面積 / 間口（行は既に3列fr、入力欄をセル幅に） --- */
   #secTochi .pc-land-main > div{ min-width:0; }
@@ -1531,9 +1545,9 @@ body.is-mob .mob-menu{display:inline-block}
       </div>
       <div style="font-size:11.5px;color:#718096;margin-bottom:10px">訪問の合間にサッと登録（詳細は後で追記OK）</div>
       <button type="button" id="qaCamBtn" onclick="qaOpenCam()" style="width:100%;margin-bottom:12px;background:#0e4a45;color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer">📷 計画地を撮影（カメラ）</button>
-      <div style="display:grid;grid-template-columns:1fr 96px;gap:8px;margin-bottom:10px">
+      <div style="display:grid;grid-template-columns:1fr 72px 84px;gap:8px;margin-bottom:6px;align-items:end">
         <div>
-          <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">👤 氏名 <span style="color:#c53030">必須</span></label>
+          <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">👤 氏名</label>
           <div style="display:flex;gap:6px;align-items:center">
             <button type="button" class="mic-btn hb" onclick="micStart('qaName',this)" style="flex-shrink:0;margin-top:0">🎤</button>
             <input id="qaName" type="text" placeholder="お客様名" oninput="if(typeof qaRender==='function')qaRender()" style="flex:1;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px;font-family:inherit">
@@ -1546,7 +1560,12 @@ body.is-mob .mob-menu{display:inline-block}
             <option value="老朽">老朽</option><option value="店舗">店舗</option><option value="自宅">自宅</option><option value="雑種地">雑種地</option><option value="都外">都外</option>
           </select>
         </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">&nbsp;</label>
+          <button type="button" id="qaLandBtn" onclick="qaToggleLand()" style="width:100%;box-sizing:border-box;padding:10px 6px;border:1px solid #cbd5e0;border-radius:8px;background:#f7fafc;color:#2d3748;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap">🟫 土地</button>
+        </div>
       </div>
+      <div style="font-size:11px;color:#718096;margin:0 0 10px;white-space:nowrap">※ 土地見込みは🟫土地ボタンを押してね</div>
       <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">🏠 住所（自宅）</label>
       <div style="display:flex;gap:6px;align-items:center;margin-bottom:10px">
         <button type="button" onclick="qaGeo('qaAddr')" style="flex-shrink:0;width:40px;height:40px;border:1px solid #cbd5e0;border-radius:8px;background:#ebf8ff;font-size:16px;cursor:pointer">📍</button>
@@ -1561,16 +1580,15 @@ body.is-mob .mob-menu{display:inline-block}
         <input id="qaPlan" type="text" placeholder="📍🗺で位置、🔢で番地" style="flex:1;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:13px;font-family:inherit">
         <button type="button" onclick="qaTenkeyOpen('qaPlan')" style="flex-shrink:0;width:40px;height:40px;border:1px solid #cbd5e0;border-radius:8px;background:#f7fafc;font-size:16px;cursor:pointer">🔢</button>
       </div>
-      <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">🧠 購買心理ステージ</label>
-      <div id="qaStage" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px"></div>
-      <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">🗣 会話状況（複数可）</label>
-      <div id="qaKaiwa" style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:10px"></div>
-      <div id="qaLockHint" style="display:none;font-size:11px;color:#b7791f;font-weight:700;margin:-4px 0 10px;line-height:1.5"></div>
       <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">📝 計画地備考</label>
       <div style="display:flex;gap:6px;align-items:center;margin-bottom:14px">
         <button type="button" class="mic-btn hb" onclick="micStart('qaKuubi',this)" style="flex-shrink:0;margin-top:0">🎤</button>
         <input id="qaKuubi" type="text" placeholder="例：P空き多い・老朽建物あり・間口広め" style="flex:1;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #cbd5e0;border-radius:8px;font-size:13px;font-family:inherit">
       </div>
+      <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">🧠 購買心理ステージ</label>
+      <div id="qaStage" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px"></div>
+      <label style="display:block;font-size:12px;font-weight:700;color:#4a5568;margin-bottom:4px">🗣 会話状況（複数可）</label>
+      <div id="qaKaiwa" style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:10px"></div>
       <button onclick="qaSave(false)" style="width:100%;background:#38a169;color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer">💾 保存</button>
     </div>
   </div>
@@ -1949,8 +1967,8 @@ body.is-mob .mob-menu{display:inline-block}
       </div>
       <div class="ht" style="margin:-2px 0 10px">※ カードの担当欄に自動入力（スペース不可）<br>※ 「支店」は自動除去されます</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <div><label>自分のメールアドレス</label><input type="email" id="sSelf" placeholder="dt0000001@kentaku.co.jp" oninput="autoSaveSetup()"><p class="ht">「📧 PCへ」で送る宛先</p></div>
-        <div><label>上司のメールアドレス <span class="req">*</span></label><input type="email" id="sMgr" placeholder="to071024@kentaku.co.jp" oninput="autoSaveSetup()"><p class="ht">📧 課長報告の宛先</p></div>
+        <div><label>自分のメールアドレス</label><input type="email" id="sSelf" autocomplete="email" placeholder="dt0000001@kentaku.co.jp" oninput="autoSaveSetup()"><p class="ht">「📧 PCへ」で送る宛先</p></div>
+        <div><label>上司のメールアドレス <span class="req">*</span></label><input type="text" inputmode="email" autocomplete="off" autocapitalize="none" spellcheck="false" id="sMgr" readonly onfocus="this.removeAttribute('readonly')" placeholder="to071024@kentaku.co.jp" oninput="autoSaveSetup()"><p class="ht">📧 課長報告の宛先</p></div>
       </div>
       <div id="staffMailSection" style="display:none;margin-top:10px">
         <details class="setup-acc">
@@ -1982,7 +2000,7 @@ body.is-mob .mob-menu{display:inline-block}
       </div>
       <div id="pwaInstallRow" style="margin-top:10px;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;background:#f7fafc">
         <div style="font-size:12px;font-weight:700;color:#2c5282;margin-bottom:6px">🔗 ホーム画面ショートカット</div>
-        <div id="pwaBtns" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+        <div id="pwaBtns" class="aibis-icongrid"></div>
         <div id="pwaHint" style="font-size:11px;color:#718096;margin-top:6px;line-height:1.55"></div>
       </div>
       <!-- ▼▼ 開発者ツールパネル START（DEV_EMAIL時のみ表示・JSはdev区画と対） ▼▼ -->
@@ -2227,7 +2245,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.34dev";
+var APP_VERSION = "v9.56dev";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -2416,7 +2434,7 @@ var uNick = '';
 var uHand = 'left';
 var fHandle = null;
 var sortKey = 'lv'; // lv=最新, ad=住所, st=段階, dt=初訪
-var sortDir = { lv:'asc', ad:'asc', st:'desc', dt:'desc' };
+var sortDir = { lv:'asc', ad:'asc', st:'asc', dt:'asc' };
 
 var isMob = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 try{ if(!isMob && document.documentElement){ document.documentElement.classList.add('pczoom'); } }catch(_e){}
@@ -3096,19 +3114,28 @@ function pwaShortcut(){
             : '🔗 ショートカットの作り方（PC）<br><br>ブラウザの <b>⋮メニュー</b> →「保存して共有」→「<b>ショートカットを作成</b>」。');
   if(window.aibisAlert) aibisAlert(msg); else alert(msg.replace(/<[^>]+>/g,''));
 }
+function camShortcut(){
+  var msg='🔗 アイビスカメラもホーム画面に追加できます<br><br>OKを押すとカメラ画面へ移動します。<br>そのあとブラウザ右上の <b>⋮メニュー</b> →「<b>ホーム画面に追加</b>」で、カメラ専用アイコンを作れます。<br><br><button class="zfa-ok" onclick="location.href=\'AibisCam.html\'">OK（カメラへ）</button>';
+  if(window.aibisAlert) aibisAlert(msg); else { if(confirm('アイビスカメラへ移動しますか？')) location.href='AibisCam.html'; }
+}
+// 再利用タイル生成：アイコン箱(bg色)＋ラベル。将来ツールを増やすときは tiles.push(aibisIconTile(...)) するだけ。
+function aibisIconTile(onclk,iconInner,bg,label,col){
+  return '<button type="button" class="aibis-icontile" onclick="'+onclk+'">'
+    +'<span class="aibis-iconbox" style="background:'+bg+'">'+iconInner+'</span>'
+    +'<span class="aibis-iconlabel" style="color:'+(col||'#4a5568')+'">'+label+'</span></button>';
+}
 function _pwaSyncBtns(){
   var host=document.getElementById('pwaBtns'); if(!host) return;
-  var hint=document.getElementById('pwaHint'); var html='';
-  if(isMob){
-    html+='<button type="button" class="bp" onclick="pwaShortcut()" style="font-size:12px;padding:8px 12px">🔗 ショートカット作成の手順</button>';
-    if(hint) hint.innerHTML='ブラウザの <b>⋮</b> →「<b>ホーム画面に追加</b>」で作成。';
-  } else {
-    html+='<button type="button" class="bp" onclick="pwaShortcut()" style="font-size:12px;padding:8px 12px">🔗 ショートカット作成の手順</button>';
-    if(hint) hint.innerHTML='ブラウザのメニューから、デスクトップにショートカットを作成できます。';
-  }
-  host.innerHTML=html;
+  var hint=document.getElementById('pwaHint');
+  var icHome='<b style="color:#fff;font-size:21px;font-weight:900">z.</b><b style="color:#d97706;font-size:10px;font-weight:900;letter-spacing:.5px">AIBIS</b>';
+  var icCam='<span style="font-size:27px">📷</span>';
+  var tiles=[ aibisIconTile('pwaShortcut()',icHome,'#1a365d','本体を追加','#2c5282') ];
+  if(isMob) tiles.push(aibisIconTile('camShortcut()',icCam,'#0e4a45','カメラを追加','#0e4a45'));
+  // ★将来ツール追加例： tiles.push(aibisIconTile('openXxx()','🧰','#553c9a','ツール名','#553c9a'));
+  host.innerHTML=tiles.join('');
+  if(hint) hint.innerHTML=isMob?'アイコンをタップ → ホーム画面への追加方法が出ます。本体とカメラ、それぞれ置けます。':'アイコンをタップ → デスクトップへの追加方法が出ます。';
 }
-window.pwaShortcut=pwaShortcut; window.pwaInstall=pwaShortcut; window._pwaSyncBtns=_pwaSyncBtns;
+window.pwaShortcut=pwaShortcut; window.pwaInstall=pwaShortcut; window._pwaSyncBtns=_pwaSyncBtns; window.camShortcut=camShortcut; window.aibisIconTile=aibisIconTile;
 window.addEventListener('load',function(){ try{ _pwaSyncBtns(); }catch(e){} });
 function autoSaveSetup(){
   // フォーム入力を即時LocalStorageに仮保存
@@ -3140,7 +3167,7 @@ function renderStaffMailRows(){
   box.innerHTML = (staffMails&&staffMails.length) ? staffMails.map(function(s,i){
     return '<div style="display:grid;grid-template-columns:1fr 1.4fr auto;gap:6px;margin-bottom:6px;align-items:center">'
       +'<input type="text" placeholder="担当者名" value="'+eAttr(s.name||'')+'" oninput="onStaffMailInput('+i+',\'name\',this.value)" style="font-size:13px">'
-      +'<input type="email" inputmode="email" autocapitalize="none" spellcheck="false" placeholder="メールアドレス" value="'+eAttr(s.email||'')+'" oninput="onStaffMailInput('+i+',\'email\',this.value)" style="font-size:13px">'
+      +'<input type="text" inputmode="email" autocomplete="off" autocapitalize="none" spellcheck="false" readonly onfocus="this.removeAttribute(\'readonly\')" placeholder="メールアドレス" value="'+eAttr(s.email||'')+'" oninput="onStaffMailInput('+i+',\'email\',this.value)" style="font-size:13px">'
       +'<button type="button" onclick="removeStaffMailRow('+i+')" title="削除" style="background:#fff5f5;border:1px solid #feb2b2;color:#c53030;border-radius:6px;padding:6px 9px;font-size:12px;cursor:pointer;font-family:inherit">✕</button>'
       +'</div>';
   }).join('') : '<p class="ht" style="margin:4px 0">まだ登録がありません。「＋ 担当者を追加」または下の候補から追加してね。</p>';
@@ -5241,6 +5268,14 @@ function getLastVD(c) {
   if(c.discovery_date) dates.push(c.discovery_date);
   return dates.length ? dates.sort(function(a,b){return b.localeCompare(a);})[0] : '';
 }
+// 同日タイブレーク用：カードの「最後に編集した時刻」。updated_at→created_at→id埋込ts→0
+function _cTs(c){
+  if(!c) return 0;
+  if(c.updated_at){ var u=new Date(c.updated_at).getTime(); if(!isNaN(u)) return u; }
+  if(c.created_at){ var t=new Date(c.created_at).getTime(); if(!isNaN(t)) return t; }
+  var m=/^c_(\d+)/.exec(c.id||''); if(m) return +m[1];
+  return 0;
+}
 function _han(s){ return s?String(s).replace(/[０-９]/g,function(d){return String.fromCharCode(d.charCodeAt(0)-0xFEE0);}):s; }
 function cleanAddr(s){ if(!s) return s; var a=String(s); a=a.replace(/〒\s*\d{3}[-－ー‐]?\d{4}/g,''); a=a.replace(/〒/g,''); a=a.replace(/^[\s　]*\d{3}[-－ー‐]?\d{4}(?!\d)/,''); a=a.replace(/[\s　]+/g,''); return a.trim(); }
 function _shortAddr(a){ if(!a) return ''; var i=a.indexOf('丁目'); if(i>=0) return a.slice(0,i+2); return a.replace(/[0-9０-９]+[‐ー\-－][0-9０-９]+.*$/,'').trim()||a; }
@@ -5485,11 +5520,15 @@ function getKaiwaLevel(c){
 }
 function _revisitCount(c){ return ((c&&c.revisits)||[]).filter(function(v){ return v&&(v.date||v.content||v.rec); }).length; }
 function _hasPursuitActivity(c){ if(!c) return false; if(c.pursuit_judge) return true; return ((c.pursuits)||[]).some(function(v){ return v&&(v.date||v.content||v.rec||v.appo||v.interviewer); }); }
+// ジャッジ並び替え用：再訪3回まで埋まっているのに追客判定がまだ
+function _jwReady(c){ return !!(c && _revisitCount(c)>=REVISIT_PHASE.times && !c.pursuit_judge); }
+// 再訪並び替え用：初訪内容あり・追撃前（再訪回数0〜3で並べる対象）
+function _rvEligible(c){ return !!(c && !_hasPursuitActivity(c) && String(c.initial_content||'').trim()!==''); }
 function getSorted() {
   var arr = cards.slice();
   var dir = sortDir[sortKey]==='desc' ? -1 : 1;
   if (sortKey==='lv') {
-    arr.sort(function(a,b){ return dir * getLastVD(b).localeCompare(getLastVD(a)); });
+    arr.sort(function(a,b){ var d=dir * getLastVD(b).localeCompare(getLastVD(a)); return d!==0?d:(_cTs(b)-_cTs(a)); });
   } else if (sortKey==='ad') {
     var adDir = sortDir['ad']==='desc' ? -1 : 1;
     arr.sort(function(a,b){ return adDir * getArea(a.address||'').localeCompare(getArea(b.address||''),'ja'); });
@@ -5512,11 +5551,11 @@ function getSorted() {
       return dir * (pa - pb);
     });
   } else if (sortKey==='rv') {
-    arr = arr.filter(function(c){ return !_hasPursuitActivity(c); });
-    arr.sort(function(a,b){ return dir * (_revisitCount(b) - _revisitCount(a)); });
+    arr = arr.filter(_rvEligible);
+    arr.sort(function(a,b){ var d=dir * (_revisitCount(b) - _revisitCount(a)); return d!==0?d:(_cTs(b)-_cTs(a)); });
   } else if (sortKey==='jw') {
-    arr = arr.filter(_judgeMissing);  // 再訪を進めた（=フェーズ終了）のにランク未判定
-    arr.sort(function(a,b){ return getLastVD(b).localeCompare(getLastVD(a)); }); // 更新の最新順
+    arr = arr.filter(_jwReady);  // 再訪3回済み・追客判定まだ
+    arr.sort(function(a,b){ return dir * (_cTs(a) - _cTs(b)); }); // 更新が古い（放置が長い）順が既定
   } else if (sortKey==='pace') {
     arr.sort(function(a,b){
       var ra=calcPaceOverrate(a), rb=calcPaceOverrate(b);
@@ -5531,11 +5570,11 @@ function getSorted() {
     var _dk=function(c){ return c.discovery_date || '9999-99-99'; };
     arr.sort(function(a,b){ return _dk(a).localeCompare(_dk(b)); }); // 古い発掘順
   } else { // dt
-    arr.sort(function(a,b){ return dir * (b.discovery_date||'').localeCompare(a.discovery_date||''); });
+    arr.sort(function(a,b){ var d=dir * (b.discovery_date||'').localeCompare(a.discovery_date||''); return d!==0?d:(_cTs(b)-_cTs(a)); });
   }
   return arr;
 }
-var PAGE_SIZE=10;
+var PAGE_SIZE=20;
 var currentPage=1;
 
 var _searchTimer=null;
@@ -6630,7 +6669,7 @@ function renderRevisits(){
         +'<span style="display:inline-flex;align-items:center;gap:4px"><label style="margin:0;font-size:11px;color:#718096;white-space:nowrap">アポ</label><select data-f="appo" style="width:auto;min-height:32px;padding:4px 4px;font-size:13px"><option value="">-</option><option value="アポ有り"'+(v.appo==='アポ有り'?' selected':'')+'>アポ有り</option><option value="仮アポ"'+(v.appo==='仮アポ'?' selected':'')+'>仮アポ</option><option value="アポ無し"'+(v.appo==='アポ無し'?' selected':'')+'>アポ無し</option></select></span>'
         +_doukouBtnHTML(v.visit_type)
       +'</div>'
-      +'<textarea id="'+rid+'_c" data-f="content" rows="3" placeholder="投げかけ→相手の反応を書く。例：税金の話→身を乗り出した。断り・他社・税額・時期の発言は「」でそのまま">'+e(v.content||'')+'</textarea>'
+      +'<textarea id="'+rid+'_c" data-f="content" rows="4" placeholder="When（いつ） Where（どこで） Who（誰が） What（何を） Why（なぜ） How（どうする）&#10;テスクロに対し、相手の反応を書く。">'+e(v.content||'')+'</textarea>'
       +'<div style="margin-top:6px;padding:7px 10px;background:#f0fff4;border:1px solid #c6f6d5;border-radius:6px">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px"><label style="margin:0;font-size:12px;font-weight:600;color:#276749">🎙 録音要約・メール等貼り付け</label><button type="button" onclick="clearStrategyField(\''+rid+'_rec\')" style="background:none;border:none;color:#c53030;font-size:15px;padding:0 2px;cursor:pointer;font-family:inherit;flex-shrink:0;line-height:1">🗑</button></div>'
       +'<textarea id="'+rid+'_rec" data-f="rec" rows="2" placeholder="録音要約・メールなどを貼り付け" style="font-size:13px;background:transparent;border-color:#c6f6d5">'+e(v.rec||'')+'</textarea>'
@@ -7258,6 +7297,7 @@ function openPrintModal(){
     if(cardMode) cardMode.style.display='flex';
     if(title) title.textContent='🖨 印刷する内容を選択';
     collectForm();
+    try{ toggleStrategyThemes(); }catch(e){}
   }
   document.getElementById('printModal').classList.add('show');
 }
@@ -7309,6 +7349,23 @@ function buildPrintCSS(){
     +'.jsec{border:1pt solid #553c9a;border-radius:2mm;padding:2mm 3mm;background:#faf5ff}'
     +'.jsec-title{font-size:10pt;font-weight:800;color:#553c9a;margin-bottom:1.5mm}';
 }
+var STRAT_THEMES=[['general','総合分析'],['next_visit','次回作戦'],['motivation','動機引揚'],['personality','性格応対'],['objection','反論対応'],['hearing','聞取補充'],['training','会話訓練'],['inheritance','相続シナリオ']];
+function toggleStrategyThemes(){
+  var box=document.getElementById('printStrategyThemes');
+  var chk=document.getElementById('printStrategy');
+  if(!box||!chk) return;
+  if(!chk.checked){ box.style.display='none'; box.innerHTML=''; return; }
+  var c=(typeof cur!=='undefined'&&cur)?cur:{};
+  var rows=STRAT_THEMES.filter(function(t){ return String(c['ai_'+t[0]]||'').trim(); });
+  if(rows.length===0){
+    box.innerHTML='<div style="font-size:11px;color:#a0aec0;padding:4px 2px">貼り付け済みのテーマがありません</div>';
+  } else {
+    box.innerHTML='<div style="font-size:11px;color:#975a16;font-weight:700;margin-bottom:4px">印刷するテーマ（複数選択可）</div>'
+      +rows.map(function(t){ return '<label style="display:flex;align-items:center;gap:8px;padding:5px 4px;font-size:12.5px;color:#2d3748;cursor:pointer"><input type="checkbox" class="pmTheme" value="'+t[0]+'" checked style="width:16px;height:16px;cursor:pointer;flex-shrink:0">'+t[1]+'</label>'; }).join('');
+  }
+  box.style.display='block';
+}
+window.toggleStrategyThemes=toggleStrategyThemes;
 function execPrint(){
   var printCard=document.getElementById('printCard').checked;
   var printFamily=document.getElementById('printFamily').checked;
@@ -7385,7 +7442,11 @@ function execPrint(){
       if(hasPursuit){ addPage(buildPursuitHTML(c)); }
     }
     if(printFamily){ addPage(buildFamilyHTML(c)); }
-    if(printStrategy){ addPage(buildStrategyHTML(c,{only:"general"})); }
+    if(printStrategy){
+      var _tk=[].slice.call(document.querySelectorAll('#printStrategyThemes .pmTheme:checked')).map(function(x){return x.value;});
+      if(_tk.length===0){ _tk=['general']; }
+      _tk.forEach(function(k){ addPage(buildStrategyHTML(c,{only:k})); });
+    }
   }
 
   html+='</body></html>';
@@ -9566,7 +9627,7 @@ function editGoList(){
 }
 window.editGoList=editGoList;
 window.addEventListener('popstate',function(ev){
-  var _gov=document.getElementById('geoMapOv'); if(_gov && _gov.classList.contains('show')){ _gov.classList.remove('show'); return; } // 地図オーバーレイは閉じるだけ（土台のカード/光速を維持）
+  var _gov=document.getElementById('geoMapOv'); if(_gov && _gov.classList.contains('show')){ _gov.classList.remove('show'); try{ if(typeof curId!=='undefined' && curId){ history.pushState({zv:'edit',id:curId},''); } }catch(e){} return; } // 地図オーバーレイは閉じるだけ（土台のカード/光速を維持）
   try{ autoCommitEdit(); }catch(_e){}
   var st=ev.state||{}; var zv=st.zv||'list';
   _silent=true;
@@ -10199,19 +10260,36 @@ window.openSelfCheck=openSelfCheck;
 // ===== ⚡ 光速入力モード（スマホ専用） =====
 var QA_STAGES=['0:面識','1:注意','2:興味','3:連想'];
 var QA_KAIWA=['ピンポン','立ち話','玄関内','連れ出し','上り込み'];
-var qaStageSel=-1, qaKaiwaSel=[];
+var qaStageSel=-1, qaKaiwaSel=[], qaLandMode=false;
 function openQuickAdd(){
   if(!isMob) return; // スマホ専用（PCは通常の新規カードを使用）
-  qaStageSel=-1; qaKaiwaSel=[];
+  qaStageSel=-1; qaKaiwaSel=[]; qaLandMode=false;
   ['qaName','qaAddr','qaPlan','qaKuubi'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  var _nm=document.getElementById('qaName'); if(_nm) _nm.readOnly=false;
   var gj=document.getElementById('qaGenjo'); if(gj) gj.value='';
   qaRender();
   var ov=document.getElementById('quickAddOv'); if(ov) ov.style.display='flex';
 }
 function closeQuickAdd(){ var ov=document.getElementById('quickAddOv'); if(ov) ov.style.display='none'; }
-function _qaLocked(){ var el=document.getElementById('qaName'); var n=el?(el.value||'').trim():''; return n===''||n==='土地見込み'; }
+function _qaLocked(){ var el=document.getElementById('qaName'); var n=el?(el.value||'').trim():''; return qaLandMode || n===''||n==='土地見込み'; }
+function qaToggleLand(){
+  qaLandMode=!qaLandMode;
+  var nm=document.getElementById('qaName');
+  if(qaLandMode){
+    qaStageSel=-1; qaKaiwaSel=[]; // 土地見込みでは心理・会話は不要 → 選択済みでも解除
+    if(nm && (nm.value||'').trim()===''){ nm.value='土地見込み'; } // 空欄のときだけ自動命名。入力済みの名前は保持
+    if(nm){ nm.readOnly=true; }
+  } else {
+    if(nm && (nm.value||'').trim()==='土地見込み'){ nm.value=''; } // 自動命名のみ解除。入力名は残す
+    if(nm){ nm.readOnly=false; }
+  }
+  qaRender();
+}
 function qaRender(){
-  var lk=_qaLocked(); var dis=lk?'opacity:.4;pointer-events:none;':'';
+  var lk=_qaLocked(); var dis=lk?'opacity:.5;':'';
+  var lb=document.getElementById('qaLandBtn');
+  if(lb){ if(qaLandMode){ lb.style.background='#8a5a2b'; lb.style.color='#fff'; lb.style.borderColor='#8a5a2b'; } else { lb.style.background='#f7fafc'; lb.style.color='#2d3748'; lb.style.borderColor='#cbd5e0'; } }
+  var nm=document.getElementById('qaName'); if(nm){ nm.style.background=qaLandMode?'#edf2f7':'#fff'; }
   var st=document.getElementById('qaStage');
   if(st) st.innerHTML=QA_STAGES.map(function(s,i){
     var on=(qaStageSel===i);
@@ -10222,11 +10300,10 @@ function qaRender(){
     var on=qaKaiwaSel.indexOf(k)>=0;
     return '<button onclick="qaToggleKaiwa(\''+k+'\')" style="'+dis+'border:1px solid '+(on?'#276749':'#cbd5e0')+';background:'+(on?'#276749':'#f7fafc')+';color:'+(on?'#fff':'#2d3748')+';border-radius:7px;padding:8px 1px;font-size:10.5px;font-weight:'+(on?'700':'500')+';font-family:inherit;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+k+'</button>';
   }).join('');
-  var h=document.getElementById('qaLockHint');
-  if(h){ if(lk){ var _el=document.getElementById('qaName'); var _n=_el?(_el.value||'').trim():''; h.textContent=(_n==='土地見込み')?'🗺 会話を交わせたら心理・会話を入力できます':'✏️ お客様名を入れると入力できます'; h.style.display='block'; } else h.style.display='none'; }
 }
-function qaSetStage(i){ if(_qaLocked())return; qaStageSel=(qaStageSel===i?-1:i); qaRender(); }
-function qaToggleKaiwa(k){ if(_qaLocked())return; var p=qaKaiwaSel.indexOf(k); if(p>=0) qaKaiwaSel.splice(p,1); else qaKaiwaSel.push(k); qaRender(); }
+function _qaLockMsg(){ toast(qaLandMode?'🟫 土地見込みでは、\n心理・会話は使いません':'👤 お名前を入力するか、\n🟫 土地ボタンを押してね'); }
+function qaSetStage(i){ if(_qaLocked()){ _qaLockMsg(); return; } qaStageSel=(qaStageSel===i?-1:i); qaRender(); }
+function qaToggleKaiwa(k){ if(_qaLocked()){ _qaLockMsg(); return; } var p=qaKaiwaSel.indexOf(k); if(p>=0) qaKaiwaSel.splice(p,1); else qaKaiwaSel.push(k); qaRender(); }
 function _focusNoKb(el){
   if(!el) return;
   try{
@@ -10304,6 +10381,7 @@ function qaTkKey(k){
   qaTkPaint();
 }
 window.openQuickAdd=openQuickAdd; window.closeQuickAdd=closeQuickAdd; window.qaSetStage=qaSetStage; window.qaToggleKaiwa=qaToggleKaiwa; window.qaSave=qaSave;
+window.qaRender=qaRender; window.qaToggleLand=qaToggleLand;
 window.qaGeo=qaGeo; window.qaTenkeyOpen=qaTenkeyOpen; window.qaTenkeyClose=qaTenkeyClose; window.qaTkKey=qaTkKey;
 /* ===== 光速入力 → カメラ連携（計画地の撮影＋住所反映＋写真紐付け） ===== */
 var qaPendingPhotoSet=null; // カメラから戻ってきた写真データID（保存時にこのカードへ紐付け）
@@ -11113,6 +11191,7 @@ window.toast=toast; window.disBan=disBan; window.closePwa=closePwa;
 // 写真/インボックス用スクリプト(別script)から本体内部を参照できるよう公開
 window.isMob=isMob; window.e=e;
 window.getLastVD=getLastVD; window.getArea=getArea; window.calcScore=calcScore; window.calcPaceOverrate=calcPaceOverrate; window._judgeMissing=_judgeMissing; window._hasPursuitActivity=_hasPursuitActivity; window._revisitCount=_revisitCount;
+window._cTs=_cTs; window._rvEligible=_rvEligible; window._jwReady=_jwReady;
 window.mkBlank=mkBlank; window.doSaveCards=doSaveCards; window.renderCards=renderCards; window._stageUpLog=_stageUpLog;
 try{ Object.defineProperty(window,'cards',{configurable:true,get:function(){return cards;}}); }catch(_x){}
 try{ Object.defineProperty(window,'curId',{configurable:true,get:function(){return curId;}}); }catch(_x){}
@@ -11243,7 +11322,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <!-- 中段：TEL・メアド -->
       <div class="mk-row" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:8px">
         <div class="mk-tel"><label>TEL</label><input type="tel" id="f_tel" inputmode="numeric" placeholder="ハイフン無し" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
-        <div class="mk-email"><label>メールアドレス</label><div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap"><input type="email" inputmode="email" autocapitalize="none" autocomplete="off" spellcheck="false" id="f_email_local" placeholder="ID" style="flex:1;min-width:70px"><span style="color:#718096;flex-shrink:0">@</span><select id="f_email_domain" onchange="onEmailDomainChange()" style="width:108px;min-width:0;flex-shrink:0"><option value="gmail.com">gmail.com</option><option value="yahoo.co.jp">yahoo.co.jp</option><option value="icloud.com">icloud.com</option><option value="docomo.ne.jp">docomo.ne.jp</option><option value="ezweb.ne.jp">ezweb.ne.jp(au)</option><option value="au.com">au.com</option><option value="softbank.ne.jp">softbank.ne.jp</option><option value="i.softbank.jp">i.softbank.jp</option><option value="outlook.jp">outlook.jp</option><option value="hotmail.com">hotmail.com</option><option value="ybb.ne.jp">ybb.ne.jp</option><option value="__custom__">その他(入力)</option></select><input type="text" inputmode="url" autocapitalize="none" autocomplete="off" spellcheck="false" id="f_email_domain_custom" placeholder="ドメイン" style="display:none;width:auto;min-width:110px;flex-shrink:0"></div></div>
+        <div class="mk-email"><label>メールアドレス</label><div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap"><input type="text" inputmode="email" autocapitalize="none" autocomplete="off" spellcheck="false" id="f_email_local" placeholder="ID" style="flex:1;min-width:70px"><span style="color:#718096;flex-shrink:0">@</span><select id="f_email_domain" onchange="onEmailDomainChange()" style="width:108px;min-width:0;flex-shrink:0"><option value="gmail.com">gmail.com</option><option value="yahoo.co.jp">yahoo.co.jp</option><option value="icloud.com">icloud.com</option><option value="docomo.ne.jp">docomo.ne.jp</option><option value="ezweb.ne.jp">ezweb.ne.jp(au)</option><option value="au.com">au.com</option><option value="softbank.ne.jp">softbank.ne.jp</option><option value="i.softbank.jp">i.softbank.jp</option><option value="outlook.jp">outlook.jp</option><option value="hotmail.com">hotmail.com</option><option value="ybb.ne.jp">ybb.ne.jp</option><option value="__custom__">その他(入力)</option></select><input type="text" inputmode="url" autocapitalize="none" autocomplete="off" spellcheck="false" id="f_email_domain_custom" placeholder="ドメイン" style="display:none;width:auto;min-width:110px;flex-shrink:0"></div></div>
       </div>
       </div>
       <!-- 下段：住所・計画地 + 地図ボタン -->
@@ -11380,6 +11459,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
                 <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:50%;background:#38a169;display:inline-block"></span>前向</span>
                 <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:50%;background:#e53e3e;display:inline-block"></span>否定</span>
                 <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:50%;background:#fff;border:1px solid #aaa;display:inline-block"></span>不明</span>
+                <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:50%;background:#ebf8ff;border:1.5px solid #3182ce;display:inline-block"></span>KP</span>
               </div>
               <div style="display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center">
                 <span style="font-weight:700;color:#4a5568">居住</span>
@@ -11389,7 +11469,6 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
                 <span style="color:#cbd5e0">｜</span>
                 <span style="display:inline-flex;align-items:center;gap:3px"><span style="color:#c53030;font-weight:700">★</span>所有者</span>
                 <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:50%;background:#fff;border:1.5px solid #c53030;display:inline-block"></span>面談済</span>
-                <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:50%;background:#ebf8ff;border:1.5px solid #3182ce;display:inline-block"></span>KP</span>
               </div>
             </div>
           </div>
@@ -11411,25 +11490,21 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
     <div class="sec">
       <div class="stitle">資産背景</div>
       <div class="pc-asset">
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
         <div>
           <label>老朽賃貸</label>
-          <div style="display:flex;gap:3px;align-items:center"><select id="f_oldrent" style="flex:1"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="5以上">5以上</option></select><span style="font-size:11px;color:#718096;flex-shrink:0">棟</span></div>
+          <select id="f_oldrent" style="width:100%"><option value="">-</option><option value="1">1棟</option><option value="2">2棟</option><option value="3">3棟</option><option value="4">4棟</option><option value="5">5棟</option><option value="5以上">5棟以上</option></select>
         </div>
         <div>
           <label>駐車場</label>
-          <div style="display:flex;gap:3px;align-items:center"><select id="f_parking" style="flex:1"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="5以上">5以上</option></select><span style="font-size:11px;color:#718096;flex-shrink:0">ヵ所</span></div>
+          <select id="f_parking" style="width:100%"><option value="">-</option><option value="1">1ヵ所</option><option value="2">2ヵ所</option><option value="3">3ヵ所</option><option value="4">4ヵ所</option><option value="5">5ヵ所</option><option value="5以上">5ヵ所以上</option></select>
         </div>
         <div>
           <label>自宅</label>
-          <div style="display:flex;gap:3px;align-items:center"><select id="f_jitaku" style="flex:1"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="5以上">5以上</option></select><span style="font-size:11px;color:#718096;flex-shrink:0">軒</span></div>
-        </div>
-        <div>
-          <label>生産緑地</label>
-          <div style="display:flex;gap:3px;align-items:center"><select id="f_ryokuchi" style="flex:1" onchange="updateRyokuchiBtn()"><option value="">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="5以上">5以上</option></select><span style="font-size:11px;color:#718096;flex-shrink:0">枚</span></div>
+          <select id="f_jitaku" style="width:100%"><option value="">-</option><option value="1">1軒</option><option value="2">2軒</option><option value="3">3軒</option><option value="4">4軒</option><option value="5">5軒</option><option value="5以上">5軒以上</option></select>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:6px;margin-top:8px;align-items:end">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px;align-items:end">
         <div>
           <label>土地資産規模</label>
           <select id="f_landasset"><option value="">未確認</option><option value="1億以下">1億以下</option><option value="3億以下">3億以下</option><option value="5億以下">5億以下</option><option value="10億未満">10億未満</option><option value="10億以上">10億以上</option></select>
@@ -11438,7 +11513,13 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <label>想定</label>
           <select id="f_soutei"><option value="">-</option><option value="相続">相続</option><option value="承継">承継</option><option value="収支">収支</option><option value="売却">売却</option><option value="緑地解除">緑地解除</option><option value="信託">信託</option></select>
         </div>
-        <div id="ryokuchiBtnCell" style="visibility:hidden"><button type="button" onclick="openRyokuchiNavi()" style="display:block;width:100%;border:1.5px solid #2f7a57;background:#2f7a57;color:#fff;border-radius:8px;padding:9px 10px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap">🌿 生産緑地</button></div>
+        <div>
+          <label>生産緑地</label>
+          <div class="ryoku-pair">
+            <select id="f_ryokuchi" onchange="updateRyokuchiBtn()"><option value="">-</option><option value="1">1枚</option><option value="2">2枚</option><option value="3">3枚</option><option value="4">4枚</option><option value="5">5枚</option><option value="5以上">5枚以上</option></select>
+            <button type="button" id="ryokuchiBtn" onclick="openRyokuchiNavi()" style="display:none">🌿緑地</button>
+          </div>
+        </div>
       </div>
       </div>
     </div>
@@ -11473,11 +11554,11 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         </div>
         <div>
           <label class="pc-area-label">面積<span id="tsuboDisp" style="font-size:11px;color:#64748b;font-weight:600;white-space:nowrap">- 坪</span></label>
-          <div style="display:flex;gap:4px;align-items:center">
-            <input type="number" id="f_m2" placeholder="㎡" style="flex:1" inputmode="numeric" pattern="[0-9]*">
+          <div class="unit-field">
+            <input type="number" id="f_m2" placeholder="例:240" inputmode="numeric" pattern="[0-9]*"><span class="usuf">㎡</span>
           </div>
         </div>
-        <div><label>間口（m）</label><input type="number" id="f_maguchi" placeholder="12" inputmode="numeric" pattern="[0-9]*" style="width:100%"></div>
+        <div><label>間口</label><div class="unit-field"><input type="number" id="f_maguchi" placeholder="12" inputmode="numeric" pattern="[0-9]*"><span class="usuf">m</span></div></div>
       </div>
       <div class="pc-land-2grid">
       <div class="pc-road-left">
@@ -11611,7 +11692,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <button type="button" class="mic-btn hb" onclick="micStart('f_content',this)" style="margin-top:0;flex-shrink:0">🎤</button>
         <div class="stitle" style="margin-bottom:0">初訪内容（見込み候補だと判断した理由）<span class="req">*</span></div>
       </div>
-      <textarea id="f_content" rows="5" placeholder="相手の反応を書く。例：相続の話→「税理士に聞かないと」と真顔。発言は「」でそのまま"></textarea>
+      <textarea id="f_content" rows="5" placeholder="When（いつ） Where（どこで） Who（誰が） What（何を） Why（なぜ） How（どうする）&#10;テスクロに対し、相手の反応を書く。"></textarea>
       <div class="no-print" style="margin-top:8px;padding:8px 10px;background:#f0fff4;border:1px solid #c6f6d5;border-radius:6px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><label style="margin:0;font-size:12px;font-weight:600;color:#276749">🎙 録音要約・メール等貼り付け</label><button type="button" onclick="clearStrategyField('f_content_rec')" style="background:none;border:none;color:#c53030;font-size:15px;padding:0 2px;cursor:pointer;font-family:inherit;flex-shrink:0;line-height:1">🗑</button></div>
         <textarea id="f_content_rec" rows="3" placeholder="録音要約・メールなどを貼り付け" style="font-size:13px;background:transparent;border-color:#c6f6d5"></textarea>
@@ -11804,7 +11885,6 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <button type="button" style="padding:11px;font-size:13px;background:#2d3748;color:white;border:none;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600" onclick="copyPromptAnon()">🤖 分析用に抽出</button>
       <button type="button" style="padding:11px;font-size:13px;background:#553c9a;color:white;border:none;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600" onclick="promptToFile()">📎 ファイルで抽出</button>
       <button type="button" style="grid-column:1/3;padding:11px;font-size:13px;background:#0078d4;color:white;border:none;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:500" onclick="openCopilot()">🤖 AI分析</button>
-      <button type="button" class="no-print" style="grid-column:1/3;padding:11px;font-size:13px;background:#2c5282;color:white;border:none;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600" onclick="printStrategyTheme()">🖨 このテーマを印刷</button>
     </div>
     <div id="strategyTabs">
       <div id="st_general" class="st-panel">
@@ -11981,24 +12061,21 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       </div>
     </div>
     <div style="font-size:10.5px;color:#718096;margin:-4px 0 8px 2px">※「兄／弟／姉／妹」は世帯主から見た続柄です</div>
-    <!-- 3行目：面談済・所有者・KP -->
-    <div class="fam-grid3" style="margin-bottom:6px">
-      <button type="button" class="fam-fbtn" id="famFMet" onclick="famToggleFlag('met')">面談済</button>
-      <button type="button" class="fam-fbtn" id="famFOwner" onclick="famToggleFlag('owner')">☆所有者</button>
+    <!-- 意向：前向き・否定・不明・キーパーソン（4個） -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;margin-bottom:6px">
+      <button type="button" class="fam-tbtn" id="famSPos" onclick="famSetStance('pos')"><div class="fdot" style="background:#38a169"></div>前向き</button>
+      <button type="button" class="fam-tbtn" id="famSNeg" onclick="famSetStance('neg')"><div class="fdot" style="background:#e53e3e"></div>否定</button>
+      <button type="button" class="fam-tbtn fa-unk" id="famSUnk" onclick="famSetStance('unk')"><div class="fdot" style="background:white;border:1px solid #cbd5e0"></div>不明</button>
       <button type="button" class="fam-fbtn" id="famFKp" onclick="famToggleFlag('kp')">KP</button>
     </div>
-    <!-- 4行目：スタンス -->
-    <div class="fam-grid3" style="margin-bottom:6px">
-      <button type="button" class="fam-tbtn" id="famSPos" onclick="famSetStance('pos')"><div class="fdot" style="background:#38a169"></div>ポジティブ</button>
-      <button type="button" class="fam-tbtn" id="famSNeg" onclick="famSetStance('neg')"><div class="fdot" style="background:#e53e3e"></div>ネガティブ</button>
-      <button type="button" class="fam-tbtn fa-unk" id="famSUnk" onclick="famSetStance('unk')"><div class="fdot" style="background:white;border:1px solid #cbd5e0"></div>不明</button>
-    </div>
-    <!-- 5行目：居住 -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;margin-bottom:8px">
+    <!-- 居住：同居・別居・死亡 ｜ 所有者・面談済 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 11px 1fr 1fr;gap:4px;margin-bottom:8px;align-items:stretch">
       <button type="button" class="fam-bbtn lv-同居" id="famL同居" onclick="famSetLiving('同居')">同居</button>
       <button type="button" class="fam-bbtn lv-別居" id="famL別居" onclick="famSetLiving('別居')">別居</button>
       <button type="button" class="fam-bbtn lv-死亡" id="famL死亡" onclick="famSetLiving('死亡')">死亡</button>
-      <button type="button" class="fam-bbtn lv-未確認" id="famL未確認" onclick="famSetLiving('未確認')">未確認</button>
+      <div style="border-left:2px solid #e2e8f0;width:0;justify-self:center" aria-hidden="true"></div>
+      <button type="button" class="fam-fbtn" id="famFOwner" onclick="famToggleFlag('owner')">☆所有者</button>
+      <button type="button" class="fam-fbtn" id="famFMet" onclick="famToggleFlag('met')">面談済</button>
     </div>
     <!-- 6行目：名前と年齢（横並び） -->
     <div style="display:grid;grid-template-columns:1fr 72px;gap:8px;align-items:flex-end;margin-bottom:8px">
@@ -12160,12 +12237,13 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         </div>
       </label>
       <label style="display:flex;align-items:center;gap:10px;padding:11px;background:#fffff0;border:1px solid #d69e2e;border-radius:8px;cursor:pointer">
-        <input type="checkbox" id="printStrategy" style="width:18px;height:18px;cursor:pointer;flex-shrink:0">
+        <input type="checkbox" id="printStrategy" onchange="toggleStrategyThemes()" style="width:18px;height:18px;cursor:pointer;flex-shrink:0">
         <div>
           <div style="font-size:13px;font-weight:600;color:#2d3748">💭 戦略協議</div>
-          <div style="font-size:11px;color:#718096;margin-top:2px">AI分析結果（貼り付けた内容のみ）</div>
+          <div style="font-size:11px;color:#718096;margin-top:2px">チェックすると、貼り付け済みのテーマを選んで印刷できます</div>
         </div>
       </label>
+      <div id="printStrategyThemes" style="display:none;margin:-4px 0 0 30px;padding:6px 10px;background:#fffef5;border:1px dashed #d69e2e;border-radius:8px"></div>
       <div style="padding:9px 12px;background:#f0fff4;border:1px solid #c6f6d5;border-radius:8px;font-size:11px;color:#276749">
         🗺 地図はGoogleマップから直接印刷してください
       </div>
@@ -12504,7 +12582,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f);line-he
 `;
 window.openRyokuchiNavi=function(){var a=document.getElementById("aibisModal");if(a)a.style.display="none";var m=document.getElementById("ryokuchiModal");if(!m)return;m.style.display="flex";var f=document.getElementById("ryokuchiFrame");if(f&&!f.getAttribute("data-loaded")){f.srcdoc=RYOKUCHI_HTML;f.setAttribute("data-loaded","1");}};
 window.closeRyokuchiNavi=function(){var m=document.getElementById("ryokuchiModal");if(m)m.style.display="none";};
-window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBtnCell");if(!cell)return;var sel=document.getElementById("f_ryokuchi");var v=sel?sel.value:"";cell.style.visibility=(v&&v!=="0")?"visible":"hidden";};
+window.updateRyokuchiBtn=function(){var btn=document.getElementById("ryokuchiBtn");if(!btn)return;var sel=document.getElementById("f_ryokuchi");var v=sel?sel.value:"";btn.style.display=(v&&v!=="0")?"":"none";};
 </script>
 <!-- ============================================================
      Aibis 音声入力アドオン（貼り足し用ブロック）
@@ -12875,7 +12953,7 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
   .zfa-s1{top:-1px;left:-1px;font-size:13px;animation:abSpark 1.4s ease-in-out infinite}
   .zfa-s2{bottom:0;right:-1px;font-size:11px;animation:abSpark 1.4s ease-in-out infinite .5s}
   .zfa-name{font-size:11px;font-weight:800;letter-spacing:.1em;color:#2c5282;margin-bottom:8px}
-  .zfa-msg{font-size:14px;color:#2d3748;font-weight:500;line-height:1.7;margin-bottom:18px;text-wrap:balance;line-break:strict;word-break:normal}
+  .zfa-msg{font-size:14px;color:#2d3748;font-weight:500;line-height:1.7;margin-bottom:18px;text-wrap:balance;line-break:strict;word-break:keep-all;overflow-wrap:anywhere}
   .zfa-ok{width:100%;padding:11px;border:none;border-radius:10px;background:#1a365d;color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer}
   .zfa-toast{position:fixed;left:50%;bottom:22%;transform:translateX(-50%) translateY(16px);z-index:2147483646;
     display:flex;align-items:center;gap:6px;opacity:0;transition:opacity .3s,transform .3s;max-width:94vw;pointer-events:none}
@@ -13050,6 +13128,7 @@ window.updateRyokuchiBtn=function(){var cell=document.getElementById("ryokuchiBt
 <div id="inboxView">
   <div class="ih">
     <button onclick="closeInbox()">← 戻る</button>
+    <button onclick="inboxToList()" title="一覧へ">📋 一覧</button>
     <b id="inboxTitle">📥 インボックス</b>
   </div>
   <div id="inboxBody"></div>
@@ -13180,6 +13259,8 @@ function cardOpenCam(cid){ if(!cid){ toast("カードを開いてからどうぞ
 window.cardOpenCam=cardOpenCam;
 function _showInbox(){ var v=document.getElementById("inboxView"); if(v) v.style.display="block"; renderInboxBody(); }
 function closeInbox(){ if(window._inboxReturnToCam){ window._inboxReturnToCam=false; try{ location.href="AibisCam.html"; return; }catch(e){} } document.getElementById("inboxView").style.display="none"; var a=_inboxAttach; _inboxAttach=null; if(a){ openCard(a); } }
+function inboxToList(){ window._inboxReturnToCam=false; _inboxAttach=null; var v=document.getElementById("inboxView"); if(v) v.style.display="none"; try{ history.replaceState({zv:"list",id:null},""); }catch(e){} if(typeof _navToList==="function") _navToList(); if(typeof renderCards==="function") renderCards(); }
+window.inboxToList=inboxToList;
 function _cardById(id){ return (typeof cards!=="undefined"&&cards)?cards.find(function(c){return c.id===id;}):null; }
 function _cardName(id){ var c=_cardById(id); if(c){ var n=String(c.name||"無名").trim().replace(/様+$/,""); if(!n) n="無名"; return n+(n==="土地見込み"?"":"様"); } return "カード "+String(id).slice(0,8)+"…"; }
 function _linkName(s){ var c=_cardById(s&&s.cardId); var n=c?(c.name||""):((s&&s.cardName)?String(s.cardName):""); n=String(n||"").trim().replace(/様+$/,""); return n?(e(n)+(n==="土地見込み"?"":"様")):""; }
@@ -13337,7 +13418,7 @@ function _buildPhotoBundle(targets){
     }
     var linked=(s.cardId&&s.cardId!==MEDIA_INBOX);
     var snap=_cardSnap(linked?s.cardId:"");
-    sets.push({ id:s.id, cardId:linked?s.cardId:MEDIA_INBOX,
+    sets.push({ id:s.id, cardId:linked?s.cardId:MEDIA_INBOX, sender:(s.sender||""),
       cardName:snap.name||(linked?_cardName(s.cardId):""), homeAddr:snap.home||"", planAddr:snap.plan||s.addr||"",
       ts:s.ts, lat:s.lat, lng:s.lng, acc:s.acc, addr:s.addr||"", banchi:s.banchi||"", note:s.note||"", photos:photos });
   }
@@ -13473,16 +13554,19 @@ function openInboxPick(setId){ _pickSetId=setId; document.getElementById("inboxP
 function closeInboxPick(){ document.getElementById("inboxPick").style.display="none"; _pickSetId=null; }
 var _pickSortKey="lv", _pickSortDir={};
 function _pickSortArr(arr){
-  var k=_pickSortKey, dir=_pickSortDir[k]==="desc"?-1:1; arr=arr.slice();
-  if(k==="lv"){ arr.sort(function(a,b){ return dir*getLastVD(b).localeCompare(getLastVD(a)); }); }
-  else if(k==="ad"){ var ad=_pickSortDir["ad"]==="desc"?-1:1; arr.sort(function(a,b){ return ad*getArea(a.address||"").localeCompare(getArea(b.address||""),"ja"); }); }
+  var k=_pickSortKey;
+  var _SD={lv:'asc',ad:'asc',st:'asc',dt:'asc'}; // 本体sortDirの既定をミラー（_pickSortArrはsortDirと別スコープのため）
+  var _d=function(key){ var v=(_pickSortDir[key]!==undefined)?_pickSortDir[key]:_SD[key]; return v==='desc'?-1:1; };
+  var dir=_d(k); arr=arr.slice();
+  if(k==="lv"){ arr.sort(function(a,b){ var d=dir*getLastVD(b).localeCompare(getLastVD(a)); return d!==0?d:(_cTs(b)-_cTs(a)); }); }
+  else if(k==="ad"){ var ad=_d("ad"); arr.sort(function(a,b){ return ad*getArea(a.address||"").localeCompare(getArea(b.address||""),"ja"); }); }
   else if(k==="st"){ arr.sort(function(a,b){ var sa=(a.stage!==""&&a.stage!=null)?+a.stage:(dir>0?-1:99); var sb=(b.stage!==""&&b.stage!=null)?+b.stage:(dir>0?-1:99); return dir*(sb-sa); }); }
   else if(k==="sc"){ arr.sort(function(a,b){ return dir*(calcScore(b)-calcScore(a)); }); }
   else if(k==="pj"){ var o={S:0,A:1,B:2,C:3,D:4,E:5,X:6}; arr.sort(function(a,b){ var pa=o[a.pursuit_judge]!==undefined?o[a.pursuit_judge]:99; var pb=o[b.pursuit_judge]!==undefined?o[b.pursuit_judge]:99; return dir*(pa-pb); }); }
-  else if(k==="rv"){ arr=arr.filter(function(c){return !_hasPursuitActivity(c);}); arr.sort(function(a,b){ return dir*(_revisitCount(b)-_revisitCount(a)); }); }
-  else if(k==="jw"){ arr=arr.filter(_judgeMissing); arr.sort(function(a,b){ return getLastVD(b).localeCompare(getLastVD(a)); }); }
+  else if(k==="rv"){ arr=arr.filter(_rvEligible); arr.sort(function(a,b){ var d=dir*(_revisitCount(b)-_revisitCount(a)); return d!==0?d:(_cTs(b)-_cTs(a)); }); }
+  else if(k==="jw"){ arr=arr.filter(_jwReady); arr.sort(function(a,b){ return dir*(_cTs(a)-_cTs(b)); }); }
   else if(k==="pace"){ arr.sort(function(a,b){ var ra=calcPaceOverrate(a),rb=calcPaceOverrate(b); if(ra===-1&&rb===-1)return 0; if(ra===-1)return 1; if(rb===-1)return -1; return dir*(rb-ra); }); }
-  else { arr.sort(function(a,b){ return dir*(b.discovery_date||"").localeCompare(a.discovery_date||""); }); }
+  else { arr.sort(function(a,b){ var d=dir*(b.discovery_date||"").localeCompare(a.discovery_date||""); return d!==0?d:(_cTs(b)-_cTs(a)); }); }
   return arr;
 }
 function pickSort(key){ if(_pickSortKey===key){ _pickSortDir[key]=_pickSortDir[key]==="desc"?"asc":"desc"; } else { _pickSortKey=key; } renderInboxPickList(); }

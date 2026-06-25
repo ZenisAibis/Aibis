@@ -420,7 +420,7 @@
    ※ prospect_cards_v1 には書き込まない（新規カード作成・PC連携は本体側）
    データ(set): {id,cardId,ts,addrType:'plan',lat,lng,acc,addr,addrPending,banchi,note,sent,photos:[{pid,full(Blob),thumb,w,h,size}]}
    ========================================================= */
-const APP_VERSION = "cam-v1.64";
+const APP_VERSION = "cam-v1.65";
 
 /* ===== PWA：単一ファイルでインストール可能化（外部ファイル不要） ===== */
 function _pwaIcon(size,maskable){
@@ -842,7 +842,7 @@ async function addPhoto(photo){
     if(n>=WARN_HARD) toast("インボックスが"+n+"件です。本体アプリで整理しましょう");
     else if(n>=WARN_SOFT) toast("インボックス"+n+"件。本体アプリで整理を"); }
   const pos=lastPos;
-  const s={ id:rid("s"), cardId:targetCard, ts:Date.now(), addrType:"plan",
+  const s={ id:rid("s"), cardId:targetCard, ts:Date.now(), addrType:"plan", sender:((localStorage.getItem("prospect_user_v1")||"").trim()),
     lat:pos?pos.lat:null, lng:pos?pos.lng:null, acc:pos?pos.acc:null,
     addr:"", addrPending:!!pos, banchi:"", note:"", sent:false, photos:[photo] };
   await idbPut(s); curSet=s.id; await refreshIndex(targetCard);

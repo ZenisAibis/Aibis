@@ -2245,7 +2245,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.55";
+var APP_VERSION = "v9.56";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -13418,7 +13418,7 @@ function _buildPhotoBundle(targets){
     }
     var linked=(s.cardId&&s.cardId!==MEDIA_INBOX);
     var snap=_cardSnap(linked?s.cardId:"");
-    sets.push({ id:s.id, cardId:linked?s.cardId:MEDIA_INBOX,
+    sets.push({ id:s.id, cardId:linked?s.cardId:MEDIA_INBOX, sender:(s.sender||""),
       cardName:snap.name||(linked?_cardName(s.cardId):""), homeAddr:snap.home||"", planAddr:snap.plan||s.addr||"",
       ts:s.ts, lat:s.lat, lng:s.lng, acc:s.acc, addr:s.addr||"", banchi:s.banchi||"", note:s.note||"", photos:photos });
   }
