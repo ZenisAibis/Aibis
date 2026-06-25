@@ -2255,7 +2255,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.70";
+var APP_VERSION = "v9.72";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -6512,28 +6512,40 @@ function famSetFlag(f,v){
 }
 var FAM_CHILD_ROLES=['長男','次男','三男','長女','次女','三女','養子・男','養子・女'];
 var famCurChildren=0;
-var famCurSons=0, famCurDaughters=0;
+var famCurSons=0, famCurDaughters=0, famCurGkAges=[];
 var famCurGrandkids=[];
 var GK_LABEL={'小学生(男)':'小学生男','小学生(女)':'小学生女','幼児(男)':'幼児男','幼児(女)':'幼児女','乳児(男)':'乳児男','乳児(女)':'乳児女','乳児':'乳児','孫(男)':'男の子','孫(女)':'女の子','幼児':'幼児'};
 // お子様＝息子/娘の人数で入力。命名は順番(長男/次男…・長女/次女…)、絵は順番で 1-2小学生/3幼児/4以降乳児 v9.69
 var KID_KANJI=['長','次','三','四','五','六','七','八','九','十'];
 function _kidLabel(g,ord){ var k=KID_KANJI[ord-1]||(''+ord); return k+(g==='女'?'女':'男'); }
 function _gkType(g,ord){ return (ord<=2?'小学生':(ord===3?'幼児':'乳児'))+'('+g+')'; }
-function _genGk(sons,daughters){ var a=[],i; for(i=1;i<=sons;i++)a.push(_gkType('男',i)); for(i=1;i<=daughters;i++)a.push(_gkType('女',i)); return a; }
+function _genGk(sons,daughters){ var a=[],i; for(i=1;i<=sons;i++)a.push('シルエット(男)'); for(i=1;i<=daughters;i++)a.push('シルエット(女)'); return a; }
 function _gkLabels(arr){ var mc=0,fc=0; return (arr||[]).map(function(t){ var g=/女/.test(t)?'女':'男'; var n=(g==='女')?(++fc):(++mc); return _kidLabel(g,n); }); }
 function famRenderKidCounts(){ var sm=document.getElementById('famKidMSel'); if(sm)sm.value=famCurSons; var sf=document.getElementById('famKidFSel'); if(sf)sf.value=famCurDaughters; }
-function famSetKid(which,n){ if(which==='m')famCurSons=n; else famCurDaughters=n; famCurGrandkids=_genGk(famCurSons,famCurDaughters); famCurChildren=famCurGrandkids.length; famRenderKidCounts(); famRenderGrandkids(); }
+function famSetKid(which,n){ if(which==='m')famCurSons=n; else famCurDaughters=n; famCurGrandkids=_genGk(famCurSons,famCurDaughters); famCurGkAges=famCurGrandkids.map(function(){return '';}); famCurChildren=famCurGrandkids.length; famRenderKidCounts(); famRenderGrandkids(); }
+function _ageGkType(g,age){ age=+age; var t=age<=2?'乳児':age<=6?'幼児':age<=12?'小学生':age<=15?'中学':age<=18?'高校':'成人'; return t+'('+g+')'; }
+function famSetGkAge(i,val){
+  if(i<0||i>=famCurGrandkids.length) return;
+  var g=/女/.test(famCurGrandkids[i])?'女':'男';
+  var v=(val===''||val==null)?'':Math.max(0,Math.min(99,parseInt(val,10)||0));
+  famCurGkAges[i]=v;
+  if(v===''){ famCurGrandkids[i]='シルエット('+g+')'; }
+  else { famCurGrandkids[i]=_ageGkType(g,v); }
+  famRenderGrandkids();
+}
+window.famSetGkAge=famSetGkAge;
 function famRenderGrandkids(){
   var box=document.getElementById('famGkChips'); if(!box) return;
   if(!famCurGrandkids.length){ box.innerHTML='<span style="font-size:12px;color:#a0aec0">お子様なし（息子・娘の人数を選んでね）</span>'; return; }
   var labels=_gkLabels(famCurGrandkids);
   box.innerHTML=famCurGrandkids.map(function(t,i){
-    return '<span style="display:inline-flex;align-items:center;gap:3px;background:#f7fafc;border:1px solid #e2e8f0;border-radius:16px;padding:1px 9px 1px 4px"><svg viewBox="0 0 100 100" width="28" height="28" style="display:block">'+famAvatarSVG(t,"smile")+'</svg><span style="font-size:11px;color:#4a5568;white-space:nowrap">'+labels[i]+'</span></span>';
-  }).join('')+'<span style="font-size:11px;color:#718096;margin-left:2px">計'+famCurGrandkids.length+'人</span>';
+    var av=(famCurGkAges[i]===''||famCurGkAges[i]==null)?'':famCurGkAges[i];
+    return '<span style="display:inline-flex;align-items:center;gap:4px;background:#f7fafc;border:1px solid #e2e8f0;border-radius:16px;padding:2px 8px 2px 4px"><svg viewBox="0 0 100 100" width="30" height="30" style="display:block">'+famAvatarSVG(t,"smile")+'</svg><span style="font-size:11px;color:#4a5568;white-space:nowrap;font-weight:700">'+labels[i]+'</span><input type="number" inputmode="numeric" min="0" max="99" value="'+av+'" placeholder="歳" onchange="famSetGkAge('+i+',this.value)" style="width:40px;font:inherit;font-size:12px;padding:3px 4px;border:1px solid #cbd5e0;border-radius:6px;text-align:center"><span style="font-size:10px;color:#a0aec0">歳</span></span>';
+  }).join('')+'<div style="font-size:11px;color:#718096;margin-top:4px;width:100%">計'+famCurGrandkids.length+'人・年齢を入れると絵が切り替わります（未入力は人数順）</div>';
 }
 function famAddGrandkid(t){ famCurGrandkids.push(t); famCurChildren=famCurGrandkids.length; famRenderGrandkids(); }
 function famRemoveGrandkid(i){ famCurGrandkids.splice(i,1); famCurChildren=famCurGrandkids.length; famRenderGrandkids(); }
-function famClearGrandkids(){ famCurSons=0; famCurDaughters=0; famCurGrandkids=[]; famRenderKidCounts(); famRenderGrandkids(); }
+function famClearGrandkids(){ famCurSons=0; famCurDaughters=0; famCurGrandkids=[]; famCurGkAges=[]; famRenderKidCounts(); famRenderGrandkids(); }
 window.famAddGrandkid=famAddGrandkid; window.famRemoveGrandkid=famRemoveGrandkid; window.famClearGrandkids=famClearGrandkids; window.famSetKid=famSetKid;
 function famOnRoleChange(){
   var role=normalizeFamRole(document.getElementById('famRole').value);
@@ -6560,7 +6572,7 @@ function famResetModal(){
   famCurJutaku=''; famPaintJutaku();
   var hb=document.getElementById('famL同居'); if(hb) hb.textContent='同居';
   famSetStance('unk'); famSetLiving('未確認'); famSetMarriage('不明'); famSetChildren(0);
-  famCurSons=0; famCurDaughters=0; famCurGrandkids=[]; if(typeof famRenderKidCounts==='function')famRenderKidCounts(); famRenderGrandkids();
+  famCurSons=0; famCurDaughters=0; famCurGrandkids=[]; famCurGkAges=[]; if(typeof famRenderKidCounts==='function')famRenderKidCounts(); famRenderGrandkids();
   famSetFlag('met',false); famSetFlag('owner',false); famSetFlag('kp',false);
   ['famRole','famName','famAddr'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   var ag=document.getElementById('famAge');if(ag)ag.value='';
@@ -6647,9 +6659,11 @@ function famOpenEdit(idx){
   famSetLiving(m.living||m.kyojuu||'同居');
   famCurJutaku=m.jutaku||''; famPaintJutaku();
   famSetMarriage(m.marriage||'不明');
-  var _exGk=(m.grandkids&&m.grandkids.length)?m.grandkids:((+(m.children)>0)?Array(+m.children).fill('孫(男)'):[]);
+  var _exGk=(m.grandkids&&m.grandkids.length)?m.grandkids.slice():((+(m.children)>0)?Array(+m.children).fill('孫(男)'):[]);
   var _exM=0,_exF=0; _exGk.forEach(function(t){ if(/女/.test(t))_exF++; else _exM++; });
-  famCurSons=_exM; famCurDaughters=_exF; famCurGrandkids=_genGk(famCurSons,famCurDaughters);
+  famCurSons=_exM; famCurDaughters=_exF;
+  if(m.gkAges&&m.gkAges.length===_exGk.length){ famCurGrandkids=_exGk; famCurGkAges=m.gkAges.slice(); }
+  else { famCurGrandkids=_genGk(famCurSons,famCurDaughters); famCurGkAges=famCurGrandkids.map(function(){return '';}); }
   famCurChildren=famCurGrandkids.length; famRenderKidCounts(); famRenderGrandkids();
   famSetFlag('met',!!m.met); famSetFlag('owner',!!m.owner); famSetFlag('kp',!!m.kp);
   var r=document.getElementById('famRole');
@@ -6718,7 +6732,7 @@ function famSave(){
     age:document.getElementById('famAge').value,
     social:document.getElementById('famSocial')?.value||'',
     living:famCurLiving, marriage:famCurMarriage, stance:famCurStance,
-    children:famCurGrandkids.length, grandkids:famCurGrandkids.slice(),
+    children:famCurGrandkids.length, grandkids:famCurGrandkids.slice(), gkAges:famCurGkAges.slice(),
     met:famCurFlags.met, owner:famCurFlags.owner, kp:famCurFlags.kp,
     addr2:document.getElementById('famAddr').value,
     job:famCurJob, gyoshu:famCurGyoshu,
@@ -7869,13 +7883,42 @@ function cfg(role){
     '幼児':{gender:'m',age:'child',hair:'#5a4636',style:'round',cloth:'#8fdcc0'},
     '乳児(男)':{gender:'m',age:'baby',hair:'#7a5a44',style:'tuft',cloth:'#9bbce8'},
     '乳児(女)':{gender:'m',age:'baby',hair:'#8a6a50',style:'tuft',cloth:'#f6b8cc',bowOn:true,bowColor:'#ff9ab5'},
-    '乳児':{gender:'m',age:'baby',hair:'#8a6a50',style:'tuft',cloth:'#ffd98c'}
+    '乳児':{gender:'m',age:'baby',hair:'#8a6a50',style:'tuft',cloth:'#ffd98c'},
+    '中学(男)':{gender:'m',age:'teen',hair:'#2e2a26',style:'short',cloth:'#3a4a6b'},
+    '中学(女)':{gender:'f',age:'teen',hair:'#3a312a',style:'long',cloth:'#3a4a6b'},
+    '高校(男)':{gender:'m',age:'young',hair:'#2e2a26',style:'short',cloth:'#3a4a6b'},
+    '高校(女)':{gender:'f',age:'young',hair:'#3a312a',style:'long',cloth:'#3a4a6b'},
+    '成人(男)':{gender:'m',age:'young',hair:'#3a352f',style:'sidePart',cloth:'#46505f'},
+    '成人(女)':{gender:'f',age:'young',hair:'#6b4a32',style:'long',cloth:'#dfa6c0'}
   };
   return M[role]||{gender:'m',age:'mid',hair:'#6b6157',style:'short',cloth:'#a7b0bd'};
 }
 
-  var FAM_FILE={'世帯主・祖父':'grandfather','世帯主・祖母':'grandmother','世帯主・父':'father','世帯主・母':'mother','父':'father','母':'mother','養子・男':'son','養子・女':'daughter','祖父':'grandfather','祖母':'grandmother','世帯主（男）':'father','夫':'father','名義人（夫）':'father','妻':'mother','世帯主（女）':'mother','配偶者':'mother','名義人（妻）':'mother','嫁':'daughter_in_law','婿':'son_in_law','兄':'uncle','弟':'uncle','姉':'aunt','妹':'aunt','長男':'son','次男':'son','三男':'teen_boy','長女':'daughter','次女':'daughter','三女':'teen_girl','孫(男)':'child_boy','孫(女)':'child_girl','小学生(男)':'schoolkid_boy','小学生(女)':'schoolkid_girl','幼児(男)':'child_boy','幼児(女)':'child_girl','幼児':'child_boy','乳児(男)':'baby','乳児(女)':'baby','乳児':'baby'};
-  return function(role,expr){var c=cfg(role);c.expr=expr||"smile";var f=FAM_FILE[role]||'father';return '<g class="famfb">'+mkPerson(50,46,26,c)+'</g><image href="img/family/fam_'+f+'.png?v='+APP_VERSION+'" x="0" y="0" width="100" height="112" preserveAspectRatio="xMidYMid slice" onload="if(this.previousElementSibling)this.previousElementSibling.remove()" onerror="this.remove()"/>';};
+  var FAM_FILE={'世帯主・祖父':'grandfather','世帯主・祖母':'grandmother','世帯主・父':'father','世帯主・母':'mother','父':'father','母':'mother','養子・男':'son','養子・女':'daughter','祖父':'grandfather','祖母':'grandmother','世帯主（男）':'father','夫':'father','名義人（夫）':'father','妻':'mother','世帯主（女）':'mother','配偶者':'mother','名義人（妻）':'mother','嫁':'daughter_in_law','婿':'son_in_law','兄':'uncle','弟':'uncle','姉':'aunt','妹':'aunt','長男':'son','次男':'son','三男':'teen_boy','長女':'daughter','次女':'daughter','三女':'teen_girl','孫(男)':'child_boy','孫(女)':'child_girl','小学生(男)':'schoolkid_boy','小学生(女)':'schoolkid_girl','幼児(男)':'child_boy','幼児(女)':'child_girl','幼児':'child_boy','乳児(男)':'baby','乳児(女)':'baby','乳児':'baby','中学(男)':'jhs_boy','中学(女)':'jhs_girl','高校(男)':'teen_boy','高校(女)':'teen_girl','成人(男)':'son','成人(女)':'daughter'};
+  var FAM_AGE_VARIABLE=['兄','弟','姉','妹','長男','次男','三男','長女','次女','三女','養子・男','養子・女'];
+  function _ageImg(g,age){ age=+age; var b=(g==='f');
+    if(age<=2) return 'baby';
+    if(age<=6) return b?'child_girl':'child_boy';
+    if(age<=12) return b?'schoolkid_girl':'schoolkid_boy';
+    if(age<=15) return b?'jhs_girl':'jhs_boy';
+    if(age<=18) return b?'teen_girl':'teen_boy';
+    if(age<=29) return b?'daughter':'son';
+    if(age<=59) return b?'aunt':'uncle';
+    return b?'grandmother':'grandfather';
+  }
+  function _silSVG(g){ var col=(g==='f')?'#cbb9c6':'#b4bcc8'; return '<g class="famfb"><circle cx="50" cy="38" r="22" fill="'+col+'"/><path d="M14 112 Q14 72 50 72 Q86 72 86 112 Z" fill="'+col+'"/></g>'; }
+  return function(role,expr,age){
+    var c=cfg(role); c.expr=expr||"smile";
+    if(role==='シルエット(男)') return _silSVG('m');
+    if(role==='シルエット(女)') return _silSVG('f');
+    var f;
+    if(FAM_AGE_VARIABLE.indexOf(role)>=0){
+      var a=(age===''||age==null)?NaN:parseInt(age,10);
+      if(isNaN(a)) return _silSVG(c.gender);
+      f=_ageImg(c.gender,a);
+    } else { f=FAM_FILE[role]||'father'; }
+    return '<g class="famfb">'+mkPerson(50,46,26,c)+'</g><image href="img/family/fam_'+f+'.png?v='+APP_VERSION+'" x="0" y="0" width="100" height="112" preserveAspectRatio="xMidYMid slice" onload="if(this.previousElementSibling)this.previousElementSibling.remove()" onerror="this.remove()"/>';
+  };
 })();
 
 function buildFamTreeSVG(fam, opts){
@@ -7961,7 +8004,7 @@ function buildFamTreeSVG(fam, opts){
     if(!inlaw&&typeof FAM_HEAD_ROLES!=='undefined'&&FAM_HEAD_ROLES.indexOf(normalizeFamRole(m.role||''))>=0) s+=`<rect x="${n.x-2}" y="${n.y-2}" width="${NW+4}" height="${NH+4}" rx="13" fill="none" stroke="#d4af37" stroke-width="2.4"/>`;
     var aw=100,ah=112,area=NH-36,asc=Math.min((NW-8)/aw,area/ah),tx=n.x+(NW-aw*asc)/2,ty=n.y+3;
     var dead=(living==='死亡'&&!inlaw);
-    s+=`<g transform="translate(${Math.round(tx*100)/100},${ty}) scale(${Math.round(asc*1000)/1000})"${dead?' filter="url(#zfg)" opacity="0.85"':''}>${famAvatarSVG(m.role, inlaw?"smile":(m.stance==="pos"?"smile":m.stance==="neg"?"sad":"neutral"))}</g>`;
+    s+=`<g transform="translate(${Math.round(tx*100)/100},${ty}) scale(${Math.round(asc*1000)/1000})"${dead?' filter="url(#zfg)" opacity="0.85"':''}>${famAvatarSVG(m.role, inlaw?"smile":(m.stance==="pos"?"smile":m.stance==="neg"?"sad":"neutral"), m.age)}</g>`;
     if(dead)s+=`<line x1="${n.x+8}" y1="${n.y+8}" x2="${n.x+NW-8}" y2="${n.y+ah*asc}" stroke="#9aa3ad" stroke-width="1.2"/>`;
     if(!inlaw){
       if(m.owner)s+=`<text x="${n.x+7}" y="${n.y+16}" font-size="12" fill="#c53030" font-weight="700">★</text>`;
