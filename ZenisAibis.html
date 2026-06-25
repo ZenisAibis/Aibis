@@ -2255,7 +2255,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.64";
+var APP_VERSION = "v9.65";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -6364,17 +6364,17 @@ function famRenderSummary(){
   else if(pos>neg) ov='<span style="color:#2c5282;font-weight:700">👍 概ねポジティブ</span>';
   else ov='<span style="color:#744210;font-weight:700">🔍 確認中</span>';
   el.style.display='flex';
-  el.style.flexDirection='column';
-  el.style.alignItems='flex-start';
-  el.innerHTML='<div style="display:flex;align-items:center;gap:5px;flex-wrap:nowrap;white-space:nowrap">'
+  el.style.flexDirection='row';
+  el.style.alignItems='center';
+  el.innerHTML='<div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">'
     +'<span style="font-size:11px;color:#718096;font-weight:600">家族全体：</span>'
     +'<span style="display:flex;align-items:center;gap:2px"><span style="width:10px;height:10px;border-radius:50%;background:#38a169;display:inline-block"></span>'+pos+'人</span>'
     +'<span style="color:#ddd">|</span>'
     +'<span style="display:flex;align-items:center;gap:2px"><span style="width:10px;height:10px;border-radius:50%;background:#e53e3e;display:inline-block"></span>'+neg+'人</span>'
     +'<span style="color:#ddd">|</span>'
     +'<span style="display:flex;align-items:center;gap:2px"><span style="width:10px;height:10px;border-radius:50%;background:white;border:1px solid #aaa;display:inline-block"></span>'+unk+'人</span>'
-    +'</div>'
-    +'<div style="margin-top:3px">'+ov+'</div>';
+    +'<span style="margin-left:6px">'+ov+'</span>'
+    +'</div>';
 }
 function famSetStance(s){
   famCurStance=s;
