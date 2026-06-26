@@ -1338,9 +1338,9 @@ body.is-mob .mob-menu{display:inline-block}
   #secTochi .pc-land-row1 #f_chishaku{ width:66px !important; min-width:66px; font-size:15px; flex:0 0 66px; }
   #secTochi .pc-land-row1 .unit-field{ padding:0 4px; }
   /* 用途地域60|建蔽容積40（接道方位はフル幅のまま） */
-  #secTochi .pc-road-right2{ display:grid; grid-template-columns:minmax(0,1fr) 130px; column-gap:8px; row-gap:6px; align-items:end; }
+  #secTochi .pc-road-right2{ display:grid; grid-template-columns:minmax(0,1fr) 148px; column-gap:8px; row-gap:6px; align-items:start; }
   #secTochi .pc-road-right2 > div{ min-width:0; margin-bottom:0; }
-  #secTochi .pc-road-right2 select{ width:100%; min-width:0; box-sizing:border-box; }
+  #secTochi .pc-road-right2 select{ width:100%; min-width:0; box-sizing:border-box; min-height:44px; }
   /* 高度/防火/権利は各フル幅1行 */
   #secTochi .pc-land-row3{ display:block; }
   #secTochi .pc-land-row3 > div{ min-width:0; margin-bottom:8px; }
@@ -2310,7 +2310,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.95";
+var APP_VERSION = "v9.96";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
