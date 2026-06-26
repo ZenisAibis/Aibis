@@ -2258,7 +2258,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.85";
+var APP_VERSION = "v9.86";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -10126,7 +10126,7 @@ function _sbRowHTML(o,isPri,ix){
   +'<b style="font-size:13px">'+e(c.name||'無名')+'様</b>'
   +'<span style="font-size:11px;color:#718096">'+(getArea(c.address||'')?e(getArea(c.address||''))+'・':'')+tb[0]+' '+sc+'/78・'+e((typeof STG!=='undefined'&&STG[+(c.stage||0)])||'')+'・'+e(c.pursuit_judge||'-')+'・'+((+lastContactDays(c)||0)<0?'訪問記録なし':(+lastContactDays(c))+'日前')+'</span>'
   +'<span style="font-size:10px;background:#edf2f7;border-radius:8px;padding:1px 7px;color:#4a5568;white-space:nowrap">'+tag+'</span>'
-  +'</label><span>'+chips+'</span></div>';
+  +'</label><div style="flex-basis:100%;display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px">'+'<span style="font-size:11px;color:#718096;margin-right:auto;white-space:nowrap">💭 何の目的で訪問するのかイメージしよう→</span>'+'<span style="display:flex;flex-wrap:wrap;justify-content:flex-end">'+chips+'</span></div></div>';
 }
 function _sbPaint(){
  var ov=document.getElementById('sakusenView'); if(!ov) return;
