@@ -2310,7 +2310,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.96";
+var APP_VERSION = "v9.97";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -7741,7 +7741,7 @@ function buildInitVisitHTML(c,opt){
     +'</div>';
   /* StepF: 家族エリアは見込みカード印刷から削除（家族は別印刷）。 */
   html+='<div class="sec"><div class="stitle">✍ 初訪内容（見込み候補だと判断した理由）</div>'
-    +'<div style="min-height:22mm;border:0.5pt solid #e2e8f0;padding:2mm;font-size:10.5pt;line-height:1.55;border-radius:1.5mm;background:white">'+e(c.initial_content||'').replace(/\n/g,'<br>')+'</div>'
+    +'<div style="min-height:22mm;max-height:38mm;overflow:hidden;border:0.5pt solid #e2e8f0;padding:2mm;font-size:10.5pt;line-height:1.55;border-radius:1.5mm;background:white">'+e(c.initial_content||'').replace(/\n/g,'<br>')+'</div>'
     +'</div>';
   if(opt.clip) return '<div class="cardclip">'+html+'</div>';
   return html;
@@ -7779,7 +7779,7 @@ function buildRevisitHTML(c,opt){
       +'<span style="font-size:8pt;color:#333">日付：<span style="font-weight:600;border-bottom:0.5pt solid #aaa;display:inline-block;min-width:25mm">'+e(r.date||'')+'</span></span>'
       +'<span style="font-size:8pt;color:#333">アポ：<span style="font-weight:600;border-bottom:0.5pt solid #aaa;display:inline-block;min-width:16mm">'+e(r.appo||'')+'</span></span>'
       +'</div>'
-      +'<div style="min-height:22mm;border:0.5pt solid #aaa;padding:2mm;font-size:9.5pt;line-height:1.5">'+e(r.content||'').replace(/\n/g,'<br>')+'</div>'
+      +'<div style="min-height:22mm;max-height:34mm;overflow:hidden;border:0.5pt solid #aaa;padding:2mm;font-size:9.5pt;line-height:1.5">'+e(r.content||'').replace(/\n/g,'<br>')+'</div>'
       +'</div>';
   }
   // Judgment（未入力でも枠を表示）
@@ -7790,7 +7790,7 @@ function buildRevisitHTML(c,opt){
     +'<div class="field"><span class="label">フォーアイズ</span><span class="val">'+e(c.revisit_4eyes||'')+'</span></div>'
     +'</div>'
     +'<div class="field" style="margin-top:1.5mm"><span class="label">課長協議内容・判断理由</span>'
-    +'<div style="min-height:10mm;border:0.5pt solid #aaa;padding:2mm;font-size:9.5pt;line-height:1.5">'+e(c.revisit_judge_reason||'').replace(/\n/g,'<br>')+'</div>'
+    +'<div style="min-height:10mm;max-height:34mm;overflow:hidden;border:0.5pt solid #aaa;padding:2mm;font-size:9.5pt;line-height:1.5">'+e(c.revisit_judge_reason||'').replace(/\n/g,'<br>')+'</div>'
     +'</div></div>';
   if(opt.clip) return '<div class="cardclip">'+html+'</div>';
   return html;
@@ -7820,7 +7820,7 @@ function buildPursuitHTML(c){
       +(p.interviewer?'<span style="font-size:8pt;color:#333">面談者：<span style="font-weight:600">'+e(p.interviewer)+'</span></span>':'')
       +(p.next_appo_date?'<span style="font-size:8pt;color:#333">次回アポ：<span style="font-weight:600">'+e(p.next_appo_date)+'</span></span>':'')
       +'</div>'
-      +'<div style="min-height:18mm;border:0.5pt solid #aaa;padding:2mm;font-size:9.5pt;line-height:1.5;margin-bottom:1mm">'+e(p.content||'').replace(/\n/g,'<br>')+'</div>'
+      +'<div style="min-height:18mm;max-height:34mm;overflow:hidden;border:0.5pt solid #aaa;padding:2mm;font-size:9.5pt;line-height:1.5;margin-bottom:1mm">'+e(p.content||'').replace(/\n/g,'<br>')+'</div>'
       +(p.instruction?'<div style="font-size:8pt;border-left:2pt solid #c53030;padding-left:2mm;color:#c53030">指示：'+e(p.instruction)+'</div>':'')
       +'</div>';
   });
