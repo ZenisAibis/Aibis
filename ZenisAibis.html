@@ -2310,7 +2310,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.97";
+var APP_VERSION = "v9.98";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -7565,7 +7565,12 @@ function buildPrintCSS(){
     +'.cardclip{height:250mm;overflow:hidden}'
     +'.hint{font-size:8pt;color:#a0aec0;text-align:right;margin-top:1mm}'
     +'.jsec{border:1pt solid #553c9a;border-radius:2mm;padding:2mm 3mm;background:#faf5ff}'
-    +'.jsec-title{font-size:10pt;font-weight:800;color:#553c9a;margin-bottom:1.5mm}';
+    +'.jsec-title{font-size:10pt;font-weight:800;color:#553c9a;margin-bottom:1.5mm}'
+    +'.rev-fill{display:flex;flex-direction:column}'
+    +'.rev-fill > .sec:not(.rev-judge),.rev-fill > .vcard{flex:0 0 auto}'
+    +'.rev-judge{flex:1 1 auto;display:flex;flex-direction:column}'
+    +'.rev-judge-field{flex:1 1 auto;display:flex;flex-direction:column;min-height:0}'
+    +'.rev-judge-box{flex:1 1 auto}';
 }
 var STRAT_THEMES=[['general','総合分析'],['next_visit','次回作戦'],['motivation','動機引揚'],['personality','性格応対'],['objection','反論対応'],['hearing','聞取補充'],['training','会話訓練'],['inheritance','相続シナリオ']];
 function toggleStrategyThemes(){
@@ -7783,16 +7788,16 @@ function buildRevisitHTML(c,opt){
       +'</div>';
   }
   // Judgment（未入力でも枠を表示）
-  html+='<div class="sec" style="border-color:#553c9a"><div class="stitle" style="color:#553c9a">♦ 再訪 Judgment</div>'
+  html+='<div class="sec rev-judge" style="border-color:#553c9a"><div class="stitle" style="color:#553c9a">♦ 再訪 Judgment</div>'
     +'<div class="row3">'
     +'<div class="field"><span class="label">判定</span><span class="val">'+e(c.revisit_judge||'')+'</span></div>'
     +'<div class="field"><span class="label">判定日</span><span class="val">'+e(c.revisit_judge_date||'')+'</span></div>'
     +'<div class="field"><span class="label">フォーアイズ</span><span class="val">'+e(c.revisit_4eyes||'')+'</span></div>'
     +'</div>'
-    +'<div class="field" style="margin-top:1.5mm"><span class="label">課長協議内容・判断理由</span>'
-    +'<div style="min-height:10mm;max-height:34mm;overflow:hidden;border:0.5pt solid #aaa;padding:2mm;font-size:9.5pt;line-height:1.5">'+e(c.revisit_judge_reason||'').replace(/\n/g,'<br>')+'</div>'
+    +'<div class="field rev-judge-field" style="margin-top:1.5mm"><span class="label">課長協議内容・判断理由</span>'
+    +'<div class="rev-judge-box" style="min-height:30mm;overflow:hidden;border:0.5pt solid #aaa;padding:2mm;font-size:9.5pt;line-height:1.5">'+e(c.revisit_judge_reason||'').replace(/\n/g,'<br>')+'</div>'
     +'</div></div>';
-  if(opt.clip) return '<div class="cardclip">'+html+'</div>';
+  if(opt.clip) return '<div class="cardclip rev-fill">'+html+'</div>';
   return html;
 }
 
