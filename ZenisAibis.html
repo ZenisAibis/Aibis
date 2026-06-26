@@ -1297,6 +1297,25 @@ body.is-mob .mob-menu{display:inline-block}
   }
 }
 /* ============================================================
+   PC版 土地情報 再配置 v9.89（PCのみ・スマホ縦積み非干渉）
+   行1=路線価+借地/面積/間口/築年数/満室/空室 ／ 行2=接道|用途・建蔽 ／ 行3=高度/防火/権利
+   ============================================================ */
+@media screen and (min-width:769px){
+  #secTochi .pc-land-row1{display:grid;grid-template-columns:1.5fr 1fr 0.8fr 1fr 0.85fr 0.85fr;column-gap:12px;align-items:end}
+  #secTochi .pc-land-row1 > div{min-width:0;margin-bottom:0 !important}
+  #secTochi .pc-land-row1 select{width:100%;max-width:none;box-sizing:border-box}
+  #secTochi .pc-land-row1 #f_chishaku{width:48px !important;flex:0 0 48px}
+  #secTochi .pc-land-row1 .unit-field{width:100%}
+  #secTochi .pc-land-row2{display:grid;grid-template-columns:minmax(280px,340px) minmax(0,1fr);column-gap:28px;align-items:stretch;margin-bottom:8px}
+  #secTochi .pc-road-left{min-width:0}
+  #secTochi .pc-road-left > div{margin-bottom:0 !important}
+  #secTochi .pc-road-right2{min-width:0;display:flex;flex-direction:column;justify-content:space-between;row-gap:10px}
+  #secTochi .pc-road-right2 > div{min-width:0;margin-bottom:0 !important}
+  #secTochi .pc-road-right2 select{width:100%}
+  #secTochi .pc-land-row3{display:grid;grid-template-columns:1fr 1fr 1fr;column-gap:16px;align-items:start;margin-bottom:8px}
+  #secTochi .pc-land-row3 > div{min-width:0;margin-bottom:0 !important}
+}
+/* ============================================================
    PC版 精密グリッド調整 v9.24 — Step E（名前/家族＋一行化の仕上げ）
    ・名前エリア：mk-row(2fr1fr1fr / 1fr1fr)を維持し、ソーシャル/現状/TELをセル幅いっぱいに
    ・家族構成：人数確定ボタン行を 左=ボタン / 右=凡例(意向・居住) の2グリッドに
@@ -2261,7 +2280,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.88";
+var APP_VERSION = "v9.89";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -11748,8 +11767,8 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <input type="text" id="f_kuubi" placeholder="P空き多い・退去予定あり など" style="flex:1">
         </div>
       </div>
-      <!-- 路線価・面積・間口 -->
-      <div class="pc-land-main" style="display:grid;grid-template-columns:1fr 1fr 0.5fr;gap:8px;margin-bottom:8px">
+      <!-- 行1(PC): 路線価+借地 / 面積 / 間口 / 築年数 / 満室 / 空室 -->
+      <div class="pc-land-row1" style="margin-bottom:8px">
         <div>
           <label>路線価<span style="font-size:10px;color:#718096">（千円/㎡）</span></label>
           <div style="display:flex;gap:4px;align-items:center">
@@ -11774,10 +11793,31 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           </div>
         </div>
         <div><label>間口</label><div class="unit-field"><input type="number" id="f_maguchi" placeholder="12" inputmode="numeric" pattern="[0-9]*"><span class="usuf">m</span></div></div>
+        <div>
+          <label>築年数<span style="font-size:10px;color:#718096">→西暦/和暦</span></label>
+          <div style="display:flex;gap:4px;align-items:center">
+            <select id="f_chiku" style="flex:1">
+              <option value="">-</option>
+              <option value="0">新築</option>
+              <option value="1">1年</option><option value="2">2年</option><option value="3">3年</option><option value="4">4年</option><option value="5">5年</option>
+              <option value="6">6年</option><option value="7">7年</option><option value="8">8年</option><option value="9">9年</option><option value="10">10年</option>
+              <option value="11">11年</option><option value="12">12年</option><option value="13">13年</option><option value="14">14年</option><option value="15">15年</option>
+              <option value="16">16年</option><option value="17">17年</option><option value="18">18年</option><option value="19">19年</option><option value="20">20年</option>
+              <option value="21">21年</option><option value="22">22年</option><option value="23">23年</option><option value="24">24年</option><option value="25">25年</option>
+              <option value="26">26年</option><option value="27">27年</option><option value="28">28年</option><option value="29">29年</option><option value="30">30年</option>
+              <option value="35">35年</option><option value="40">40年</option><option value="45">45年</option><option value="50">50年</option>
+              <option value="55">55年</option><option value="60">60年</option><option value="65">65年</option><option value="70">70年</option>
+              <option value="75">75年</option><option value="80">80年以上</option>
+            </select>
+            <span id="chikuDisp" style="font-size:11px;color:#2c5282;font-weight:600;white-space:nowrap">-</span>
+          </div>
+        </div>
+        <div><label>満室数（戸）</label><input type="number" id="f_kuushitsu" placeholder="例: 10" inputmode="numeric" pattern="[0-9]*"></div>
+        <div><label>空き数（戸）</label><input type="number" id="f_kuushitsu_aki" placeholder="例: 2" inputmode="numeric" pattern="[0-9]*"></div>
       </div>
-      <div class="pc-land-2grid">
-      <div class="pc-road-left">
-      <!-- 接道方位（8方位コンパス・北上／中央=旗竿） -->
+      <!-- 行2(PC): 接道方位 | 用途地域/建蔽容積 -->
+      <div class="pc-land-row2">
+        <div class="pc-road-left">
       <div style="margin-bottom:8px">
         <label>接道方位 <span style="font-size:10px;color:#a0aec0;font-weight:400">（方角の位置で配置）</span></label>
         <input type="checkbox" id="f_hatazao" style="display:none">
@@ -11793,9 +11833,8 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <button type="button" class="pbtn" data-pill="setsudo" data-multi="1" data-val="南東">南東</button>
         </div>
       </div>
-      </div>
-      <div class="pc-road-right">
-      <!-- 用途地域（フル幅） -->
+        </div>
+        <div class="pc-road-right2">
       <div style="margin-bottom:8px">
         <label>用途地域</label>
         <select id="f_youto" style="font-size:13px;width:100%">
@@ -11816,21 +11855,6 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <option value="無指定">無指定</option>
         </select>
       </div>
-      <!-- 権利関係チェック -->
-      <div style="margin-bottom:8px">
-        <label>権利関係チェック</label>
-        <div id="houbunPills" style="display:flex;gap:4px;flex-wrap:wrap;margin-top:2px">
-          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="単独名義">単独</button>
-          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="法人名義">法人</button>
-          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="共有名義">共有</button>
-          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="借地">借地</button>
-        </div>
-      </div>
-      </div>
-      </div>
-      <div class="pc-land-meta">
-      <!-- 建蔽容積・築年数 -->
-      <div class="metarow" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
         <div>
           <label>建蔽 / 容積（%）</label>
           <div style="display:flex;gap:4px;align-items:center">
@@ -11839,28 +11863,10 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
             <select id="f_ky" style="flex:1"><option value="">容積</option><option value="80">80</option><option value="100">100</option><option value="150">150</option><option value="200">200</option><option value="300">300</option><option value="400">400</option><option value="500">500</option><option value="600">600</option><option value="700">700</option><option value="800">800</option></select>
           </div>
         </div>
-        <div>
-          <label>築年数<span style="font-size:10px;color:#718096">→西暦/和暦</span></label>
-          <div style="display:flex;gap:4px;align-items:center">
-            <select id="f_chiku" style="flex:1">
-              <option value="">-</option>
-              <option value="0">新築</option>
-              <option value="1">1年</option><option value="2">2年</option><option value="3">3年</option><option value="4">4年</option><option value="5">5年</option>
-              <option value="6">6年</option><option value="7">7年</option><option value="8">8年</option><option value="9">9年</option><option value="10">10年</option>
-              <option value="11">11年</option><option value="12">12年</option><option value="13">13年</option><option value="14">14年</option><option value="15">15年</option>
-              <option value="16">16年</option><option value="17">17年</option><option value="18">18年</option><option value="19">19年</option><option value="20">20年</option>
-              <option value="21">21年</option><option value="22">22年</option><option value="23">23年</option><option value="24">24年</option><option value="25">25年</option>
-              <option value="26">26年</option><option value="27">27年</option><option value="28">28年</option><option value="29">29年</option><option value="30">30年</option>
-              <option value="35">35年</option><option value="40">40年</option><option value="45">45年</option><option value="50">50年</option>
-              <option value="55">55年</option><option value="60">60年</option><option value="65">65年</option><option value="70">70年</option>
-              <option value="75">75年</option><option value="80">80年以上</option>
-            </select>
-            <span id="chikuDisp" style="font-size:11px;color:#2c5282;font-weight:600;white-space:nowrap">-</span>
-          </div>
         </div>
       </div>
-      <div class="pc-pill-pair">
-      <!-- 高度地区（フル幅1行） -->
+      <!-- 行3(PC): 高度地区 / 防火地域 / 権利関係 -->
+      <div class="pc-land-row3">
       <div style="margin-bottom:8px">
         <label>高度地区</label>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:2px">
@@ -11870,7 +11876,6 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <button type="button" class="pbtn" data-pill="kodo" data-val="なし">なし</button>
         </div>
       </div>
-      <!-- 防火地域（フル幅1行） -->
       <div style="margin-bottom:8px">
         <label>防火地域</label>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:2px">
@@ -11879,11 +11884,14 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <button type="button" class="pbtn" data-pill="bouka" data-val="防火地域">防火</button>
         </div>
       </div>
-      </div>
-      <!-- 満室・空き -->
-      <div class="metarow" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-        <div><label>満室数（戸）</label><input type="number" id="f_kuushitsu" placeholder="例: 10" inputmode="numeric" pattern="[0-9]*"></div>
-        <div><label>空き数（戸）</label><input type="number" id="f_kuushitsu_aki" placeholder="例: 2" inputmode="numeric" pattern="[0-9]*"></div>
+      <div style="margin-bottom:8px">
+        <label>権利関係チェック</label>
+        <div id="houbunPills" style="display:flex;gap:4px;flex-wrap:wrap;margin-top:2px">
+          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="単独名義">単独</button>
+          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="法人名義">法人</button>
+          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="共有名義">共有</button>
+          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="借地">借地</button>
+        </div>
       </div>
       </div>
     </div>
