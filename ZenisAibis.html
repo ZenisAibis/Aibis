@@ -2256,7 +2256,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.80";
+var APP_VERSION = "v9.81";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -5342,7 +5342,7 @@ function updateSortBtns() {
     rv:   {desc:'🔁 再訪 0→',   asc:'🔁 再訪 3→'},
     jw:   {desc:'⚖ ジャッジ（協議未記入）', asc:'⚖ ジャッジ（協議未記入）'},
     lm:   {desc:'🗺 土地（古→）', asc:'🗺 土地（古→）'},
-    cust: {desc:'👤 顧客 最新→', asc:'👤 顧客 最新→'}
+    cust: {desc:'👤 顧客 新→古', asc:'👤 顧客 新→古'}
   };
   Object.keys(base).forEach(function(k){
     var btn = document.getElementById('sb_'+k); if(!btn) return;
@@ -5566,7 +5566,7 @@ function getSorted() {
     arr.sort(function(a,b){ var d=dir * getLastVD(b).localeCompare(getLastVD(a)); return d!==0?d:(_cTs(b)-_cTs(a)); });
   } else if (sortKey==='cust') {
     arr = arr.filter(function(c){return c&&c.cust_type==='顧客';});
-    arr.sort(function(a,b){ var d=getLastVD(b).localeCompare(getLastVD(a)); return d!==0?d:(_cTs(b)-_cTs(a)); });
+    arr.sort(function(a,b){ return _cTs(b)-_cTs(a); });
   } else if (sortKey==='ad') {
     var adDir = sortDir['ad']==='desc' ? -1 : 1;
     arr.sort(function(a,b){ return adDir * getArea(a.address||'').localeCompare(getArea(b.address||''),'ja'); });
