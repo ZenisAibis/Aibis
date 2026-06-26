@@ -1324,7 +1324,7 @@ body.is-mob .mob-menu{display:inline-block}
 #secTochi .pc-land-row1 #f_kuushitsu_aki{ text-align:center !important; }
 /* スマホ：行1をコンパクトに（路線価=フル幅／残りは3列）。フォームを伸ばさない */
 @media screen and (max-width:768px){
-  #secTochi .pc-land-row1{ display:grid; grid-template-columns:1fr 1fr 1fr; column-gap:6px; row-gap:6px; align-items:end; }
+  #secTochi .pc-land-row1{ display:grid; grid-template-columns:1fr 1fr; column-gap:8px; row-gap:6px; align-items:end; }
   #secTochi .pc-land-row1 > div{ min-width:0; margin-bottom:0; }
   #secTochi .pc-land-row1 > div:first-child{ grid-column:1 / -1; }
   #secTochi .pc-land-row1 input,
@@ -2301,7 +2301,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.90";
+var APP_VERSION = "v9.91";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
