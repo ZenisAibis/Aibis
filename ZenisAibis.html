@@ -92,6 +92,8 @@ body.is-mob #analysisChartsGrid{grid-template-columns:1fr!important}
 body.is-mob .dash-grid2{grid-template-columns:1fr!important}
 .pl-tab{background:#dde5ee;color:#4a5568;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
 .pl-tab.pl-on{background:#2c5282;color:#fff}
+@keyframes plblink{0%,100%{box-shadow:0 0 0 0 rgba(214,158,46,.7)}50%{box-shadow:0 0 0 7px rgba(214,158,46,0)}}
+.pl-blink{animation:plblink 1.1s ease-in-out infinite}
 table.pltt{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px}
 table.pltt th{background:#2c5282;color:#fff;font-size:11px;padding:5px 4px;font-weight:600}
 table.pltt td{border:1px solid #cbd5e0;padding:2px 6px;height:22px}
@@ -1409,7 +1411,6 @@ body.is-mob .mob-menu{display:inline-block}
       <div class="mob-menu" style="position:relative">
         <button onclick="togglePcMenu(event)" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:6px;font-size:16px;padding:4px 8px;cursor:pointer;font-family:inherit;line-height:1.6;min-height:36px;width:36px">⋮</button>
         <div class="mob-dropdown" id="pcDropdown" style="right:0;left:auto;min-width:170px">
-          <button onclick="closePcMenu();openPlannerToday()">📅 本日の予定表</button>
           <button onclick="closePcMenu();restoreBackup()">⏪ 1つ前に戻す</button>
           <div style="height:1px;background:#e2e8f0;margin:4px 0"></div>
           <button onclick="closePcMenu();showSetup()">⚙ 初期設定</button>
@@ -1661,7 +1662,8 @@ body.is-mob .mob-menu{display:inline-block}
     </div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
       <button onclick="plannerBack()" style="background:#e2e8f0;color:#2d3748;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">← 一覧に戻る</button><button class="pl-tab pl-on" data-t="input" onclick="plannerTab('input')">✏️ 入力</button>
-      <button class="pl-tab" data-t="prev" onclick="plannerTab('prev')">🖨 予定表印刷</button>
+      <button class="pl-tab" data-t="prev" onclick="plannerTab('prev')">🖨 印刷プレビュー</button>
+      <button id="plSbBtn" onclick="openSakusenbanFromPlanner()" style="background:#d69e2e;color:#1a1300;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">🎯 作戦盤</button>
       <button onclick="plannerToPhone()" style="margin-left:auto;background:#3182ce;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">📧 スマホへ</button>
     </div>
     <div id="plannerInput"></div>
@@ -2256,7 +2258,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.83";
+var APP_VERSION = "v9.85";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -5128,7 +5130,7 @@ function renderSelfDash(tid){
  H+=_3te;
  H+='<!--SELFJOB-->';
  H+='<div class="z-card z-hero z-cf"><div class="z-ring" style="--p:'+renso+'"><div class="z-ring-in"><b>'+renso+'<small>%</small></b><span>育成率</span></div></div><div class="z-hmeta"><div class="z-lv">⚔ '+e(uName||'あなた')+' さんの成長ランク</div><h2>Lv.'+_rk.lv+' '+_rk.name+'</h2><div class="z-chips"><span class="z-chip">保有 <b>'+n+'</b>件</span><span class="z-chip">A・S <b>'+asN+'</b>件</span><span class="z-chip">要フォロー <b>'+fuN+'</b>件</span><span class="z-chip">育成率 <b>'+renso+'</b>%</span></div><div class="z-xp"><div class="z-xpl"><span>'+(_rk.next?'あと <b>'+_rk.remain+'pt</b> で Lv.'+(_rk.lv+1)+' '+_rk.next:'最高ランクに到達！')+'</span><span>今月 +'+_mg+'pt</span></div><div class="z-xptrack"><i style="width:'+_rk.prog+'%"></i></div></div><div class="z-sub" style="margin-top:6px">成長ポイント（営業経験値）累計 '+_pts+'pt</div></div></div>';
- var _plan=_planLoad(); var _acts=['再訪','追撃','テスクロ','家族確認','様子見'];
+ var _plan=_planLoad(); var _acts=PLAN_PURPOSES.slice();
  var _selN=Object.keys(_plan.sel||{}).filter(function(k){return _prio.some(function(o){return String(o.c.id||'').replace(/[^\w-]/g,'')===k;});}).length;
  H+='<div class="z-card z-c2"><h3>\ud83c\udfaf 今日の作戦盤</h3><div class="z-sub">温度の高い順に3件。「今日この方に何をする？」— チップを選んで自分のミッションに（<b>'+_selN+'</b>/'+(_prio.length||0)+'件 選択中）。</div>'
   +(_prio.length?_prio.map(function(o,i){var c=o.c;var tag=(c.pursuit_judge==='A'||c.pursuit_judge==='S')?'A候補':(lastContactDays(c)>=14?lastContactDays(c)+'日未接触':(!c.family_headcount?'家族構成未確認':_tempBand(c)[1]));
@@ -9805,13 +9807,14 @@ function showPlanner(){
   document.getElementById('listView').style.display='none';
   var v=document.getElementById('plannerView'); if(v) v.style.display='block';
   plannerTab('input');
+  try{ var _sb=document.getElementById('plSbBtn'); if(_sb){ if(!localStorage.getItem('pl_sb_opened')) _sb.classList.add('pl-blink'); else _sb.classList.remove('pl-blink'); } }catch(e){}
   _navGo('planner');
 }
 function closePlanner(){
   var v=document.getElementById('plannerView'); if(v) v.style.display='none';
   document.getElementById('listView').style.display=(hasFSA&&!isMob)?'flex':'block';
 }
-function plannerOverlayClick(ev){ if(ev.target&&ev.target.id==='plannerView'){ plannerBack(); } }
+function plannerOverlayClick(ev){ if(ev.target&&ev.target.id==='plannerView'){ try{ savePlan(); }catch(e){} closePlanner(); try{ if(history.state&&history.state.zv==='planner'){ history.replaceState({zv:'list',id:null},''); } }catch(e){} } }
 window.plannerOverlayClick=plannerOverlayClick;
 
 /* ===== ブラウザ履歴ナビゲーション ===== */
@@ -10111,7 +10114,7 @@ function _sbRowHTML(o,isPri,ix){
  var c=o.c, sc=calcScore(c), tb=_tempBand(c), on=!!window._sbSel[o.sid];
  var pl=_planLoad(); var act=(pl.sel||{})[o.sid]||'';
  var tag=isPri?'推奨':(_dTrigSoon(c)?'\u23f3時期接近':(calcPaceOverrate(c)>1?'ペース超過':((+lastContactDays(c)||0)>=14?(+lastContactDays(c))+'日未接触':(((basicInputStat(c)||{}).pct||0)<60?'入力不足':'要再訪'))));
- var chips=['再訪','追撃','テスクロ','家族確認'].map(function(a){
+ var chips=PLAN_PURPOSES.map(function(a){
   var sel=(act===a);
   return '<span onclick="zSbAct(\''+o.sid+'\',\''+a+'\')" style="cursor:pointer;display:inline-block;font-size:11px;border-radius:10px;padding:2px 8px;margin:2px 3px 0 0;border:1px solid #cbd5e0;'+(sel?'background:#2c5282;color:#fff;border-color:#2c5282;font-weight:700;':'background:#f7fafc;color:#4a5568;')+'">'+(sel?'\u2713 ':'')+a+'</span>';
  }).join('');
@@ -10121,7 +10124,7 @@ function _sbRowHTML(o,isPri,ix){
   +'<label style="display:flex;align-items:center;gap:8px;flex:1;min-width:250px;cursor:pointer">'
   +'<input type="checkbox" '+(on?'checked':'')+' onchange="zSbToggle(\''+o.sid+'\')">'
   +'<b style="font-size:13px">'+e(c.name||'無名')+'様</b>'
-  +'<span style="font-size:11px;color:#718096">'+tb[0]+' '+sc+'/78・'+e((typeof STG!=='undefined'&&STG[+(c.stage||0)])||'')+'・'+e(c.pursuit_judge||'-')+'・'+((+lastContactDays(c)||0)<0?'訪問記録なし':(+lastContactDays(c))+'日前')+'</span>'
+  +'<span style="font-size:11px;color:#718096">'+(getArea(c.address||'')?e(getArea(c.address||''))+'・':'')+tb[0]+' '+sc+'/78・'+e((typeof STG!=='undefined'&&STG[+(c.stage||0)])||'')+'・'+e(c.pursuit_judge||'-')+'・'+((+lastContactDays(c)||0)<0?'訪問記録なし':(+lastContactDays(c))+'日前')+'</span>'
   +'<span style="font-size:10px;background:#edf2f7;border-radius:8px;padding:1px 7px;color:#4a5568;white-space:nowrap">'+tag+'</span>'
   +'</label><span>'+chips+'</span></div>';
 }
@@ -10168,11 +10171,11 @@ function zSbMake(){
  function put(o){
   var c=o.c, prio=starIds[o.sid]||0, a=(pl.sel||{})[o.sid]||'';
   var ex=_plan.entries.filter(function(en){return en.cardId===c.id;})[0];
-  if(ex){ if(prio){ ex.prio=prio; if(a&&!ex.act){ ex.act=a; if(!ex.note) ex.note=a; } } return; }
+  if(ex){ if(prio){ ex.prio=prio; } if(a) ex.purpose=a; return; }
   if(planUntimedCount()>=PLAN_UNTIMED_MAX){ window._sbSkip=(window._sbSkip||0)+1; return; }
   var en=makePlanEntry(c);
   if(prio) en.prio=prio;
-  if(a){ en.act=a; en.note=a; }
+  if(a){ en.purpose=a; }
   _plan.entries.push(en); added++;
  }
  window._sbSkip=0;
@@ -10185,6 +10188,8 @@ function zSbMake(){
 function zSbSkip(){ zSbClose(); planMorningSweep(); _plan=loadPlan(); showPlanner(); }
 function zSbClose(){ var ov=document.getElementById('sakusenView'); if(ov) ov.style.display='none'; }
 window.openSakusenban=openSakusenban; window.zSbToggle=zSbToggle; window.zSbAct=zSbAct; window.zSbStar=zSbStar;
+function openSakusenbanFromPlanner(){ try{ localStorage.setItem("pl_sb_opened","1"); }catch(e){} try{ var _sb=document.getElementById("plSbBtn"); if(_sb) _sb.classList.remove("pl-blink"); }catch(e){} openSakusenban(); }
+window.openSakusenbanFromPlanner=openSakusenbanFromPlanner;
 window.zSbMake=zSbMake; window.zSbSkip=zSbSkip; window.zSbClose=zSbClose;
 
 function renderPlannerSheet(){
