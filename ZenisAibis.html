@@ -1335,10 +1335,10 @@ body.is-mob .mob-menu{display:inline-block}
   #secTochi .pc-land-row1 > div:nth-child(6){ grid-column:span 5; }
   #secTochi .pc-land-row1 input,
   #secTochi .pc-land-row1 select{ width:100%; max-width:none; min-width:0; box-sizing:border-box; }
-  #secTochi .pc-land-row1 #f_chishaku{ width:auto !important; min-width:38px; flex:0 0 auto; }
+  #secTochi .pc-land-row1 #f_chishaku{ width:66px !important; min-width:66px; font-size:15px; flex:0 0 66px; }
   #secTochi .pc-land-row1 .unit-field{ padding:0 4px; }
   /* 用途地域60|建蔽容積40（接道方位はフル幅のまま） */
-  #secTochi .pc-road-right2{ display:grid; grid-template-columns:minmax(0,1fr) 120px; column-gap:8px; row-gap:6px; align-items:end; }
+  #secTochi .pc-road-right2{ display:grid; grid-template-columns:minmax(0,1fr) 130px; column-gap:8px; row-gap:6px; align-items:end; }
   #secTochi .pc-road-right2 > div{ min-width:0; margin-bottom:0; }
   #secTochi .pc-road-right2 select{ width:100%; min-width:0; box-sizing:border-box; }
   /* 高度/防火/権利は各フル幅1行 */
@@ -2310,7 +2310,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.94";
+var APP_VERSION = "v9.95";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -11803,7 +11803,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <label>路線価<span style="font-size:10px;color:#718096">（千円/㎡）</span></label>
           <div style="display:flex;gap:4px;align-items:center">
             <input type="text" id="f_rosenka" placeholder="例: 250" inputmode="numeric" style="flex:1" onblur="normalizeRosenka()">
-            <select id="f_chishaku" style="width:48px;font-size:12px;padding:4px 2px" onchange="updateRosenkaDisp(document.getElementById('f_rosenka')?.value||'')">
+            <select id="f_chishaku" style="width:66px;font-size:15px;padding:5px 4px" onchange="updateRosenkaDisp(document.getElementById('f_rosenka')?.value||'')">
               <option value="">-</option>
               <option value="A">A</option>
               <option value="B">B</option>
@@ -11817,15 +11817,15 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <div id="rosenkaDisp" style="font-size:10px;color:#718096;margin-top:2px"></div>
         </div>
         <div>
-          <label class="pc-area-label">面積</label>
+          <label class="pc-area-label">面積（㎡）</label>
           <div class="unit-field">
             <input type="number" id="f_m2" placeholder="例:240" inputmode="numeric" pattern="[0-9]*"><span class="usuf">㎡</span>
           </div>
           <div id="tsuboDisp" style="font-size:10px;color:#64748b;font-weight:600;margin-top:2px">- 坪</div>
         </div>
-        <div><label>間口</label><div class="unit-field"><input type="number" id="f_maguchi" placeholder="12" inputmode="numeric" pattern="[0-9]*"><span class="usuf">m</span></div></div>
+        <div><label>間口（m）</label><div class="unit-field"><input type="number" id="f_maguchi" placeholder="12" inputmode="numeric" pattern="[0-9]*"><span class="usuf">m</span></div></div>
         <div>
-          <label>築年数</label>
+          <label>築年数 <span id="chikuDisp" style="font-size:11px;color:#2c5282;font-weight:600;white-space:nowrap">-</span></label>
           <div style="display:flex;gap:4px;align-items:center">
             <select id="f_chiku" style="flex:1">
               <option value="">-</option>
@@ -11840,11 +11840,10 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
               <option value="55">55年</option><option value="60">60年</option><option value="65">65年</option><option value="70">70年</option>
               <option value="75">75年</option><option value="80">80年以上</option>
             </select>
-            <span id="chikuDisp" style="font-size:11px;color:#2c5282;font-weight:600;white-space:nowrap">-</span>
           </div>
         </div>
-        <div><label>満室数（戸）</label><input type="number" id="f_kuushitsu" placeholder="例: 10" inputmode="numeric" pattern="[0-9]*"></div>
-        <div><label>空き数（戸）</label><input type="number" id="f_kuushitsu_aki" placeholder="例: 2" inputmode="numeric" pattern="[0-9]*"></div>
+        <div><label>満室・満車</label><input type="number" id="f_kuushitsu" placeholder="例: 10" inputmode="numeric" pattern="[0-9]*"></div>
+        <div><label>空き</label><input type="number" id="f_kuushitsu_aki" placeholder="例: 2" inputmode="numeric" pattern="[0-9]*"></div>
       </div>
       <!-- 行2(PC): 接道方位 | 用途地域/建蔽容積 -->
       <div class="pc-land-row2">
@@ -11870,19 +11869,19 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
         <label>用途地域</label>
         <select id="f_youto" style="font-size:13px;width:100%">
             <option value="">-</option>
-            <option value="第一種低層住居専用地域">第一種低層住居専用地域</option>
-            <option value="第二種低層住居専用地域">第二種低層住居専用地域</option>
-            <option value="田園住居地域">田園住居地域</option>
-            <option value="第一種中高層住居専用地域">第一種中高層住居専用地域</option>
-            <option value="第二種中高層住居専用地域">第二種中高層住居専用地域</option>
-            <option value="第一種住居地域">第一種住居地域</option>
-            <option value="第二種住居地域">第二種住居地域</option>
-            <option value="準住居地域">準住居地域</option>
-            <option value="近隣商業地域">近隣商業地域</option>
-            <option value="商業地域">商業地域</option>
-            <option value="準工業地域">準工業地域</option>
-            <option value="工業地域">工業地域</option>
-            <option value="工業専用地域">工業専用地域</option>
+            <option value="第一種低層住居専用地域">第一種低層住居専用</option>
+            <option value="第二種低層住居専用地域">第二種低層住居専用</option>
+            <option value="田園住居地域">田園住居</option>
+            <option value="第一種中高層住居専用地域">第一種中高層住居専用</option>
+            <option value="第二種中高層住居専用地域">第二種中高層住居専用</option>
+            <option value="第一種住居地域">第一種住居</option>
+            <option value="第二種住居地域">第二種住居</option>
+            <option value="準住居地域">準住居</option>
+            <option value="近隣商業地域">近隣商業</option>
+            <option value="商業地域">商業</option>
+            <option value="準工業地域">準工業</option>
+            <option value="工業地域">工業</option>
+            <option value="工業専用地域">工業専用</option>
           <option value="無指定">無指定</option>
         </select>
       </div>
