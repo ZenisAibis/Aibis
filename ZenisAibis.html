@@ -1315,6 +1315,27 @@ body.is-mob .mob-menu{display:inline-block}
   #secTochi .pc-land-row3{display:grid;grid-template-columns:1fr 1fr 1fr;column-gap:16px;align-items:start;margin-bottom:8px}
   #secTochi .pc-land-row3 > div{min-width:0;margin-bottom:0 !important}
 }
+/* 土地情報 行1：表示文字は中央寄せ（PC/スマホ共通） */
+#editView #secTochi .pc-land-row1 input,
+#editView #secTochi .pc-land-row1 .unit-field input{ text-align:center !important; text-align-last:center !important; }
+#secTochi .pc-land-row1 select{ text-align:center; text-align-last:center; }
+#secTochi .pc-land-row1 #f_rosenka,
+#secTochi .pc-land-row1 #f_kuushitsu,
+#secTochi .pc-land-row1 #f_kuushitsu_aki{ text-align:center !important; }
+/* スマホ：行1をコンパクトに（路線価=フル幅／残りは3列）。フォームを伸ばさない */
+@media screen and (max-width:768px){
+  #secTochi .pc-land-row1{ display:grid; grid-template-columns:1fr 1fr 1fr; column-gap:6px; row-gap:6px; align-items:end; }
+  #secTochi .pc-land-row1 > div{ min-width:0; margin-bottom:0; }
+  #secTochi .pc-land-row1 > div:first-child{ grid-column:1 / -1; }
+  #secTochi .pc-land-row1 input,
+  #secTochi .pc-land-row1 select{ width:100%; max-width:none; min-width:0; box-sizing:border-box; }
+  #secTochi .pc-land-row1 #f_chishaku{ width:auto !important; min-width:44px; flex:0 0 auto; }
+  #secTochi .pc-land-row1 .unit-field{ padding:0 6px; }
+  /* 行3（高度/防火/権利）も2列でコンパクトに */
+  #secTochi .pc-land-row3{ display:grid; grid-template-columns:1fr 1fr; column-gap:8px; row-gap:6px; }
+  #secTochi .pc-land-row3 > div{ min-width:0; margin-bottom:0; }
+  #secTochi .pc-land-row3 > div:last-child{ grid-column:1 / -1; }
+}
 /* ============================================================
    PC版 精密グリッド調整 v9.24 — Step E（名前/家族＋一行化の仕上げ）
    ・名前エリア：mk-row(2fr1fr1fr / 1fr1fr)を維持し、ソーシャル/現状/TELをセル幅いっぱいに
@@ -2280,7 +2301,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.89";
+var APP_VERSION = "v9.90";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
