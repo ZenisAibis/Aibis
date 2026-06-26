@@ -730,11 +730,14 @@ body.is-mob .mob-menu{display:inline-block}
   #tr .vcard.ri .vh{margin-bottom:0.5mm!important}
   #tr .vcard.ri .vn{font-size:9pt!important}
   #tr .vcard.ri textarea{min-height:7mm!important;font-size:7.5pt!important}
-  /* 訪問内容を300文字相当の高さで打ち切り */
-  #tr .vcard.ri textarea, #tp .vcard.pi textarea{
-    max-height:32mm!important;
+  /* 入力フォーム（訪問内容・協議メモ等）は最大6行で打ち切り。短い時は内容に合わせて縮む */
+  #tr textarea, #tp textarea{
+    line-height:1.3!important;
+    max-height:21mm!important;   /* ≈6行(7.5pt) */
     overflow:hidden!important;
   }
+  /* 再訪Judgmentは分割させず確実に収める（固定枠を残す） */
+  #tr .jsec{page-break-inside:avoid!important}
   #tr .vcard.ri label{font-size:7pt!important}
   #tr .vcard.ri input,#tr .vcard.ri select{font-size:7.5pt!important}
   /* 録音要約・戦略協議ボタン・連続留守カウントは非表示 */
@@ -2258,7 +2261,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.87";
+var APP_VERSION = "v9.88";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
