@@ -1505,7 +1505,7 @@ body.is-mob .mob-menu{display:inline-block}
       <div class="sortbar-scroll">
         <button class="sbtn active" id="sb_lv" onclick="toggleSort('lv')">🚶 最新</button>
         <button class="sbtn" id="sb_rv" onclick="toggleSort('rv')">🔁 再訪</button>
-        <button class="sbtn" id="sb_cust" onclick="toggleCustFilter()">👤 顧客</button>
+        <button class="sbtn" id="sb_cust" onclick="toggleSort('cust')">👤 顧客</button>
         <button class="sbtn" id="sb_sc" onclick="toggleSort('sc')">⭐ スコア</button>
         <button class="sbtn" id="sb_jw" onclick="toggleSort('jw')">⚖ ジャッジ</button>
         <button class="sbtn" id="sb_ad" onclick="toggleSort('ad')">🏠 住所</button>
@@ -2256,7 +2256,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.79";
+var APP_VERSION = "v9.80";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -2445,7 +2445,6 @@ var uNick = '';
 var uHand = 'left';
 var fHandle = null;
 var sortKey = 'lv'; // lv=最新, ad=住所, st=段階, dt=初訪
-var custFilter=false;
 var sortDir = { lv:'asc', ad:'asc', st:'asc', dt:'asc' };
 
 var isMob = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -5329,7 +5328,7 @@ function toggleSort(key) {
 }
 function updateSortBtns() {
   // 非アクティブ時の基本ラベル
-  var base = {lv:'🚶 最新', ad:'🏠 住所', st:'📊 心理', sc:'⭐ スコア', pj:'🎯 ランク', dt:'📅 初訪', kw:'💬 会話', pace:'⏰ 遅れ', rv:'🔁 再訪', jw:'⚖ ジャッジ', lm:'🗺 土地'};
+  var base = {lv:'🚶 最新', ad:'🏠 住所', st:'📊 心理', sc:'⭐ スコア', pj:'🎯 ランク', dt:'📅 初訪', kw:'💬 会話', pace:'⏰ 遅れ', rv:'🔁 再訪', jw:'⚖ ジャッジ', lm:'🗺 土地', cust:'👤 顧客'};
   // アクティブ時：その状態で「実際に先頭に来る方」を表示（＝現在の表示順）
   var act = {
     lv:   {desc:'🚶 古い→',     asc:'🚶 最新→'},
@@ -5342,7 +5341,8 @@ function updateSortBtns() {
     pace: {desc:'⏰ 遅れ 小→',  asc:'⏰ 遅れ 大→'},
     rv:   {desc:'🔁 再訪 0→',   asc:'🔁 再訪 3→'},
     jw:   {desc:'⚖ ジャッジ（協議未記入）', asc:'⚖ ジャッジ（協議未記入）'},
-    lm:   {desc:'🗺 土地（古→）', asc:'🗺 土地（古→）'}
+    lm:   {desc:'🗺 土地（古→）', asc:'🗺 土地（古→）'},
+    cust: {desc:'👤 顧客 最新→', asc:'👤 顧客 最新→'}
   };
   Object.keys(base).forEach(function(k){
     var btn = document.getElementById('sb_'+k); if(!btn) return;
@@ -5564,6 +5564,9 @@ function getSorted() {
   var dir = sortDir[sortKey]==='desc' ? -1 : 1;
   if (sortKey==='lv') {
     arr.sort(function(a,b){ var d=dir * getLastVD(b).localeCompare(getLastVD(a)); return d!==0?d:(_cTs(b)-_cTs(a)); });
+  } else if (sortKey==='cust') {
+    arr = arr.filter(function(c){return c&&c.cust_type==='顧客';});
+    arr.sort(function(a,b){ var d=getLastVD(b).localeCompare(getLastVD(a)); return d!==0?d:(_cTs(b)-_cTs(a)); });
   } else if (sortKey==='ad') {
     var adDir = sortDir['ad']==='desc' ? -1 : 1;
     arr.sort(function(a,b){ return adDir * getArea(a.address||'').localeCompare(getArea(b.address||''),'ja'); });
@@ -5668,7 +5671,6 @@ function renderCards() {
   // フィルタ
   var sorted = getSorted();
   if(staffFilter!=='all') sorted=sorted.filter(function(c){return (c.manager||'')===staffFilter;});
-  if(custFilter) sorted=sorted.filter(function(c){return c.cust_type==='顧客';});
 
   var result = keywords.length===0 ? sorted : sorted.filter(function(c){
     var haystack=[c.name,c.address,c.plan_address,c.manager,c.branch,c.section].filter(Boolean).join(' ');
@@ -5760,7 +5762,6 @@ function goPage(p){
 function getFilteredCount(){
   var sorted=getSorted();
   if(staffFilter!=='all') sorted=sorted.filter(function(c){return (c.manager||'')===staffFilter;});
-  if(custFilter) sorted=sorted.filter(function(c){return c.cust_type==='顧客';});
   var q=(document.getElementById('searchInput')?.value||'').trim();
   if(!q) return sorted.length;
   var kws=q.split(/[\s　]+/).filter(Boolean);
@@ -11354,8 +11355,7 @@ function updateDoukouBtn(){
 window.toggleDoukou=toggleDoukou; window.updateDoukouBtn=updateDoukouBtn;
 function toggleCust(){ if(!cur) return; cur.cust_type=(cur.cust_type==='顧客')?'新規':'顧客'; updateCustBtn(); if(typeof setDirty==='function') setDirty(true); }
 function updateCustBtn(){ var b=document.getElementById('custBtn'); if(!b) return; var isC=(cur&&cur.cust_type==='顧客'); b.textContent=isC?'顧客':'新規'; b.style.background=isC?'linear-gradient(135deg,#2c5282,#2b6cb0)':'white'; b.style.borderColor=isC?'#2b6cb0':'#e2e8f0'; b.style.color=isC?'#fff':'#718096'; }
-function toggleCustFilter(){ custFilter=!custFilter; var b=document.getElementById('sb_cust'); if(b)b.classList.toggle('active',custFilter); if(custFilter){ sortKey='lv'; if(typeof updateSortBtns==='function') updateSortBtns(); } if(typeof renderCards==='function') renderCards(); }
-window.toggleCust=toggleCust; window.updateCustBtn=updateCustBtn; window.toggleCustFilter=toggleCustFilter;
+window.toggleCust=toggleCust; window.updateCustBtn=updateCustBtn;
 function toggleEkitoho(){
   if(!cur) return;
   var order=['','〜10分','〜20分','21分以上'];
