@@ -1324,19 +1324,24 @@ body.is-mob .mob-menu{display:inline-block}
 #secTochi .pc-land-row1 #f_kuushitsu_aki{ text-align:center !important; }
 /* スマホ：行1=路線価|面積 ＋ 間口|築年数|満室|空き(4列) ／ 用途|建蔽(2列) ／ 高度・防火は各フル幅1行 */
 @media screen and (max-width:768px){
-  #secTochi .pc-land-row1{ display:grid; grid-template-columns:1fr 1fr 1fr 1fr; column-gap:6px; row-gap:6px; align-items:end; }
+  /* 行1: 路線価60|面積40 ／ 間口50|築年数50 ／ 満室50|空き50（10分割gridでspan割当） */
+  #secTochi .pc-land-row1{ display:grid; grid-template-columns:repeat(10,1fr); column-gap:6px; row-gap:6px; align-items:end; }
   #secTochi .pc-land-row1 > div{ min-width:0; margin-bottom:0; }
-  #secTochi .pc-land-row1 > div:nth-child(1){ grid-column:span 2; }
-  #secTochi .pc-land-row1 > div:nth-child(2){ grid-column:span 2; }
+  #secTochi .pc-land-row1 > div:nth-child(1){ grid-column:span 6; }
+  #secTochi .pc-land-row1 > div:nth-child(2){ grid-column:span 4; }
+  #secTochi .pc-land-row1 > div:nth-child(3){ grid-column:span 5; }
+  #secTochi .pc-land-row1 > div:nth-child(4){ grid-column:span 5; }
+  #secTochi .pc-land-row1 > div:nth-child(5){ grid-column:span 5; }
+  #secTochi .pc-land-row1 > div:nth-child(6){ grid-column:span 5; }
   #secTochi .pc-land-row1 input,
   #secTochi .pc-land-row1 select{ width:100%; max-width:none; min-width:0; box-sizing:border-box; }
   #secTochi .pc-land-row1 #f_chishaku{ width:auto !important; min-width:38px; flex:0 0 auto; }
   #secTochi .pc-land-row1 .unit-field{ padding:0 4px; }
-  /* 用途地域|建蔽容積 を2列（接道方位はフル幅のまま） */
-  #secTochi .pc-road-right2{ display:grid; grid-template-columns:1fr 1fr; column-gap:8px; row-gap:6px; align-items:end; }
+  /* 用途地域60|建蔽容積40（接道方位はフル幅のまま） */
+  #secTochi .pc-road-right2{ display:grid; grid-template-columns:3fr 2fr; column-gap:8px; row-gap:6px; align-items:end; }
   #secTochi .pc-road-right2 > div{ min-width:0; margin-bottom:0; }
   #secTochi .pc-road-right2 select{ width:100%; min-width:0; box-sizing:border-box; }
-  /* 高度/防火/権利は各フル幅1行（ボタンは各セクション内で1行に収まる） */
+  /* 高度/防火/権利は各フル幅1行 */
   #secTochi .pc-land-row3{ display:block; }
   #secTochi .pc-land-row3 > div{ min-width:0; margin-bottom:8px; }
 }
@@ -2305,7 +2310,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.92";
+var APP_VERSION = "v9.93";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
