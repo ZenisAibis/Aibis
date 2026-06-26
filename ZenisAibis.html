@@ -1325,7 +1325,7 @@ body.is-mob .mob-menu{display:inline-block}
 /* スマホ：行1=路線価|面積 ＋ 間口|築年数|満室|空き(4列) ／ 用途|建蔽(2列) ／ 高度・防火は各フル幅1行 */
 @media screen and (max-width:768px){
   /* 行1: 路線価60|面積40 ／ 間口50|築年数50 ／ 満室50|空き50（10分割gridでspan割当） */
-  #secTochi .pc-land-row1{ display:grid; grid-template-columns:repeat(10,1fr); column-gap:6px; row-gap:6px; align-items:end; }
+  #secTochi .pc-land-row1{ display:grid; grid-template-columns:repeat(10,1fr); column-gap:6px; row-gap:6px; align-items:start; }
   #secTochi .pc-land-row1 > div{ min-width:0; margin-bottom:0; }
   #secTochi .pc-land-row1 > div:nth-child(1){ grid-column:span 6; }
   #secTochi .pc-land-row1 > div:nth-child(2){ grid-column:span 4; }
@@ -1338,7 +1338,7 @@ body.is-mob .mob-menu{display:inline-block}
   #secTochi .pc-land-row1 #f_chishaku{ width:auto !important; min-width:38px; flex:0 0 auto; }
   #secTochi .pc-land-row1 .unit-field{ padding:0 4px; }
   /* 用途地域60|建蔽容積40（接道方位はフル幅のまま） */
-  #secTochi .pc-road-right2{ display:grid; grid-template-columns:3fr 2fr; column-gap:8px; row-gap:6px; align-items:end; }
+  #secTochi .pc-road-right2{ display:grid; grid-template-columns:minmax(0,1fr) 120px; column-gap:8px; row-gap:6px; align-items:end; }
   #secTochi .pc-road-right2 > div{ min-width:0; margin-bottom:0; }
   #secTochi .pc-road-right2 select{ width:100%; min-width:0; box-sizing:border-box; }
   /* 高度/防火/権利は各フル幅1行 */
@@ -2310,7 +2310,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.93";
+var APP_VERSION = "v9.94";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -10750,7 +10750,7 @@ function updateRosenkaDisp(val){
   var disp=document.getElementById('rosenkaDisp'); if(!disp) return;
   var n=parseFloat(String(val).replace(/,/g,''));
   if(!n||isNaN(n)){ disp.textContent=''; return; }
-  var man=Math.round(n/10)/10;
+  var man=Math.round(n)/10;
   var chishaku=document.getElementById('f_chishaku');
   var cval=chishaku?chishaku.value:'';
   var chishakuRates={A:'90%',B:'80%',C:'70%',D:'60%',E:'50%',F:'40%',G:'30%'};
@@ -11817,14 +11817,15 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <div id="rosenkaDisp" style="font-size:10px;color:#718096;margin-top:2px"></div>
         </div>
         <div>
-          <label class="pc-area-label">面積<span id="tsuboDisp" style="font-size:11px;color:#64748b;font-weight:600;white-space:nowrap">- 坪</span></label>
+          <label class="pc-area-label">面積</label>
           <div class="unit-field">
             <input type="number" id="f_m2" placeholder="例:240" inputmode="numeric" pattern="[0-9]*"><span class="usuf">㎡</span>
           </div>
+          <div id="tsuboDisp" style="font-size:10px;color:#64748b;font-weight:600;margin-top:2px">- 坪</div>
         </div>
         <div><label>間口</label><div class="unit-field"><input type="number" id="f_maguchi" placeholder="12" inputmode="numeric" pattern="[0-9]*"><span class="usuf">m</span></div></div>
         <div>
-          <label>築年数<span style="font-size:10px;color:#718096">→西暦/和暦</span></label>
+          <label>築年数</label>
           <div style="display:flex;gap:4px;align-items:center">
             <select id="f_chiku" style="flex:1">
               <option value="">-</option>
