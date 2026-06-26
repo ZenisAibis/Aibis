@@ -1787,7 +1787,7 @@ body.is-mob .mob-menu{display:inline-block}
         ※ <b>チェックなしで押すと、前回送信から更新・新規のカードだけ</b>を自動で選んで送るよ（確認あり）。全部送るなら「全選択」<br><br>
         <b style="color:#718096">【共通】</b><br>
         検索 … 氏名・住所・地名で絞り込み（スペース区切りで複数）<br>
-        並び替え … 最新・再訪・ジャッジ・住所・スコア・心理・ランク・遅れ・初訪・土地から選択<br>
+        並び替え … 最新・再訪・ジャッジ・住所・スコア・心理・会話・ランク・遅れ・初訪・土地・顧客から選択<br>
         一覧の各カードには「追客ランク」「心理ステージ」が表示されます
       </div>
     </div>
@@ -1814,6 +1814,26 @@ body.is-mob .mob-menu{display:inline-block}
         <b style="color:#2c5282">🎤 音声入力</b><br>
         各メモ欄のマイク（🎤）を押すと音声で入力できます。専門用語・競合名は自動で補正されます。話すときは一息で話し切るのがコツです（途中で間が空くと認識が切れます）<br><br>
         入力後は必ず「💾 保存」を押してください
+      </div>
+    </div>
+
+    <div class="msec">
+      <div class="mttl" onclick="mtoggle(this)">📷 計画地写真（アイビスカメラ） <span class="marr">▶</span></div>
+      <div class="mbdy" style="display:none">
+        現地の計画地を撮影し、住所と一緒にカードへ取り込むスマホ専用カメラです。撮影は別画面「アイビスカメラ」で行い、本体に戻して紐付けます。<br><br>
+        <b style="color:#0e4a45">起動のしかた（3通り）</b><br>
+        ・カードの「📷 計画地写真」→ 📷 … このカードに紐付けて撮影<br>
+        ・⚡光速入力モードの「📷 計画地を撮影」… 撮影後に住所も反映<br>
+        ・⋮その他のアイコンから「ホーム画面に追加」… 本体とは別のカメラ専用アイコンを作成<br><br>
+        <b style="color:#0e4a45">撮る → 戻す</b><br>
+        ① 計画地を撮影（1データ＝最大4枚）<br>
+        ②「✓ 完了」を押す<br>
+        ③ カード／光速入力から起動した場合は本体に戻り、写真と住所がそのカードに入ります。ホーム画面アイコンから起動した場合はインボックスに保存され、あとでカードに紐付けます<br><br>
+        <b style="color:#0e4a45">インボックス（📥）</b><br>
+        カードを決めずに撮った写真は「インボックス」に溜まります。カードの📥から選んで紐付け・削除ができます。10件・15件で本体での整理を促します。<br><br>
+        <b style="color:#0e4a45">表示と印刷</b><br>
+        紐付けた写真はカードの「📷 計画地写真」で確認できます（表示専用）。🖨でデータ（印刷では「筆」と表示）を選び、A4縦・1データ1ページ（2×2で最大4枚）で印刷できます。本文カードには載らず別印刷です。<br><br>
+        ※ 写真は端末内に保存され、本体カードを削除すると紐付け済み写真も一緒に消えます（インボックスの未紐付け分は残ります）。
       </div>
     </div>
 
@@ -2310,7 +2330,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.98";
+var APP_VERSION = "v10.2";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -2901,7 +2921,7 @@ var AIBIS_FAQ=[
   {q:'自動保存先って何？',a:'PC版でOneDriveに設定する主ファイルのことだよ！保存するたびに自動で書き込まれるよ。<br><br>初期設定の「💾 自動保存先を設定」から設定できるよ。ファイル名はz-aibis_氏名.jsonで自動入力されるから変更不要！<br><br>⚠ このファイルを削除すると全データが消えるから絶対に削除しないでね！'},
   {q:'データが消えた！',a:'落ち着いて！まず確認してみてね😊<br><br>【まず試す】⋮その他→⏪1つ前に戻す　で直前の保存状態に復元できるよ！<br><br>【PC版】OneDriveのz-aibis_氏名.jsonが残っていないか確認。コピー保存先も確認してみて。<br>【スマホ版】PCにバックアップ（📧 PCへ）が残っていないか確認。<br><br>これからはPC版でコピー保存先も設定しておくと二重に守れるよ！'},
   {q:'1つ前に戻すって何？',a:'⏪1つ前に戻すは、直前の保存状態に復元する機能だよ！<br><br>保存するたびに、その直前のデータが自動でバックアップされてるよ。<br><br>誤ってカードを消した・上書きしてしまった・読み込みミスをした、そんなときに⋮その他→⏪1つ前に戻すで復活できるよ😊<br><br>※もう一度押すと、戻す前の状態に戻せるよ（行ったり来たり）。ただし2つ前より前には戻れないから注意してね！'},
-  {q:'検索ってどう使うの？',a:'名前や住所を入れるだけ！スペース区切りで複数キーワードも使えるよ🔍<br>並び替えは最新・再訪・判定待ち・住所・スコア・心理・ランク・遅れ・初訪から選べるよ！'},
+  {q:'検索ってどう使うの？',a:'名前や住所を入れるだけ！スペース区切りで複数キーワードも使えるよ🔍<br>並び替えは最新・再訪・ジャッジ・住所・スコア・心理・会話・ランク・遅れ・初訪・土地・顧客から選べるよ！'},
   {q:'バージョンアップするには？',a:function(){ return isMgrUnlocked()?'Claudeに修正を頼んで、GitHubに上書きするだけ！みんな次回アクセスで自動的に最新版になるよ👏':'アップデートは課長が管理しているよ😊 アプリを開き直すだけで、いつでも自動的に最新版が使えるから安心してね！'; }},
   {q:'マニュアルはどこ？',a:function(){return isMob?'⋮その他→📖マニュアルから見れるよ！タイトルをタップすると詳細が開くよ。':'⋮その他→📖マニュアルから見れるよ！各セクションをクリックすると詳細が開くよ。';}},
   {q:'戦略協議ってどう使うの？',a:'戦略協議は、お客様の情報をAI（会社のCopilot）に分析してもらう機能だよ！<br><br>①「💭 戦略協議」タブを開く<br>②分析テーマを選ぶ（8種）<br>③「🤖 分析用に抽出」でコピー、または「📎 ファイルで抽出」でtxt保存（Copilotに添付→「添付の指示に従って分析して」とだけ送ればOK）<br>④「🤖 AI分析」でCopilotが開く<br>⑤貼り付けて送信→回答を貼り付け欄にペースト<br><br>総合分析では追客ランク（S〜E）が自動で検出されるよ🧚'},
@@ -2948,6 +2968,10 @@ var AIBIS_FAQ=[
   {q:'光速入力モードの住所はどう入力する？',a:'住所（自宅）と計画地は、<b>📍現在地取得ボタン</b>で現在地住所を入れるよ。<br>番地が足りない場合は、<b>🔢番地入力</b>で「3-15-2」のように追加できるよ😊'},
   {q:'光速入力の住所にマイクボタンがないのはなぜ？',a:'丁目・番地・ハイフンは音声入力で誤認識しやすいためだよ🎤❌<br>住所は<b>現在地取得＋番地入力</b>を基本にしているんだ。氏名と計画地備考にはマイクがあるよ！'},
   {q:'計画地備考には何を書く？',a:'現地で見た計画地まわりの気づきを書くよ📝<br>例：P空き多い、老朽建物あり、店舗裏に余地あり、自宅横が雑種地、間口広め、接道良さそう、など。<br>次回訪問の作戦材料になるよ😊'},
+  {q:'計画地写真',a:function(){return isMob?'現地を撮るなら<b>アイビスカメラ</b>📷<br><br>カードの「📷 計画地写真」→📷で<b>このカードに紐付けて撮影</b>。光速入力なら「📷 計画地を撮影」で住所も一緒に反映。1データ＝最大4枚。「✓ 完了」で本体に戻ると写真と住所が入るよ😊':'計画地写真の撮影はスマホの<b>アイビスカメラ</b>で行うよ📷 撮った写真はカードの「📷 計画地写真」に紐付き、🖨で筆ごとにA4縦（2×2・最大4枚）で印刷できるよ。';}},
+  {q:'カメラ',a:function(){return isMob?'スマホ専用の<b>アイビスカメラ</b>で計画地を撮影できるよ📷 カードの📷から起動するとこのカードに紐付くよ。撮ったら「✓ 完了」を押してね。':'カメラ撮影はスマホ版の機能だよ📷 撮った計画地写真はカードに紐付いて、PCの🖨で印刷できるよ。';}},
+  {q:'インボックス',a:'カードを決めずに撮った計画地写真が一時的に溜まる置き場だよ📥<br>カードの「📷 計画地写真」→📥から、写真を選んでカードに紐付け・削除ができるよ。紐付けると表示・印刷に使えるようになるよ😊'},
+  {q:'計画地写真の印刷',a:'カードを開いて「📷 計画地写真」→🖨を押すと、筆を選んでA4縦・1筆1ページ（2×2で最大4枚）で印刷できるよ🖨 計画地写真は本文カードには載らず別印刷だよ。'},
   {q:'家族構成ってどう入れるの？',a:'初訪タブの「家族構成」セクションから入力できるよ！<br><br>＋ボタンで追加→続柄・氏名・年齢・居住形態を入力<br>★所有者 / KP（キーパーソン）/ 面談済 も記録できるよ<br>スタンス（ポジティブ/ネガティブ）も記録して戦略に活かしてね！<br>👶 子世代・兄弟姉妹は婚姻状況と子の人数も記録できるよ（相続人の把握に役立つ）。'},
   {q:'課分析ダッシュボードって何？',a:function(){ return isMgrUnlocked()?'管理職のPC版でのみ使える育成型「コマンドセンター」だよ📊 「今日動く」「担当を育てる」を上段にまとめてる。<br><br>・📌 今日の一手（誰に何を・次に聞く質問つき）<br>・🎯 次の一手 準備度（次回アポ・家族・KP・提案依頼から自動算出）<br>・🪜 見込み進捗3ゾーン<br>・💼 契約クローズ・トラッカー<br>・🎓 課長コーチング（良い点＋今週の声掛け）<br>・🌱 育成クエスト（弱点を次の課題に）<br>・🏆 担当別スコア／重要3指標／🟢 稼働率モニター<br>・🧠 傾向と対策（AIインサイト）<br><br>担当者セレクトで個人・全体を切替。「🤖 分析用に抽出」→「🤖 AI分析」でCopilotに分析依頼（次回アクション中心の指示が出るよ）。「🖨 レポート印刷」で表紙＋目次＋ガジェット＋AI分析を1冊のA4に。':'それは課長・支店長向けの機能だよ😊 担当のみんなは「🔭 自己分析ダッシュボード」で自分の見込みをチェックしてね！'; }},
   {q:'自己分析ダッシュボードって何？',a:'自分の見込みを自分で研究する「グロースコンソール」だよ🔭<br><br>・連想到達率リング＋レベル表示で成長を実感<br>・🔥 平日ストリーク（平日に開くと継続。土日はお休み）<br>・⤴ ステージ引き上げ（今月お客様の心を動かした回数＋⭐提案依頼）<br>・🥇 月間バッジ（提案依頼・同行・家族構成コンプ・新規発掘の達成度）<br>・🏆 課内ランキング（上位3名＋自分の順位。課長端末で表示）<br>・🎯 今日の作戦盤（優先3件にアクションチップを選んで自分のミッションに）<br>・🎖 営業ジョブ（9軸）… いまの「型」と二つ名、次に伸ばす力を表示（カードを育てるほど正確に）<br>・🔻 マイ・パイプライン（転換率つき）<br>・🥊 壁打ちワーク（AI相手に1問だけ自問自答してスキルUP）<br><br>スマホでも見れるよ。PCなら「🤖 AI分析」「🖨 印刷」も使えるよ！'},
@@ -5661,6 +5685,8 @@ function getSorted() {
     arr = arr.filter(_isLandLead);
     var _dk=function(c){ return c.discovery_date || '9999-99-99'; };
     arr.sort(function(a,b){ return _dk(a).localeCompare(_dk(b)); }); // 古い発掘順
+  } else if (sortKey==='kw') {
+    arr.sort(function(a,b){ return dir * (_kaiwaMax(b) - _kaiwaMax(a)); });
   } else { // dt
     arr.sort(function(a,b){ var d=dir * (b.discovery_date||'').localeCompare(a.discovery_date||''); return d!==0?d:(_cTs(b)-_cTs(a)); });
   }
@@ -10654,7 +10680,7 @@ var qaPendingPhotoSet=null; // カメラから戻ってきた写真データID�
 function qaOpenCam(){
   try{ localStorage.removeItem('aibis_qa_return'); }catch(_e){}
   try{ window.open('AibisCam.html?ret=qa','aibiscam'); }catch(_e){ location.href='AibisCam.html?ret=qa'; }
-  toast('カメラで計画地を撮影 →「📥 アイビスに反映して戻る」を押すと住所が入ります');
+  toast('カメラで計画地を撮影 →「✓ 完了」を押すと住所が入ります');
 }
 window.qaOpenCam=qaOpenCam;
 // カメラ（別タブ）が書き込んだ住所を受け取る
@@ -10677,6 +10703,7 @@ function _qaApplyCamReturn(d){
     openQuickAdd();
     setTimeout(function(){ var pl=document.getElementById('qaPlan'); if(pl){ pl.value=(d.addr||'')+(d.banchi?(' '+d.banchi):''); } if(d.setId) qaPendingPhotoSet=d.setId; toast('📍 計画地に住所を反映しました'); },120);
   }
+  if(d.setId && typeof mGet==='function'){ setTimeout(function(){ try{ mGet(d.setId).then(function(s){ if(s){ var n=(s.note||'').trim(); if(n){ var kb=document.getElementById('qaKuubi'); if(kb) kb.value=n; } } }); }catch(_e){} },160); }
 }
 // 同一タブで戻ってきたケース（フォールバック）：起動時に保留がないか確認
 window.addEventListener('load',function(){
@@ -13778,7 +13805,20 @@ function renderInboxBody(){
     if(host) host.innerHTML='<div class="iempty">読み込みに時間がかかっています（接続を作り直します）。<br><br><button class="ibtn pri" onclick="renderInboxBody()">🔄 再読み込み</button><br><br><span style="font-size:11px;color:#c53030">'+e(String((err&&err.message)||err))+'</span></div>';
   });
 }
-function _attachToCard(id){ if(!_inboxAttach) return; var cid=_inboxAttach; mGet(id).then(function(s){ if(!s) return; s.cardId=cid; s.cardName=_cardName(cid); mPut(s).then(function(){ try{ toast(_cardName(cid)+"の計画地写真を追加"); }catch(e){} renderInboxBody(); try{ if(typeof renderCardPhotos==="function" && typeof curId!=="undefined" && curId===cid) renderCardPhotos(cid); }catch(e){} try{ updateInboxBadge(); }catch(e){} }); }); }
+/* カメラの計画地備考（先行入力）→ 本体カードの計画地備考へ反映（カメラ＝入力装置・備考があれば上書き） */
+function _camNoteToCard(cardId, note){
+  note=(note==null?"":String(note)).trim();
+  if(!cardId||!note) return false;
+  var c=(typeof _cardById==="function")?_cardById(cardId):null;
+  if(!c||c.kuushitsu_bikou===note) return false;
+  c.kuushitsu_bikou=note;
+  try{ if(typeof curId!=="undefined" && curId===cardId){ var el=document.getElementById("f_kuubi"); if(el) el.value=note; } }catch(_e){}
+  try{ doSaveCards(function(){}); }catch(_e){ try{ saveAll(); }catch(__e){} }
+  try{ if(typeof renderCards==="function") renderCards(); }catch(_e){}
+  try{ if(typeof toast==="function") toast("📝 計画地備考をカメラから反映"); }catch(_e){}
+  return true;
+}
+function _attachToCard(id){ if(!_inboxAttach) return; var cid=_inboxAttach; mGet(id).then(function(s){ if(!s) return; s.cardId=cid; s.cardName=_cardName(cid); mPut(s).then(function(){ try{ toast(_cardName(cid)+"の計画地写真を追加"); }catch(e){} renderInboxBody(); try{ if(typeof renderCardPhotos==="function" && typeof curId!=="undefined" && curId===cid) renderCardPhotos(cid); }catch(e){} try{ updateInboxBadge(); }catch(e){} try{ _camNoteToCard(cid, s.note); }catch(e){} }); }); }
 function _unlinkSet(id){ var go=function(){ mGet(id).then(function(s){ if(!s) return; s.cardId=MEDIA_INBOX; mPut(s).then(function(){ toast("インボックスに戻しました"); renderInboxBody(); }); }); };
   if(typeof aibisConfirm==="function") aibisConfirm("このカードから写真を外してインボックスに戻しますか？",go,"外す","やめる"); else if(confirm("インボックスに戻しますか？")) go(); }
 function _afterPhotoChange(){ try{ renderInboxBody(); }catch(e){} try{ if(typeof curId!=="undefined" && curId) renderCardPhotos(curId); }catch(e){} try{ updateInboxBadge(); }catch(e){} }
@@ -13847,7 +13887,7 @@ function renderInboxPickList(){
     return '<div class="ipr" data-id="'+e(c.id)+'"><div style="flex:1;min-width:0"><div class="nm">'+e(c.name||"無名")+'様</div><div class="mt">'+e(meta||"—")+'</div></div><span style="color:#2c5282;font-weight:800">›</span></div>'; }).join("");
   host.querySelectorAll(".ipr").forEach(function(el){ el.addEventListener("click",function(){ _doLink(el.getAttribute("data-id")); }); });
 }
-function _doLink(cardId){ if(!_pickSetId) return; var sid=_pickSetId; mGet(sid).then(function(s){ if(!s) return; s.cardId=cardId; s.cardName=_cardName(cardId); mPut(s).then(function(){ closeInboxPick(); toast(_cardName(cardId)+" に紐付けました"); renderInboxBody(); }); }); }
+function _doLink(cardId){ if(!_pickSetId) return; var sid=_pickSetId; mGet(sid).then(function(s){ if(!s) return; s.cardId=cardId; s.cardName=_cardName(cardId); mPut(s).then(function(){ closeInboxPick(); toast(_cardName(cardId)+" に紐付けました"); renderInboxBody(); try{ _camNoteToCard(cardId, s.note); }catch(e){} }); }); }
 
 /* ---- 写真ビューア ---- */
 function openInboxPhoto(setId,startIdx){ mGet(setId).then(function(s){ if(!s||!s.photos.length) return; _ivSet=s; _ivIdx=(startIdx>0&&startIdx<s.photos.length)?startIdx:0; _showIv(); document.getElementById("inboxViewer").style.display="flex"; }); }
@@ -13915,7 +13955,7 @@ function _imeHints(root){ try{ if(!root) return; if(root.tagName){ var tg=root.t
     if((typeof cards==="undefined" || !Array.isArray(cards)) && tries<60){ return setTimeout(run,200); }
     try{
       var done=false;
-      if(cardId && typeof openCard==="function" && (cards||[]).some(function(c){return c&&c.id===cardId;})){ openCard(cardId); done=true; }
+      if(cardId && typeof openCard==="function" && (cards||[]).some(function(c){return c&&c.id===cardId;})){ openCard(cardId); done=true; if(fromCam && typeof mAll==="function"){ try{ mAll().then(function(all){ var ss=(all||[]).filter(function(s){return s&&s.cardId===cardId&&(s.note||"").trim();}).sort(function(a,b){return (b.ts||0)-(a.ts||0);}); if(ss[0]) _camNoteToCard(cardId, ss[0].note); }); }catch(_e){} } }
       else if((wantInbox||cardId) && typeof openInbox==="function"){ if(fromCam) window._inboxReturnToCam=true; openInbox(); done=true; }
       if(done){ try{ history.replaceState({}, "", location.pathname); }catch(_e){} }
     }catch(e){}
