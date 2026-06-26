@@ -2256,7 +2256,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.81";
+var APP_VERSION = "v9.82";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -5340,9 +5340,9 @@ function updateSortBtns() {
     kw:   {desc:'💬 会話 浅→',  asc:'💬 会話 深→'},
     pace: {desc:'⏰ 遅れ 小→',  asc:'⏰ 遅れ 大→'},
     rv:   {desc:'🔁 再訪 0→',   asc:'🔁 再訪 3→'},
-    jw:   {desc:'⚖ ジャッジ（協議未記入）', asc:'⚖ ジャッジ（協議未記入）'},
-    lm:   {desc:'🗺 土地（古→）', asc:'🗺 土地（古→）'},
-    cust: {desc:'👤 顧客 新→古', asc:'👤 顧客 新→古'}
+    jw:   {desc:'⚖ ジャッジ 古→', asc:'⚖ ジャッジ 古→'},
+    lm:   {desc:'🗺 土地 古→', asc:'🗺 土地 古→'},
+    cust: {desc:'👤 顧客 新→', asc:'👤 顧客 新→'}
   };
   Object.keys(base).forEach(function(k){
     var btn = document.getElementById('sb_'+k); if(!btn) return;
