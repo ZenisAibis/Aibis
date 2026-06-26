@@ -2256,7 +2256,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.82";
+var APP_VERSION = "v9.83";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -6373,7 +6373,7 @@ function renderFam(){
   famRenderSummary();
   if(typeof famUpdateAddButtonState==='function') famUpdateAddButtonState();
   var _tb=document.getElementById('famTreeBox');
-  if(_tb){ try{ var _ff=(cur.family||[]).filter(function(m){return m.role;}); _famMarkExcess(cur.family); if(_ff.length){var _hasSib=_ff.some(function(m){return ['兄','弟','姉','妹'].indexOf(m.role)>=0;});var _unNote=_hasSib?'<div style="font-size:9.5px;color:#8b95a6;margin:3px 2px 0;line-height:1.4">※「伯父／叔父／伯母／叔母」＝世帯主の兄弟姉妹を、お子様から見た続柄で表示。保存値は兄・弟・姉・妹のままです。</div>':'';_tb.innerHTML='<div style="font-size:10px;color:#a0aec0;margin:0 0 2px 2px">👆 タップで編集</div>'+buildFamTreeSVG(_ff,{interactive:true,src:cur.family})+_unNote;}else{_tb.innerHTML='<div style="color:#a0aec0;font-size:12px;padding:8px">家族を追加すると世代ツリーが表示されます。</div>';} }catch(_e){ _tb.innerHTML='<div style="color:#a0aec0;font-size:12px;padding:8px">家系図を表示できませんでした。</div>'; } }
+  if(_tb){ try{ var _ff=(cur.family||[]).filter(function(m){return m.role;}); _famMarkExcess(cur.family); if(_ff.length){var _hasSib=_ff.some(function(m){return ['兄','弟','姉','妹'].indexOf(m.role)>=0;});var _unNote=_hasSib?'<div style="font-size:9.5px;color:#8b95a6;margin:3px 2px 0;line-height:1.4">※「伯父／叔父／伯母／叔母」＝世帯主の兄弟姉妹を、お子様から見た続柄で表示。保存値は兄・弟・姉・妹のままです。</div>':'';_tb.innerHTML='<div style="display:flex;justify-content:space-between;align-items:baseline;gap:6px;margin:0 0 2px 2px"><span style="font-size:10px;color:#a0aec0">👆 タップで編集／💡年齢入力で顔イラスト表示</span>'+(cur.updated_at?'<span style="font-size:10px;color:#94a3b8;white-space:nowrap">📝 最終入力 '+String(cur.updated_at).replace("T"," ").slice(0,10)+'</span>':'')+'</div>'+buildFamTreeSVG(_ff,{interactive:true,src:cur.family})+_unNote;}else{_tb.innerHTML='<div style="color:#a0aec0;font-size:12px;padding:8px">家族を追加すると世代ツリーが表示されます。</div>';} }catch(_e){ _tb.innerHTML='<div style="color:#a0aec0;font-size:12px;padding:8px">家系図を表示できませんでした。</div>'; } }
 }
 function famRenderSummary(){
   // 表示されているメンバー（roleあり）のみ集計
@@ -8107,7 +8107,7 @@ function buildFamilyHTML(c){
   var svg=buildFamTreeSVG(fam);
   if(svg){
     html+='<div class="sec purple" style="page-break-inside:avoid;break-inside:avoid">'
-      +'<div class="stitle">🌳 三世代家系図</div>'+svg
+      +'<div class="stitle" style="display:flex;justify-content:space-between;align-items:baseline"><span>🌳 三世代家系図</span>'+(c.updated_at?'<span style="font-size:7.5pt;color:#94a3b8;font-weight:400">📝 最終入力 '+String(c.updated_at).replace('T',' ').slice(0,10)+'</span>':'')+'</div>'+svg
       +'<div style="display:flex;flex-wrap:wrap;gap:2mm 4mm;margin-top:1.5mm;font-size:7pt;color:#718096">'
       +'<span>枠：<b style="color:#3182ce">青=KP</b>／<b style="color:#c53030">赤=所有者</b>／<b style="color:#38a169">緑=面談済</b></span>'
       +'<span>右上●居住：<b style="color:#06b6d4">同居</b>・<b style="color:#d97706">近居</b>・<b style="color:#3b82f6">別居</b>・<b style="color:#94a3b8">死亡</b></span>'
@@ -8121,7 +8121,7 @@ function buildFamilyHTML(c){
     var members=fam.filter(function(m){return famGetGen(m.role)===gen;});
     if(!members.length) return;
     html+='<div class="sec"><div class="stitle">'+genLabel[gen]+'（'+members.length+'名）</div><div style="display:grid;grid-template-columns:1fr 1fr;column-gap:6mm">';
-    members.forEach(function(m){
+    members.forEach(function(m,idx){
       var living=m.living||'未確認';
       var lc=(living==='同居'||living==='近居')?'#2563eb':(living==='別居')?'#b7791f':(living==='死亡')?'#64748b':'#94a3b8';
       var st=(m.stance==='pos')?'<span style="color:#276749;font-weight:700">ポジティブ</span>':(m.stance==='neg')?'<span style="color:#c53030;font-weight:700">ネガティブ</span>':'<span style="color:#a0aec0">不明</span>';
@@ -8132,7 +8132,7 @@ function buildFamilyHTML(c){
       var mc='';
       if(DEEP.indexOf(m.role)>=0){if(m.marriage&&m.marriage!=='不明')mc+=m.marriage;var _gk=(m.grandkids&&m.grandkids.length)?m.grandkids:null;if(_gk){mc+=(mc?'・':'')+'子'+_gk.length+'人（'+_gkLabels(_gk).join('・')+'）';}else if(m.children)mc+=(mc?'・':'')+'子'+m.children+'人';}
       var sep='<span style="color:#cbd5e0;padding:0 1mm">|</span>';
-      html+='<div style="display:flex;align-items:baseline;gap:1.5mm;padding:1.2mm 0;border-bottom:0.3pt solid #edf2f7;font-size:9.5pt;flex-wrap:wrap;break-inside:avoid">'
+      html+='<div style="display:flex;align-items:baseline;gap:1.5mm;padding:1.2mm 0;border-bottom:0.3pt solid #edf2f7;font-size:9.5pt;flex-wrap:wrap;break-inside:avoid'+(idx%2===0?";border-right:0.5pt solid #d1d9e6;padding-right:4mm":"")+'">'
         +'<span style="font-weight:700;min-width:17mm;color:#2d3748">'+(m.owner?'★':'')+e(m.role)+'</span>'
         +(m.name?'<span style="font-weight:600">'+e(m.name)+'</span>':'')
         +(m.age?'<span style="color:#718096">'+e(m.age)+'歳</span>':'')
@@ -8141,6 +8141,7 @@ function buildFamilyHTML(c){
         +(tags.length?sep+tags.join(' '):'')
         +(mc?sep+'<span style="color:#718096">'+e(mc)+'</span>':'')
         +(famJobLabel(m)?sep+'<span style="color:#718096">'+e(famJobLabel(m))+'</span>':'')
+        +((living==='別居')&&(m.addr2||m.kyojuu)?sep+'<span style="color:#b7791f">📍'+e(getArea(m.addr2||m.kyojuu))+'</span>':'')
         +(m.note?'<span style="flex-basis:100%;color:#4a5568;font-size:8pt;padding-left:17mm;margin-top:0.3mm">📝 '+e(m.note).replace(/\n/g,' ')+'</span>':'')
         +'</div>';
     });
