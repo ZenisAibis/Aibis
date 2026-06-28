@@ -212,6 +212,7 @@
 
   .linkbadge{display:inline-block;font-size:10px;font-weight:800;border-radius:6px;padding:1px 6px;background:rgba(52,227,208,.14);color:var(--teal)}
   .linkbadge.un{background:rgba(245,158,11,.16);color:var(--gold)}
+  .notepk{display:inline-block;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;color:var(--dim);cursor:pointer;text-decoration:underline dotted}
   .inbtools{display:flex;gap:8px;margin-bottom:10px}
   .vbtn[disabled]{opacity:.4}
   #camCfg{position:fixed;inset:0;background:rgba(7,12,20,.6);z-index:72;display:flex;align-items:flex-end}
@@ -421,7 +422,7 @@
    ※ prospect_cards_v1 には書き込まない（新規カード作成・PC連携は本体側）
    データ(set): {id,cardId,ts,addrType:'plan',lat,lng,acc,addr,addrPending,banchi,note,sent,photos:[{pid,full(Blob),thumb,w,h,size}]}
    ========================================================= */
-const APP_VERSION = "cam-v1.66";
+const APP_VERSION = "cam-v1.70";
 
 /* ===== PWA：単一ファイルでインストール可能化（外部ファイル不要） ===== */
 function _pwaIcon(size,maskable){
@@ -1042,9 +1043,15 @@ function drowHtml(s, kind){
   const cls=s.addr?"ad":"ad pend";
   const linked=(s.cardId&&s.cardId!==INBOX);
   const sentB=s.sent?'<span class="sentbadge">書き出し済</span>':"";
+  const prevNm = !linked ? linkName(s) : '';   // 解除後も残る元担当者(cardName)。様の重複は除去済み。本体と同挙動
+  const unBadge = prevNm
+    ? '<span class="linkbadge un">'+prevNm+' ・ 要紐付け</span>'
+    : '<span class="linkbadge un">未紐付け</span>';
+  const _ntxt = (!linked && s.note && String(s.note).trim()) ? String(s.note).replace(/\s+/g," ").trim() : "";
+  const _nchip = _ntxt ? ' ・ <span class="notepk" data-note="'+encodeURIComponent(s.note)+'" title="'+esc(_ntxt)+'">📝 '+esc(_ntxt.slice(0,40))+'</span>' : '';
   const meta = linked
     ? (sentB?sentB+' ・ ':'')+fmtWhen(s.ts)
-    : '<span class="linkbadge un">未紐付け</span>'+(sentB?' '+sentB:'')+' ・ '+fmtWhen(s.ts);
+    : unBadge+(sentB?' '+sentB:'')+' ・ '+fmtWhen(s.ts)+_nchip;
   const nm = linked ? linkName(s) : '';
   const mid = nm ? '<span class="drowname">'+nm+'</span>' : '';
   const on=sendSel.has(s.id);
@@ -1063,9 +1070,10 @@ function drowHtml(s, kind){
 }
 function bindDrows(host,fromWhere){
   host.querySelectorAll(".drow").forEach(el=>el.addEventListener("click",e=>{
-    if(e.target.closest(".delbtn")||e.target.closest(".selbox")||e.target.closest(".drowact")) return;
+    if(e.target.closest(".delbtn")||e.target.closest(".selbox")||e.target.closest(".drowact")||e.target.closest(".notepk")) return;
     openSet(el.dataset.id);
   }));
+  host.querySelectorAll("[data-note]").forEach(b=>b.addEventListener("click",e=>{ e.stopPropagation(); let t=""; try{ t=decodeURIComponent(b.dataset.note||""); }catch(_e){ t=b.dataset.note||""; } aibisAlert('📝 計画地備考<br><br>'+esc(t).replace(/\n/g,"<br>")); }));
   host.querySelectorAll("[data-del]").forEach(b=>b.addEventListener("click",e=>{ e.stopPropagation(); const _id0=b.dataset.del; if(!b.classList.contains("ret")){ const _selIds=Array.from(sendSel); if(_selIds.length>0){ aibisConfirm("チェックが入っているもの "+_selIds.length+"件 をすべて削除しますか？", async()=>{ for(const _id of _selIds){ try{ await idbDel(_id); sendSel.delete(_id); }catch(_e){} } toast("🗑 "+_selIds.length+"件を削除しました"); try{ await refreshIndex(INBOX); }catch(_e){} await renderInbox(); try{ showStorage("inbStore"); }catch(_e){} try{ await updateRightCount(); }catch(_e){} }, "全件削除", "やめる"); return; } } destroyOrReturn(_id0); }));
   host.querySelectorAll("[data-gotomain]").forEach(b=>b.addEventListener("click",e=>{ e.stopPropagation(); gotoMain(b.dataset.gotomain); }));
   host.querySelectorAll("[data-link]").forEach(b=>b.addEventListener("click",e=>{ e.stopPropagation(); linkTargetId=b.dataset.link; linkFromInbox=true; openPick("link"); }));
