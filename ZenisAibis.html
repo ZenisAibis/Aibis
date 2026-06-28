@@ -1301,7 +1301,7 @@ body.is-mob .mob-menu{display:inline-block}
    行1=路線価+借地/面積/間口/築年数/満室/空室 ／ 行2=接道|用途・建蔽 ／ 行3=高度/防火/権利
    ============================================================ */
 @media screen and (min-width:769px){
-  #secTochi .pc-land-row1{display:grid;grid-template-columns:5fr 2fr 2fr 2fr 2fr 2fr;column-gap:8px;align-items:start}
+  #secTochi .pc-land-row1{display:grid;grid-template-columns:1.6fr 1.15fr 1fr 1.15fr 1fr 1fr;column-gap:8px;align-items:start}
   #secTochi .pc-land-row1 > div > label{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   #secTochi .pc-land-row1 input,#secTochi .pc-land-row1 select{width:100%;box-sizing:border-box}
   #secTochi .pc-land-row1 > div{min-width:0;margin-bottom:0 !important}
@@ -1315,13 +1315,15 @@ body.is-mob .mob-menu{display:inline-block}
   #secTochi .pc-road-left > div{margin-bottom:0 !important}
   #secTochi .pc-land-lower .pc-road-left .pbtn{min-height:56px}
   #secTochi .pc-land-lower .pc-road-left div[style*="repeat(3"]{max-width:none !important;margin:2px 0 0 !important}
+  #secTochi .pc-land-lower #f_youto{width:100% !important;max-width:none !important}
   #secTochi .pc-road-right2{min-width:0;display:flex;flex-direction:column;row-gap:10px}
   #secTochi .pc-road-right2 > div{min-width:0;margin-bottom:0 !important}
   #secTochi .pc-road-right2 select{width:100%}
   #secTochi .pc-land-row3{display:flex;flex-direction:column;row-gap:8px}
   #secTochi .pc-land-row3 > div{min-width:0;margin-bottom:0 !important}
-  #secTochi .pc-land-row3 .pbtn{min-width:0 !important;padding:8px 2px;font-size:12px;white-space:nowrap;min-height:38px}
+  #secTochi .pc-land-row3 .pbtn{min-width:0 !important;width:auto;display:block;box-sizing:border-box;padding:8px 2px;font-size:12px;white-space:nowrap;min-height:38px}
   #secTochi .pc-land-row3 #houbunPills{display:grid !important;grid-template-columns:repeat(4,1fr);gap:5px}
+  #secTochi .pc-land-row3 div[style*="grid-template-columns"]{display:grid !important;gap:5px}
 }
 /* 土地情報 行1：表示文字は中央寄せ（PC/スマホ共通） */
 #editView #secTochi .pc-land-row1 input,
@@ -2339,7 +2341,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v10.10";
+var APP_VERSION = "v10.11";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -11363,7 +11365,7 @@ function buildPlanPhotoPrintHTML(sets,c){
     var n=ph.length;
     var gcls=n<=1?'n1':(n===2?'n2':'n34');
     var cells='';
-    for(var i=0;i<n && i<4;i++){ var src=ph[i].full||ph[i].thumb; cells+='<div class="ppp-cell"><img src="'+src+'"></div>'; }
+    for(var i=0;i<n && i<4;i++){ var _f=ph[i].full||'', _t=ph[i].thumb||'', src=_f||_t, _fb=(_f&&_t&&_f!==_t)?' onerror="this.onerror=null;this.src=\''+_t+'\'"':''; cells+='<div class="ppp-cell"><img src="'+src+'"'+_fb+'></div>'; }
     if(!n){ cells='<div class="ppp-cell"></div>'; }
     var addr=_pppEsc((s.addr||'')+(s.banchi?(' '+s.banchi):''));
     var meta=[nm,addr,(s.note?_pppEsc(s.note):''),'印刷:'+dateStr,owner].filter(Boolean).join('　／　');
@@ -13987,7 +13989,7 @@ function renderCardPhotos(cardId){
   var sec=document.getElementById("cardPhotoSec"), body=document.getElementById("cardPhotoBody"), cnt=document.getElementById("cardPhotoCount");
   if(!sec||!body) return;
   if(!cardId){ sec.style.display="none"; return; }
-  sec.style.display="none"; if(cnt) cnt.textContent="";
+  sec.style.display="block"; if(cnt) cnt.textContent="";
   body.innerHTML='<div class="cps-load">読み込み中…</div>';
   var esc=function(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); };
   var fmtW=function(ts){ try{ var d=new Date(ts); if(isNaN(d.getTime())) return ""; var p=function(n){return ("0"+n).slice(-2);}; return d.getFullYear()+"/"+p(d.getMonth()+1)+"/"+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes()); }catch(_e){ return ""; } };
@@ -14003,7 +14005,7 @@ function renderCardPhotos(cardId){
       _cpSets=sets; _cpIdx=0; _cpCard=cardId;
       _cpRender();
     }catch(err2){ body.innerHTML='<div class="cps-empty">表示エラー：<br><span style="color:#c53030;font-size:11px">'+esc(String((err2&&err2.message)||err2))+'</span></div>'; }
-  }).catch(function(err){ _mdb=null; body.innerHTML='<div class="cps-empty">写真領域を開けませんでした。<br><span style="color:#c53030;font-size:11px">'+esc(String((err&&err.message)||err))+'</span></div>'; });
+  }).catch(function(err){ _mdb=null; sec.style.display="block"; body.innerHTML='<div class="cps-empty">写真領域を開けませんでした。<br><span style="color:#c53030;font-size:11px">'+esc(String((err&&err.message)||err))+'</span></div>'; });
 }
 window.renderCardPhotos=renderCardPhotos;
 
