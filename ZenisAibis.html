@@ -166,6 +166,9 @@ input[type=text],input[type=tel],input[type=number],input[type=date],input[type=
 input[type=text]:focus,input[type=tel]:focus,input[type=number]:focus,input[type=date]:focus,input[type=email]:focus,input[type=password]:focus,textarea:focus,select:focus{border-color:#2B6CB0;box-shadow:0 0 0 3px rgba(43,108,176,.16);outline:none}
 input::placeholder,textarea::placeholder{color:#A0AEC0}
 @media (max-width:768px) and (pointer:coarse){input[type=text],input[type=tel],input[type=number],input[type=date],input[type=email],input[type=password],textarea,select{font-size:16px;min-height:44px}}
+.telbtn,.mailbtn{flex:0 0 auto;min-height:40px;padding:0 12px;border:1px solid #cbd5e0;border-radius:8px;background:#ebf8ff;color:#2b6cb0;font-size:18px;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-family:inherit}
+.telbtn:active,.mailbtn:active{background:#bee3f8}
+@media screen and (min-width:769px),screen and (pointer:fine),screen and (pointer:none){.telbtn{display:none!important}}
 input:focus,textarea:focus,select:focus{outline:none;border-color:#2c5282;box-shadow:0 0 0 2px rgba(44,82,130,0.15)}
 textarea{resize:vertical;min-height:80px}
 .cg{display:flex;gap:6px;flex-wrap:wrap}
@@ -2351,7 +2354,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v10.23";
+var APP_VERSION = "v10.24";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -11503,6 +11506,30 @@ function onEmailDomainChange(){
   else { cust.style.display='none'; }
 }
 window.onEmailDomainChange=onEmailDomainChange;
+/* ── カード：電話発信／メール作成（スマホは📞＋✉、PCは✉のみ） ── */
+function callProspect(){
+  var el=document.getElementById('f_tel'); var t=el?String(el.value||''):'';
+  t=t.replace(/[^0-9+]/g,'');
+  if(!t){ try{ toast('電話番号が未入力です'); }catch(e){} return; }
+  try{ location.href='tel:'+t; }catch(e){}
+}
+function _curProspectEmail(){
+  var el=document.getElementById('f_email_local'); var loc=el?String(el.value||'').trim():'';
+  if(!loc) return '';
+  var sel=document.getElementById('f_email_domain');
+  var dom=(sel&&sel.value==='__custom__')?(((document.getElementById('f_email_domain_custom')||{}).value)||'').trim():(sel?sel.value:'');
+  return dom?(loc+'@'+dom):'';
+}
+function mailProspect(){
+  var em=_curProspectEmail();
+  if(!em){ try{ toast('メールアドレスが未入力です'); }catch(e){} return; }
+  var app=(typeof _mailApp==='function')?_mailApp():'pick';
+  try{
+    if(app==='gmail'){ window.open('https://mail.google.com/mail/?view=cm&fs=1&to='+encodeURIComponent(em),'_blank'); }
+    else { location.href='mailto:'+em; }
+  }catch(e){ try{ location.href='mailto:'+em; }catch(_e){} }
+}
+window.callProspect=callProspect; window.mailProspect=mailProspect;
 window.micStart=micStart; window.micStop=micStop;
 window.famSetStance=famSetStance; window.famSetLiving=famSetLiving; window.famSetMarriage=famSetMarriage; window.famSetChildren=famSetChildren; window.famToggleFlag=famToggleFlag; window.famOnRoleChange=famOnRoleChange;
 window.addPursuit=addPursuit; window.remPursuit=remPursuit;
@@ -11642,8 +11669,8 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       </div>
       <!-- 中段：TEL・メアド -->
       <div class="mk-row" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:8px">
-        <div class="mk-tel"><label>TEL</label><input type="tel" id="f_tel" inputmode="numeric" placeholder="ハイフン無し" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
-        <div class="mk-email"><label>メールアドレス</label><div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap"><input type="text" inputmode="email" autocapitalize="none" autocomplete="off" spellcheck="false" id="f_email_local" placeholder="ID" style="flex:1;min-width:70px"><span style="color:#718096;flex-shrink:0">@</span><select id="f_email_domain" onchange="onEmailDomainChange()" style="width:108px;min-width:0;flex-shrink:0"><option value="gmail.com">gmail.com</option><option value="yahoo.co.jp">yahoo.co.jp</option><option value="icloud.com">icloud.com</option><option value="docomo.ne.jp">docomo.ne.jp</option><option value="ezweb.ne.jp">ezweb.ne.jp(au)</option><option value="au.com">au.com</option><option value="softbank.ne.jp">softbank.ne.jp</option><option value="i.softbank.jp">i.softbank.jp</option><option value="outlook.jp">outlook.jp</option><option value="hotmail.com">hotmail.com</option><option value="ybb.ne.jp">ybb.ne.jp</option><option value="__custom__">その他(入力)</option></select><input type="text" inputmode="url" autocapitalize="none" autocomplete="off" spellcheck="false" id="f_email_domain_custom" placeholder="ドメイン" style="display:none;width:auto;min-width:110px;flex-shrink:0"></div></div>
+        <div class="mk-tel"><label>TEL</label><div class="telrow" style="display:flex;gap:4px;align-items:center"><input type="tel" id="f_tel" inputmode="numeric" placeholder="ハイフン無し" oninput="this.value=this.value.replace(/[^0-9]/g,'')" style="flex:1;min-width:0"><button type="button" class="telbtn" onclick="callProspect()" title="電話をかける" aria-label="電話をかける">📞</button></div></div>
+        <div class="mk-email"><label>メールアドレス</label><div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap"><input type="text" inputmode="email" autocapitalize="none" autocomplete="off" spellcheck="false" id="f_email_local" placeholder="ID" style="flex:1;min-width:70px"><span style="color:#718096;flex-shrink:0">@</span><select id="f_email_domain" onchange="onEmailDomainChange()" style="width:108px;min-width:0;flex-shrink:0"><option value="gmail.com">gmail.com</option><option value="yahoo.co.jp">yahoo.co.jp</option><option value="icloud.com">icloud.com</option><option value="docomo.ne.jp">docomo.ne.jp</option><option value="ezweb.ne.jp">ezweb.ne.jp(au)</option><option value="au.com">au.com</option><option value="softbank.ne.jp">softbank.ne.jp</option><option value="i.softbank.jp">i.softbank.jp</option><option value="outlook.jp">outlook.jp</option><option value="hotmail.com">hotmail.com</option><option value="ybb.ne.jp">ybb.ne.jp</option><option value="__custom__">その他(入力)</option></select><input type="text" inputmode="url" autocapitalize="none" autocomplete="off" spellcheck="false" id="f_email_domain_custom" placeholder="ドメイン" style="display:none;width:auto;min-width:110px;flex-shrink:0"><button type="button" class="mailbtn" onclick="mailProspect()" title="メールを作成" aria-label="メールを作成">✉</button></div></div>
       </div>
       </div>
       <!-- 下段：住所・計画地 + 地図ボタン -->
