@@ -2330,7 +2330,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v10.2";
+var APP_VERSION = "v10.3";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -9353,12 +9353,13 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
  var pingStat=reps.map(function(r){var a=g[r].filter(function(c){return !_isLandLead(c);}),T=a.length||1;return {r:r,v:_zPct(a.filter(function(c){return getKaiwaLevel(c)===0;}).length,T),n:a.length};}).filter(function(o){return o.n>=3;}).sort(function(a,b){return b.v-a.v;});
  var saLate=cards.filter(function(c){return (c.pursuit_judge==='A'||c.pursuit_judge==='S')&&calcPaceOverrate(c)>1;}).length;
  var ins='';
- ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(255,93,125,.16)">⚠</div><div><b>失速ポイントは「'+STG[slow]+'」段<span class="z-pill" style="background:rgba(255,93,125,.16);color:#ff5d7d">PACE</span></b><p>この段の滞留が最長。'+STG[slow]+'を越える一手（提案依頼・連れ出し）を朝礼で共有を。</p></div></div>';
+ ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(255,93,125,.16)">⚠</div><div><b>失速ポイントは「'+STG[slow]+'」段<span class="z-pill" style="background:rgba(255,93,125,.16);color:#ff5d7d">PACE</span></b><p>この段の滞留が最長。提案依頼・連れ出しで突破を朝礼共有。</p></div></div>';
  var ekiFar=t.filter(function(c){return c.ekitoho==='21分以上';}).length;
- if(ekiFar>0) ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(255,93,125,.16)">🚶</div><div><b>駅遠（徒歩21分以上）が'+ekiFar+'件<span class="z-pill" style="background:rgba(255,93,125,.16);color:#ff5d7d">EKI</span></b><p>賃貸需要が弱くなりがち。駐車場・特化型など計画地に合う提案を検討。</p></div></div>';
- if(saLate>0) ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(255,180,67,.16)">⏱</div><div><b>A・Sの放置が'+saLate+'件<span class="z-pill" style="background:rgba(255,180,67,.16);color:#ffb443">CLOSE</span></b><p>契約に近い客がご無沙汰。今週中にクロージング判断を。</p></div></div>';
- if(pingStat.length&&pingStat[0].v>=40) ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(74,168,255,.16)">🤝</div><div><b>'+e(pingStat[0].r)+'さん：ピンポン止まり'+pingStat[0].v+'%<span class="z-pill" style="background:rgba(74,168,255,.16);color:#4aa8ff">GRIP</span></b><p>同行1回で「立ち話→玄関内」の突破を実演すると効果大。</p></div></div>';
- ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(155,225,93,.16)">✅</div><div><b>フル稼働まであと'+(reps.length-active.length)+'人<span class="z-pill" style="background:rgba(155,225,93,.16);color:#9be15d">TEAM</span></b><p>未稼働の担当へ1声。全員が動くと発掘量が跳ね上がる。</p></div></div>';
+ if(ekiFar>0) ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(255,93,125,.16)">🚶</div><div><b>駅遠（徒歩21分以上）が'+ekiFar+'件<span class="z-pill" style="background:rgba(255,93,125,.16);color:#ff5d7d">EKI</span></b><p>賃貸需要が弱め。駐車場・特化型など計画地に合う提案を。</p></div></div>';
+ if(saLate>0) ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(255,180,67,.16)">⏱</div><div><b>A・Sの放置が'+saLate+'件<span class="z-pill" style="background:rgba(255,180,67,.16);color:#ffb443">CLOSE</span></b><p>契約間近が放置中。今週中にクロージング判断を。</p></div></div>';
+ if(pingStat.length&&pingStat[0].v>=40) ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(74,168,255,.16)">🤝</div><div><b>'+e(pingStat[0].r)+'さん：ピンポン止まり'+pingStat[0].v+'%<span class="z-pill" style="background:rgba(74,168,255,.16);color:#4aa8ff">GRIP</span></b><p>同行1回で「立ち話→玄関内」を実演すると効果大。</p></div></div>';
+ ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(155,225,93,.16)">✅</div><div><b>フル稼働まであと'+(reps.length-active.length)+'人<span class="z-pill" style="background:rgba(155,225,93,.16);color:#9be15d">TEAM</span></b><p>未稼働へ1声。全員稼働で発掘量が伸びる。</p></div></div>';
+ ins='<div class="z-insgrid">'+ins+'</div>';
  var secInsights=_zsecPlain('insights','🧠 傾向と対策（AIインサイト）','<div class="z-sub" style="margin-bottom:8px">データから打ち手を自動抽出。</div>'+ins);
  // ===== P1: 今日の一手 / 課長コーチング / 進捗3ゾーン =====
  var _nextMove=function(c){
@@ -9472,13 +9473,13 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
     +'<div style="font-size:12px;color:var(--z-ink);margin:2px 0 0 28px"><span style="color:#ffb443;font-weight:700">次のクエスト：</span>'+QTYPE[lo][2]+'</div></div>';
  }).join('')||'<div class="z-empty">担当データなし</div>';
  var _allJobs='<div class="z-jobgrid2"><div class="z-jobcell">'+jobCardHTML(cards,'mgr','課（全体）',reps.length)+'</div>'+miniR+'</div>';
- var _questBody='<div class="z-sub" style="margin:2px 0 8px">先頭が「課を1人とみなしたタイプ」、続けて担当ごとの型。<span style="color:var(--z-dim)">※全担当のカードを保持しているほど精度UP</span></div>'+_allJobs+'<div style="border-top:1px solid var(--z-line);margin:12px 0 6px"></div><div style="font-size:12.5px;font-weight:700;color:var(--z-ink);margin-bottom:4px">🌱 今月の成長と次のクエスト</div>'+questH;
+ var _questBody='<div class="z-sub" style="margin:2px 0 8px">先頭が「課を1人とみなしたタイプ」、続けて担当ごとの型。<span style="color:var(--z-dim)">※全担当のカードを保持しているほど精度UP</span></div>'+_allJobs+'<div style="border-top:1px solid var(--z-line);margin:12px 0 6px"></div><div style="font-size:12.5px;font-weight:700;color:var(--z-ink);margin-bottom:4px">🌱 今月の成長と次のクエスト</div>'+'<div class="z-questgrid">'+questH+'</div>';
  var questCard=_zc('🌱','育成クエスト','課・担当の「型」と弱点を「次の課題」に変換。今月の成長と次の一手を提示。',_questBody,'z-cf');
  var _treasureLegend='<div class="z-sub" style="display:flex;flex-wrap:wrap;gap:5px 14px;align-items:center;margin-top:4px"><span><b>↑上</b>＝資産規模 大</span><span><b>→右</b>＝熱量(スコア) 高</span><span><b>●大きい</b>＝スコア高</span><span style="display:inline-flex;align-items:center;gap:6px">色＝追客ランク：'+['S','A','B','C','D'].map(function(k){return '<span style="display:inline-flex;align-items:center;gap:3px"><i style="width:9px;height:9px;border-radius:50%;background:'+RC[k]+';display:inline-block"></i>'+k+'</span>';}).join('')+'</span></div>';
  var _cardTreasure=_zc('💎','お宝度マトリクス','熱量×資産規模。右上＝お宝。泡を長押しで客名、タップでカードへ。',bub+_treasureLegend,'z-cf');
  var _cardHeroes=_zc('🎖','営業タイプ図鑑（担当）','担当ごとの「型」と伸ばす力。タップで拡大。','<div class="z-jobgrid">'+miniR+'</div>','z-cf');
  var _axKing=J9_STATS.map(function(st){var best=null,bv=-1;reps.forEach(function(r){var a=g[r];if(!a||!a.length)return;var corr=(j9DetermineJob(a)||{}).corr||{};var v=st.axes.reduce(function(s,k){return s+(corr[k]||0);},0)/st.axes.length;if(v>bv){bv=v;best=r;}});if(!best||bv<=0)return '';var _tt={kodo:'韋駄天',kansatsu:'千里眼',taiwa:'弁舌家',senryaku:'軍師',kanri:'記録王'};return '<div class="z-axking"><span class="z-axk-st"><span class="z-axk-ic">'+st.e+'</span>'+st.n+'</span><span class="z-axk-t">'+(_tt[st.k]||'')+'</span><span class="z-axk-nm">'+e(best)+'</span><span class="z-axk-v">'+Math.round(bv)+'</span></div>';}).join('');
- var _axKingCard=_zc('🏅','タイプ別 No.1（称号）','5つの型それぞれの課トップ。',(_axKing||'<div class="z-sub">集計中</div>'),'z-cf');
+ var _axKingCard=_zc('🏅','タイプ別 No.1（称号）','5つの型それぞれの課トップ。',(_axKing||'<div class="z-sub">集計中</div>'),'z-c2');
  var _cardWork=_zc('🟢','稼働率モニター','達成度','<div class="zWorkCard">'+workMeterInner()+'</div>','z-cf');
  var _cardDiff=_zc('🎚','戦略差分','温度の追従と違う運用。協議の判断ポイント。タップでカードへ',_strategyDiffInner(),'z-cf');
  // 動的分析カード：sec で章振り分け（既定 state＝詳細分析）。treasure/jobs9 は専用配置のため除外。
@@ -13243,6 +13244,18 @@ window.updateRyokuchiBtn=function(){var btn=document.getElementById("ryokuchiBtn
   .zfa-s1{top:-1px;left:-1px;font-size:13px;animation:abSpark 1.4s ease-in-out infinite}
   .zfa-s2{bottom:0;right:-1px;font-size:11px;animation:abSpark 1.4s ease-in-out infinite .5s}
   .zfa-name{font-size:11px;font-weight:800;letter-spacing:.1em;color:#2c5282;margin-bottom:8px}
+  /* ===== v10.3 PC dashboard tighten ＆ modal center（min-width:769のみ／スマホは display:contents で完全現状維持） ===== */
+  .zdash .z-insgrid{display:contents}.zdash .z-questgrid{display:contents}
+  @media(min-width:769px){
+    .zdash h3{margin:0 0 2px}
+    .zdash .z-insgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:stretch}
+    .zdash .z-insgrid .z-ins{margin-bottom:0;min-width:0}
+    .zdash .z-insgrid .z-ins p{line-height:1.55}
+    .zdash .z-questgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;align-items:start}
+    .zdash .z-questgrid>*{min-width:0}
+    .zfa-overlay{overflow-y:auto}
+    .zfa-card{margin-top:auto;margin-bottom:auto}
+  }
   .zfa-msg{font-size:14px;color:#2d3748;font-weight:500;line-height:1.7;margin-bottom:18px;text-wrap:balance;line-break:strict;word-break:keep-all;overflow-wrap:anywhere}
   .zfa-ok{width:100%;padding:11px;border:none;border-radius:10px;background:#1a365d;color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer}
   .zfa-toast{position:fixed;left:50%;bottom:22%;transform:translateX(-50%) translateY(16px);z-index:2147483646;
@@ -13418,7 +13431,6 @@ window.updateRyokuchiBtn=function(){var btn=document.getElementById("ryokuchiBtn
 <div id="inboxView">
   <div class="ih">
     <button onclick="closeInbox()">← 戻る</button>
-    <button onclick="inboxToList()" title="一覧へ">📋 一覧</button>
     <b id="inboxTitle">📥 インボックス</b>
   </div>
   <div id="inboxBody"></div>
