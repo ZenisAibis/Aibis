@@ -190,7 +190,7 @@ textarea{resize:vertical;min-height:80px}
 .stbtn.active[data-s="5"]{background:#D2693C;color:#fff;border-color:#D2693C}
 .stbtn.active[data-s="6"]{background:#B7791F;color:#fff;border-color:#D4AF37;box-shadow:0 2px 9px rgba(212,175,55,.50)}
 .stbtn.active[data-s="7"]{background:#C85A54;color:#fff;border-color:#C85A54;box-shadow:0 2px 9px rgba(200,90,84,.40)}
-#assetBtn{margin-left:auto;font-size:11px;padding:5px 10px;border:1px solid #cbd5e0;border-radius:6px;background:#fff;color:#4a5568;cursor:pointer;font-family:inherit;white-space:nowrap;line-height:1.2}
+#assetBtn{margin-left:auto;font-size:12.5px;padding:8px 14px;border:2px solid #dd6b20;border-radius:6px;background:#fff;color:#dd6b20;cursor:pointer;font-family:inherit;font-weight:700;white-space:nowrap;line-height:1.2}
 #assetBtn.on{background:#dd6b20;color:#fff;border-color:#dd6b20}
 #secTochi .asset-note{display:none}
 #secTochi.asset-sealed .asset-note{display:block;font-size:11px;color:#c05621;background:#fffaf0;border:1px dashed #ed8936;border-radius:6px;padding:6px 8px;margin-bottom:8px}
@@ -1301,10 +1301,14 @@ body.is-mob .mob-menu{display:inline-block}
    行1=路線価+借地/面積/間口/築年数/満室/空室 ／ 行2=接道|用途・建蔽 ／ 行3=高度/防火/権利
    ============================================================ */
 @media screen and (min-width:769px){
-  #secTochi .pc-land-row1{display:grid;grid-template-columns:1.6fr 1.15fr 1fr 1.15fr 1fr 1fr;column-gap:8px;align-items:start}
-  #secTochi .pc-land-row1 > div > label{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #secTochi .pc-land-row1{display:grid;grid-template-columns:1fr 1fr 1fr;column-gap:18px;align-items:start}
+  #secTochi .pc-land-row1 .r1c-2{display:grid;grid-template-columns:1fr 1fr 1fr;column-gap:8px}
+  #secTochi .pc-land-row1 .r1c-3{display:grid;grid-template-columns:1fr 1fr;column-gap:8px}
+  #secTochi .pc-land-row1 label{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   #secTochi .pc-land-row1 input,#secTochi .pc-land-row1 select{width:100%;box-sizing:border-box}
-  #secTochi .pc-land-row1 > div{min-width:0;margin-bottom:0 !important}
+  #editView input[type=number]::-webkit-inner-spin-button,#editView input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;appearance:none;margin:0}
+  #editView input[type=number]{-moz-appearance:textfield;appearance:textfield}
+  #secTochi .pc-land-row1 > div,#secTochi .pc-land-row1 .r1c-2 > div,#secTochi .pc-land-row1 .r1c-3 > div{min-width:0;margin-bottom:0 !important}
   #secTochi .pc-land-row1 #f_kuushitsu,
   #secTochi .pc-land-row1 #f_kuushitsu_aki{width:100% !important;box-sizing:border-box}
   #secTochi .pc-land-row1 select{width:100%;max-width:none;box-sizing:border-box}
@@ -1336,13 +1340,14 @@ body.is-mob .mob-menu{display:inline-block}
 @media screen and (max-width:768px){
   /* 行1: 路線価60|面積40 ／ 間口50|築年数50 ／ 満室50|空き50（10分割gridでspan割当） */
   #secTochi .pc-land-row1{ display:grid; grid-template-columns:repeat(10,1fr); column-gap:6px; row-gap:6px; align-items:start; }
-  #secTochi .pc-land-row1 > div{ min-width:0; margin-bottom:0; }
-  #secTochi .pc-land-row1 > div:nth-child(1){ grid-column:span 6; }
-  #secTochi .pc-land-row1 > div:nth-child(2){ grid-column:span 4; }
-  #secTochi .pc-land-row1 > div:nth-child(3){ grid-column:span 5; }
-  #secTochi .pc-land-row1 > div:nth-child(4){ grid-column:span 5; }
-  #secTochi .pc-land-row1 > div:nth-child(5){ grid-column:span 5; }
-  #secTochi .pc-land-row1 > div:nth-child(6){ grid-column:span 5; }
+  #secTochi .pc-land-row1 .r1c-2,#secTochi .pc-land-row1 .r1c-3{ display:contents; }
+  #secTochi .pc-land-row1 > div,#secTochi .pc-land-row1 .r1c-2 > div,#secTochi .pc-land-row1 .r1c-3 > div{ min-width:0; margin-bottom:0; }
+  #secTochi .pc-land-row1 .r1c-1{ grid-column:span 6; }
+  #secTochi .pc-land-row1 .r1c-2 > div:nth-child(1){ grid-column:span 4; }
+  #secTochi .pc-land-row1 .r1c-2 > div:nth-child(2){ grid-column:span 5; }
+  #secTochi .pc-land-row1 .r1c-2 > div:nth-child(3){ grid-column:span 5; }
+  #secTochi .pc-land-row1 .r1c-3 > div:nth-child(1){ grid-column:span 5; }
+  #secTochi .pc-land-row1 .r1c-3 > div:nth-child(2){ grid-column:span 5; }
   #secTochi .pc-land-row1 input,
   #secTochi .pc-land-row1 select{ width:100%; max-width:none; min-width:0; box-sizing:border-box; }
   #secTochi .pc-land-row1 #f_chishaku{ width:66px !important; min-width:66px; font-size:15px; flex:0 0 66px; }
@@ -2341,7 +2346,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v10.11";
+var APP_VERSION = "v10.12";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -11436,7 +11441,7 @@ function updateFamHeadcountBtn(){
 }
 window.toggleFamHeadcount=toggleFamHeadcount; window.updateFamHeadcountBtn=updateFamHeadcountBtn;
 function toggleAssetType(){ if(!cur) return; cur.asset_type=!cur.asset_type; applyAssetSeal(); }
-function applyAssetSeal(){ var sec=document.getElementById('secTochi'); if(!sec) return; var on=!!(cur&&cur.asset_type); sec.classList.toggle('asset-sealed',on); var b=document.getElementById('assetBtn'); if(b){ b.classList.toggle('on',on); b.textContent=on?'アセット系 ✓':'アセット系'; } }
+function applyAssetSeal(){ var sec=document.getElementById('secTochi'); if(!sec) return; var on=!!(cur&&cur.asset_type); sec.classList.toggle('asset-sealed',on); var b=document.getElementById('assetBtn'); if(b){ b.classList.toggle('on',on); b.textContent=on?'🏢 アセット系 ✓':'🏢 アセット系'; } }
 window.toggleAssetType=toggleAssetType; window.applyAssetSeal=applyAssetSeal;
 function toggleDoukou(){
   if(!cur) return;
@@ -11456,7 +11461,7 @@ function updateDoukouBtn(){
 }
 window.toggleDoukou=toggleDoukou; window.updateDoukouBtn=updateDoukouBtn;
 function toggleCust(){ if(!cur) return; cur.cust_type=(cur.cust_type==='顧客')?'新規':'顧客'; updateCustBtn(); if(typeof setDirty==='function') setDirty(true); }
-function updateCustBtn(){ var b=document.getElementById('custBtn'); if(!b) return; var isC=(cur&&cur.cust_type==='顧客'); b.textContent=isC?'顧客':'新規'; b.style.background=isC?'linear-gradient(135deg,#2c5282,#2b6cb0)':'white'; b.style.borderColor=isC?'#2b6cb0':'#e2e8f0'; b.style.color=isC?'#fff':'#718096'; }
+function updateCustBtn(){ var b=document.getElementById('custBtn'); if(!b) return; var isC=(cur&&cur.cust_type==='顧客'); b.textContent=isC?'🔵 顧客':'⚪ 新規'; b.style.background=isC?'linear-gradient(135deg,#2c5282,#2b6cb0)':'white'; b.style.borderColor='#2b6cb0'; b.style.color=isC?'#fff':'#2b6cb0'; b.style.boxShadow=isC?'0 2px 6px rgba(43,108,176,0.3)':'none'; }
 window.toggleCust=toggleCust; window.updateCustBtn=updateCustBtn;
 function toggleEkitoho(){
   if(!cur) return;
@@ -11843,7 +11848,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       </div>
       <!-- 行1(PC): 路線価+借地 / 面積 / 間口 / 築年数 / 満室 / 空室 -->
       <div class="pc-land-row1" style="margin-bottom:8px">
-        <div>
+        <div class="r1c-1">
           <label>路線価<span style="font-size:10px;color:#718096">（千円/㎡）</span></label>
           <div style="display:flex;gap:4px;align-items:center">
             <input type="text" id="f_rosenka" placeholder="例: 250" inputmode="numeric" style="flex:1" onblur="normalizeRosenka()">
@@ -11860,6 +11865,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           </div>
           <div id="rosenkaDisp" style="font-size:10px;color:#718096;margin-top:2px"></div>
         </div>
+        <div class="r1c-2">
         <div>
           <label class="pc-area-label">面積（㎡）</label>
           <div class="unit-field">
@@ -11886,8 +11892,11 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
             </select>
           </div>
         </div>
+        </div>
+        <div class="r1c-3">
         <div><label>満時</label><input type="number" id="f_kuushitsu" placeholder="例: 10" inputmode="numeric" pattern="[0-9]*"></div>
         <div><label>空現</label><input type="number" id="f_kuushitsu_aki" placeholder="例: 2" inputmode="numeric" pattern="[0-9]*"></div>
+        </div>
       </div>
       <!-- 行2(PC): 接道方位 | 用途地域/建蔽容積 -->
       <div class="pc-land-lower">
