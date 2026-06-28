@@ -2351,7 +2351,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v10.18";
+var APP_VERSION = "v10.19";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -11621,7 +11621,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <div class="pc-name-contact">
       <!-- 上段：氏名50%・ソーシャル25%・現状25% -->
       <div class="mk-row" style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:8px">
-        <div class="mk-name"><label>氏名 <span class="req">*</span></label><div style="display:flex;gap:6px;align-items:center"><input type="text" id="f_name" placeholder="お客様名" style="flex:1" oninput="if(window._refreshLandLeadLock)_refreshLandLeadLock()"><button type="button" id="doukouBtn" onclick="toggleDoukou()" style="flex-shrink:0;padding:8px 10px;border:2px solid #e2e8f0;border-radius:6px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;color:#718096;white-space:nowrap;min-height:38px;min-width:78px;text-align:center">単独</button><button type="button" id="custBtn" onclick="toggleCust()" style="flex-shrink:0;padding:8px 10px;border:2px solid #e2e8f0;border-radius:6px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;color:#718096;white-space:nowrap;min-height:38px;min-width:64px;text-align:center">新規</button></div></div>
+        <div class="mk-name"><label>氏名 <span class="req">*</span></label><div style="display:flex;gap:6px;align-items:center"><input type="text" id="f_name" placeholder="お客様名" style="flex:1" oninput="if(window._refreshLandLeadLock)_refreshLandLeadLock()"><button type="button" id="doukouBtn" onclick="toggleDoukou()" style="flex-shrink:0;padding:8px 10px;border:2px solid #e2e8f0;border-radius:6px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;color:#718096;white-space:nowrap;min-height:38px;min-width:78px;text-align:center">単独</button><button type="button" id="custBtn" onclick="toggleCust()" style="flex-shrink:0;padding:8px 10px;border:2px solid #e2e8f0;border-radius:6px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;color:#718096;white-space:nowrap;min-height:38px;min-width:78px;text-align:center">新規</button></div></div>
         <div class="mk-social">
           <label>ソーシャル</label>
           <select id="f_social">
