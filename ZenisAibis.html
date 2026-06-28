@@ -2333,7 +2333,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v10.4";
+var APP_VERSION = "v10.5";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -13981,7 +13981,7 @@ function renderCardPhotos(cardId){
   var sec=document.getElementById("cardPhotoSec"), body=document.getElementById("cardPhotoBody"), cnt=document.getElementById("cardPhotoCount");
   if(!sec||!body) return;
   if(!cardId){ sec.style.display="none"; return; }
-  sec.style.display="block"; if(cnt) cnt.textContent="";
+  sec.style.display="none"; if(cnt) cnt.textContent="";
   body.innerHTML='<div class="cps-load">読み込み中…</div>';
   var esc=function(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); };
   var fmtW=function(ts){ try{ var d=new Date(ts); if(isNaN(d.getTime())) return ""; var p=function(n){return ("0"+n).slice(-2);}; return d.getFullYear()+"/"+p(d.getMonth()+1)+"/"+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes()); }catch(_e){ return ""; } };
@@ -13989,6 +13989,8 @@ function renderCardPhotos(cardId){
     try{
       var sets=(all||[]).filter(function(s){ return s && s.cardId===cardId; });
       try{ var _pt=[]; sets.forEach(function(s){ (s.photos||[]).forEach(function(p){ var t=(p&&p.thumb)||(p&&typeof p.full==="string"?p.full:""); if(t) _pt.push(t); }); }); window._curCardPhotoThumbs={cardId:cardId, thumbs:_pt}; }catch(_e){}
+      if(!sets.length){ sec.style.display="none"; _cpSets=[]; _cpIdx=0; _cpCard=cardId; return; }
+      sec.style.display="block";
       sets.sort(function(a,b){ return (a.ts||0)-(b.ts||0); }); /* 古い順＝筆①が最初の土地で固定（番号が入れ替わらない） */
       var total=sets.reduce(function(n,s){ return n+((s.photos&&s.photos.length)||0); },0);
       if(cnt) cnt.textContent=sets.length?("（"+sets.length+"件 / 計"+total+"枚）"):"";
