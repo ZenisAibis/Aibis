@@ -1313,7 +1313,8 @@ body.is-mob .mob-menu{display:inline-block}
   #secTochi .pc-land-lower{display:grid;grid-template-columns:1fr 1fr 1fr;column-gap:18px;align-items:start;margin-bottom:8px}
   #secTochi .pc-road-left{min-width:0}
   #secTochi .pc-road-left > div{margin-bottom:0 !important}
-  #secTochi .pc-land-lower .pc-road-left .pbtn{min-height:46px}
+  #secTochi .pc-land-lower .pc-road-left .pbtn{min-height:56px}
+  #secTochi .pc-land-lower .pc-road-left div[style*="repeat(3"]{max-width:none !important;margin:2px 0 0 !important}
   #secTochi .pc-road-right2{min-width:0;display:flex;flex-direction:column;row-gap:10px}
   #secTochi .pc-road-right2 > div{min-width:0;margin-bottom:0 !important}
   #secTochi .pc-road-right2 select{width:100%}
@@ -2338,7 +2339,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v10.9";
+var APP_VERSION = "v10.10";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
