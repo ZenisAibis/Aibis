@@ -1301,19 +1301,22 @@ body.is-mob .mob-menu{display:inline-block}
    行1=路線価+借地/面積/間口/築年数/満室/空室 ／ 行2=接道|用途・建蔽 ／ 行3=高度/防火/権利
    ============================================================ */
 @media screen and (min-width:769px){
-  #secTochi .pc-land-row1{display:grid;grid-template-columns:1.5fr 1fr 0.8fr 1fr 0.85fr 0.85fr;column-gap:12px;align-items:end}
+  #secTochi .pc-land-row1{display:grid;grid-template-columns:1.2fr 0.95fr 0.68fr 0.95fr 0.82fr 0.82fr;column-gap:10px;align-items:end}
   #secTochi .pc-land-row1 > div{min-width:0;margin-bottom:0 !important}
+  #secTochi .pc-land-row1 #f_kuushitsu,
+  #secTochi .pc-land-row1 #f_kuushitsu_aki{width:100%;box-sizing:border-box}
   #secTochi .pc-land-row1 select{width:100%;max-width:none;box-sizing:border-box}
   #secTochi .pc-land-row1 #f_chishaku{width:48px !important;flex:0 0 48px}
   #secTochi .pc-land-row1 .unit-field{width:100%}
-  #secTochi .pc-land-row2{display:grid;grid-template-columns:minmax(280px,340px) minmax(0,1fr);column-gap:28px;align-items:stretch;margin-bottom:8px}
+  #secTochi .pc-land-row2{display:grid;grid-template-columns:300px minmax(0,1fr);column-gap:18px;align-items:stretch;margin-bottom:8px}
   #secTochi .pc-road-left{min-width:0}
   #secTochi .pc-road-left > div{margin-bottom:0 !important}
   #secTochi .pc-road-right2{min-width:0;display:flex;flex-direction:column;justify-content:space-between;row-gap:10px}
   #secTochi .pc-road-right2 > div{min-width:0;margin-bottom:0 !important}
   #secTochi .pc-road-right2 select{width:100%}
-  #secTochi .pc-land-row3{display:grid;grid-template-columns:1fr 1fr 1fr;column-gap:16px;align-items:start;margin-bottom:8px}
+  #secTochi .pc-land-row3{display:grid;grid-template-columns:1.15fr 0.88fr 1.15fr;column-gap:12px;align-items:start;margin-bottom:8px}
   #secTochi .pc-land-row3 > div{min-width:0;margin-bottom:0 !important}
+  #secTochi .pc-land-row3 .pbtn{min-width:0;padding:8px 4px;font-size:12.5px}
 }
 /* 土地情報 行1：表示文字は中央寄せ（PC/スマホ共通） */
 #editView #secTochi .pc-land-row1 input,
@@ -2330,7 +2333,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v10.3";
+var APP_VERSION = "v10.4";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -11875,8 +11878,8 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
             </select>
           </div>
         </div>
-        <div><label>満室・満車</label><input type="number" id="f_kuushitsu" placeholder="例: 10" inputmode="numeric" pattern="[0-9]*"></div>
-        <div><label>空き</label><input type="number" id="f_kuushitsu_aki" placeholder="例: 2" inputmode="numeric" pattern="[0-9]*"></div>
+        <div><label>満時</label><input type="number" id="f_kuushitsu" placeholder="例: 10" inputmode="numeric" pattern="[0-9]*"></div>
+        <div><label>空現</label><input type="number" id="f_kuushitsu_aki" placeholder="例: 2" inputmode="numeric" pattern="[0-9]*"></div>
       </div>
       <!-- 行2(PC): 接道方位 | 用途地域/建蔽容積 -->
       <div class="pc-land-row2">
