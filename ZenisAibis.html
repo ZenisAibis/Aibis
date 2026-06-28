@@ -1301,9 +1301,12 @@ body.is-mob .mob-menu{display:inline-block}
    行1=路線価+借地/面積/間口/築年数/満室/空室 ／ 行2=接道|用途・建蔽 ／ 行3=高度/防火/権利
    ============================================================ */
 @media screen and (min-width:769px){
-  #secTochi .pc-land-row1{display:grid;grid-template-columns:1fr 1.125fr 1fr;column-gap:0;align-items:start}
+  #secTochi .pc-land-row1{display:grid;grid-template-columns:281fr 18px 387fr 192fr;column-gap:0;align-items:start}
+  #secTochi .pc-land-row1 .r1c-1{grid-column:1}
+  #secTochi .pc-land-row1 .r1c-2{grid-column:3}
+  #secTochi .pc-land-row1 .r1c-3{grid-column:4}
   #secTochi .pc-land-row1 .r1c-2{display:grid;grid-template-columns:1fr 1fr 1fr;column-gap:8px}
-  #secTochi .pc-land-row1 .r1c-3{display:grid;grid-template-columns:1fr 1fr;column-gap:8px}
+  #secTochi .pc-land-row1 .r1c-3{display:grid;grid-template-columns:1fr 1fr;column-gap:4px}
   #secTochi .pc-land-row1 label{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   #secTochi .pc-land-row1 input,#secTochi .pc-land-row1 select{width:100%;box-sizing:border-box}
   #secTochi .pc-land-row1 #f_rosenka{width:auto !important;max-width:none !important;flex:1 1 auto !important;min-width:0}
@@ -2348,7 +2351,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v10.13";
+var APP_VERSION = "v10.14";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
