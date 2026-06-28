@@ -2351,7 +2351,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v10.19";
+var APP_VERSION = "v10.23";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -13362,6 +13362,7 @@ window.updateRyokuchiBtn=function(){var btn=document.getElementById("ryokuchiBtn
   .irow2 .iadr{font-size:13.5px;font-weight:700;color:#2d3748;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .irow2 .imeta{font-size:11px;color:#718096;line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .irow2 .imeta .ibadge{vertical-align:middle}
+  .irow2 .imeta .inotepk{display:inline-block;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;color:#4a5568;cursor:pointer;text-decoration:underline dotted #cbd5e0;text-underline-offset:2px}
   .irow2 .iacts{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
   .icheck{flex:0 0 auto;width:26px;height:26px;border-radius:7px;border:2px solid #cbd5e0;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;color:#fff;cursor:pointer}
   .icheck.on{background:#f59e0b;border-color:#f59e0b}
@@ -13639,17 +13640,21 @@ function _inrow2(s, isUnlinked){
     var on=_inbSel[s.id]?" on":"";
     var chk='<div class="icheck'+on+'" data-act="togsel" data-id="'+e(s.id)+'">'+(_inbSel[s.id]?"✓":"")+'</div>';
     var snapName=(s.cardName||"").trim();
+    var snapBase=snapName.replace(/様+$/,"");
+    var snapDisp=snapBase?(snapBase+(snapBase==="土地見込み"?"":"様")):"";
     var matchId=snapName?_findCardIdByName(snapName):"";
-    var badge=snapName?('<span class="ibadge un">'+e(snapName)+'様 ・ 要紐付け</span>'):'<span class="ibadge un">未紐付け</span>';
+    var badge=snapDisp?('<span class="ibadge un">'+e(snapDisp)+' ・ 要紐付け</span>'):'<span class="ibadge un">未紐付け</span>';
     var acts='';
-    if(matchId) acts+='<button class="ibtn pri" data-act="linkmatch" data-id="'+e(s.id)+'" data-cardid="'+e(matchId)+'">🔗 '+e(snapName)+'様に紐付け</button>';
+    if(matchId) acts+='<button class="ibtn pri" data-act="linkmatch" data-id="'+e(s.id)+'" data-cardid="'+e(matchId)+'">🔗 '+e(snapDisp)+'に紐付け</button>';
     acts+='<div class="iacts3">';
     acts+='<button class="ibtn'+(matchId?'':' pri')+'" data-act="link" data-id="'+e(s.id)+'">🔗 紐付け</button>';
     acts+='<button class="ibtn" style="background:#ebf8ff;border-color:#90cdf4;color:#2b6cb0" data-act="seed" data-id="'+e(s.id)+'">➕ 新規カード</button>';
     acts+='<button class="ibtn dn" data-act="del" data-id="'+e(s.id)+'">🗑</button>';
     acts+='</div>';
+    var _ntxt=(s.note&&String(s.note).trim())?String(s.note).replace(/\s+/g," ").trim():"";
+    var _nchip=_ntxt?(' ・ <span class="inotepk" data-act="note" data-id="'+e(s.id)+'" data-note="'+encodeURIComponent(s.note)+'" title="'+e(_ntxt)+'">📝 '+e(_ntxt.slice(0,40))+'</span>'):'';
     return '<div class="irow2">'+chk+th+'<div class="ibd"><div class="iadr">'+addr+'</div>'+
-      '<div class="imeta">'+badge+sent+' ・ '+_fmtWhen(s.ts)+'</div>'+
+      '<div class="imeta">'+badge+sent+' ・ '+_fmtWhen(s.ts)+_nchip+'</div>'+
       '<div class="iacts">'+acts+'</div></div></div>';
   }
   var lnm=_linkName(s);
@@ -13689,6 +13694,7 @@ function _wireInbox(host){
         } else { _delSet(id); }
       }
       else if(act==="delone") _delSet(id);
+      else if(act==="note"){ var _t=""; try{ _t=decodeURIComponent(el.getAttribute("data-note")||""); }catch(_e){ _t=el.getAttribute("data-note")||""; } aibisAlert('📝 計画地備考<br><br>'+e(_t).replace(/\n/g,'<br>')); }
     });
   });
 }
