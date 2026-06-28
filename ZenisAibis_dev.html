@@ -92,6 +92,8 @@ body.is-mob #analysisChartsGrid{grid-template-columns:1fr!important}
 body.is-mob .dash-grid2{grid-template-columns:1fr!important}
 .pl-tab{background:#dde5ee;color:#4a5568;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
 .pl-tab.pl-on{background:#2c5282;color:#fff}
+@keyframes plblink{0%,100%{box-shadow:0 0 0 0 rgba(214,158,46,.7)}50%{box-shadow:0 0 0 7px rgba(214,158,46,0)}}
+.pl-blink{animation:plblink 1.1s ease-in-out infinite}
 table.pltt{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px}
 table.pltt th{background:#2c5282;color:#fff;font-size:11px;padding:5px 4px;font-weight:600}
 table.pltt td{border:1px solid #cbd5e0;padding:2px 6px;height:22px}
@@ -334,7 +336,7 @@ html.pczoom .tabs .tab .ic{font-size:15px}
 .fam-leg-item{display:flex;align-items:center;gap:3px;font-size:11px;color:#718096}
 .fam-ld{width:10px;height:10px;border-radius:50%;flex-shrink:0;border:1.5px solid rgba(0,0,0,0.1)}
 /* 家族モーダル */
-.fam-mo{position:fixed;inset:0;background:rgba(8,15,30,0.42);-webkit-backdrop-filter:blur(6px) saturate(115%);backdrop-filter:blur(6px) saturate(115%);display:none;align-items:center;justify-content:center;z-index:2147483000;padding:16px}
+.fam-mo{position:fixed;inset:0;background:rgba(8,15,30,0.42);-webkit-backdrop-filter:blur(6px) saturate(115%);backdrop-filter:blur(6px) saturate(115%);display:none;align-items:flex-start;justify-content:center;overflow-y:auto;z-index:2147483000;padding:16px}
 .fam-mo.show{display:flex}
 .fam-md{background:rgba(255,255,255,0.9);-webkit-backdrop-filter:blur(18px) saturate(140%);backdrop-filter:blur(18px) saturate(140%);border:1px solid rgba(255,255,255,0.6);border-radius:16px;box-shadow:0 24px 60px -12px rgba(15,23,42,0.5);padding:18px;width:100%;max-width:380px;max-height:90vh;overflow-y:auto}
 .fam-md h4{font-size:15px;color:#2c5282;margin-bottom:12px;border-bottom:2px solid #ebf4ff;padding-bottom:8px}
@@ -728,11 +730,14 @@ body.is-mob .mob-menu{display:inline-block}
   #tr .vcard.ri .vh{margin-bottom:0.5mm!important}
   #tr .vcard.ri .vn{font-size:9pt!important}
   #tr .vcard.ri textarea{min-height:7mm!important;font-size:7.5pt!important}
-  /* 訪問内容を300文字相当の高さで打ち切り */
-  #tr .vcard.ri textarea, #tp .vcard.pi textarea{
-    max-height:32mm!important;
+  /* 入力フォーム（訪問内容・協議メモ等）は最大6行で打ち切り。短い時は内容に合わせて縮む */
+  #tr textarea, #tp textarea{
+    line-height:1.3!important;
+    max-height:21mm!important;   /* ≈6行(7.5pt) */
     overflow:hidden!important;
   }
+  /* 再訪Judgmentは分割させず確実に収める（固定枠を残す） */
+  #tr .jsec{page-break-inside:avoid!important}
   #tr .vcard.ri label{font-size:7pt!important}
   #tr .vcard.ri input,#tr .vcard.ri select{font-size:7.5pt!important}
   /* 録音要約・戦略協議ボタン・連続留守カウントは非表示 */
@@ -1087,7 +1092,7 @@ body.is-mob .mob-menu{display:inline-block}
 @media screen and (min-width:769px){
   :root{ --pc-field-xs:86px; --pc-field-s:120px; --pc-field-m:170px; --pc-field-l:240px; --pc-field-xl:360px; }
   /* L：氏名・メールID */
-  #f_name,#f_email_local{ width:var(--pc-field-l)!important; max-width:var(--pc-field-l)!important; flex:0 1 auto; }
+  #f_name,#f_email_local{ flex:1 1 auto!important; width:auto!important; max-width:none!important; min-width:0; }
   /* M：短いプルダウン＋TEL＋日付（selectを含む。right-alignしない） */
   #f_tel,#f_disc,#f_rjdate,#f_pjdate,
   #f_social,#f_genjo,#f_oldrent,#f_parking,#f_jitaku,#f_ryokuchi,#f_landasset,#f_soutei,
@@ -1292,6 +1297,55 @@ body.is-mob .mob-menu{display:inline-block}
   }
 }
 /* ============================================================
+   PC版 土地情報 再配置 v9.89（PCのみ・スマホ縦積み非干渉）
+   行1=路線価+借地/面積/間口/築年数/満室/空室 ／ 行2=接道|用途・建蔽 ／ 行3=高度/防火/権利
+   ============================================================ */
+@media screen and (min-width:769px){
+  #secTochi .pc-land-row1{display:grid;grid-template-columns:1.5fr 1fr 0.8fr 1fr 0.85fr 0.85fr;column-gap:12px;align-items:end}
+  #secTochi .pc-land-row1 > div{min-width:0;margin-bottom:0 !important}
+  #secTochi .pc-land-row1 select{width:100%;max-width:none;box-sizing:border-box}
+  #secTochi .pc-land-row1 #f_chishaku{width:48px !important;flex:0 0 48px}
+  #secTochi .pc-land-row1 .unit-field{width:100%}
+  #secTochi .pc-land-row2{display:grid;grid-template-columns:minmax(280px,340px) minmax(0,1fr);column-gap:28px;align-items:stretch;margin-bottom:8px}
+  #secTochi .pc-road-left{min-width:0}
+  #secTochi .pc-road-left > div{margin-bottom:0 !important}
+  #secTochi .pc-road-right2{min-width:0;display:flex;flex-direction:column;justify-content:space-between;row-gap:10px}
+  #secTochi .pc-road-right2 > div{min-width:0;margin-bottom:0 !important}
+  #secTochi .pc-road-right2 select{width:100%}
+  #secTochi .pc-land-row3{display:grid;grid-template-columns:1fr 1fr 1fr;column-gap:16px;align-items:start;margin-bottom:8px}
+  #secTochi .pc-land-row3 > div{min-width:0;margin-bottom:0 !important}
+}
+/* 土地情報 行1：表示文字は中央寄せ（PC/スマホ共通） */
+#editView #secTochi .pc-land-row1 input,
+#editView #secTochi .pc-land-row1 .unit-field input{ text-align:center !important; text-align-last:center !important; }
+#secTochi .pc-land-row1 select{ text-align:center; text-align-last:center; }
+#secTochi .pc-land-row1 #f_rosenka,
+#secTochi .pc-land-row1 #f_kuushitsu,
+#secTochi .pc-land-row1 #f_kuushitsu_aki{ text-align:center !important; }
+/* スマホ：行1=路線価|面積 ＋ 間口|築年数|満室|空き(4列) ／ 用途|建蔽(2列) ／ 高度・防火は各フル幅1行 */
+@media screen and (max-width:768px){
+  /* 行1: 路線価60|面積40 ／ 間口50|築年数50 ／ 満室50|空き50（10分割gridでspan割当） */
+  #secTochi .pc-land-row1{ display:grid; grid-template-columns:repeat(10,1fr); column-gap:6px; row-gap:6px; align-items:start; }
+  #secTochi .pc-land-row1 > div{ min-width:0; margin-bottom:0; }
+  #secTochi .pc-land-row1 > div:nth-child(1){ grid-column:span 6; }
+  #secTochi .pc-land-row1 > div:nth-child(2){ grid-column:span 4; }
+  #secTochi .pc-land-row1 > div:nth-child(3){ grid-column:span 5; }
+  #secTochi .pc-land-row1 > div:nth-child(4){ grid-column:span 5; }
+  #secTochi .pc-land-row1 > div:nth-child(5){ grid-column:span 5; }
+  #secTochi .pc-land-row1 > div:nth-child(6){ grid-column:span 5; }
+  #secTochi .pc-land-row1 input,
+  #secTochi .pc-land-row1 select{ width:100%; max-width:none; min-width:0; box-sizing:border-box; }
+  #secTochi .pc-land-row1 #f_chishaku{ width:66px !important; min-width:66px; font-size:15px; flex:0 0 66px; }
+  #secTochi .pc-land-row1 .unit-field{ padding:0 4px; }
+  /* 用途地域60|建蔽容積40（接道方位はフル幅のまま） */
+  #secTochi .pc-road-right2{ display:grid; grid-template-columns:minmax(0,1fr) 148px; column-gap:8px; row-gap:6px; align-items:start; }
+  #secTochi .pc-road-right2 > div{ min-width:0; margin-bottom:0; }
+  #secTochi .pc-road-right2 select{ width:100%; min-width:0; box-sizing:border-box; min-height:44px; }
+  /* 高度/防火/権利は各フル幅1行 */
+  #secTochi .pc-land-row3{ display:block; }
+  #secTochi .pc-land-row3 > div{ min-width:0; margin-bottom:8px; }
+}
+/* ============================================================
    PC版 精密グリッド調整 v9.24 — Step E（名前/家族＋一行化の仕上げ）
    ・名前エリア：mk-row(2fr1fr1fr / 1fr1fr)を維持し、ソーシャル/現状/TELをセル幅いっぱいに
    ・家族構成：人数確定ボタン行を 左=ボタン / 右=凡例(意向・居住) の2グリッドに
@@ -1409,7 +1463,6 @@ body.is-mob .mob-menu{display:inline-block}
       <div class="mob-menu" style="position:relative">
         <button onclick="togglePcMenu(event)" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:6px;font-size:16px;padding:4px 8px;cursor:pointer;font-family:inherit;line-height:1.6;min-height:36px;width:36px">⋮</button>
         <div class="mob-dropdown" id="pcDropdown" style="right:0;left:auto;min-width:170px">
-          <button onclick="closePcMenu();openPlannerToday()">📅 本日の予定表</button>
           <button onclick="closePcMenu();restoreBackup()">⏪ 1つ前に戻す</button>
           <div style="height:1px;background:#e2e8f0;margin:4px 0"></div>
           <button onclick="closePcMenu();showSetup()">⚙ 初期設定</button>
@@ -1505,9 +1558,10 @@ body.is-mob .mob-menu{display:inline-block}
       <div class="sortbar-scroll">
         <button class="sbtn active" id="sb_lv" onclick="toggleSort('lv')">🚶 最新</button>
         <button class="sbtn" id="sb_rv" onclick="toggleSort('rv')">🔁 再訪</button>
+        <button class="sbtn" id="sb_cust" onclick="toggleSort('cust')">👤 顧客</button>
+        <button class="sbtn" id="sb_sc" onclick="toggleSort('sc')">⭐ スコア</button>
         <button class="sbtn" id="sb_jw" onclick="toggleSort('jw')">⚖ ジャッジ</button>
         <button class="sbtn" id="sb_ad" onclick="toggleSort('ad')">🏠 住所</button>
-        <button class="sbtn" id="sb_sc" onclick="toggleSort('sc')">⭐ スコア</button>
         <button class="sbtn" id="sb_st" onclick="toggleSort('st')">📊 心理</button>
         <button class="sbtn" id="sb_pj" onclick="toggleSort('pj')">🎯 ランク</button>
         <button class="sbtn" id="sb_pace" onclick="toggleSort('pace')">⏰ 遅れ</button>
@@ -1660,7 +1714,8 @@ body.is-mob .mob-menu{display:inline-block}
     </div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
       <button onclick="plannerBack()" style="background:#e2e8f0;color:#2d3748;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">← 一覧に戻る</button><button class="pl-tab pl-on" data-t="input" onclick="plannerTab('input')">✏️ 入力</button>
-      <button class="pl-tab" data-t="prev" onclick="plannerTab('prev')">🖨 予定表印刷</button>
+      <button class="pl-tab" data-t="prev" onclick="plannerTab('prev')">🖨 印刷プレビュー</button>
+      <button id="plSbBtn" onclick="openSakusenbanFromPlanner()" style="background:#d69e2e;color:#1a1300;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">🎯 作戦盤</button>
       <button onclick="plannerToPhone()" style="margin-left:auto;background:#3182ce;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">📧 スマホへ</button>
     </div>
     <div id="plannerInput"></div>
@@ -1732,7 +1787,7 @@ body.is-mob .mob-menu{display:inline-block}
         ※ <b>チェックなしで押すと、前回送信から更新・新規のカードだけ</b>を自動で選んで送るよ（確認あり）。全部送るなら「全選択」<br><br>
         <b style="color:#718096">【共通】</b><br>
         検索 … 氏名・住所・地名で絞り込み（スペース区切りで複数）<br>
-        並び替え … 最新・再訪・ジャッジ・住所・スコア・心理・ランク・遅れ・初訪・土地から選択<br>
+        並び替え … 最新・再訪・ジャッジ・住所・スコア・心理・会話・ランク・遅れ・初訪・土地・顧客から選択<br>
         一覧の各カードには「追客ランク」「心理ステージ」が表示されます
       </div>
     </div>
@@ -1759,6 +1814,26 @@ body.is-mob .mob-menu{display:inline-block}
         <b style="color:#2c5282">🎤 音声入力</b><br>
         各メモ欄のマイク（🎤）を押すと音声で入力できます。専門用語・競合名は自動で補正されます。話すときは一息で話し切るのがコツです（途中で間が空くと認識が切れます）<br><br>
         入力後は必ず「💾 保存」を押してください
+      </div>
+    </div>
+
+    <div class="msec">
+      <div class="mttl" onclick="mtoggle(this)">📷 計画地写真（アイビスカメラ） <span class="marr">▶</span></div>
+      <div class="mbdy" style="display:none">
+        現地の計画地を撮影し、住所と一緒にカードへ取り込むスマホ専用カメラです。撮影は別画面「アイビスカメラ」で行い、本体に戻して紐付けます。<br><br>
+        <b style="color:#0e4a45">起動のしかた（3通り）</b><br>
+        ・カードの「📷 計画地写真」→ 📷 … このカードに紐付けて撮影<br>
+        ・⚡光速入力モードの「📷 計画地を撮影」… 撮影後に住所も反映<br>
+        ・⋮その他のアイコンから「ホーム画面に追加」… 本体とは別のカメラ専用アイコンを作成<br><br>
+        <b style="color:#0e4a45">撮る → 戻す</b><br>
+        ① 計画地を撮影（1データ＝最大4枚）<br>
+        ②「✓ 完了」を押す<br>
+        ③ カード／光速入力から起動した場合は本体に戻り、写真と住所がそのカードに入ります。ホーム画面アイコンから起動した場合はインボックスに保存され、あとでカードに紐付けます<br><br>
+        <b style="color:#0e4a45">インボックス（📥）</b><br>
+        カードを決めずに撮った写真は「インボックス」に溜まります。カードの📥から選んで紐付け・削除ができます。10件・15件で本体での整理を促します。<br><br>
+        <b style="color:#0e4a45">表示と印刷</b><br>
+        紐付けた写真はカードの「📷 計画地写真」で確認できます（表示専用）。🖨でデータ（印刷では「筆」と表示）を選び、A4縦・1データ1ページ（2×2で最大4枚）で印刷できます。本文カードには載らず別印刷です。<br><br>
+        ※ 写真は端末内に保存され、本体カードを削除すると紐付け済み写真も一緒に消えます（インボックスの未紐付け分は残ります）。
       </div>
     </div>
 
@@ -2255,7 +2330,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v9.63dev";
+var APP_VERSION = "v10.3";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -2846,7 +2921,7 @@ var AIBIS_FAQ=[
   {q:'自動保存先って何？',a:'PC版でOneDriveに設定する主ファイルのことだよ！保存するたびに自動で書き込まれるよ。<br><br>初期設定の「💾 自動保存先を設定」から設定できるよ。ファイル名はz-aibis_氏名.jsonで自動入力されるから変更不要！<br><br>⚠ このファイルを削除すると全データが消えるから絶対に削除しないでね！'},
   {q:'データが消えた！',a:'落ち着いて！まず確認してみてね😊<br><br>【まず試す】⋮その他→⏪1つ前に戻す　で直前の保存状態に復元できるよ！<br><br>【PC版】OneDriveのz-aibis_氏名.jsonが残っていないか確認。コピー保存先も確認してみて。<br>【スマホ版】PCにバックアップ（📧 PCへ）が残っていないか確認。<br><br>これからはPC版でコピー保存先も設定しておくと二重に守れるよ！'},
   {q:'1つ前に戻すって何？',a:'⏪1つ前に戻すは、直前の保存状態に復元する機能だよ！<br><br>保存するたびに、その直前のデータが自動でバックアップされてるよ。<br><br>誤ってカードを消した・上書きしてしまった・読み込みミスをした、そんなときに⋮その他→⏪1つ前に戻すで復活できるよ😊<br><br>※もう一度押すと、戻す前の状態に戻せるよ（行ったり来たり）。ただし2つ前より前には戻れないから注意してね！'},
-  {q:'検索ってどう使うの？',a:'名前や住所を入れるだけ！スペース区切りで複数キーワードも使えるよ🔍<br>並び替えは最新・再訪・判定待ち・住所・スコア・心理・ランク・遅れ・初訪から選べるよ！'},
+  {q:'検索ってどう使うの？',a:'名前や住所を入れるだけ！スペース区切りで複数キーワードも使えるよ🔍<br>並び替えは最新・再訪・ジャッジ・住所・スコア・心理・会話・ランク・遅れ・初訪・土地・顧客から選べるよ！'},
   {q:'バージョンアップするには？',a:function(){ return isMgrUnlocked()?'Claudeに修正を頼んで、GitHubに上書きするだけ！みんな次回アクセスで自動的に最新版になるよ👏':'アップデートは課長が管理しているよ😊 アプリを開き直すだけで、いつでも自動的に最新版が使えるから安心してね！'; }},
   {q:'マニュアルはどこ？',a:function(){return isMob?'⋮その他→📖マニュアルから見れるよ！タイトルをタップすると詳細が開くよ。':'⋮その他→📖マニュアルから見れるよ！各セクションをクリックすると詳細が開くよ。';}},
   {q:'戦略協議ってどう使うの？',a:'戦略協議は、お客様の情報をAI（会社のCopilot）に分析してもらう機能だよ！<br><br>①「💭 戦略協議」タブを開く<br>②分析テーマを選ぶ（8種）<br>③「🤖 分析用に抽出」でコピー、または「📎 ファイルで抽出」でtxt保存（Copilotに添付→「添付の指示に従って分析して」とだけ送ればOK）<br>④「🤖 AI分析」でCopilotが開く<br>⑤貼り付けて送信→回答を貼り付け欄にペースト<br><br>総合分析では追客ランク（S〜E）が自動で検出されるよ🧚'},
@@ -2893,6 +2968,10 @@ var AIBIS_FAQ=[
   {q:'光速入力モードの住所はどう入力する？',a:'住所（自宅）と計画地は、<b>📍現在地取得ボタン</b>で現在地住所を入れるよ。<br>番地が足りない場合は、<b>🔢番地入力</b>で「3-15-2」のように追加できるよ😊'},
   {q:'光速入力の住所にマイクボタンがないのはなぜ？',a:'丁目・番地・ハイフンは音声入力で誤認識しやすいためだよ🎤❌<br>住所は<b>現在地取得＋番地入力</b>を基本にしているんだ。氏名と計画地備考にはマイクがあるよ！'},
   {q:'計画地備考には何を書く？',a:'現地で見た計画地まわりの気づきを書くよ📝<br>例：P空き多い、老朽建物あり、店舗裏に余地あり、自宅横が雑種地、間口広め、接道良さそう、など。<br>次回訪問の作戦材料になるよ😊'},
+  {q:'計画地写真',a:function(){return isMob?'現地を撮るなら<b>アイビスカメラ</b>📷<br><br>カードの「📷 計画地写真」→📷で<b>このカードに紐付けて撮影</b>。光速入力なら「📷 計画地を撮影」で住所も一緒に反映。1データ＝最大4枚。「✓ 完了」で本体に戻ると写真と住所が入るよ😊':'計画地写真の撮影はスマホの<b>アイビスカメラ</b>で行うよ📷 撮った写真はカードの「📷 計画地写真」に紐付き、🖨で筆ごとにA4縦（2×2・最大4枚）で印刷できるよ。';}},
+  {q:'カメラ',a:function(){return isMob?'スマホ専用の<b>アイビスカメラ</b>で計画地を撮影できるよ📷 カードの📷から起動するとこのカードに紐付くよ。撮ったら「✓ 完了」を押してね。':'カメラ撮影はスマホ版の機能だよ📷 撮った計画地写真はカードに紐付いて、PCの🖨で印刷できるよ。';}},
+  {q:'インボックス',a:'カードを決めずに撮った計画地写真が一時的に溜まる置き場だよ📥<br>カードの「📷 計画地写真」→📥から、写真を選んでカードに紐付け・削除ができるよ。紐付けると表示・印刷に使えるようになるよ😊'},
+  {q:'計画地写真の印刷',a:'カードを開いて「📷 計画地写真」→🖨を押すと、筆を選んでA4縦・1筆1ページ（2×2で最大4枚）で印刷できるよ🖨 計画地写真は本文カードには載らず別印刷だよ。'},
   {q:'家族構成ってどう入れるの？',a:'初訪タブの「家族構成」セクションから入力できるよ！<br><br>＋ボタンで追加→続柄・氏名・年齢・居住形態を入力<br>★所有者 / KP（キーパーソン）/ 面談済 も記録できるよ<br>スタンス（ポジティブ/ネガティブ）も記録して戦略に活かしてね！<br>👶 子世代・兄弟姉妹は婚姻状況と子の人数も記録できるよ（相続人の把握に役立つ）。'},
   {q:'課分析ダッシュボードって何？',a:function(){ return isMgrUnlocked()?'管理職のPC版でのみ使える育成型「コマンドセンター」だよ📊 「今日動く」「担当を育てる」を上段にまとめてる。<br><br>・📌 今日の一手（誰に何を・次に聞く質問つき）<br>・🎯 次の一手 準備度（次回アポ・家族・KP・提案依頼から自動算出）<br>・🪜 見込み進捗3ゾーン<br>・💼 契約クローズ・トラッカー<br>・🎓 課長コーチング（良い点＋今週の声掛け）<br>・🌱 育成クエスト（弱点を次の課題に）<br>・🏆 担当別スコア／重要3指標／🟢 稼働率モニター<br>・🧠 傾向と対策（AIインサイト）<br><br>担当者セレクトで個人・全体を切替。「🤖 分析用に抽出」→「🤖 AI分析」でCopilotに分析依頼（次回アクション中心の指示が出るよ）。「🖨 レポート印刷」で表紙＋目次＋ガジェット＋AI分析を1冊のA4に。':'それは課長・支店長向けの機能だよ😊 担当のみんなは「🔭 自己分析ダッシュボード」で自分の見込みをチェックしてね！'; }},
   {q:'自己分析ダッシュボードって何？',a:'自分の見込みを自分で研究する「グロースコンソール」だよ🔭<br><br>・連想到達率リング＋レベル表示で成長を実感<br>・🔥 平日ストリーク（平日に開くと継続。土日はお休み）<br>・⤴ ステージ引き上げ（今月お客様の心を動かした回数＋⭐提案依頼）<br>・🥇 月間バッジ（提案依頼・同行・家族構成コンプ・新規発掘の達成度）<br>・🏆 課内ランキング（上位3名＋自分の順位。課長端末で表示）<br>・🎯 今日の作戦盤（優先3件にアクションチップを選んで自分のミッションに）<br>・🎖 営業ジョブ（9軸）… いまの「型」と二つ名、次に伸ばす力を表示（カードを育てるほど正確に）<br>・🔻 マイ・パイプライン（転換率つき）<br>・🥊 壁打ちワーク（AI相手に1問だけ自問自答してスキルUP）<br><br>スマホでも見れるよ。PCなら「🤖 AI分析」「🖨 印刷」も使えるよ！'},
@@ -4005,6 +4084,22 @@ function j9AiAxis(c, axisKey){
   if(!r||!(r in J9_RANK_PT)) return null;
   return J9_RANK_PT[r];
 }
+// 顧客訪問テンポ：顧客カードの最終接触からの経過日数を 0..1 に（1ヶ月以内=1.0／2ヶ月=0.7／4ヶ月で0）。顧客数に非依存の平均。顧客0件はnull＝加点なし。 v9.79
+function _j9CustCadence(cards){
+  var cs=(cards||[]).filter(function(c){return c&&c.cust_type==='顧客';});
+  if(!cs.length) return null;
+  var sum=0;
+  cs.forEach(function(c){
+    var d=(typeof lastContactDays==='function')?lastContactDays(c):-1; var s;
+    if(d<0) s=0;
+    else if(d<=30) s=1;
+    else if(d<=60) s=1-(d-30)/30*0.3;
+    else if(d<=120) s=0.7*(120-d)/60;
+    else s=0;
+    sum+=s;
+  });
+  return sum/cs.length;
+}
 // 担当（カード配列）→ 9軸スコア（0-100, 信頼度補正前）と入力信頼度
 function j9Axes(cards){
   cards=(cards||[]).filter(function(c){return c&&c.pursuit_judge!=='X';}); // ×(打ち切り)=削除予定。保有枚数にも軸計算にも数えない
@@ -4132,6 +4227,9 @@ function j9Axes(cards){
     ax.seian=_clip(ax.seian+seB);
     ax.enmusubi=_clip(ax.enmusubi+enB);
   }
+  // 顧客訪問テンポ（担当レベル・顧客数に非依存）→ 信頼に加点（最大15） v9.79
+  var _cvc=_j9CustCadence(cards);
+  if(_cvc!=null) ax.enmusubi=_clip(ax.enmusubi + _cvc*15);
   // 行動：担当レベル（発掘量30件で満点・直近更新率・訪問量）
   // 行動：枚数(発掘量)は最低条件＝ゲート(j9CardCap)で効くので“価値”には入れない。
   // ここでは「実際に動いた率」＝再訪着手率・追撃着手率・直近の動き・訪問総量で評価。
@@ -5108,7 +5206,7 @@ function renderSelfDash(tid){
  H+=_3te;
  H+='<!--SELFJOB-->';
  H+='<div class="z-card z-hero z-cf"><div class="z-ring" style="--p:'+renso+'"><div class="z-ring-in"><b>'+renso+'<small>%</small></b><span>育成率</span></div></div><div class="z-hmeta"><div class="z-lv">⚔ '+e(uName||'あなた')+' さんの成長ランク</div><h2>Lv.'+_rk.lv+' '+_rk.name+'</h2><div class="z-chips"><span class="z-chip">保有 <b>'+n+'</b>件</span><span class="z-chip">A・S <b>'+asN+'</b>件</span><span class="z-chip">要フォロー <b>'+fuN+'</b>件</span><span class="z-chip">育成率 <b>'+renso+'</b>%</span></div><div class="z-xp"><div class="z-xpl"><span>'+(_rk.next?'あと <b>'+_rk.remain+'pt</b> で Lv.'+(_rk.lv+1)+' '+_rk.next:'最高ランクに到達！')+'</span><span>今月 +'+_mg+'pt</span></div><div class="z-xptrack"><i style="width:'+_rk.prog+'%"></i></div></div><div class="z-sub" style="margin-top:6px">成長ポイント（営業経験値）累計 '+_pts+'pt</div></div></div>';
- var _plan=_planLoad(); var _acts=['再訪','追撃','テスクロ','家族確認','様子見'];
+ var _plan=_planLoad(); var _acts=PLAN_PURPOSES.slice();
  var _selN=Object.keys(_plan.sel||{}).filter(function(k){return _prio.some(function(o){return String(o.c.id||'').replace(/[^\w-]/g,'')===k;});}).length;
  H+='<div class="z-card z-c2"><h3>\ud83c\udfaf 今日の作戦盤</h3><div class="z-sub">温度の高い順に3件。「今日この方に何をする？」— チップを選んで自分のミッションに（<b>'+_selN+'</b>/'+(_prio.length||0)+'件 選択中）。</div>'
   +(_prio.length?_prio.map(function(o,i){var c=o.c;var tag=(c.pursuit_judge==='A'||c.pursuit_judge==='S')?'A候補':(lastContactDays(c)>=14?lastContactDays(c)+'日未接触':(!c.family_headcount?'家族構成未確認':_tempBand(c)[1]));
@@ -5308,7 +5406,7 @@ function toggleSort(key) {
 }
 function updateSortBtns() {
   // 非アクティブ時の基本ラベル
-  var base = {lv:'🚶 最新', ad:'🏠 住所', st:'📊 心理', sc:'⭐ スコア', pj:'🎯 ランク', dt:'📅 初訪', kw:'💬 会話', pace:'⏰ 遅れ', rv:'🔁 再訪', jw:'⚖ ジャッジ', lm:'🗺 土地'};
+  var base = {lv:'🚶 最新', ad:'🏠 住所', st:'📊 心理', sc:'⭐ スコア', pj:'🎯 ランク', dt:'📅 初訪', kw:'💬 会話', pace:'⏰ 遅れ', rv:'🔁 再訪', jw:'⚖ ジャッジ', lm:'🗺 土地', cust:'👤 顧客'};
   // アクティブ時：その状態で「実際に先頭に来る方」を表示（＝現在の表示順）
   var act = {
     lv:   {desc:'🚶 古い→',     asc:'🚶 最新→'},
@@ -5320,8 +5418,9 @@ function updateSortBtns() {
     kw:   {desc:'💬 会話 浅→',  asc:'💬 会話 深→'},
     pace: {desc:'⏰ 遅れ 小→',  asc:'⏰ 遅れ 大→'},
     rv:   {desc:'🔁 再訪 0→',   asc:'🔁 再訪 3→'},
-    jw:   {desc:'⚖ ジャッジ（協議未記入）', asc:'⚖ ジャッジ（協議未記入）'},
-    lm:   {desc:'🗺 土地（古→）', asc:'🗺 土地（古→）'}
+    jw:   {desc:'⚖ ジャッジ 古→', asc:'⚖ ジャッジ 古→'},
+    lm:   {desc:'🗺 土地 古→', asc:'🗺 土地 古→'},
+    cust: {desc:'👤 顧客 新→', asc:'👤 顧客 新→'}
   };
   Object.keys(base).forEach(function(k){
     var btn = document.getElementById('sb_'+k); if(!btn) return;
@@ -5543,6 +5642,9 @@ function getSorted() {
   var dir = sortDir[sortKey]==='desc' ? -1 : 1;
   if (sortKey==='lv') {
     arr.sort(function(a,b){ var d=dir * getLastVD(b).localeCompare(getLastVD(a)); return d!==0?d:(_cTs(b)-_cTs(a)); });
+  } else if (sortKey==='cust') {
+    arr = arr.filter(function(c){return c&&c.cust_type==='顧客';});
+    arr.sort(function(a,b){ return _cTs(b)-_cTs(a); });
   } else if (sortKey==='ad') {
     var adDir = sortDir['ad']==='desc' ? -1 : 1;
     arr.sort(function(a,b){ return adDir * getArea(a.address||'').localeCompare(getArea(b.address||''),'ja'); });
@@ -5583,6 +5685,8 @@ function getSorted() {
     arr = arr.filter(_isLandLead);
     var _dk=function(c){ return c.discovery_date || '9999-99-99'; };
     arr.sort(function(a,b){ return _dk(a).localeCompare(_dk(b)); }); // 古い発掘順
+  } else if (sortKey==='kw') {
+    arr.sort(function(a,b){ return dir * (_kaiwaMax(b) - _kaiwaMax(a)); });
   } else { // dt
     arr.sort(function(a,b){ var d=dir * (b.discovery_date||'').localeCompare(a.discovery_date||''); return d!==0?d:(_cTs(b)-_cTs(a)); });
   }
@@ -5995,7 +6099,7 @@ function mkBlank() {
     revisits:[{num:1,date:'',appo:'',content:'',instruction:''},{num:2,date:'',appo:'',content:'',instruction:''},{num:3,date:'',appo:'',content:'',instruction:''}],
     revisit_judge_date:'', revisit_judge:'',
     pursuits:[], pursuit_judge_date:'', pursuit_judge:'', pursuit_judge_sel:'', pursuit_judge_ai:'',
-    job9_ranks:null, job9_ranks_at:'', ai_memo:'', family_headcount:false, family_headcount_at:'', family_bikou:'', doukou:false, doukou_at:'', mgr_involve:'単独', asset_type:false, ekitoho:'', proposal_req:false, proposal_req_at:'', next_aim:'',
+    job9_ranks:null, job9_ranks_at:'', ai_memo:'', family_headcount:false, family_headcount_at:'', family_bikou:'', doukou:false, doukou_at:'', mgr_involve:'単独', cust_type:'新規', asset_type:false, ekitoho:'', proposal_req:false, proposal_req_at:'', next_aim:'',
     created_at:new Date().toISOString(), updated_at:new Date().toISOString()
   };
 }
@@ -6185,7 +6289,7 @@ function fillForm(c) {
   // 最優先事項・備考
   var sm=document.getElementById('f_ai_summary'); if(sm) sm.value=c.ai_summary||'';
   var memo=document.getElementById('f_ai_memo'); if(memo) memo.value=c.ai_memo||'';
-  updTsubo(); updChiku(); updateFamHeadcountBtn(); updateDoukouBtn(); if(window.updateEkitohoBtn) updateEkitohoBtn(); if(window.updateProposalReqBtn) updateProposalReqBtn(); if(window.updateRyokuchiBtn) window.updateRyokuchiBtn(); if(window.applyAssetSeal) applyAssetSeal(); if(window.updateTabProgress) updateTabProgress(); if(window.updatePlanSvBtn) updatePlanSvBtn(); if(window.AibisVoice) window.AibisVoice.refresh();
+  updTsubo(); updChiku(); updateFamHeadcountBtn(); updateDoukouBtn(); if(window.updateCustBtn) updateCustBtn(); if(window.updateEkitohoBtn) updateEkitohoBtn(); if(window.updateProposalReqBtn) updateProposalReqBtn(); if(window.updateRyokuchiBtn) window.updateRyokuchiBtn(); if(window.applyAssetSeal) applyAssetSeal(); if(window.updateTabProgress) updateTabProgress(); if(window.updatePlanSvBtn) updatePlanSvBtn(); if(window.AibisVoice) window.AibisVoice.refresh();
   var _pqEl=document.getElementById('f_proposal_quality'); if(_pqEl)_pqEl.value=c.proposal_req_quality||'';
   var _ppEl=document.getElementById('f_post_proposal'); if(_ppEl)_ppEl.value=c.post_proposal_status||'';
 }
@@ -6299,6 +6403,7 @@ var FAM_G1=['祖父','祖母'];
 var FAM_G2=['世帯主（男）','世帯主（女）','夫','妻','名義人（夫）','名義人（妻）','配偶者','兄','弟','姉','妹'];
 var famEditGen=0, famEditIdx=-1;
 var famCurStance='unk', famCurLiving='同居', famCurMarriage='不明';
+var famCurJob='', famCurGyoshu='';
 var famCurFlags={met:false,owner:false,kp:false};
 
 // FAM_G定義をここで確定（グローバルより先に関数内で参照できるよう再定義）
@@ -6348,7 +6453,7 @@ function renderFam(){
   famRenderSummary();
   if(typeof famUpdateAddButtonState==='function') famUpdateAddButtonState();
   var _tb=document.getElementById('famTreeBox');
-  if(_tb){ try{ var _ff=(cur.family||[]).filter(function(m){return m.role;}); if(_ff.length){var _hasSib=_ff.some(function(m){return ['兄','弟','姉','妹'].indexOf(m.role)>=0;});var _unNote=_hasSib?'<div style="font-size:9.5px;color:#8b95a6;margin:3px 2px 0;line-height:1.4">※「伯父／叔父／伯母／叔母」＝世帯主の兄弟姉妹を、お子様から見た続柄で表示。保存値は兄・弟・姉・妹のままです。</div>':'';_tb.innerHTML='<div style="font-size:10px;color:#a0aec0;margin:0 0 2px 2px">👆 タップで編集</div>'+buildFamTreeSVG(_ff,{interactive:true,src:cur.family})+_unNote;}else{_tb.innerHTML='<div style="color:#a0aec0;font-size:12px;padding:8px">家族を追加すると世代ツリーが表示されます。</div>';} }catch(_e){ _tb.innerHTML='<div style="color:#a0aec0;font-size:12px;padding:8px">家系図を表示できませんでした。</div>'; } }
+  if(_tb){ try{ var _ff=(cur.family||[]).filter(function(m){return m.role;}); _famMarkExcess(cur.family); if(_ff.length){var _hasSib=_ff.some(function(m){return ['兄','弟','姉','妹'].indexOf(m.role)>=0;});var _unNote=_hasSib?'<div style="font-size:9.5px;color:#8b95a6;margin:3px 2px 0;line-height:1.4">※「伯父／叔父／伯母／叔母」＝世帯主の兄弟姉妹を、お子様から見た続柄で表示。保存値は兄・弟・姉・妹のままです。</div>':'';_tb.innerHTML='<div style="display:flex;justify-content:space-between;align-items:baseline;gap:6px;margin:0 0 2px 2px"><span style="font-size:10px;color:#a0aec0">👆 タップで編集／💡年齢入力で顔イラスト表示</span>'+(cur.updated_at?'<span style="font-size:10px;color:#94a3b8;white-space:nowrap">📝 最終入力 '+String(cur.updated_at).replace("T"," ").slice(0,10)+'</span>':'')+'</div>'+buildFamTreeSVG(_ff,{interactive:true,src:cur.family})+_unNote;}else{_tb.innerHTML='<div style="color:#a0aec0;font-size:12px;padding:8px">家族を追加すると世代ツリーが表示されます。</div>';} }catch(_e){ _tb.innerHTML='<div style="color:#a0aec0;font-size:12px;padding:8px">家系図を表示できませんでした。</div>'; } }
 }
 function famRenderSummary(){
   // 表示されているメンバー（roleあり）のみ集計
@@ -6364,17 +6469,17 @@ function famRenderSummary(){
   else if(pos>neg) ov='<span style="color:#2c5282;font-weight:700">👍 概ねポジティブ</span>';
   else ov='<span style="color:#744210;font-weight:700">🔍 確認中</span>';
   el.style.display='flex';
-  el.style.flexDirection='column';
-  el.style.alignItems='flex-start';
-  el.innerHTML='<div style="display:flex;align-items:center;gap:5px;flex-wrap:nowrap;white-space:nowrap">'
+  el.style.flexDirection='row';
+  el.style.alignItems='center';
+  el.innerHTML='<div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">'
     +'<span style="font-size:11px;color:#718096;font-weight:600">家族全体：</span>'
     +'<span style="display:flex;align-items:center;gap:2px"><span style="width:10px;height:10px;border-radius:50%;background:#38a169;display:inline-block"></span>'+pos+'人</span>'
     +'<span style="color:#ddd">|</span>'
     +'<span style="display:flex;align-items:center;gap:2px"><span style="width:10px;height:10px;border-radius:50%;background:#e53e3e;display:inline-block"></span>'+neg+'人</span>'
     +'<span style="color:#ddd">|</span>'
     +'<span style="display:flex;align-items:center;gap:2px"><span style="width:10px;height:10px;border-radius:50%;background:white;border:1px solid #aaa;display:inline-block"></span>'+unk+'人</span>'
-    +'</div>'
-    +'<div style="margin-top:3px">'+ov+'</div>';
+    +'<span style="margin-left:6px">'+ov+'</span>'
+    +'</div>';
 }
 function famSetStance(s){
   famCurStance=s;
@@ -6412,7 +6517,89 @@ function famSetMarriage(v){
     var b=document.getElementById('famM'+k);
     if(b) b.className='fam-bbtn'+(k===v?' fa-on':'');
   });
+  if(typeof famRenderJobUI==='function') famRenderJobUI();
 }
+// ===== 職業＝続柄×性別×婚姻の巡回ボタン＋業種チップ v9.68 =====
+var FAM_JOB_EMP=['不動産系','製造業','小売業','飲食業','医療系','IT','運送業','金融系','士業','公務員','その他'];
+var FAM_JOB_SELF=['不動産賃貸業','建設業','小売業','飲食店','医療','士業','美容','製造業','その他'];
+var FAM_FEMALE_ROLES=['世帯主・祖母','祖母','世帯主・母','母','妻','世帯主（女）','配偶者','嫁','姉','妹','長女','次女','三女','養子・女','孫(女)','小学生(女)','幼児(女)','乳児(女)'];
+var FAM_KID_ONLY_ROLES=['孫(男)','孫(女)','幼児(男)','幼児(女)','幼児','乳児(男)','乳児(女)','乳児'];
+function _famGender(role){ return FAM_FEMALE_ROLES.indexOf(normalizeFamRole(role))>=0?'f':'m'; }
+function _famJobBucket(role){
+  role=normalizeFamRole(role); if(!role) return 'none';
+  var g=famGetGen(role);
+  if(g===0) return 'grand';
+  if(g===1) return 'active';
+  if(role==='小学生(男)'||role==='小学生(女)') return 'kid';
+  if(FAM_KID_ONLY_ROLES.indexOf(role)>=0) return 'none';
+  return 'child';
+}
+function _famJobOpts(role, married){
+  var b=_famJobBucket(role), gf=(_famGender(role)==='f');
+  if(b==='grand') return ['自営業','会社員','無職'];
+  if(b==='active') return ['会社員','自営業','パート',(gf&&married)?'専業主婦':'無職'];
+  if(b==='child') return ['会社員','自営業','学生','アルバイト',(gf&&married)?'専業主婦':'無職'];
+  if(b==='kid') return ['学生'];
+  return [];
+}
+function _famGyoOpts(job){ return job==='会社員'?FAM_JOB_EMP:(job==='自営業'?FAM_JOB_SELF:null); }
+function _famMigrateJob(m){
+  if(!m) return {job:'',gyoshu:''};
+  if(m.gyoshu!==undefined&&m.gyoshu!==null&&(m.gyoshu!==''||['会社員','自営業','パート','アルバイト','専業主婦','学生','無職'].indexOf(String(m.job||''))>=0))
+    return {job:String(m.job||''),gyoshu:String(m.gyoshu||'')};
+  var old=String((m.job!==undefined&&m.job!=='')?m.job:(m.shokugyou||'')).trim();
+  var b=_famJobBucket(m.role);
+  if(old==='不動産賃貸業') return {job:'自営業',gyoshu:'不動産賃貸業'};
+  if(old==='公務員') return {job:'会社員',gyoshu:'公務員'};
+  if(old==='パート・アルバイト') return {job:(b==='child'||b==='kid')?'アルバイト':'パート',gyoshu:''};
+  if(old==='年金のみ') return {job:'無職',gyoshu:''};
+  if(['会社員','自営業','学生','無職','パート','アルバイト','専業主婦'].indexOf(old)>=0) return {job:old,gyoshu:''};
+  return {job:'',gyoshu:''};
+}
+function famJobLabel(m){
+  var mj=_famMigrateJob(m); if(!mj.job) return '';
+  if((mj.job==='会社員'||mj.job==='自営業')&&mj.gyoshu) return mj.job+'（'+mj.gyoshu+'）';
+  return mj.job;
+}
+function _famJobBtnStyle(on,disabled){
+  var s='padding:10px 18px;border-radius:10px;font-weight:800;font-size:15px;font-family:inherit;line-height:1.2;min-width:120px;cursor:pointer;';
+  if(disabled) return s+'border:2px solid #e2e8f0;background:#f7fafc;color:#a0aec0;cursor:default;';
+  if(on) return s+'border:2px solid #2c5282;background:linear-gradient(135deg,#2c5282,#553c9a);color:#fff;';
+  return s+'border:2px solid #cbd5e0;background:#fff;color:#2d3748;';
+}
+function _famChipStyle(on){
+  var s='padding:7px 12px;border-radius:18px;font-size:12.5px;font-family:inherit;white-space:nowrap;cursor:pointer;';
+  return on?s+'border:1px solid #2c5282;background:#2c5282;color:#fff;font-weight:700;':s+'border:1px solid #cbd5e0;background:#fff;color:#2d3748;';
+}
+function famRenderJobUI(){
+  var rEl=document.getElementById('famRole'); var role=rEl?rEl.value:'';
+  var opts=_famJobOpts(role, famCurMarriage==='既婚');
+  if(famCurJob && opts.indexOf(famCurJob)<0) famCurJob='';
+  var btn=document.getElementById('famJobBtn');
+  if(btn){
+    if(!opts.length){ btn.textContent='－'; btn.disabled=true; btn.style.cssText=_famJobBtnStyle(false,true); }
+    else { btn.disabled=false; btn.textContent=famCurJob||'タップで選択'; btn.style.cssText=_famJobBtnStyle(!!famCurJob,false); }
+  }
+  var gyoOpts=_famGyoOpts(famCurJob);
+  if(gyoOpts && famCurGyoshu && gyoOpts.indexOf(famCurGyoshu)<0) famCurGyoshu='';
+  var wrap=document.getElementById('famGyoWrap'), box=document.getElementById('famGyoChips');
+  if(wrap&&box){
+    if(gyoOpts){
+      wrap.style.display='block';
+      box.innerHTML=gyoOpts.map(function(g){ return '<button type="button" style="'+_famChipStyle(famCurGyoshu===g)+'" onclick="famSetGyoshu(\''+g+'\')">'+g+'</button>'; }).join('');
+    } else { wrap.style.display='none'; famCurGyoshu=''; box.innerHTML=''; }
+  }
+}
+function famCycleJob(){
+  var rEl=document.getElementById('famRole'); var role=rEl?rEl.value:'';
+  var opts=_famJobOpts(role, famCurMarriage==='既婚');
+  if(!opts.length) return;
+  var i=opts.indexOf(famCurJob);
+  famCurJob=opts[(i+1)%opts.length]; famCurGyoshu='';
+  famRenderJobUI();
+}
+function famSetGyoshu(g){ famCurGyoshu=(famCurGyoshu===g?'':g); famRenderJobUI(); }
+window.famCycleJob=famCycleJob; window.famSetGyoshu=famSetGyoshu;
 function famToggleFlag(f){
   famCurFlags[f]=!famCurFlags[f];
   var cls={met:'fa-met',owner:'fa-owner',kp:'fa-kp'};
@@ -6427,21 +6614,53 @@ function famSetFlag(f,v){
   var b=document.getElementById(id[f]);
   if(b) b.className='fam-fbtn'+(v?' '+cls[f]:'');
 }
-var FAM_CHILD_ROLES=['長男','次男','三男','長女','次女','三女','養子・男','養子・女'];
+var FAM_CHILD_ROLES=['長男','次男','三男','四男','長女','次女','三女','四女','養子・男','養子・女'];
 var famCurChildren=0;
+var famCurSons=0, famCurDaughters=0, famCurGkAges=[];
 var famCurGrandkids=[];
 var GK_LABEL={'小学生(男)':'小学生男','小学生(女)':'小学生女','幼児(男)':'幼児男','幼児(女)':'幼児女','乳児(男)':'乳児男','乳児(女)':'乳児女','乳児':'乳児','孫(男)':'男の子','孫(女)':'女の子','幼児':'幼児'};
+// お子様＝息子/娘の人数で入力。命名は順番(長男/次男…・長女/次女…)、絵は順番で 1-2小学生/3幼児/4以降乳児 v9.69
+var KID_KANJI=['長','次','三','四','五','六','七','八','九','十'];
+function _kidLabel(g,ord){ var k=KID_KANJI[ord-1]||(''+ord); return k+(g==='女'?'女':'男'); }
+function _gkType(g,ord){ return (ord<=2?'小学生':(ord===3?'幼児':'乳児'))+'('+g+')'; }
+function _genGk(sons,daughters){ var a=[],i; for(i=1;i<=sons;i++)a.push('シルエット(男)'); for(i=1;i<=daughters;i++)a.push('シルエット(女)'); return a; }
+function _gkLabels(arr){ var mc=0,fc=0; return (arr||[]).map(function(t){ var g=/女/.test(t)?'女':'男'; var n=(g==='女')?(++fc):(++mc); return _kidLabel(g,n); }); }
+function famRenderKidCounts(){ var sm=document.getElementById('famKidMSel'); if(sm)sm.value=famCurSons; var sf=document.getElementById('famKidFSel'); if(sf)sf.value=famCurDaughters; }
+function famSetKid(which,n){ if(which==='m')famCurSons=n; else famCurDaughters=n; famCurGrandkids=_genGk(famCurSons,famCurDaughters); famCurGkAges=famCurGrandkids.map(function(){return '';}); famCurChildren=famCurGrandkids.length; famRenderKidCounts(); famRenderGrandkids(); }
+function _ageGkType(g,age){ age=+age; var t=age<=2?'乳児':age<=6?'幼児':age<=12?'小学生':age<=15?'中学':age<=18?'高校':'成人'; return t+'('+g+')'; }
+function famSetGkAge(i,val){
+  if(i<0||i>=famCurGrandkids.length) return;
+  var g=/女/.test(famCurGrandkids[i])?'女':'男';
+  var v=(val===''||val==null)?'':Math.max(0,Math.min(99,parseInt(val,10)||0));
+  famCurGkAges[i]=v;
+  if(v===''){ famCurGrandkids[i]='シルエット('+g+')'; }
+  else { famCurGrandkids[i]=_ageGkType(g,v); }
+  famRenderGrandkids();
+}
+window.famSetGkAge=famSetGkAge;
 function famRenderGrandkids(){
   var box=document.getElementById('famGkChips'); if(!box) return;
-  if(!famCurGrandkids.length){ box.innerHTML='<span style="font-size:12px;color:#a0aec0">お子様なし（いる場合は上のボタンで追加）</span>'; return; }
+  if(!famCurGrandkids.length){ box.innerHTML='<span style="font-size:12px;color:#a0aec0">お子様なし（息子・娘の人数を選んでね）</span>'; return; }
+  var labels=_gkLabels(famCurGrandkids);
   box.innerHTML=famCurGrandkids.map(function(t,i){
-    return '<span style="display:inline-flex;align-items:center;gap:2px;background:#f7fafc;border:1px solid #e2e8f0;border-radius:16px;padding:1px 3px 1px 4px"><svg viewBox="0 0 100 100" width="28" height="28" style="display:block">'+famAvatarSVG(t,"smile")+'</svg><span style="font-size:11px;color:#4a5568;white-space:nowrap">'+(GK_LABEL[t]||t)+'</span><button type="button" onclick="famRemoveGrandkid('+i+')" title="削除" style="background:none;border:none;color:#c53030;cursor:pointer;font-size:14px;line-height:1;padding:0 3px">×</button></span>';
-  }).join('')+'<span style="font-size:11px;color:#718096;margin-left:2px">計'+famCurGrandkids.length+'人</span>';
+    var av=(famCurGkAges[i]===''||famCurGkAges[i]==null)?'':famCurGkAges[i];
+    return '<span style="display:inline-flex;align-items:center;gap:4px;background:#f7fafc;border:1px solid #e2e8f0;border-radius:16px;padding:2px 8px 2px 4px"><svg viewBox="0 0 100 100" width="40" height="40" style="display:block">'+famAvatarSVG(t,"smile")+'</svg><span style="font-size:11px;color:#4a5568;white-space:nowrap;font-weight:700">'+labels[i]+'</span><input type="number" inputmode="numeric" min="0" max="99" value="'+av+'" placeholder="歳" onchange="famSetGkAge('+i+',this.value)" style="width:40px;font:inherit;font-size:12px;padding:3px 4px;border:1px solid #cbd5e0;border-radius:6px;text-align:center"><span style="font-size:10px;color:#a0aec0">歳</span></span>';
+  }).join('')+'<div style="font-size:11px;color:#718096;margin-top:4px;width:100%">計'+famCurGrandkids.length+'人・年齢を入れると絵が切り替わります（未入力は人数順）</div>';
 }
 function famAddGrandkid(t){ famCurGrandkids.push(t); famCurChildren=famCurGrandkids.length; famRenderGrandkids(); }
 function famRemoveGrandkid(i){ famCurGrandkids.splice(i,1); famCurChildren=famCurGrandkids.length; famRenderGrandkids(); }
-function famClearGrandkids(){ famCurGrandkids=[]; famCurChildren=0; famRenderGrandkids(); }
-window.famAddGrandkid=famAddGrandkid; window.famRemoveGrandkid=famRemoveGrandkid; window.famClearGrandkids=famClearGrandkids;
+function famClearGrandkids(){ famCurSons=0; famCurDaughters=0; famCurGrandkids=[]; famCurGkAges=[]; famRenderKidCounts(); famRenderGrandkids(); }
+window.famAddGrandkid=famAddGrandkid; window.famRemoveGrandkid=famRemoveGrandkid; window.famClearGrandkids=famClearGrandkids; window.famSetKid=famSetKid;
+// ===== 子世代（世帯主から人数で追加）v9.75 =====
+var FAM_SON_ROLES=['長男','次男','三男','四男'], FAM_DAU_ROLES=['長女','次女','三女','四女'];
+function _famCountChildren(g){ var roles=(g==='m')?FAM_SON_ROLES:FAM_DAU_ROLES; return ((cur&&cur.family)||[]).filter(function(m){return roles.indexOf(m.role)>=0;}).length; }
+function _famReconcileChildren(){ if(!cur){return;} if(!cur.family)cur.family=[]; [['m',FAM_SON_ROLES],['f',FAM_DAU_ROLES]].forEach(function(p){ var g=p[0],roles=p[1]; var want=(g==='m')?(+cur.kidSons||0):(+cur.kidDaughters||0); var have=_famCountChildren(g); for(var i=have;i<want&&i<roles.length;i++){ cur.family.push({role:roles[i],stance:'unk',living:'未確認'}); } }); _famRenumberChildren(); }
+function _famRenumberChildren(){ if(!cur||!cur.family)return; [FAM_SON_ROLES,FAM_DAU_ROLES].forEach(function(roles){ var kids=cur.family.filter(function(m){return roles.indexOf(m.role)>=0;}); kids.forEach(function(m,i){ if(i<roles.length) m.role=roles[i]; }); }); }
+function _famMarkExcess(fam){ (fam||[]).forEach(function(m){ var si=FAM_SON_ROLES.indexOf(m.role), di=FAM_DAU_ROLES.indexOf(m.role); if(si>=0) m._excess=!!(cur&&cur.kidSons!=null&&si>=cur.kidSons); else if(di>=0) m._excess=!!(cur&&cur.kidDaughters!=null&&di>=cur.kidDaughters); else m._excess=false; }); }
+function _famAfterChildDelete(delRole){ if(!cur)return; var si=FAM_SON_ROLES.indexOf(delRole), di=FAM_DAU_ROLES.indexOf(delRole); if(si>=0){ var it=(+cur.kidSons||0); if(si<it) cur.kidSons=Math.max(0,it-1); } else if(di>=0){ var it2=(+cur.kidDaughters||0); if(di<it2) cur.kidDaughters=Math.max(0,it2-1); } _famRenumberChildren(); }
+function famSetChild(which,n){ if(!cur)return; if(which==='m')cur.kidSons=n; else cur.kidDaughters=n; _famReconcileChildren(); famRenderChildCounts(); if(typeof renderFam==='function')renderFam(); if(typeof setDirty==='function')setDirty(true); }
+function famRenderChildCounts(){ if(cur){ if(cur.kidSons==null)cur.kidSons=_famCountChildren('m'); if(cur.kidDaughters==null)cur.kidDaughters=_famCountChildren('f'); } var sm=document.getElementById('famChMSel'); if(sm)sm.value=(cur&&cur.kidSons)||0; var sf=document.getElementById('famChFSel'); if(sf)sf.value=(cur&&cur.kidDaughters)||0; }
+window.famSetChild=famSetChild; window.famRenderChildCounts=famRenderChildCounts;
 function famOnRoleChange(){
   var role=normalizeFamRole(document.getElementById('famRole').value);
   var gen=role?famGetGen(role):-1;
@@ -6454,6 +6673,10 @@ function famOnRoleChange(){
   var hb=document.getElementById('famL同居');
   if(hb) hb.textContent=isHead?'世帯主':'同居';
   if(isHead && famCurLiving==='未確認') famSetLiving('同居');
+  var showKid=(gen===1 && FAM_SIBLING_ROLES.indexOf(role)<0 && famEditIdx>=0);
+  var _kr=document.getElementById('famKidRow'); if(_kr)_kr.style.display=showKid?'block':'none';
+  if(showKid) famRenderChildCounts();
+  if(typeof famRenderJobUI==='function') famRenderJobUI();
 }
 function famSetChildren(n){
   famCurChildren=n;
@@ -6466,12 +6689,12 @@ function famResetModal(){
   famCurJutaku=''; famPaintJutaku();
   var hb=document.getElementById('famL同居'); if(hb) hb.textContent='同居';
   famSetStance('unk'); famSetLiving('未確認'); famSetMarriage('不明'); famSetChildren(0);
-  famCurGrandkids=[]; famRenderGrandkids();
+  famCurSons=0; famCurDaughters=0; famCurGrandkids=[]; famCurGkAges=[]; if(typeof famRenderKidCounts==='function')famRenderKidCounts(); famRenderGrandkids();
   famSetFlag('met',false); famSetFlag('owner',false); famSetFlag('kp',false);
   ['famRole','famName','famAddr'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   var ag=document.getElementById('famAge');if(ag)ag.value='';
   var sc=document.getElementById('famSocial');if(sc)sc.value='';
-  var jb=document.getElementById('famJob');if(jb)jb.value='';
+  famCurJob=''; famCurGyoshu=''; if(typeof famRenderJobUI==='function') famRenderJobUI();
   var nt=document.getElementById('famNote');if(nt)nt.value='';
   document.getElementById('famMarriageRow').style.display='none';
 }
@@ -6482,7 +6705,7 @@ var FAM_SIBLING_ROLES=['兄','弟','姉','妹'];
 var FAM_ROLE_GROUPS=[
  {label:'祖父母',roles:['世帯主・祖父','世帯主・祖母','祖父','祖母']},
  {label:'現役世代',roles:['世帯主・父','世帯主・母','父','母','—','兄','弟','姉','妹']},
- {label:'子世代',roles:['長男','次男','三男','長女','次女','三女','養子・男','養子・女']}
+ {label:'子世代',roles:['長男','次男','三男','四男','長女','次女','三女','四女','養子・男','養子・女']}
 ];
 // 兄弟姉妹は「世帯主から見た続柄」であることを入力時に明示（保存値=兄/弟/姉/妹 は不変）
 var FAM_SIB_DISP={'兄':'兄（世帯主の）','弟':'弟（世帯主の）','姉':'姉（世帯主の）','妹':'妹（世帯主の）'};
@@ -6516,7 +6739,7 @@ function famBuildRoleOptions(gen,editIdx){
       roles=roles.concat(FAM_SIBLING_ROLES);
     }
   } else {
-    roles=head?['長男','次男','三男','長女','次女','三女','養子・男','養子・女']:[];
+    roles=head?['長男','次男','三男','四男','長女','次女','三女','四女','養子・男','養子・女'].filter(function(r){return !have[r];}):[];
   }
   var html='<option value="">選択</option>';
   if(roles.length){
@@ -6553,8 +6776,12 @@ function famOpenEdit(idx){
   famSetLiving(m.living||m.kyojuu||'同居');
   famCurJutaku=m.jutaku||''; famPaintJutaku();
   famSetMarriage(m.marriage||'不明');
-  famCurGrandkids=(m.grandkids&&m.grandkids.length)?m.grandkids.slice():((+(m.children)>0)?Array(+m.children).fill('孫(男)'):[]);
-  famCurChildren=famCurGrandkids.length; famRenderGrandkids();
+  var _exGk=(m.grandkids&&m.grandkids.length)?m.grandkids.slice():((+(m.children)>0)?Array(+m.children).fill('孫(男)'):[]);
+  var _exM=0,_exF=0; _exGk.forEach(function(t){ if(/女/.test(t))_exF++; else _exM++; });
+  famCurSons=_exM; famCurDaughters=_exF;
+  if(m.gkAges&&m.gkAges.length===_exGk.length){ famCurGrandkids=_exGk; famCurGkAges=m.gkAges.slice(); }
+  else { famCurGrandkids=_genGk(famCurSons,famCurDaughters); famCurGkAges=famCurGrandkids.map(function(){return '';}); }
+  famCurChildren=famCurGrandkids.length; famRenderKidCounts(); famRenderGrandkids();
   famSetFlag('met',!!m.met); famSetFlag('owner',!!m.owner); famSetFlag('kp',!!m.kp);
   var r=document.getElementById('famRole');
   if(r){ r.value=m.role||''; if(m.role&&r.value!==m.role){ var op=document.createElement('option'); op.textContent=m.role; r.appendChild(op); r.value=m.role; } }
@@ -6562,7 +6789,7 @@ function famOpenEdit(idx){
   var nm=document.getElementById('famName');if(nm)nm.value=m.name||'';
   var sc=document.getElementById('famSocial');if(sc)sc.value=m.social||'';
   var ad=document.getElementById('famAddr');if(ad)ad.value=m.addr2||m.kyojuu||'';
-  var jb=document.getElementById('famJob');if(jb)jb.value=m.job||m.shokugyou||'';
+  var _mj=_famMigrateJob(m); famCurJob=_mj.job; famCurGyoshu=_mj.gyoshu;
   var nt=document.getElementById('famNote');if(nt)nt.value=m.note||m.bikou||'';
   famOnRoleChange();
   document.getElementById('famModal').classList.add('show');
@@ -6622,10 +6849,10 @@ function famSave(){
     age:document.getElementById('famAge').value,
     social:document.getElementById('famSocial')?.value||'',
     living:famCurLiving, marriage:famCurMarriage, stance:famCurStance,
-    children:famCurGrandkids.length, grandkids:famCurGrandkids.slice(),
+    children:famCurGrandkids.length, grandkids:famCurGrandkids.slice(), gkAges:famCurGkAges.slice(),
     met:famCurFlags.met, owner:famCurFlags.owner, kp:famCurFlags.kp,
     addr2:document.getElementById('famAddr').value,
-    job:document.getElementById('famJob').value,
+    job:famCurJob, gyoshu:famCurGyoshu,
     note:document.getElementById('famNote').value,
     jutaku:famCurJutaku,
     // 旧フィールド互換
@@ -6634,11 +6861,14 @@ function famSave(){
   if(famEditIdx>=0) cur.family[famEditIdx]=m;
   else cur.family.push(m);
   famCleanAutoSpouse(m); famAutoAddSpouse(m);
+  if(typeof famGetGen==='function' && famGetGen(m.role)===2){ _famRenumberChildren(); cur.kidSons=_famCountChildren('m'); cur.kidDaughters=_famCountChildren('f'); }
   famClose(); renderFam(); if(typeof setDirty==='function') setDirty(true);
 }
 function famDelete(){
   if(famEditIdx>=0&&cur.family){
+    var _del=cur.family[famEditIdx];
     cur.family.splice(famEditIdx,1);
+    if(_del&&(FAM_SON_ROLES.indexOf(_del.role)>=0||FAM_DAU_ROLES.indexOf(_del.role)>=0)) _famAfterChildDelete(_del.role);
   }
   famClose(); renderFam();
 }
@@ -6648,8 +6878,8 @@ function remFam(i){
   var f=(cur.family||[])[i]||{};
   var nm=String(f.name||f.relation||'').trim();
   if(nm||f.age||f.note){
-    aibisConfirm('家族構成「'+e(nm||'この行')+'」を削除する？🗑<br><span style="font-size:12px;color:#718096">入力した内容は元に戻せないよ。</span>', function(){ cur.family.splice(i,1); renderFam(); if(typeof setDirty==='function') setDirty(true); });
-  } else { cur.family.splice(i,1); renderFam(); }
+    aibisConfirm('家族構成「'+e(nm||'この行')+'」を削除する？🗑<br><span style="font-size:12px;color:#718096">入力した内容は元に戻せないよ。</span>', function(){ cur.family.splice(i,1); if(FAM_SON_ROLES.indexOf(f.role)>=0||FAM_DAU_ROLES.indexOf(f.role)>=0)_famAfterChildDelete(f.role); renderFam(); if(typeof setDirty==='function') setDirty(true); });
+  } else { cur.family.splice(i,1); if(FAM_SON_ROLES.indexOf(f.role)>=0||FAM_DAU_ROLES.indexOf(f.role)>=0)_famAfterChildDelete(f.role); renderFam(); }
 }
 
 // ===== 再訪 =====
@@ -7361,7 +7591,12 @@ function buildPrintCSS(){
     +'.cardclip{height:250mm;overflow:hidden}'
     +'.hint{font-size:8pt;color:#a0aec0;text-align:right;margin-top:1mm}'
     +'.jsec{border:1pt solid #553c9a;border-radius:2mm;padding:2mm 3mm;background:#faf5ff}'
-    +'.jsec-title{font-size:10pt;font-weight:800;color:#553c9a;margin-bottom:1.5mm}';
+    +'.jsec-title{font-size:10pt;font-weight:800;color:#553c9a;margin-bottom:1.5mm}'
+    +'.rev-fill{display:flex;flex-direction:column}'
+    +'.rev-fill > .sec:not(.rev-judge),.rev-fill > .vcard{flex:0 0 auto}'
+    +'.rev-judge{flex:1 1 auto;display:flex;flex-direction:column}'
+    +'.rev-judge-field{flex:1 1 auto;display:flex;flex-direction:column;min-height:0}'
+    +'.rev-judge-box{flex:1 1 auto}';
 }
 var STRAT_THEMES=[['general','総合分析'],['next_visit','次回作戦'],['motivation','動機引揚'],['personality','性格応対'],['objection','反論対応'],['hearing','聞取補充'],['training','会話訓練'],['inheritance','相続シナリオ']];
 function toggleStrategyThemes(){
@@ -7537,7 +7772,7 @@ function buildInitVisitHTML(c,opt){
     +'</div>';
   /* StepF: 家族エリアは見込みカード印刷から削除（家族は別印刷）。 */
   html+='<div class="sec"><div class="stitle">✍ 初訪内容（見込み候補だと判断した理由）</div>'
-    +'<div style="min-height:22mm;border:0.5pt solid #e2e8f0;padding:2mm;font-size:10.5pt;line-height:1.55;border-radius:1.5mm;background:white">'+e(c.initial_content||'').replace(/\n/g,'<br>')+'</div>'
+    +'<div style="min-height:22mm;max-height:38mm;overflow:hidden;border:0.5pt solid #e2e8f0;padding:2mm;font-size:10.5pt;line-height:1.55;border-radius:1.5mm;background:white">'+e(c.initial_content||'').replace(/\n/g,'<br>')+'</div>'
     +'</div>';
   if(opt.clip) return '<div class="cardclip">'+html+'</div>';
   return html;
@@ -7575,20 +7810,20 @@ function buildRevisitHTML(c,opt){
       +'<span style="font-size:8pt;color:#333">日付：<span style="font-weight:600;border-bottom:0.5pt solid #aaa;display:inline-block;min-width:25mm">'+e(r.date||'')+'</span></span>'
       +'<span style="font-size:8pt;color:#333">アポ：<span style="font-weight:600;border-bottom:0.5pt solid #aaa;display:inline-block;min-width:16mm">'+e(r.appo||'')+'</span></span>'
       +'</div>'
-      +'<div style="min-height:22mm;border:0.5pt solid #aaa;padding:2mm;font-size:9.5pt;line-height:1.5">'+e(r.content||'').replace(/\n/g,'<br>')+'</div>'
+      +'<div style="min-height:22mm;max-height:34mm;overflow:hidden;border:0.5pt solid #aaa;padding:2mm;font-size:9.5pt;line-height:1.5">'+e(r.content||'').replace(/\n/g,'<br>')+'</div>'
       +'</div>';
   }
   // Judgment（未入力でも枠を表示）
-  html+='<div class="sec" style="border-color:#553c9a"><div class="stitle" style="color:#553c9a">♦ 再訪 Judgment</div>'
+  html+='<div class="sec rev-judge" style="border-color:#553c9a"><div class="stitle" style="color:#553c9a">♦ 再訪 Judgment</div>'
     +'<div class="row3">'
     +'<div class="field"><span class="label">判定</span><span class="val">'+e(c.revisit_judge||'')+'</span></div>'
     +'<div class="field"><span class="label">判定日</span><span class="val">'+e(c.revisit_judge_date||'')+'</span></div>'
     +'<div class="field"><span class="label">フォーアイズ</span><span class="val">'+e(c.revisit_4eyes||'')+'</span></div>'
     +'</div>'
-    +'<div class="field" style="margin-top:1.5mm"><span class="label">課長協議内容・判断理由</span>'
-    +'<div style="min-height:10mm;border:0.5pt solid #aaa;padding:2mm;font-size:9.5pt;line-height:1.5">'+e(c.revisit_judge_reason||'').replace(/\n/g,'<br>')+'</div>'
+    +'<div class="field rev-judge-field" style="margin-top:1.5mm"><span class="label">課長協議内容・判断理由</span>'
+    +'<div class="rev-judge-box" style="min-height:30mm;overflow:hidden;border:0.5pt solid #aaa;padding:2mm;font-size:9.5pt;line-height:1.5">'+e(c.revisit_judge_reason||'').replace(/\n/g,'<br>')+'</div>'
     +'</div></div>';
-  if(opt.clip) return '<div class="cardclip">'+html+'</div>';
+  if(opt.clip) return '<div class="cardclip rev-fill">'+html+'</div>';
   return html;
 }
 
@@ -7616,7 +7851,7 @@ function buildPursuitHTML(c){
       +(p.interviewer?'<span style="font-size:8pt;color:#333">面談者：<span style="font-weight:600">'+e(p.interviewer)+'</span></span>':'')
       +(p.next_appo_date?'<span style="font-size:8pt;color:#333">次回アポ：<span style="font-weight:600">'+e(p.next_appo_date)+'</span></span>':'')
       +'</div>'
-      +'<div style="min-height:18mm;border:0.5pt solid #aaa;padding:2mm;font-size:9.5pt;line-height:1.5;margin-bottom:1mm">'+e(p.content||'').replace(/\n/g,'<br>')+'</div>'
+      +'<div style="min-height:18mm;max-height:34mm;overflow:hidden;border:0.5pt solid #aaa;padding:2mm;font-size:9.5pt;line-height:1.5;margin-bottom:1mm">'+e(p.content||'').replace(/\n/g,'<br>')+'</div>'
       +(p.instruction?'<div style="font-size:8pt;border-left:2pt solid #c53030;padding-left:2mm;color:#c53030">指示：'+e(p.instruction)+'</div>':'')
       +'</div>';
   });
@@ -7761,9 +7996,11 @@ function cfg(role){
     '長男':{gender:'m',age:'young',hair:'#3a352f',style:'sidePart',cloth:'#3a4a6b',cloth2:'#2c3a54',outfit:'suit',tie:'#b04a4a'},
     '次男':{gender:'m',age:'young',hair:'#5a463a',style:'short',cloth:'#5e7691',cloth2:'#475c73',outfit:'jacket'},
     '三男':{gender:'m',age:'teen',hair:'#3a342f',style:'round',cloth:'#cfd6df',cloth2:'#bcc4cd',outfit:'hoodie'},
+    '四男':{gender:'m',age:'teen',hair:'#3a342f',style:'round',cloth:'#cfd6df',cloth2:'#bcc4cd',outfit:'hoodie'},
     '長女':{gender:'f',age:'young',hair:'#6b4a32',style:'long',cloth:'#c9b89f',cloth2:'#b29c80',outfit:'jacket'},
     '次女':{gender:'f',age:'young',hair:'#7a5236',style:'bob',cloth:'#a9cfe6',outfit:'blouse',neckTie:'#e88aa6'},
     '三女':{gender:'f',age:'teen',hair:'#6b4a32',style:'long',cloth:'#3a4a6b',outfit:'uniform_f'},
+    '四女':{gender:'f',age:'teen',hair:'#6b4a32',style:'long',cloth:'#3a4a6b',outfit:'uniform_f'},
     '孫(男)':{gender:'m',age:'child',hair:'#4a3f3a',style:'round',cloth:'#7fb5e6'},
     '孫(女)':{gender:'f',age:'child',hair:'#6b4a30',style:'twin',cloth:'#f6a8c8',bowOn:true,bowColor:'#ff9ab5'},
     '小学生(男)':{gender:'m',age:'schoolkid',hair:'#3a342f',style:'short',cloth:'#5b7fc0'},
@@ -7773,13 +8010,42 @@ function cfg(role){
     '幼児':{gender:'m',age:'child',hair:'#5a4636',style:'round',cloth:'#8fdcc0'},
     '乳児(男)':{gender:'m',age:'baby',hair:'#7a5a44',style:'tuft',cloth:'#9bbce8'},
     '乳児(女)':{gender:'m',age:'baby',hair:'#8a6a50',style:'tuft',cloth:'#f6b8cc',bowOn:true,bowColor:'#ff9ab5'},
-    '乳児':{gender:'m',age:'baby',hair:'#8a6a50',style:'tuft',cloth:'#ffd98c'}
+    '乳児':{gender:'m',age:'baby',hair:'#8a6a50',style:'tuft',cloth:'#ffd98c'},
+    '中学(男)':{gender:'m',age:'teen',hair:'#2e2a26',style:'short',cloth:'#3a4a6b'},
+    '中学(女)':{gender:'f',age:'teen',hair:'#3a312a',style:'long',cloth:'#3a4a6b'},
+    '高校(男)':{gender:'m',age:'young',hair:'#2e2a26',style:'short',cloth:'#3a4a6b'},
+    '高校(女)':{gender:'f',age:'young',hair:'#3a312a',style:'long',cloth:'#3a4a6b'},
+    '成人(男)':{gender:'m',age:'young',hair:'#3a352f',style:'sidePart',cloth:'#46505f'},
+    '成人(女)':{gender:'f',age:'young',hair:'#6b4a32',style:'long',cloth:'#dfa6c0'}
   };
   return M[role]||{gender:'m',age:'mid',hair:'#6b6157',style:'short',cloth:'#a7b0bd'};
 }
 
-  var FAM_FILE={'世帯主・祖父':'grandfather','世帯主・祖母':'grandmother','世帯主・父':'father','世帯主・母':'mother','父':'father','母':'mother','養子・男':'son','養子・女':'daughter','祖父':'grandfather','祖母':'grandmother','世帯主（男）':'father','夫':'father','名義人（夫）':'father','妻':'mother','世帯主（女）':'mother','配偶者':'mother','名義人（妻）':'mother','嫁':'daughter_in_law','婿':'son_in_law','兄':'uncle','弟':'uncle','姉':'aunt','妹':'aunt','長男':'son','次男':'son','三男':'teen_boy','長女':'daughter','次女':'daughter','三女':'teen_girl','孫(男)':'child_boy','孫(女)':'child_girl','小学生(男)':'schoolkid_boy','小学生(女)':'schoolkid_girl','幼児(男)':'child_boy','幼児(女)':'child_girl','幼児':'child_boy','乳児(男)':'baby','乳児(女)':'baby','乳児':'baby'};
-  return function(role,expr){var c=cfg(role);c.expr=expr||"smile";var f=FAM_FILE[role]||'father';return '<g class="famfb">'+mkPerson(50,46,26,c)+'</g><image href="img/family/fam_'+f+'.png?v='+APP_VERSION+'" x="0" y="0" width="100" height="112" preserveAspectRatio="xMidYMid slice" onload="if(this.previousElementSibling)this.previousElementSibling.remove()" onerror="this.remove()"/>';};
+  var FAM_FILE={'世帯主・祖父':'grandfather','世帯主・祖母':'grandmother','世帯主・父':'father','世帯主・母':'mother','父':'father','母':'mother','養子・男':'son','養子・女':'daughter','祖父':'grandfather','祖母':'grandmother','世帯主（男）':'father','夫':'father','名義人（夫）':'father','妻':'mother','世帯主（女）':'mother','配偶者':'mother','名義人（妻）':'mother','嫁':'daughter_in_law','婿':'son_in_law','兄':'uncle','弟':'uncle','姉':'aunt','妹':'aunt','長男':'son','次男':'son','三男':'teen_boy','四男':'son','長女':'daughter','次女':'daughter','三女':'teen_girl','四女':'daughter','孫(男)':'child_boy','孫(女)':'child_girl','小学生(男)':'schoolkid_boy','小学生(女)':'schoolkid_girl','幼児(男)':'child_boy','幼児(女)':'child_girl','幼児':'child_boy','乳児(男)':'baby','乳児(女)':'baby','乳児':'baby','中学(男)':'jhs_boy','中学(女)':'jhs_girl','高校(男)':'teen_boy','高校(女)':'teen_girl','成人(男)':'son','成人(女)':'daughter'};
+  var FAM_AGE_VARIABLE=['兄','弟','姉','妹','長男','次男','三男','四男','長女','次女','三女','四女','養子・男','養子・女'];
+  function _ageImg(g,age){ age=+age; var b=(g==='f');
+    if(age<=2) return 'baby';
+    if(age<=6) return b?'child_girl':'child_boy';
+    if(age<=12) return b?'schoolkid_girl':'schoolkid_boy';
+    if(age<=15) return b?'jhs_girl':'jhs_boy';
+    if(age<=18) return b?'teen_girl':'teen_boy';
+    if(age<=29) return b?'daughter':'son';
+    if(age<=59) return b?'aunt':'uncle';
+    return b?'grandmother':'grandfather';
+  }
+  function _silSVG(g){ var col=(g==='f')?'#cbb9c6':'#b4bcc8'; return '<g class="famfb"><circle cx="50" cy="38" r="22" fill="'+col+'"/><path d="M14 112 Q14 72 50 72 Q86 72 86 112 Z" fill="'+col+'"/></g>'; }
+  return function(role,expr,age){
+    var c=cfg(role); c.expr=expr||"smile";
+    if(role==='シルエット(男)') return _silSVG('m');
+    if(role==='シルエット(女)') return _silSVG('f');
+    var f;
+    if(FAM_AGE_VARIABLE.indexOf(role)>=0){
+      var a=(age===''||age==null)?NaN:parseInt(age,10);
+      if(isNaN(a)) return _silSVG(c.gender);
+      f=_ageImg(c.gender,a);
+    } else { f=FAM_FILE[role]||'father'; }
+    return '<g class="famfb">'+mkPerson(50,46,26,c)+'</g><image href="img/family/fam_'+f+'.png?v='+APP_VERSION+'" x="0" y="0" width="100" height="112" preserveAspectRatio="xMidYMid slice" onload="if(this.previousElementSibling)this.previousElementSibling.remove()" onerror="this.remove()"/>';
+  };
 })();
 
 function buildFamTreeSVG(fam, opts){
@@ -7788,8 +8054,8 @@ function buildFamTreeSVG(fam, opts){
   var g1=fam.filter(m=>m.role&&famGetGen(m.role)===1);
   var g2=fam.filter(m=>m.role&&famGetGen(m.role)===2);
   var NW=92,NH=116,HG=12,CG=22,RG=50,PAD=8,KIDW=52,KIDH=28,RG3=40;
-  var GKW=38,GKH=52,GKBUS=14,GK_LBL={'小学生(男)':'小学生','小学生(女)':'小学生','幼児(男)':'幼児','幼児(女)':'幼児','乳児(男)':'乳児','乳児(女)':'乳児','乳児':'乳児','孫(男)':'孫','孫(女)':'孫','幼児':'幼児'};
-  var MALE=['長男','次男','三男','兄','弟','養子・男'];
+  var GKW=44,GKH=58,GKBUS=14,GK_LBL={'小学生(男)':'小学生','小学生(女)':'小学生','幼児(男)':'幼児','幼児(女)':'幼児','乳児(男)':'乳児','乳児(女)':'乳児','乳児':'乳児','孫(男)':'孫','孫(女)':'孫','幼児':'幼児'};
+  var MALE=['長男','次男','三男','四男','兄','弟','養子・男'];
   var SIB=['兄','弟','姉','妹'], SPOUSE=['妻','配偶者','世帯主（女）','名義人（妻）'];
   var sibs=g1.filter(m=>SIB.indexOf(m.role)>=0), nonSib=g1.filter(m=>SIB.indexOf(m.role)<0);
   var head=nonSib.filter(m=>m.owner)[0]||nonSib.filter(m=>SPOUSE.indexOf(m.role)<0)[0]||nonSib[0]||null;
@@ -7861,11 +8127,12 @@ function buildFamTreeSVG(fam, opts){
     var stroke='#cbd5e0',sw=1;
     if(!inlaw){if(m.kp){stroke='#3182ce';sw=2;}else if(m.owner){stroke='#c53030';sw=1.8;}else if(m.met){stroke='#38a169';sw=1.6;}}
     if(inlaw){stroke='#d7dee8';}
+    if(!inlaw&&m._excess){ tint='#fde2e2'; stroke='#e53e3e'; sw=2.2; }
     var s=`<rect x="${n.x}" y="${n.y}" width="${NW}" height="${NH}" rx="11" fill="${tint}" stroke="${stroke}" stroke-width="${sw}"${inlaw?' stroke-dasharray="3 2"':''}/>`;
     if(!inlaw&&typeof FAM_HEAD_ROLES!=='undefined'&&FAM_HEAD_ROLES.indexOf(normalizeFamRole(m.role||''))>=0) s+=`<rect x="${n.x-2}" y="${n.y-2}" width="${NW+4}" height="${NH+4}" rx="13" fill="none" stroke="#d4af37" stroke-width="2.4"/>`;
     var aw=100,ah=112,area=NH-36,asc=Math.min((NW-8)/aw,area/ah),tx=n.x+(NW-aw*asc)/2,ty=n.y+3;
     var dead=(living==='死亡'&&!inlaw);
-    s+=`<g transform="translate(${Math.round(tx*100)/100},${ty}) scale(${Math.round(asc*1000)/1000})"${dead?' filter="url(#zfg)" opacity="0.85"':''}>${famAvatarSVG(m.role, inlaw?"smile":(m.stance==="pos"?"smile":m.stance==="neg"?"sad":"neutral"))}</g>`;
+    s+=`<g transform="translate(${Math.round(tx*100)/100},${ty}) scale(${Math.round(asc*1000)/1000})"${dead?' filter="url(#zfg)" opacity="0.85"':''}>${famAvatarSVG(m.role, inlaw?"smile":(m.stance==="pos"?"smile":m.stance==="neg"?"sad":"neutral"), m.age)}</g>`;
     if(dead)s+=`<line x1="${n.x+8}" y1="${n.y+8}" x2="${n.x+NW-8}" y2="${n.y+ah*asc}" stroke="#9aa3ad" stroke-width="1.2"/>`;
     if(!inlaw){
       if(m.owner)s+=`<text x="${n.x+7}" y="${n.y+16}" font-size="12" fill="#c53030" font-weight="700">★</text>`;
@@ -7887,7 +8154,7 @@ function buildFamTreeSVG(fam, opts){
   svg+=lines;
   allAv.forEach(n=>svg+=node(n));
   kidBoxes.forEach(b=>{
-    var n=b.gk.length, startX=b.cx-(n*GKW)/2, busY=gen3Y-GKBUS;
+    var n=b.gk.length, startX=b.cx-(n*GKW)/2, busY=gen3Y-GKBUS; var _gklbl=_gkLabels(b.gk);
     // 横バス（孫が2人以上のとき）と各孫への分岐線
     var firstC=startX+GKW/2, lastC=startX+(n-1)*GKW+GKW/2;
     if(n>1) svg+=L(firstC,busY,lastC,busY);
@@ -7896,7 +8163,7 @@ function buildFamTreeSVG(fam, opts){
       svg+=L(gx,busY,gx,gen3Y);
       var aw=100,ah=112,asc=Math.min((GKW-4)/aw,(GKH-12)/ah),tx=gx-aw*asc/2,ty=gen3Y;
       svg+=`<g transform="translate(${Math.round(tx*100)/100},${ty}) scale(${Math.round(asc*1000)/1000})">${famAvatarSVG(b.gk[gi],"smile")}</g>`;
-      svg+=`<text x="${gx}" y="${gen3Y+GKH-1}" font-size="7.5" fill="#718096" text-anchor="middle">${GK_LBL[b.gk[gi]]||'孫'}</text>`;
+      svg+=`<text x="${gx}" y="${gen3Y+GKH-1}" font-size="7.5" fill="#718096" text-anchor="middle">${(_gklbl&&_gklbl[gi])||GK_LBL[b.gk[gi]]||'孫'}</text>`;
     }
   });
   // タップ編集レイヤー（画面のみ／印刷では opts なしで無効）
@@ -7919,13 +8186,13 @@ function buildFamTreeSVG(fam, opts){
 
 function buildFamilyHTML(c){
   var e=function(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
-  var fam=(c.family||[]).filter(function(m){return m.role;});
+  var fam=(c.family||[]).filter(function(m){return m.role;}); fam.forEach(function(m){m._excess=false;});
   var html='<div class="h2 fam">👨‍👩‍👧‍👦 家族構成</div>';
   if(!fam.length){html+='<p style="color:#aaa;font-size:9pt">家族構成データなし</p>';return html;}
   var svg=buildFamTreeSVG(fam);
   if(svg){
     html+='<div class="sec purple" style="page-break-inside:avoid;break-inside:avoid">'
-      +'<div class="stitle">🌳 三世代家系図</div>'+svg
+      +'<div class="stitle" style="display:flex;justify-content:space-between;align-items:baseline"><span>🌳 三世代家系図</span>'+(c.updated_at?'<span style="font-size:7.5pt;color:#94a3b8;font-weight:400">📝 最終入力 '+String(c.updated_at).replace('T',' ').slice(0,10)+'</span>':'')+'</div>'+svg
       +'<div style="display:flex;flex-wrap:wrap;gap:2mm 4mm;margin-top:1.5mm;font-size:7pt;color:#718096">'
       +'<span>枠：<b style="color:#3182ce">青=KP</b>／<b style="color:#c53030">赤=所有者</b>／<b style="color:#38a169">緑=面談済</b></span>'
       +'<span>右上●居住：<b style="color:#06b6d4">同居</b>・<b style="color:#d97706">近居</b>・<b style="color:#3b82f6">別居</b>・<b style="color:#94a3b8">死亡</b></span>'
@@ -7934,12 +8201,12 @@ function buildFamilyHTML(c){
       +'</div></div>';
   }
   var genLabel=['祖父母世代','現役世代','子世代'];
-  var DEEP=['兄','弟','姉','妹','長男','次男','三男','長女','次女','三女'];
+  var DEEP=['兄','弟','姉','妹','長男','次男','三男','四男','長女','次女','三女','四女'];
   [0,1,2].forEach(function(gen){
     var members=fam.filter(function(m){return famGetGen(m.role)===gen;});
     if(!members.length) return;
-    html+='<div class="sec"><div class="stitle">'+genLabel[gen]+'（'+members.length+'名）</div>';
-    members.forEach(function(m){
+    html+='<div class="sec"><div class="stitle">'+genLabel[gen]+'（'+members.length+'名）</div><div style="display:grid;grid-template-columns:1fr 1fr;column-gap:6mm">';
+    members.forEach(function(m,idx){
       var living=m.living||'未確認';
       var lc=(living==='同居'||living==='近居')?'#2563eb':(living==='別居')?'#b7791f':(living==='死亡')?'#64748b':'#94a3b8';
       var st=(m.stance==='pos')?'<span style="color:#276749;font-weight:700">ポジティブ</span>':(m.stance==='neg')?'<span style="color:#c53030;font-weight:700">ネガティブ</span>':'<span style="color:#a0aec0">不明</span>';
@@ -7948,9 +8215,9 @@ function buildFamilyHTML(c){
       if(m.kp)tags.push('<span style="color:#3182ce;font-weight:700">KP</span>');
       if(m.met)tags.push('<span style="color:#276749;font-weight:700">面談済</span>');
       var mc='';
-      if(DEEP.indexOf(m.role)>=0){if(m.marriage&&m.marriage!=='不明')mc+=m.marriage;var _gk=(m.grandkids&&m.grandkids.length)?m.grandkids:null;if(_gk){var _GL={'小学生(男)':'小学生男','小学生(女)':'小学生女','幼児(男)':'幼児男','幼児(女)':'幼児女','乳児(男)':'乳児男','乳児(女)':'乳児女','孫(男)':'男の子','孫(女)':'女の子','幼児':'幼児','乳児':'乳児'};mc+=(mc?'・':'')+'子'+_gk.length+'人（'+_gk.map(function(g){return _GL[g]||'子';}).join('・')+'）';}else if(m.children)mc+=(mc?'・':'')+'子'+m.children+'人';}
+      if(DEEP.indexOf(m.role)>=0){if(m.marriage&&m.marriage!=='不明')mc+=m.marriage;var _gk=(m.grandkids&&m.grandkids.length)?m.grandkids:null;if(_gk){mc+=(mc?'・':'')+'子'+_gk.length+'人（'+_gkLabels(_gk).join('・')+'）';}else if(m.children)mc+=(mc?'・':'')+'子'+m.children+'人';}
       var sep='<span style="color:#cbd5e0;padding:0 1mm">|</span>';
-      html+='<div style="display:flex;align-items:baseline;gap:1.5mm;padding:1.2mm 0;border-bottom:0.3pt solid #edf2f7;font-size:9.5pt;flex-wrap:wrap">'
+      html+='<div style="display:flex;align-items:baseline;gap:1.5mm;padding:1.2mm 0;border-bottom:0.3pt solid #edf2f7;font-size:9.5pt;flex-wrap:wrap;break-inside:avoid'+(idx%2===0?";border-right:0.5pt solid #d1d9e6;padding-right:4mm":"")+'">'
         +'<span style="font-weight:700;min-width:17mm;color:#2d3748">'+(m.owner?'★':'')+e(m.role)+'</span>'
         +(m.name?'<span style="font-weight:600">'+e(m.name)+'</span>':'')
         +(m.age?'<span style="color:#718096">'+e(m.age)+'歳</span>':'')
@@ -7958,11 +8225,12 @@ function buildFamilyHTML(c){
         +sep+st
         +(tags.length?sep+tags.join(' '):'')
         +(mc?sep+'<span style="color:#718096">'+e(mc)+'</span>':'')
-        +(m.job?sep+'<span style="color:#718096">'+e(m.job)+'</span>':'')
+        +(famJobLabel(m)?sep+'<span style="color:#718096">'+e(famJobLabel(m))+'</span>':'')
+        +((living==='別居')&&(m.addr2||m.kyojuu)?sep+'<span style="color:#b7791f">📍'+e(getArea(m.addr2||m.kyojuu))+'</span>':'')
         +(m.note?'<span style="flex-basis:100%;color:#4a5568;font-size:8pt;padding-left:17mm;margin-top:0.3mm">📝 '+e(m.note).replace(/\n/g,' ')+'</span>':'')
         +'</div>';
     });
-    html+='</div>';
+    html+='</div></div>';
   });
   html+='<div class="sec"><div class="stitle">全体</div>'
     +'<div style="font-size:8.5pt">家族人数把握：<b style="color:'+(c.family_headcount?'#276749':'#c53030')+'">'+(c.family_headcount?'確定済':'未確定')+'</b></div>';
@@ -8092,7 +8360,7 @@ function genPrompt(anon){
     if(f.stance&&f.stance!=='unk') sub.push('土地活用：'+(stanceL[f.stance]||''));
     if(f.living&&f.living!=='未確認') sub.push(f.living);
     if(f.marriage&&f.marriage!=='不明') sub.push(f.marriage);
-    if(f.job) sub.push(f.job);
+    var _fj=famJobLabel(f); if(_fj) sub.push(_fj);
     if(f.met) sub.push('面談済');
     if(f.owner) sub.push('★所有者');
     if(f.kp) sub.push('KP');
@@ -9043,7 +9311,6 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
   {id:'treasure',e:'💎',t:'お宝度マトリクス',s:'熱量×資産規模。右上＝お宝。色＝ランク。泡を長押しで客名、タップでカードへ。',sp:'z-cf',render:function(){return bub;}},
   {id:'genjo',e:'🥧',t:'現況の内訳 ／ 生産緑地（データ）',s:'現状区分の分布と、生産緑地の保有率。',sp:'z-c2',render:function(cx){return _genjoPie(cx.t)+'<div style="border-top:1px solid var(--z-line);margin:12px 0 8px"></div><div style="font-size:12.5px;font-weight:700;color:var(--z-ink);margin-bottom:4px">🌳 生産緑地 保有率</div>'+_ryokuchiRing(cx.t);}},
   {id:'souzoku',e:'🏯',t:'相続緊急度 × 進捗',s:'高齢×低ステージは要対応。',sp:'z-c2',render:function(){return '<div class="z-tiles">'+agH+'</div>'+(noAge?'<div class="z-sub" style="margin-top:6px">所有者年齢 未入力 '+noAge+'件</div>':'');}},
-  {id:'potential',e:'💰',t:'課の総ポテンシャル金額',s:'A・S案件の路線価×面積の概算。',sp:'z-c2',render:function(){return '<div style="text-align:center;padding:10px"><div class="z-num" style="font-size:38px;font-weight:800;color:#ffb443">約'+pot+'<span style="font-size:17px">億円</span></div><div class="z-sub">規模感の目安（概算）</div></div>';}},
   {id:'jobs9',e:'🎖',t:'営業ジョブ（全員）',s:'担当ごとの「型」と次に伸ばす力。入力と行動＋AI評価から判定（9軸・全'+j9LadderCount()+'職）。',sp:'z-cf',render:function(){return '<div class="z-jobgrid">'+miniR+'</div>';}}
  ];
  if(Array.isArray(window.Z_DEEP_EXTRAS)) window.Z_DEEP_EXTRAS.forEach(function(it){ if(it&&typeof it.render==='function') _deepItems.push(it); });
@@ -9080,17 +9347,19 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
  var bodyTeam=('🧑‍💼 担当の特性・保有状況',
    _zc('⭕','提案依頼の取得状況','顧客の意思表示＝契約への最短サイン。','<div style="text-align:center;margin-bottom:8px"><span style="font-family:Sora,sans-serif;font-size:30px;font-weight:800;color:#2f9e44">'+prGot+'</span><span style="font-size:12px;color:var(--z-dim)"> 件取得／'+cards.filter(function(c){return !_isLandLead(c);}).length+'件中（'+_zPct(prGot,cards.filter(function(c){return !_isLandLead(c);}).length)+'%）</span></div>'+_zVbars(prBars,reps.map(function(r){return r.slice(0,1);}),reps.map(function(){return '#2f9e44';})),'z-c2')
   +_zc('🧬','担当の特性（自動所見）','カード全体から見た各担当のタイプ。','<div class="z-list2">'+(traitRows||'<div class="z-sub">担当データなし</div>')+'</div>','z-cf'));
- var _axData=(_zc('🏆','担当別スコア','平均スコア順。',lbH,'z-c2')+_zc('⚡','担当別 行動量スコア','行動の積み上げ。契約だけでなく前進を評価。',ptH,'z-c2')+_zc('📇','見込み保有数（全体・担当別）','課全体の母数と担当別の保有件数。','<div style="text-align:center;margin-bottom:8px"><span style="font-family:Sora,sans-serif;font-size:30px;font-weight:800;color:#34e3d0">'+cards.length+'</span><span style="font-size:12px;color:var(--z-dim)"> 件（全体）／平均 '+avgHold.toFixed(1)+'件</span></div>'+_zVbars(holdBars,reps.map(function(r){return r.slice(0,1);}),_zAVAS),'z-c2')+_zc('📝','入力充実度（担当別）','カードの作り込み度。低い担当は質のフォローを。',_zVbars(inpBars,reps.map(function(r){return r.slice(0,1);}),inpBars.map(function(v){return v>=70?'#2f9e44':v>=50?'#ffb443':'#ff5d7d';})),'z-c2'));
+ var _holdCard=_zc('📇','見込み保有数（全体・担当別）','課全体の母数と担当別の保有件数。','<div style="text-align:center;margin-bottom:8px"><span style="font-family:Sora,sans-serif;font-size:30px;font-weight:800;color:#34e3d0">'+cards.length+'</span><span style="font-size:12px;color:var(--z-dim)"> 件（全体）／平均 '+avgHold.toFixed(1)+'件</span></div>'+_zVbars(holdBars,reps.map(function(r){return r.slice(0,1);}),_zAVAS),'z-c2');
+ var _axData=(_zc('🏆','担当別スコア','平均スコア順。',lbH,'z-c2')+_zc('⚡','担当別 行動量スコア','行動の積み上げ。契約だけでなく前進を評価。',ptH,'z-c2')+_zc('📝','入力充実度（担当別）','カードの作り込み度。低い担当は質のフォローを。',_zVbars(inpBars,reps.map(function(r){return r.slice(0,1);}),inpBars.map(function(v){return v>=70?'#2f9e44':v>=50?'#ffb443':'#ff5d7d';})),'z-c2'));
  // insights
  var pingStat=reps.map(function(r){var a=g[r].filter(function(c){return !_isLandLead(c);}),T=a.length||1;return {r:r,v:_zPct(a.filter(function(c){return getKaiwaLevel(c)===0;}).length,T),n:a.length};}).filter(function(o){return o.n>=3;}).sort(function(a,b){return b.v-a.v;});
  var saLate=cards.filter(function(c){return (c.pursuit_judge==='A'||c.pursuit_judge==='S')&&calcPaceOverrate(c)>1;}).length;
  var ins='';
- ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(255,93,125,.16)">⚠</div><div><b>失速ポイントは「'+STG[slow]+'」段<span class="z-pill" style="background:rgba(255,93,125,.16);color:#ff5d7d">PACE</span></b><p>この段の滞留が最長。'+STG[slow]+'を越える一手（提案依頼・連れ出し）を朝礼で共有を。</p></div></div>';
+ ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(255,93,125,.16)">⚠</div><div><b>失速ポイントは「'+STG[slow]+'」段<span class="z-pill" style="background:rgba(255,93,125,.16);color:#ff5d7d">PACE</span></b><p>この段の滞留が最長。提案依頼・連れ出しで突破を朝礼共有。</p></div></div>';
  var ekiFar=t.filter(function(c){return c.ekitoho==='21分以上';}).length;
- if(ekiFar>0) ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(255,93,125,.16)">🚶</div><div><b>駅遠（徒歩21分以上）が'+ekiFar+'件<span class="z-pill" style="background:rgba(255,93,125,.16);color:#ff5d7d">EKI</span></b><p>賃貸需要が弱くなりがち。駐車場・特化型など計画地に合う提案を検討。</p></div></div>';
- if(saLate>0) ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(255,180,67,.16)">⏱</div><div><b>A・Sの放置が'+saLate+'件<span class="z-pill" style="background:rgba(255,180,67,.16);color:#ffb443">CLOSE</span></b><p>契約に近い客がご無沙汰。今週中にクロージング判断を。</p></div></div>';
- if(pingStat.length&&pingStat[0].v>=40) ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(74,168,255,.16)">🤝</div><div><b>'+e(pingStat[0].r)+'さん：ピンポン止まり'+pingStat[0].v+'%<span class="z-pill" style="background:rgba(74,168,255,.16);color:#4aa8ff">GRIP</span></b><p>同行1回で「立ち話→玄関内」の突破を実演すると効果大。</p></div></div>';
- ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(155,225,93,.16)">✅</div><div><b>フル稼働まであと'+(reps.length-active.length)+'人<span class="z-pill" style="background:rgba(155,225,93,.16);color:#9be15d">TEAM</span></b><p>未稼働の担当へ1声。全員が動くと発掘量が跳ね上がる。</p></div></div>';
+ if(ekiFar>0) ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(255,93,125,.16)">🚶</div><div><b>駅遠（徒歩21分以上）が'+ekiFar+'件<span class="z-pill" style="background:rgba(255,93,125,.16);color:#ff5d7d">EKI</span></b><p>賃貸需要が弱め。駐車場・特化型など計画地に合う提案を。</p></div></div>';
+ if(saLate>0) ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(255,180,67,.16)">⏱</div><div><b>A・Sの放置が'+saLate+'件<span class="z-pill" style="background:rgba(255,180,67,.16);color:#ffb443">CLOSE</span></b><p>契約間近が放置中。今週中にクロージング判断を。</p></div></div>';
+ if(pingStat.length&&pingStat[0].v>=40) ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(74,168,255,.16)">🤝</div><div><b>'+e(pingStat[0].r)+'さん：ピンポン止まり'+pingStat[0].v+'%<span class="z-pill" style="background:rgba(74,168,255,.16);color:#4aa8ff">GRIP</span></b><p>同行1回で「立ち話→玄関内」を実演すると効果大。</p></div></div>';
+ ins+='<div class="z-ins"><div class="z-iic" style="background:rgba(155,225,93,.16)">✅</div><div><b>フル稼働まであと'+(reps.length-active.length)+'人<span class="z-pill" style="background:rgba(155,225,93,.16);color:#9be15d">TEAM</span></b><p>未稼働へ1声。全員稼働で発掘量が伸びる。</p></div></div>';
+ ins='<div class="z-insgrid">'+ins+'</div>';
  var secInsights=_zsecPlain('insights','🧠 傾向と対策（AIインサイト）','<div class="z-sub" style="margin-bottom:8px">データから打ち手を自動抽出。</div>'+ins);
  // ===== P1: 今日の一手 / 課長コーチング / 進捗3ゾーン =====
  var _nextMove=function(c){
@@ -9204,13 +9473,13 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
     +'<div style="font-size:12px;color:var(--z-ink);margin:2px 0 0 28px"><span style="color:#ffb443;font-weight:700">次のクエスト：</span>'+QTYPE[lo][2]+'</div></div>';
  }).join('')||'<div class="z-empty">担当データなし</div>';
  var _allJobs='<div class="z-jobgrid2"><div class="z-jobcell">'+jobCardHTML(cards,'mgr','課（全体）',reps.length)+'</div>'+miniR+'</div>';
- var _questBody='<div class="z-sub" style="margin:2px 0 8px">先頭が「課を1人とみなしたタイプ」、続けて担当ごとの型。<span style="color:var(--z-dim)">※全担当のカードを保持しているほど精度UP</span></div>'+_allJobs+'<div style="border-top:1px solid var(--z-line);margin:12px 0 6px"></div><div style="font-size:12.5px;font-weight:700;color:var(--z-ink);margin-bottom:4px">🌱 今月の成長と次のクエスト</div>'+questH;
+ var _questBody='<div class="z-sub" style="margin:2px 0 8px">先頭が「課を1人とみなしたタイプ」、続けて担当ごとの型。<span style="color:var(--z-dim)">※全担当のカードを保持しているほど精度UP</span></div>'+_allJobs+'<div style="border-top:1px solid var(--z-line);margin:12px 0 6px"></div><div style="font-size:12.5px;font-weight:700;color:var(--z-ink);margin-bottom:4px">🌱 今月の成長と次のクエスト</div>'+'<div class="z-questgrid">'+questH+'</div>';
  var questCard=_zc('🌱','育成クエスト','課・担当の「型」と弱点を「次の課題」に変換。今月の成長と次の一手を提示。',_questBody,'z-cf');
  var _treasureLegend='<div class="z-sub" style="display:flex;flex-wrap:wrap;gap:5px 14px;align-items:center;margin-top:4px"><span><b>↑上</b>＝資産規模 大</span><span><b>→右</b>＝熱量(スコア) 高</span><span><b>●大きい</b>＝スコア高</span><span style="display:inline-flex;align-items:center;gap:6px">色＝追客ランク：'+['S','A','B','C','D'].map(function(k){return '<span style="display:inline-flex;align-items:center;gap:3px"><i style="width:9px;height:9px;border-radius:50%;background:'+RC[k]+';display:inline-block"></i>'+k+'</span>';}).join('')+'</span></div>';
  var _cardTreasure=_zc('💎','お宝度マトリクス','熱量×資産規模。右上＝お宝。泡を長押しで客名、タップでカードへ。',bub+_treasureLegend,'z-cf');
  var _cardHeroes=_zc('🎖','営業タイプ図鑑（担当）','担当ごとの「型」と伸ばす力。タップで拡大。','<div class="z-jobgrid">'+miniR+'</div>','z-cf');
  var _axKing=J9_STATS.map(function(st){var best=null,bv=-1;reps.forEach(function(r){var a=g[r];if(!a||!a.length)return;var corr=(j9DetermineJob(a)||{}).corr||{};var v=st.axes.reduce(function(s,k){return s+(corr[k]||0);},0)/st.axes.length;if(v>bv){bv=v;best=r;}});if(!best||bv<=0)return '';var _tt={kodo:'韋駄天',kansatsu:'千里眼',taiwa:'弁舌家',senryaku:'軍師',kanri:'記録王'};return '<div class="z-axking"><span class="z-axk-st"><span class="z-axk-ic">'+st.e+'</span>'+st.n+'</span><span class="z-axk-t">'+(_tt[st.k]||'')+'</span><span class="z-axk-nm">'+e(best)+'</span><span class="z-axk-v">'+Math.round(bv)+'</span></div>';}).join('');
- var _axKingCard=_zc('🏅','タイプ別 No.1（称号）','5つの型それぞれの課トップ。',(_axKing||'<div class="z-sub">集計中</div>'),'z-cf');
+ var _axKingCard=_zc('🏅','タイプ別 No.1（称号）','5つの型それぞれの課トップ。',(_axKing||'<div class="z-sub">集計中</div>'),'z-c2');
  var _cardWork=_zc('🟢','稼働率モニター','達成度','<div class="zWorkCard">'+workMeterInner()+'</div>','z-cf');
  var _cardDiff=_zc('🎚','戦略差分','温度の追従と違う運用。協議の判断ポイント。タップでカードへ',_strategyDiffInner(),'z-cf');
  // 動的分析カード：sec で章振り分け（既定 state＝詳細分析）。treasure/jobs9 は専用配置のため除外。
@@ -9279,7 +9548,7 @@ var achH=reps.map(function(r){var bs=_achBadges(g[r]);if(!bs.length)return '';re
    return _zc('⛏','発掘パイプライン <span class="z-secsub">土地見込み→対話</span>','発掘した土地見込みを、対話・面談につなげられているか。発掘活用率＝対話済み÷(対話済み＋発掘中)。',body,'z-c2');
  })();
  var _kpiTrend=(_zc('📈','重要3指標トレンド（直近6ヶ月）','3指標を重ねて推移。提案=赤・同行=緑・家族=黄。',_kpi3Chart(t),'z-c2')); var _velCard=(_zc('🏎','パイプライン・ベロシティ','各段の平均滞留日数。長い段が失速＝<b style="color:#ff5d7d">'+STG[slow]+'</b>。',_zVbars(dwAvg,STG.map(function(s){return s.slice(0,2);}),dwAvg.map(function(v){return v>=50?'#ff5d7d':v>=30?'#ffb443':'#38a169';})),'z-c2')); var _blankCard=(_zc('🕳','未入力の傾向（課全体）','どの項目が抜けやすいか。高い＝チームの弱点。',_zVbars(blankRates,FCHK.map(function(f){return f[0];}),blankRates.map(function(){return '#ff8aa0';})),'z-c2'));
- H+=_zsec('cmd','🎮 コマンドセンター <span class="z-secsub">今日の指揮＋重要指標</span>',morningBoard+bodyKpi3+_cardMap+_teamCourse+_cardInsights)+_zsec('today','🎯 課の指示 <span class="z-secsub">今日やること・誰に何を</span>',todayCard+contractCard+bodyContract+_extrasFor('today'))+_zsec('coach','🎓 部下の指導 <span class="z-secsub">コーチング</span>',coachCard+dangerCard+readyCard+_extrasFor('coach'))+_zsec('teamchk','👥 部下の確認 <span class="z-secsub">担当の現状</span>',bodyRank+bodyTeam+_llCard+_extrasFor('teamchk'))+_zsec('grow','🌱 育成クエスト <span class="z-secsub">型・成長・次の課題</span>',questCard+_axKingCard+_axData+bodyQuality+_discByRep+_extrasFor('grow'))+_zsec('state','📊 詳細分析 <span class="z-secsub">月次・ヒートマップ・課長会議用</span>',bodyProcess+_kpiTrend+zoneCard+_velCard+_cardWork+_blankCard+_extrasFor('state'));
+ H+=_zsec('cmd','🎮 コマンドセンター <span class="z-secsub">今日の指揮＋重要指標</span>',morningBoard+bodyKpi3+_holdCard+_cardMap+_cardInsights)+_zsec('today','🎯 課の指示 <span class="z-secsub">今日やること・誰に何を</span>',todayCard+contractCard+bodyContract+_teamCourse+_extrasFor('today'))+_zsec('coach','🎓 部下の指導 <span class="z-secsub">コーチング</span>',coachCard+dangerCard+readyCard+_extrasFor('coach'))+_zsec('teamchk','👥 部下の確認 <span class="z-secsub">担当の現状</span>',bodyRank+_llCard+bodyTeam+_extrasFor('teamchk'))+_zsec('grow','🌱 育成クエスト <span class="z-secsub">型・成長・次の課題</span>',questCard+_axKingCard+_axData+bodyQuality+_discByRep+_extrasFor('grow'))+_zsec('state','📊 詳細分析 <span class="z-secsub">月次・ヒートマップ・課長会議用</span>',bodyProcess+_kpiTrend+zoneCard+_blankCard+_velCard+_cardWork+_extrasFor('state'));
  H+='</div>';
  host.innerHTML=H;
  if(window.IS_DEV){var _dw=document.getElementById('devSelfMirrorWrap');if(_dw){_dw.style.display='';if(window.renderSelfDash)renderSelfDash('devSelfMirror');}}
@@ -9622,13 +9891,14 @@ function showPlanner(){
   document.getElementById('listView').style.display='none';
   var v=document.getElementById('plannerView'); if(v) v.style.display='block';
   plannerTab('input');
+  try{ var _sb=document.getElementById('plSbBtn'); if(_sb){ if(!localStorage.getItem('pl_sb_opened')) _sb.classList.add('pl-blink'); else _sb.classList.remove('pl-blink'); } }catch(e){}
   _navGo('planner');
 }
 function closePlanner(){
   var v=document.getElementById('plannerView'); if(v) v.style.display='none';
   document.getElementById('listView').style.display=(hasFSA&&!isMob)?'flex':'block';
 }
-function plannerOverlayClick(ev){ if(ev.target&&ev.target.id==='plannerView'){ plannerBack(); } }
+function plannerOverlayClick(ev){ if(ev.target&&ev.target.id==='plannerView'){ try{ savePlan(); }catch(e){} closePlanner(); try{ if(history.state&&history.state.zv==='planner'){ history.replaceState({zv:'list',id:null},''); } }catch(e){} } }
 window.plannerOverlayClick=plannerOverlayClick;
 
 /* ===== ブラウザ履歴ナビゲーション ===== */
@@ -9928,7 +10198,7 @@ function _sbRowHTML(o,isPri,ix){
  var c=o.c, sc=calcScore(c), tb=_tempBand(c), on=!!window._sbSel[o.sid];
  var pl=_planLoad(); var act=(pl.sel||{})[o.sid]||'';
  var tag=isPri?'推奨':(_dTrigSoon(c)?'\u23f3時期接近':(calcPaceOverrate(c)>1?'ペース超過':((+lastContactDays(c)||0)>=14?(+lastContactDays(c))+'日未接触':(((basicInputStat(c)||{}).pct||0)<60?'入力不足':'要再訪'))));
- var chips=['再訪','追撃','テスクロ','家族確認'].map(function(a){
+ var chips=PLAN_PURPOSES.map(function(a){
   var sel=(act===a);
   return '<span onclick="zSbAct(\''+o.sid+'\',\''+a+'\')" style="cursor:pointer;display:inline-block;font-size:11px;border-radius:10px;padding:2px 8px;margin:2px 3px 0 0;border:1px solid #cbd5e0;'+(sel?'background:#2c5282;color:#fff;border-color:#2c5282;font-weight:700;':'background:#f7fafc;color:#4a5568;')+'">'+(sel?'\u2713 ':'')+a+'</span>';
  }).join('');
@@ -9938,9 +10208,9 @@ function _sbRowHTML(o,isPri,ix){
   +'<label style="display:flex;align-items:center;gap:8px;flex:1;min-width:250px;cursor:pointer">'
   +'<input type="checkbox" '+(on?'checked':'')+' onchange="zSbToggle(\''+o.sid+'\')">'
   +'<b style="font-size:13px">'+e(c.name||'無名')+'様</b>'
-  +'<span style="font-size:11px;color:#718096">'+tb[0]+' '+sc+'/78・'+e((typeof STG!=='undefined'&&STG[+(c.stage||0)])||'')+'・'+e(c.pursuit_judge||'-')+'・'+((+lastContactDays(c)||0)<0?'訪問記録なし':(+lastContactDays(c))+'日前')+'</span>'
+  +'<span style="font-size:11px;color:#718096">'+(getArea(c.address||'')?e(getArea(c.address||''))+'・':'')+tb[0]+' '+sc+'/78・'+e((typeof STG!=='undefined'&&STG[+(c.stage||0)])||'')+'・'+e(c.pursuit_judge||'-')+'・'+((+lastContactDays(c)||0)<0?'訪問記録なし':(+lastContactDays(c))+'日前')+'</span>'
   +'<span style="font-size:10px;background:#edf2f7;border-radius:8px;padding:1px 7px;color:#4a5568;white-space:nowrap">'+tag+'</span>'
-  +'</label><span>'+chips+'</span></div>';
+  +'</label><div style="flex-basis:100%;display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px">'+'<span style="font-size:11px;color:#718096;margin-right:auto;white-space:nowrap">💭 何の目的で訪問するのかイメージしよう→</span>'+'<span style="display:flex;flex-wrap:wrap;justify-content:flex-end">'+chips+'</span></div></div>';
 }
 function _sbPaint(){
  var ov=document.getElementById('sakusenView'); if(!ov) return;
@@ -9985,11 +10255,11 @@ function zSbMake(){
  function put(o){
   var c=o.c, prio=starIds[o.sid]||0, a=(pl.sel||{})[o.sid]||'';
   var ex=_plan.entries.filter(function(en){return en.cardId===c.id;})[0];
-  if(ex){ if(prio){ ex.prio=prio; if(a&&!ex.act){ ex.act=a; if(!ex.note) ex.note=a; } } return; }
+  if(ex){ if(prio){ ex.prio=prio; } if(a) ex.purpose=a; return; }
   if(planUntimedCount()>=PLAN_UNTIMED_MAX){ window._sbSkip=(window._sbSkip||0)+1; return; }
   var en=makePlanEntry(c);
   if(prio) en.prio=prio;
-  if(a){ en.act=a; en.note=a; }
+  if(a){ en.purpose=a; }
   _plan.entries.push(en); added++;
  }
  window._sbSkip=0;
@@ -10002,6 +10272,8 @@ function zSbMake(){
 function zSbSkip(){ zSbClose(); planMorningSweep(); _plan=loadPlan(); showPlanner(); }
 function zSbClose(){ var ov=document.getElementById('sakusenView'); if(ov) ov.style.display='none'; }
 window.openSakusenban=openSakusenban; window.zSbToggle=zSbToggle; window.zSbAct=zSbAct; window.zSbStar=zSbStar;
+function openSakusenbanFromPlanner(){ try{ localStorage.setItem("pl_sb_opened","1"); }catch(e){} try{ var _sb=document.getElementById("plSbBtn"); if(_sb) _sb.classList.remove("pl-blink"); }catch(e){} openSakusenban(); }
+window.openSakusenbanFromPlanner=openSakusenbanFromPlanner;
 window.zSbMake=zSbMake; window.zSbSkip=zSbSkip; window.zSbClose=zSbClose;
 
 function renderPlannerSheet(){
@@ -10409,7 +10681,7 @@ var qaPendingPhotoSet=null; // カメラから戻ってきた写真データID�
 function qaOpenCam(){
   try{ localStorage.removeItem('aibis_qa_return'); }catch(_e){}
   try{ window.open('AibisCam.html?ret=qa','aibiscam'); }catch(_e){ location.href='AibisCam.html?ret=qa'; }
-  toast('カメラで計画地を撮影 →「📥 アイビスに反映して戻る」を押すと住所が入ります');
+  toast('カメラで計画地を撮影 →「✓ 完了」を押すと住所が入ります');
 }
 window.qaOpenCam=qaOpenCam;
 // カメラ（別タブ）が書き込んだ住所を受け取る
@@ -10432,6 +10704,7 @@ function _qaApplyCamReturn(d){
     openQuickAdd();
     setTimeout(function(){ var pl=document.getElementById('qaPlan'); if(pl){ pl.value=(d.addr||'')+(d.banchi?(' '+d.banchi):''); } if(d.setId) qaPendingPhotoSet=d.setId; toast('📍 計画地に住所を反映しました'); },120);
   }
+  if(d.setId && typeof mGet==='function'){ setTimeout(function(){ try{ mGet(d.setId).then(function(s){ if(s){ var n=(s.note||'').trim(); if(n){ var kb=document.getElementById('qaKuubi'); if(kb) kb.value=n; } } }); }catch(_e){} },160); }
 }
 // 同一タブで戻ってきたケース（フォールバック）：起動時に保留がないか確認
 window.addEventListener('load',function(){
@@ -10510,7 +10783,7 @@ function updateRosenkaDisp(val){
   var disp=document.getElementById('rosenkaDisp'); if(!disp) return;
   var n=parseFloat(String(val).replace(/,/g,''));
   if(!n||isNaN(n)){ disp.textContent=''; return; }
-  var man=Math.round(n/10)/10;
+  var man=Math.round(n)/10;
   var chishaku=document.getElementById('f_chishaku');
   var cval=chishaku?chishaku.value:'';
   var chishakuRates={A:'90%',B:'80%',C:'70%',D:'60%',E:'50%',F:'40%',G:'30%'};
@@ -11137,7 +11410,7 @@ function toggleFamHeadcount(){
 function updateFamHeadcountBtn(){
   var btn=document.getElementById('famHeadcountBtn'); if(!btn) return;
   var on=cur&&cur.family_headcount;
-  btn.innerHTML='👥<br>'+(on?'確定済 ✓':'構成確定');
+  btn.innerHTML='👥<br>'+(on?'構成 確定済み ✓':'構成 未確定');
   if(on){
     btn.style.background='linear-gradient(135deg,#2c5282,#553c9a)';
     btn.style.borderColor='#553c9a';
@@ -11171,6 +11444,9 @@ function updateDoukouBtn(){
   btn.textContent=s.t; btn.style.background=s.bg; btn.style.borderColor=s.bd; btn.style.color=s.fg; btn.style.boxShadow=s.sh;
 }
 window.toggleDoukou=toggleDoukou; window.updateDoukouBtn=updateDoukouBtn;
+function toggleCust(){ if(!cur) return; cur.cust_type=(cur.cust_type==='顧客')?'新規':'顧客'; updateCustBtn(); if(typeof setDirty==='function') setDirty(true); }
+function updateCustBtn(){ var b=document.getElementById('custBtn'); if(!b) return; var isC=(cur&&cur.cust_type==='顧客'); b.textContent=isC?'顧客':'新規'; b.style.background=isC?'linear-gradient(135deg,#2c5282,#2b6cb0)':'white'; b.style.borderColor=isC?'#2b6cb0':'#e2e8f0'; b.style.color=isC?'#fff':'#718096'; }
+window.toggleCust=toggleCust; window.updateCustBtn=updateCustBtn;
 function toggleEkitoho(){
   if(!cur) return;
   var order=['','〜10分','〜20分','21分以上'];
@@ -11321,7 +11597,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <div class="pc-name-contact">
       <!-- 上段：氏名50%・ソーシャル25%・現状25% -->
       <div class="mk-row" style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:8px">
-        <div class="mk-name"><label>氏名 <span class="req">*</span></label><div style="display:flex;gap:6px;align-items:center"><input type="text" id="f_name" placeholder="お客様名" style="flex:1" oninput="if(window._refreshLandLeadLock)_refreshLandLeadLock()"><button type="button" id="doukouBtn" onclick="toggleDoukou()" style="flex-shrink:0;padding:8px 10px;border:2px solid #e2e8f0;border-radius:6px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;color:#718096;white-space:nowrap;min-height:38px;min-width:78px;text-align:center">単独</button></div></div>
+        <div class="mk-name"><label>氏名 <span class="req">*</span></label><div style="display:flex;gap:6px;align-items:center"><input type="text" id="f_name" placeholder="お客様名" style="flex:1" oninput="if(window._refreshLandLeadLock)_refreshLandLeadLock()"><button type="button" id="doukouBtn" onclick="toggleDoukou()" style="flex-shrink:0;padding:8px 10px;border:2px solid #e2e8f0;border-radius:6px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;color:#718096;white-space:nowrap;min-height:38px;min-width:78px;text-align:center">単独</button><button type="button" id="custBtn" onclick="toggleCust()" style="flex-shrink:0;padding:8px 10px;border:2px solid #e2e8f0;border-radius:6px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;color:#718096;white-space:nowrap;min-height:38px;min-width:64px;text-align:center">新規</button></div></div>
         <div class="mk-social">
           <label>ソーシャル</label>
           <select id="f_social">
@@ -11473,7 +11749,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <div class="pc-fam-status">
           <div class="fam-summary" id="famSummary" style="display:none"></div>
           <div style="margin-top:8px;display:flex;gap:8px 14px;align-items:center;flex-wrap:wrap">
-            <button type="button" id="famHeadcountBtn" onclick="toggleFamHeadcount()" style="flex-shrink:0;padding:6px 16px;border:2px solid #e2e8f0;border-radius:8px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;color:#718096;line-height:1.3">👥<br>構成確定</button>
+            <button type="button" id="famHeadcountBtn" onclick="toggleFamHeadcount()" style="flex-shrink:0;padding:6px 16px;border:2px solid #e2e8f0;border-radius:8px;background:white;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;color:#718096;line-height:1.3">👥<br>構成 未確定</button>
             <div style="display:flex;flex-direction:column;gap:3px;font-size:10px;color:#4a5568">
               <div style="display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center">
                 <span style="font-weight:700;color:#4a5568">意向</span>
@@ -11554,13 +11830,13 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <input type="text" id="f_kuubi" placeholder="P空き多い・退去予定あり など" style="flex:1">
         </div>
       </div>
-      <!-- 路線価・面積・間口 -->
-      <div class="pc-land-main" style="display:grid;grid-template-columns:1fr 1fr 0.5fr;gap:8px;margin-bottom:8px">
+      <!-- 行1(PC): 路線価+借地 / 面積 / 間口 / 築年数 / 満室 / 空室 -->
+      <div class="pc-land-row1" style="margin-bottom:8px">
         <div>
           <label>路線価<span style="font-size:10px;color:#718096">（千円/㎡）</span></label>
           <div style="display:flex;gap:4px;align-items:center">
             <input type="text" id="f_rosenka" placeholder="例: 250" inputmode="numeric" style="flex:1" onblur="normalizeRosenka()">
-            <select id="f_chishaku" style="width:48px;font-size:12px;padding:4px 2px" onchange="updateRosenkaDisp(document.getElementById('f_rosenka')?.value||'')">
+            <select id="f_chishaku" style="width:66px;font-size:15px;padding:5px 4px" onchange="updateRosenkaDisp(document.getElementById('f_rosenka')?.value||'')">
               <option value="">-</option>
               <option value="A">A</option>
               <option value="B">B</option>
@@ -11574,16 +11850,37 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <div id="rosenkaDisp" style="font-size:10px;color:#718096;margin-top:2px"></div>
         </div>
         <div>
-          <label class="pc-area-label">面積<span id="tsuboDisp" style="font-size:11px;color:#64748b;font-weight:600;white-space:nowrap">- 坪</span></label>
+          <label class="pc-area-label">面積（㎡）</label>
           <div class="unit-field">
             <input type="number" id="f_m2" placeholder="例:240" inputmode="numeric" pattern="[0-9]*"><span class="usuf">㎡</span>
           </div>
+          <div id="tsuboDisp" style="font-size:10px;color:#64748b;font-weight:600;margin-top:2px">- 坪</div>
         </div>
-        <div><label>間口</label><div class="unit-field"><input type="number" id="f_maguchi" placeholder="12" inputmode="numeric" pattern="[0-9]*"><span class="usuf">m</span></div></div>
+        <div><label>間口（m）</label><div class="unit-field"><input type="number" id="f_maguchi" placeholder="12" inputmode="numeric" pattern="[0-9]*"><span class="usuf">m</span></div></div>
+        <div>
+          <label>築年数 <span id="chikuDisp" style="font-size:11px;color:#2c5282;font-weight:600;white-space:nowrap">-</span></label>
+          <div style="display:flex;gap:4px;align-items:center">
+            <select id="f_chiku" style="flex:1">
+              <option value="">-</option>
+              <option value="0">新築</option>
+              <option value="1">1年</option><option value="2">2年</option><option value="3">3年</option><option value="4">4年</option><option value="5">5年</option>
+              <option value="6">6年</option><option value="7">7年</option><option value="8">8年</option><option value="9">9年</option><option value="10">10年</option>
+              <option value="11">11年</option><option value="12">12年</option><option value="13">13年</option><option value="14">14年</option><option value="15">15年</option>
+              <option value="16">16年</option><option value="17">17年</option><option value="18">18年</option><option value="19">19年</option><option value="20">20年</option>
+              <option value="21">21年</option><option value="22">22年</option><option value="23">23年</option><option value="24">24年</option><option value="25">25年</option>
+              <option value="26">26年</option><option value="27">27年</option><option value="28">28年</option><option value="29">29年</option><option value="30">30年</option>
+              <option value="35">35年</option><option value="40">40年</option><option value="45">45年</option><option value="50">50年</option>
+              <option value="55">55年</option><option value="60">60年</option><option value="65">65年</option><option value="70">70年</option>
+              <option value="75">75年</option><option value="80">80年以上</option>
+            </select>
+          </div>
+        </div>
+        <div><label>満室・満車</label><input type="number" id="f_kuushitsu" placeholder="例: 10" inputmode="numeric" pattern="[0-9]*"></div>
+        <div><label>空き</label><input type="number" id="f_kuushitsu_aki" placeholder="例: 2" inputmode="numeric" pattern="[0-9]*"></div>
       </div>
-      <div class="pc-land-2grid">
-      <div class="pc-road-left">
-      <!-- 接道方位（8方位コンパス・北上／中央=旗竿） -->
+      <!-- 行2(PC): 接道方位 | 用途地域/建蔽容積 -->
+      <div class="pc-land-row2">
+        <div class="pc-road-left">
       <div style="margin-bottom:8px">
         <label>接道方位 <span style="font-size:10px;color:#a0aec0;font-weight:400">（方角の位置で配置）</span></label>
         <input type="checkbox" id="f_hatazao" style="display:none">
@@ -11599,44 +11896,28 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <button type="button" class="pbtn" data-pill="setsudo" data-multi="1" data-val="南東">南東</button>
         </div>
       </div>
-      </div>
-      <div class="pc-road-right">
-      <!-- 用途地域（フル幅） -->
+        </div>
+        <div class="pc-road-right2">
       <div style="margin-bottom:8px">
         <label>用途地域</label>
         <select id="f_youto" style="font-size:13px;width:100%">
             <option value="">-</option>
-            <option value="第一種低層住居専用地域">第一種低層住居専用地域</option>
-            <option value="第二種低層住居専用地域">第二種低層住居専用地域</option>
-            <option value="田園住居地域">田園住居地域</option>
-            <option value="第一種中高層住居専用地域">第一種中高層住居専用地域</option>
-            <option value="第二種中高層住居専用地域">第二種中高層住居専用地域</option>
-            <option value="第一種住居地域">第一種住居地域</option>
-            <option value="第二種住居地域">第二種住居地域</option>
-            <option value="準住居地域">準住居地域</option>
-            <option value="近隣商業地域">近隣商業地域</option>
-            <option value="商業地域">商業地域</option>
-            <option value="準工業地域">準工業地域</option>
-            <option value="工業地域">工業地域</option>
-            <option value="工業専用地域">工業専用地域</option>
+            <option value="第一種低層住居専用地域">第一種低層住居専用</option>
+            <option value="第二種低層住居専用地域">第二種低層住居専用</option>
+            <option value="田園住居地域">田園住居</option>
+            <option value="第一種中高層住居専用地域">第一種中高層住居専用</option>
+            <option value="第二種中高層住居専用地域">第二種中高層住居専用</option>
+            <option value="第一種住居地域">第一種住居</option>
+            <option value="第二種住居地域">第二種住居</option>
+            <option value="準住居地域">準住居</option>
+            <option value="近隣商業地域">近隣商業</option>
+            <option value="商業地域">商業</option>
+            <option value="準工業地域">準工業</option>
+            <option value="工業地域">工業</option>
+            <option value="工業専用地域">工業専用</option>
           <option value="無指定">無指定</option>
         </select>
       </div>
-      <!-- 権利関係チェック -->
-      <div style="margin-bottom:8px">
-        <label>権利関係チェック</label>
-        <div id="houbunPills" style="display:flex;gap:4px;flex-wrap:wrap;margin-top:2px">
-          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="単独名義">単独</button>
-          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="法人名義">法人</button>
-          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="共有名義">共有</button>
-          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="借地">借地</button>
-        </div>
-      </div>
-      </div>
-      </div>
-      <div class="pc-land-meta">
-      <!-- 建蔽容積・築年数 -->
-      <div class="metarow" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
         <div>
           <label>建蔽 / 容積（%）</label>
           <div style="display:flex;gap:4px;align-items:center">
@@ -11645,28 +11926,10 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
             <select id="f_ky" style="flex:1"><option value="">容積</option><option value="80">80</option><option value="100">100</option><option value="150">150</option><option value="200">200</option><option value="300">300</option><option value="400">400</option><option value="500">500</option><option value="600">600</option><option value="700">700</option><option value="800">800</option></select>
           </div>
         </div>
-        <div>
-          <label>築年数<span style="font-size:10px;color:#718096">→西暦/和暦</span></label>
-          <div style="display:flex;gap:4px;align-items:center">
-            <select id="f_chiku" style="flex:1">
-              <option value="">-</option>
-              <option value="0">新築</option>
-              <option value="1">1年</option><option value="2">2年</option><option value="3">3年</option><option value="4">4年</option><option value="5">5年</option>
-              <option value="6">6年</option><option value="7">7年</option><option value="8">8年</option><option value="9">9年</option><option value="10">10年</option>
-              <option value="11">11年</option><option value="12">12年</option><option value="13">13年</option><option value="14">14年</option><option value="15">15年</option>
-              <option value="16">16年</option><option value="17">17年</option><option value="18">18年</option><option value="19">19年</option><option value="20">20年</option>
-              <option value="21">21年</option><option value="22">22年</option><option value="23">23年</option><option value="24">24年</option><option value="25">25年</option>
-              <option value="26">26年</option><option value="27">27年</option><option value="28">28年</option><option value="29">29年</option><option value="30">30年</option>
-              <option value="35">35年</option><option value="40">40年</option><option value="45">45年</option><option value="50">50年</option>
-              <option value="55">55年</option><option value="60">60年</option><option value="65">65年</option><option value="70">70年</option>
-              <option value="75">75年</option><option value="80">80年以上</option>
-            </select>
-            <span id="chikuDisp" style="font-size:11px;color:#2c5282;font-weight:600;white-space:nowrap">-</span>
-          </div>
         </div>
       </div>
-      <div class="pc-pill-pair">
-      <!-- 高度地区（フル幅1行） -->
+      <!-- 行3(PC): 高度地区 / 防火地域 / 権利関係 -->
+      <div class="pc-land-row3">
       <div style="margin-bottom:8px">
         <label>高度地区</label>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:2px">
@@ -11676,7 +11939,6 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <button type="button" class="pbtn" data-pill="kodo" data-val="なし">なし</button>
         </div>
       </div>
-      <!-- 防火地域（フル幅1行） -->
       <div style="margin-bottom:8px">
         <label>防火地域</label>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:2px">
@@ -11685,11 +11947,14 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
           <button type="button" class="pbtn" data-pill="bouka" data-val="防火地域">防火</button>
         </div>
       </div>
-      </div>
-      <!-- 満室・空き -->
-      <div class="metarow" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-        <div><label>満室数（戸）</label><input type="number" id="f_kuushitsu" placeholder="例: 10" inputmode="numeric" pattern="[0-9]*"></div>
-        <div><label>空き数（戸）</label><input type="number" id="f_kuushitsu_aki" placeholder="例: 2" inputmode="numeric" pattern="[0-9]*"></div>
+      <div style="margin-bottom:8px">
+        <label>権利関係チェック</label>
+        <div id="houbunPills" style="display:flex;gap:4px;flex-wrap:wrap;margin-top:2px">
+          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="単独名義">単独</button>
+          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="法人名義">法人</button>
+          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="共有名義">共有</button>
+          <button type="button" class="pbtn" data-pill="houbun" data-multi="1" data-val="借地">借地</button>
+        </div>
       </div>
       </div>
     </div>
@@ -12095,7 +12360,7 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <button type="button" class="fam-bbtn lv-別居" id="famL別居" onclick="famSetLiving('別居')">別居</button>
       <button type="button" class="fam-bbtn lv-死亡" id="famL死亡" onclick="famSetLiving('死亡')">死亡</button>
       <div style="border-left:2px solid #e2e8f0;width:0;justify-self:center" aria-hidden="true"></div>
-      <button type="button" class="fam-fbtn" id="famFOwner" onclick="famToggleFlag('owner')">☆所有者</button>
+      <button type="button" class="fam-fbtn" id="famFOwner" onclick="famToggleFlag('owner')">所有者</button>
       <button type="button" class="fam-fbtn" id="famFMet" onclick="famToggleFlag('met')">面談済</button>
     </div>
     <!-- 6行目：名前と年齢（横並び） -->
@@ -12121,17 +12386,20 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       </div>
       <div id="famChildRow" style="display:none;margin-bottom:8px">
         <label>👶 お子様（＝ご本人から見たお孫様）</label>
-        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:3px">
-          <button type="button" class="fam-bbtn" onclick="famAddGrandkid('小学生(男)')">＋ 小学生男</button>
-          <button type="button" class="fam-bbtn" onclick="famAddGrandkid('小学生(女)')">＋ 小学生女</button>
-          <button type="button" class="fam-bbtn" onclick="famAddGrandkid('幼児(男)')">＋ 幼児男</button>
-          <button type="button" class="fam-bbtn" onclick="famAddGrandkid('幼児(女)')">＋ 幼児女</button>
-          <button type="button" class="fam-bbtn" onclick="famAddGrandkid('乳児(男)')">＋ 乳児男</button>
-          <button type="button" class="fam-bbtn" onclick="famAddGrandkid('乳児(女)')">＋ 乳児女</button>
-          <button type="button" class="fam-bbtn" onclick="famClearGrandkids()">クリア</button>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-top:6px">
+          <span style="display:inline-flex;align-items:center;gap:7px"><span style="font-size:13px;color:#4a5568;font-weight:700">息子</span><select id="famKidMSel" onchange="famSetKid('m',+this.value)" style="font:inherit;font-size:15px;padding:6px 10px;border-radius:8px;border:1px solid #cbd5e0;background:#fff;color:#2d3748;font-weight:700"><option value="0">0人</option><option value="1">1人</option><option value="2">2人</option><option value="3">3人</option><option value="4">4人</option></select></span>
+          <span style="display:inline-flex;align-items:center;gap:7px"><span style="font-size:13px;color:#4a5568;font-weight:700">娘</span><select id="famKidFSel" onchange="famSetKid('f',+this.value)" style="font:inherit;font-size:15px;padding:6px 10px;border-radius:8px;border:1px solid #cbd5e0;background:#fff;color:#2d3748;font-weight:700"><option value="0">0人</option><option value="1">1人</option><option value="2">2人</option><option value="3">3人</option><option value="4">4人</option></select></span>
         </div>
         <div id="famGkChips" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:7px;align-items:center"></div>
-        <p class="ht" style="margin:4px 0 0">お孫様は家系図に「子の枝」で表示（独立カードにはなりません）。</p>
+        <p class="ht" style="margin:4px 0 0">お孫様は家系図に「子の枝」で表示（独立カードにはなりません）。息子＝長男・次男…／娘＝長女・次女…で自動表示。絵は1〜2人目＝小学生・3人目＝幼児・4人目以降＝乳児。</p>
+      </div>
+      <div id="famKidRow" style="display:none;margin-bottom:8px">
+        <label>👶 お子様（子世代）</label>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-top:6px">
+          <span style="display:inline-flex;align-items:center;gap:7px"><span style="font-size:13px;color:#4a5568;font-weight:700">息子</span><select id="famChMSel" onchange="famSetChild('m',+this.value)" style="font:inherit;font-size:15px;padding:6px 10px;border-radius:8px;border:1px solid #cbd5e0;background:#fff;color:#2d3748;font-weight:700"><option value="0">0人</option><option value="1">1人</option><option value="2">2人</option><option value="3">3人</option><option value="4">4人</option></select></span>
+          <span style="display:inline-flex;align-items:center;gap:7px"><span style="font-size:13px;color:#4a5568;font-weight:700">娘</span><select id="famChFSel" onchange="famSetChild('f',+this.value)" style="font:inherit;font-size:15px;padding:6px 10px;border-radius:8px;border:1px solid #cbd5e0;background:#fff;color:#2d3748;font-weight:700"><option value="0">0人</option><option value="1">1人</option><option value="2">2人</option><option value="3">3人</option><option value="4">4人</option></select></span>
+        </div>
+        <p class="ht" style="margin:4px 0 0">長男・次男…／長女・次女…で自動作成。各お子様はツリーをタップして氏名・年齢・職業や、その方のお孫様も入力できます。人数を減らすと超過分は<b style="color:#c53030">赤</b>表示。タップ→削除で消してね。</p>
       </div>
     </div>
     <div class="fam-sec-lbl">詳細情報</div>
@@ -12142,12 +12410,14 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       <button type="button" id="famOwnRent" onclick="famToggleJutaku()" style="display:none;flex-shrink:0;min-height:38px;padding:4px 10px;border:1px solid #cbd5e0;border-radius:6px;background:#f7fafc;color:#a0aec0;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">持ち家/賃貸</button>
     </div>
     <label>職業</label>
-    <select id="famJob">
-      <option value="">-</option>
-      <option>不動産賃貸業</option><option>会社員</option><option>自営業</option>
-      <option>パート・アルバイト</option><option>公務員</option><option>年金のみ</option>
-      <option>学生</option><option>無職</option><option>その他</option>
-    </select>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <button type="button" id="famJobBtn" onclick="famCycleJob()" style="padding:10px 18px;border-radius:10px;font-weight:800;font-size:15px;font-family:inherit;border:2px solid #cbd5e0;background:#fff;color:#2d3748;cursor:pointer;min-width:120px">－</button>
+      <span style="font-size:11px;color:#a0aec0">タップで切替</span>
+    </div>
+    <div id="famGyoWrap" style="display:none;margin-bottom:8px">
+      <label style="margin:0 0 4px">業種</label>
+      <div id="famGyoChips" style="display:flex;flex-wrap:wrap;gap:7px"></div>
+    </div>
     <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
       <button type="button" class="mic-btn hb" onclick="micStart('famNote',this)" style="margin-top:0">🎤</button>
       <label style="margin:0;flex:1">備考・特記事項</label>
@@ -12974,6 +13244,18 @@ window.updateRyokuchiBtn=function(){var btn=document.getElementById("ryokuchiBtn
   .zfa-s1{top:-1px;left:-1px;font-size:13px;animation:abSpark 1.4s ease-in-out infinite}
   .zfa-s2{bottom:0;right:-1px;font-size:11px;animation:abSpark 1.4s ease-in-out infinite .5s}
   .zfa-name{font-size:11px;font-weight:800;letter-spacing:.1em;color:#2c5282;margin-bottom:8px}
+  /* ===== v10.3 PC dashboard tighten ＆ modal center（min-width:769のみ／スマホは display:contents で完全現状維持） ===== */
+  .zdash .z-insgrid{display:contents}.zdash .z-questgrid{display:contents}
+  @media(min-width:769px){
+    .zdash h3{margin:0 0 2px}
+    .zdash .z-insgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:stretch}
+    .zdash .z-insgrid .z-ins{margin-bottom:0;min-width:0}
+    .zdash .z-insgrid .z-ins p{line-height:1.55}
+    .zdash .z-questgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;align-items:start}
+    .zdash .z-questgrid>*{min-width:0}
+    .zfa-overlay{overflow-y:auto}
+    .zfa-card{margin-top:auto;margin-bottom:auto}
+  }
   .zfa-msg{font-size:14px;color:#2d3748;font-weight:500;line-height:1.7;margin-bottom:18px;text-wrap:balance;line-break:strict;word-break:keep-all;overflow-wrap:anywhere}
   .zfa-ok{width:100%;padding:11px;border:none;border-radius:10px;background:#1a365d;color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer}
   .zfa-toast{position:fixed;left:50%;bottom:22%;transform:translateX(-50%) translateY(16px);z-index:2147483646;
@@ -13149,7 +13431,6 @@ window.updateRyokuchiBtn=function(){var btn=document.getElementById("ryokuchiBtn
 <div id="inboxView">
   <div class="ih">
     <button onclick="closeInbox()">← 戻る</button>
-    <button onclick="inboxToList()" title="一覧へ">📋 一覧</button>
     <b id="inboxTitle">📥 インボックス</b>
   </div>
   <div id="inboxBody"></div>
@@ -13536,7 +13817,20 @@ function renderInboxBody(){
     if(host) host.innerHTML='<div class="iempty">読み込みに時間がかかっています（接続を作り直します）。<br><br><button class="ibtn pri" onclick="renderInboxBody()">🔄 再読み込み</button><br><br><span style="font-size:11px;color:#c53030">'+e(String((err&&err.message)||err))+'</span></div>';
   });
 }
-function _attachToCard(id){ if(!_inboxAttach) return; var cid=_inboxAttach; mGet(id).then(function(s){ if(!s) return; s.cardId=cid; s.cardName=_cardName(cid); mPut(s).then(function(){ try{ toast(_cardName(cid)+"の計画地写真を追加"); }catch(e){} renderInboxBody(); try{ if(typeof renderCardPhotos==="function" && typeof curId!=="undefined" && curId===cid) renderCardPhotos(cid); }catch(e){} try{ updateInboxBadge(); }catch(e){} }); }); }
+/* カメラの計画地備考（先行入力）→ 本体カードの計画地備考へ反映（カメラ＝入力装置・備考があれば上書き） */
+function _camNoteToCard(cardId, note){
+  note=(note==null?"":String(note)).trim();
+  if(!cardId||!note) return false;
+  var c=(typeof _cardById==="function")?_cardById(cardId):null;
+  if(!c||c.kuushitsu_bikou===note) return false;
+  c.kuushitsu_bikou=note;
+  try{ if(typeof curId!=="undefined" && curId===cardId){ var el=document.getElementById("f_kuubi"); if(el) el.value=note; } }catch(_e){}
+  try{ doSaveCards(function(){}); }catch(_e){ try{ saveAll(); }catch(__e){} }
+  try{ if(typeof renderCards==="function") renderCards(); }catch(_e){}
+  try{ if(typeof toast==="function") toast("📝 計画地備考をカメラから反映"); }catch(_e){}
+  return true;
+}
+function _attachToCard(id){ if(!_inboxAttach) return; var cid=_inboxAttach; mGet(id).then(function(s){ if(!s) return; s.cardId=cid; s.cardName=_cardName(cid); mPut(s).then(function(){ try{ toast(_cardName(cid)+"の計画地写真を追加"); }catch(e){} renderInboxBody(); try{ if(typeof renderCardPhotos==="function" && typeof curId!=="undefined" && curId===cid) renderCardPhotos(cid); }catch(e){} try{ updateInboxBadge(); }catch(e){} try{ _camNoteToCard(cid, s.note); }catch(e){} }); }); }
 function _unlinkSet(id){ var go=function(){ mGet(id).then(function(s){ if(!s) return; s.cardId=MEDIA_INBOX; mPut(s).then(function(){ toast("インボックスに戻しました"); renderInboxBody(); }); }); };
   if(typeof aibisConfirm==="function") aibisConfirm("このカードから写真を外してインボックスに戻しますか？",go,"外す","やめる"); else if(confirm("インボックスに戻しますか？")) go(); }
 function _afterPhotoChange(){ try{ renderInboxBody(); }catch(e){} try{ if(typeof curId!=="undefined" && curId) renderCardPhotos(curId); }catch(e){} try{ updateInboxBadge(); }catch(e){} }
@@ -13605,7 +13899,7 @@ function renderInboxPickList(){
     return '<div class="ipr" data-id="'+e(c.id)+'"><div style="flex:1;min-width:0"><div class="nm">'+e(c.name||"無名")+'様</div><div class="mt">'+e(meta||"—")+'</div></div><span style="color:#2c5282;font-weight:800">›</span></div>'; }).join("");
   host.querySelectorAll(".ipr").forEach(function(el){ el.addEventListener("click",function(){ _doLink(el.getAttribute("data-id")); }); });
 }
-function _doLink(cardId){ if(!_pickSetId) return; var sid=_pickSetId; mGet(sid).then(function(s){ if(!s) return; s.cardId=cardId; s.cardName=_cardName(cardId); mPut(s).then(function(){ closeInboxPick(); toast(_cardName(cardId)+" に紐付けました"); renderInboxBody(); }); }); }
+function _doLink(cardId){ if(!_pickSetId) return; var sid=_pickSetId; mGet(sid).then(function(s){ if(!s) return; s.cardId=cardId; s.cardName=_cardName(cardId); mPut(s).then(function(){ closeInboxPick(); toast(_cardName(cardId)+" に紐付けました"); renderInboxBody(); try{ _camNoteToCard(cardId, s.note); }catch(e){} }); }); }
 
 /* ---- 写真ビューア ---- */
 function openInboxPhoto(setId,startIdx){ mGet(setId).then(function(s){ if(!s||!s.photos.length) return; _ivSet=s; _ivIdx=(startIdx>0&&startIdx<s.photos.length)?startIdx:0; _showIv(); document.getElementById("inboxViewer").style.display="flex"; }); }
@@ -13673,7 +13967,7 @@ function _imeHints(root){ try{ if(!root) return; if(root.tagName){ var tg=root.t
     if((typeof cards==="undefined" || !Array.isArray(cards)) && tries<60){ return setTimeout(run,200); }
     try{
       var done=false;
-      if(cardId && typeof openCard==="function" && (cards||[]).some(function(c){return c&&c.id===cardId;})){ openCard(cardId); done=true; }
+      if(cardId && typeof openCard==="function" && (cards||[]).some(function(c){return c&&c.id===cardId;})){ openCard(cardId); done=true; if(fromCam && typeof mAll==="function"){ try{ mAll().then(function(all){ var ss=(all||[]).filter(function(s){return s&&s.cardId===cardId&&(s.note||"").trim();}).sort(function(a,b){return (b.ts||0)-(a.ts||0);}); if(ss[0]) _camNoteToCard(cardId, ss[0].note); }); }catch(_e){} } }
       else if((wantInbox||cardId) && typeof openInbox==="function"){ if(fromCam) window._inboxReturnToCam=true; openInbox(); done=true; }
       if(done){ try{ history.replaceState({}, "", location.pathname); }catch(_e){} }
     }catch(e){}
