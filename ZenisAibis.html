@@ -167,8 +167,15 @@ input[type=text]:focus,input[type=tel]:focus,input[type=number]:focus,input[type
 input::placeholder,textarea::placeholder{color:#A0AEC0}
 @media (max-width:768px) and (pointer:coarse){input[type=text],input[type=tel],input[type=number],input[type=date],input[type=email],input[type=password],textarea,select{font-size:16px;min-height:44px}}
 .telbtn,.mailbtn{flex:0 0 auto;min-height:40px;padding:0 12px;border:1px solid #cbd5e0;border-radius:8px;background:#ebf8ff;color:#2b6cb0;font-size:18px;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-family:inherit}
+/* 電話(緑)・ショートメール(青) 丸ボタン：端末アクション＝スマホのみ */
+.callbtn,.smsbtn{flex:0 0 auto;width:46px;height:46px;min-height:46px;border:none;border-radius:50%;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.callbtn{background:#16a34a}
+.smsbtn{background:#2563eb}
+.callbtn:active{background:#15803d}
+.smsbtn:active{background:#1d4ed8}
+.callbtn svg,.smsbtn svg{width:23px;height:23px;display:block;fill:#fff}
 .telbtn:active,.mailbtn:active{background:#bee3f8}
-@media screen and (min-width:769px),screen and (pointer:fine),screen and (pointer:none){.telbtn{display:none!important}}
+@media screen and (min-width:769px),screen and (pointer:fine),screen and (pointer:none){.telbtn,.callbtn,.smsbtn{display:none!important}}
 input:focus,textarea:focus,select:focus{outline:none;border-color:#2c5282;box-shadow:0 0 0 2px rgba(44,82,130,0.15)}
 textarea{resize:vertical;min-height:80px}
 .cg{display:flex;gap:6px;flex-wrap:wrap}
@@ -617,6 +624,20 @@ html.pczoom .tabs .tab .ic{font-size:15px}
 .gm-save{background:#2c5282;color:#fff;border-color:#2c5282}
 .gm-hint{font-size:11px;color:#718096;line-height:1.4;min-width:0}
 body:not(.is-mob) .ar-btn.mob-only{display:none}
+/* ===== PC版 住所インライン地図（自宅／計画地） ===== */
+/* スマホは従来の縦積みのまま：地図ボックスは非表示・レイアウト非干渉 */
+.amap-box{display:none}
+body:not(.is-mob) .amap-box{display:block;position:relative;flex:0 0 320px;width:320px;height:172px;border:1px solid #cbd5e0;border-radius:10px;overflow:hidden;background:#eef2f6}
+body:not(.is-mob) .amap-canvas{position:absolute;inset:0}
+body:not(.is-mob) .amap-pin{position:absolute;left:50%;top:50%;transform:translate(-50%,-100%);font-size:26px;line-height:1;z-index:500;pointer-events:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
+body:not(.is-mob) .amap-recenter{position:absolute;right:8px;top:8px;z-index:600;width:38px;height:38px;border-radius:9px;border:1px solid #cbd5e0;background:rgba(255,255,255,.94);cursor:pointer;font-size:17px;line-height:1;display:inline-flex;align-items:center;justify-content:center;color:#2c5282;box-shadow:0 1px 3px rgba(0,0,0,.18)}
+body:not(.is-mob) .amap-recenter:hover{background:#fff}
+body:not(.is-mob) .amap-recenter:active{background:#edf2f7}
+/* PC：自宅／計画地を縦積みにし、各ブロックを [フォーム左｜地図右] に */
+body:not(.is-mob) .addr-maps-row{grid-template-columns:1fr!important;row-gap:14px!important}
+body:not(.is-mob) .addr-maps-row .mk-addr,
+body:not(.is-mob) .addr-maps-row .mk-plan{display:flex;gap:12px;align-items:flex-start}
+body:not(.is-mob) .addr-maps-row .amap-form{flex:1 1 auto;min-width:0}
 .hand-toggle{width:100%;padding:9px 11px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px;font-family:inherit;background:white;min-height:40px;color:#2D3748;cursor:pointer;text-align:left}
 .hand-toggle:active{background:#edf2f7}
 @media (max-width:768px) and (pointer:coarse){.hand-toggle{font-size:16px;min-height:44px}}
@@ -2354,7 +2375,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v10.24";
+var APP_VERSION = "v10.28";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -6138,6 +6159,7 @@ function newCard(){
   document.getElementById('editView').style.display=hasFSA&&!isMob?'flex':'block';
   switchTab('ti'); fillForm(cur); window.scrollTo(0,0);
   if(typeof renderCardPhotos==='function') renderCardPhotos(curId);
+  if(typeof initInlineMaps==='function') initInlineMaps();
   setTimeout(function(){setDirty(false);},100);
   _navGo('edit',curId);
   if(typeof updateCardNav==='function') updateCardNav();
@@ -6157,6 +6179,7 @@ function openCard(id){
   document.getElementById('editView').style.display=hasFSA&&!isMob?'flex':'block';
   switchTab('ti'); fillForm(cur); window.scrollTo(0,0);
   if(typeof renderCardPhotos==='function') renderCardPhotos(curId);
+  if(typeof initInlineMaps==='function') initInlineMaps();
   setTimeout(function(){setDirty(false);},100);
   _navGo('edit',curId);
   if(typeof updateCardNav==='function') updateCardNav();
@@ -6194,6 +6217,7 @@ function switchTab(id){
   if(id==='tr'){ document.querySelectorAll('[data-rj]').forEach(function(b){b.classList.toggle('active', !!cur && b.dataset.rj===(cur.revisit_judge||''));}); if(window.applyRevisitLock) applyRevisitLock(); }
   if(id==='tp'){ document.querySelectorAll('[data-pj]').forEach(function(b){b.classList.toggle('active', !!cur && b.dataset.pj===(cur.pursuit_judge_sel||''));}); if(window.applyPursuitLock) applyPursuitLock(); }
   if(window.updateTabProgress) updateTabProgress();
+  if(id==='ti' && window.inlineMapsInvalidate) inlineMapsInvalidate();
   fitTabsTop();
 }
 function updateTabProgress(){
@@ -11216,6 +11240,67 @@ function geoMapSave(){
   });
 }
 window.openGeoMap=openGeoMap; window.geoMapHere=geoMapHere; window.geoMapCancel=geoMapCancel; window.geoMapSave=geoMapSave;
+// ===== PC版 住所インライン地図（自宅／計画地・中心ピン固定／GPS無し） =====
+var _inlineMaps={home:null,plan:null}, _inlineBusy={home:false,plan:false};
+function _inlineCfg(which){
+  return which==='home'
+    ? {canvas:'amapHome', input:'f_addr', latK:'home_lat', lngK:'home_lng'}
+    : {canvas:'amapPlan', input:'f_plan', latK:'plan_lat', lngK:'plan_lng'};
+}
+function initInlineMaps(){
+  if(isMob) return;
+  _loadLeaflet().then(function(){
+    ['home','plan'].forEach(function(w){ _buildInlineMap(w); });
+  }).catch(function(){});
+}
+function _buildInlineMap(which){
+  if(isMob) return;
+  var cfg=_inlineCfg(which);
+  var el=document.getElementById(cfg.canvas); if(!el || !window.L) return;
+  if(_inlineMaps[which]){ try{ _inlineMaps[which].remove(); }catch(e){} _inlineMaps[which]=null; }
+  el.innerHTML='';
+  _inlineBusy[which]=true; // 初期表示中の移動は保存しない
+  var lat=(cur&&cur[cfg.latK]!=null&&cur[cfg.latK]!=='')?+cur[cfg.latK]:null;
+  var lng=(cur&&cur[cfg.lngK]!=null&&cur[cfg.lngK]!=='')?+cur[cfg.lngK]:null;
+  var hasSaved=(lat!=null&&!isNaN(lat)&&lng!=null&&!isNaN(lng));
+  var start=hasSaved?[lat,lng]:_geoDefault;
+  var m=L.map(cfg.canvas,{zoomControl:true,attributionControl:false}).setView(start,hasSaved?18:14);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:20}).addTo(m);
+  _inlineMaps[which]=m;
+  setTimeout(function(){
+    try{ m.invalidateSize(); }catch(e){}
+    if(!hasSaved){ _inlineGeocodeTo(which,true); } // 保存座標が無ければ住所から中心へ（保存はしない）
+    setTimeout(function(){ _inlineBusy[which]=false; },500);
+  },140);
+  m.on('moveend',function(){
+    if(_inlineBusy[which]||!cur) return;
+    var c=m.getCenter();
+    cur[cfg.latK]=+c.lat.toFixed(7);
+    cur[cfg.lngK]=+c.lng.toFixed(7);
+    if(window.setDirty) setDirty(true);
+  });
+}
+function _inlineGeocodeTo(which,silent){
+  var cfg=_inlineCfg(which);
+  var m=_inlineMaps[which]; if(!m) return;
+  var inp=document.getElementById(cfg.input); var q=((inp&&inp.value)||'').trim();
+  if(!q){ if(!silent) toast('住所が未入力です'); return; }
+  fetch('https://msearch.gsi.go.jp/address-search/AddressSearch?q='+encodeURIComponent(q))
+    .then(function(r){return r.json();})
+    .then(function(arr){
+      if(arr&&arr[0]&&arr[0].geometry&&arr[0].geometry.coordinates&&arr[0].geometry.coordinates.length>=2){
+        m.setView([arr[0].geometry.coordinates[1],arr[0].geometry.coordinates[0]],18);
+        if(!silent) toast('📍 住所からピンを合わせました');
+      } else if(!silent){ toast('住所から座標が取得できませんでした'); }
+    }).catch(function(){ if(!silent) toast('座標の取得に失敗しました'); });
+}
+// 🔄：住所欄の文字からピンを再センタリング（移動後の座標はそのままカードに保存される）
+function inlineMapRecenter(which){ _inlineGeocodeTo(which,false); }
+function inlineMapsInvalidate(){
+  if(isMob) return;
+  ['home','plan'].forEach(function(w){ var m=_inlineMaps[w]; if(m){ setTimeout(function(){ try{ m.invalidateSize(); }catch(e){} },60); } });
+}
+window.initInlineMaps=initInlineMaps; window.inlineMapRecenter=inlineMapRecenter; window.inlineMapsInvalidate=inlineMapsInvalidate;
 function getCurrentAddress(cb){
   if(!navigator.geolocation){ toast('お使いのブラウザは位置情報に対応していません'); return; }
   toast('📍 現在地を取得中...');
@@ -11513,6 +11598,13 @@ function callProspect(){
   if(!t){ try{ toast('電話番号が未入力です'); }catch(e){} return; }
   try{ location.href='tel:'+t; }catch(e){}
 }
+function smsProspect(){
+  var el=document.getElementById('f_tel'); var t=el?String(el.value||''):'';
+  t=t.replace(/[^0-9]/g,'');
+  if(!t){ try{ aibisToast('電話番号が未入力だよ'); }catch(e){ try{toast('電話番号が未入力です');}catch(_e){} } return; }
+  if(!/^0(90|80)/.test(t)){ try{ aibisToast('ショートメールは090／080だけ📱'); }catch(e){ try{toast('携帯番号(090/080)のみ送信できます');}catch(_e){} } return; }
+  try{ location.href='sms:'+t; }catch(e){}
+}
 function _curProspectEmail(){
   var el=document.getElementById('f_email_local'); var loc=el?String(el.value||'').trim():'';
   if(!loc) return '';
@@ -11529,7 +11621,7 @@ function mailProspect(){
     else { location.href='mailto:'+em; }
   }catch(e){ try{ location.href='mailto:'+em; }catch(_e){} }
 }
-window.callProspect=callProspect; window.mailProspect=mailProspect;
+window.callProspect=callProspect; window.smsProspect=smsProspect; window.mailProspect=mailProspect;
 window.micStart=micStart; window.micStop=micStop;
 window.famSetStance=famSetStance; window.famSetLiving=famSetLiving; window.famSetMarriage=famSetMarriage; window.famSetChildren=famSetChildren; window.famToggleFlag=famToggleFlag; window.famOnRoleChange=famOnRoleChange;
 window.addPursuit=addPursuit; window.remPursuit=remPursuit;
@@ -11669,13 +11761,14 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
       </div>
       <!-- 中段：TEL・メアド -->
       <div class="mk-row" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:8px">
-        <div class="mk-tel"><label>TEL</label><div class="telrow" style="display:flex;gap:4px;align-items:center"><input type="tel" id="f_tel" inputmode="numeric" placeholder="ハイフン無し" oninput="this.value=this.value.replace(/[^0-9]/g,'')" style="flex:1;min-width:0"><button type="button" class="telbtn" onclick="callProspect()" title="電話をかける" aria-label="電話をかける">📞</button></div></div>
+        <div class="mk-tel"><label>TEL</label><div class="telrow" style="display:flex;gap:8px;align-items:center"><input type="tel" id="f_tel" inputmode="numeric" placeholder="ハイフン無し" oninput="this.value=this.value.replace(/[^0-9]/g,'')" style="flex:1;min-width:0"><button type="button" class="callbtn" onclick="callProspect()" title="電話をかける" aria-label="電話をかける"><svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></button><button type="button" class="smsbtn" onclick="smsProspect()" title="ショートメール（SMS）" aria-label="ショートメール"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></button></div></div>
         <div class="mk-email"><label>メールアドレス</label><div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap"><input type="text" inputmode="email" autocapitalize="none" autocomplete="off" spellcheck="false" id="f_email_local" placeholder="ID" style="flex:1;min-width:70px"><span style="color:#718096;flex-shrink:0">@</span><select id="f_email_domain" onchange="onEmailDomainChange()" style="width:108px;min-width:0;flex-shrink:0"><option value="gmail.com">gmail.com</option><option value="yahoo.co.jp">yahoo.co.jp</option><option value="icloud.com">icloud.com</option><option value="docomo.ne.jp">docomo.ne.jp</option><option value="ezweb.ne.jp">ezweb.ne.jp(au)</option><option value="au.com">au.com</option><option value="softbank.ne.jp">softbank.ne.jp</option><option value="i.softbank.jp">i.softbank.jp</option><option value="outlook.jp">outlook.jp</option><option value="hotmail.com">hotmail.com</option><option value="ybb.ne.jp">ybb.ne.jp</option><option value="__custom__">その他(入力)</option></select><input type="text" inputmode="url" autocapitalize="none" autocomplete="off" spellcheck="false" id="f_email_domain_custom" placeholder="ドメイン" style="display:none;width:auto;min-width:110px;flex-shrink:0"><button type="button" class="mailbtn" onclick="mailProspect()" title="メールを作成" aria-label="メールを作成">✉</button></div></div>
       </div>
       </div>
       <!-- 下段：住所・計画地 + 地図ボタン -->
-      <div class="mk-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px">
+      <div class="mk-row addr-maps-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px">
         <div class="mk-addr">
+          <div class="amap-form">
           <div class="addr-head"><label>住所（自宅）</label><div class="addr-acts">
             <button type="button" class="ar-btn mob-only" onclick="qaTenkeyOpen('f_addr')" title="番地">🔢</button>
             <button type="button" class="ar-btn" onclick="planStreetView('f_addr')" title="ストリートビュー">🌐</button>
@@ -11686,8 +11779,15 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
             <button type="button" class="ar-btn mob-only" onclick="openGeoMap('f_addr')" title="地図で指定">🗺</button>
             <input type="text" id="f_addr" placeholder="例: 東京都江戸川区..." style="flex:1;min-width:0">
           </div>
+          </div>
+          <div class="amap-box" id="amapHomeBox">
+            <div class="amap-canvas" id="amapHome"></div>
+            <div class="amap-pin">📍</div>
+            <button type="button" class="amap-recenter" onclick="inlineMapRecenter('home')" title="住所からピンを再設定">🔄</button>
+          </div>
         </div>
         <div class="mk-plan">
+          <div class="amap-form">
           <div class="addr-head"><label>計画地</label><div class="addr-acts">
             <button type="button" class="ar-btn mob-only" onclick="qaTenkeyOpen('f_plan')" title="番地">🔢</button>
             <button type="button" class="ar-btn" onclick="planStreetView('f_plan')" title="ストリートビュー">🌐</button>
@@ -11697,6 +11797,12 @@ document.addEventListener('DOMContentLoaded', function(){ init(); });
             <button type="button" class="ar-btn mob-only" onclick="geoFill('f_plan')" title="現在地">📍</button>
             <button type="button" class="ar-btn mob-only" onclick="openGeoMap('f_plan')" title="地図で指定">🗺</button>
             <input type="text" id="f_plan" placeholder="計画地の住所" oninput="updatePlanSvBtn()" style="flex:1;min-width:0">
+          </div>
+          </div>
+          <div class="amap-box" id="amapPlanBox">
+            <div class="amap-canvas" id="amapPlan"></div>
+            <div class="amap-pin">📍</div>
+            <button type="button" class="amap-recenter" onclick="inlineMapRecenter('plan')" title="住所からピンを再設定">🔄</button>
           </div>
         </div>
       </div>
@@ -13324,7 +13430,7 @@ window.updateRyokuchiBtn=function(){var btn=document.getElementById("ryokuchiBtn
   .zfa-fairy-xs::after{inset:-10px}
   .zfa-bubble{position:relative;background:rgba(255,255,255,0.80);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
     color:#1a202c;font-weight:700;font-size:13.5px;line-height:1.55;padding:10px 16px;border-radius:15px;
-    box-shadow:0 6px 18px rgba(0,0,0,.16);text-shadow:0 1px 0 rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.6);text-wrap:balance;line-break:strict;word-break:normal}
+    box-shadow:0 6px 18px rgba(0,0,0,.16);text-shadow:0 1px 0 rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.6);width:max-content;max-width:calc(94vw - 64px);text-wrap:pretty;line-break:strict;word-break:normal;overflow-wrap:anywhere}
   .zfa-bubble::before{content:'';position:absolute;left:-7px;top:50%;transform:translateY(-50%);border:7px solid transparent;border-right-color:rgba(255,255,255,.80);border-left:0}
   .aibis-tip-ov{position:fixed;inset:0;z-index:2147483600;display:flex;align-items:center;justify-content:center;padding:24px;cursor:pointer;background:rgba(10,18,34,.40);-webkit-backdrop-filter:blur(5px) saturate(115%);backdrop-filter:blur(5px) saturate(115%);animation:zfaOverlayIn .25s ease both}
   .aibis-tip-card{position:relative;width:100%;max-width:540px;background:linear-gradient(150deg,rgba(18,44,80,.90),rgba(30,66,112,.86) 55%,rgba(22,52,92,.90));-webkit-backdrop-filter:blur(20px) saturate(140%);backdrop-filter:blur(20px) saturate(140%);border:1px solid rgba(150,185,235,.42);border-radius:26px;padding:48px 34px 28px;box-shadow:0 30px 80px -18px rgba(8,15,30,.62),inset 0 1px 0 rgba(255,255,255,.12);color:#eaf2ff;text-align:center;animation:aibisTipIn .42s cubic-bezier(.2,.9,.25,1.15) both}
