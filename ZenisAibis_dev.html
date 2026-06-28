@@ -2351,7 +2351,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v10.16";
+var APP_VERSION = "v10.17";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -2764,9 +2764,11 @@ function init() {
   var btnSelf=document.getElementById('btnSendSelf');
   if(btnSelf){ if(isMob){ btnSelf.innerHTML='<span class="bic">📧 </span>PCへ'; } else { btnSelf.innerHTML='<span class="bic">📧 </span>スマホへ'; } }
 
-  // 利用者情報未設定 → 初期設定
+  // 利用者情報未設定 → 初期設定（dev版はデフォルト値で素通り）
   if (!uName || !mgrEmail || !branch || !section) {
-    showSetup(); return;
+    if (window.IS_DEV) {
+      uName=uName||'開発ユーザー'; mgrEmail=mgrEmail||'dev@example.com'; branch=branch||'開発支店'; section=section||'1課'; userRole=userRole||'課長';
+    } else { showSetup(); return; }
   }
 
   applyRoleUI();
@@ -2791,8 +2793,9 @@ function init() {
     fHandle = handle || null;
     copyHandle = cHandle || null;
 
-    // 保存先未設定 → 初期設定
+    // 保存先未設定 → 初期設定（dev版はローカルデータで素通り）
     if (!fHandle || !copyHandle) {
+      if (window.IS_DEV) { readLS(); showList(); return; }
       showSetup(); return;
     }
 
