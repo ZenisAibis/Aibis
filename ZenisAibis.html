@@ -65,7 +65,7 @@ body{font-family:-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-seri
 .container{max-width:900px;margin:0 auto}
 @media screen{html.pczoom{zoom:1.3}}
 /* PC版：各ビューの背景クリック領域を活用してA4幅に制限 */
-@media(min-width:769px){
+@media (min-width:769px),(pointer:fine),(pointer:none){
   #listView,#helpView,#setupView,#editView{
     display:flex;
     flex-direction:column;
@@ -124,7 +124,7 @@ button:active{opacity:0.8}
 .bc{background:#fff;color:#2c5282;border:1px solid #2c5282}
 .bg{background:transparent;color:white;border:1px solid rgba(255,255,255,0.4)}
 .bd{background:#c53030;color:white}
-@media(max-width:768px){
+@media (max-width:768px) and (pointer:coarse){
   body{padding:8px;padding-bottom:96px}
   #helpView header,#setupView header,#editView header{flex-direction:column;align-items:stretch}
   header h1{text-align:center}
@@ -144,7 +144,7 @@ button:active{opacity:0.8}
 .tab[data-tab="tp"].active{border-top-color:#c53030;border-bottom-color:#c53030;background:#FCECEC}
 .tab[data-tab="ta"].active{border-top-color:#fff;border-bottom-color:#fff}
 .tab.done.active{border-top-color:#fff;border-bottom-color:#fff}
-@media(max-width:768px){
+@media (max-width:768px) and (pointer:coarse){
   .tabs{position:fixed;top:auto;bottom:0;left:0;right:0;background:white;box-shadow:0 -2px 8px rgba(0,0,0,0.1);z-index:100;border-bottom:none;border-top:2px solid #e2e8f0}
   .tab{padding:10px 4px;font-size:11px;border-bottom:none;border-top:3px solid transparent;min-height:64px}
   .tab.active{border-top-color:#2c5282;border-bottom:none}
@@ -165,7 +165,7 @@ label{display:block;font-size:12px;color:#4a5568;margin-bottom:4px;font-weight:5
 input[type=text],input[type=tel],input[type=number],input[type=date],input[type=email],input[type=password],textarea,select{width:100%;padding:9px 11px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px;font-family:inherit;background:white;min-height:40px;color:#2D3748;transition:border-color .12s,box-shadow .12s}
 input[type=text]:focus,input[type=tel]:focus,input[type=number]:focus,input[type=date]:focus,input[type=email]:focus,input[type=password]:focus,textarea:focus,select:focus{border-color:#2B6CB0;box-shadow:0 0 0 3px rgba(43,108,176,.16);outline:none}
 input::placeholder,textarea::placeholder{color:#A0AEC0}
-@media(max-width:768px){input[type=text],input[type=tel],input[type=number],input[type=date],input[type=email],input[type=password],textarea,select{font-size:16px;min-height:44px}}
+@media (max-width:768px) and (pointer:coarse){input[type=text],input[type=tel],input[type=number],input[type=date],input[type=email],input[type=password],textarea,select{font-size:16px;min-height:44px}}
 input:focus,textarea:focus,select:focus{outline:none;border-color:#2c5282;box-shadow:0 0 0 2px rgba(44,82,130,0.15)}
 textarea{resize:vertical;min-height:80px}
 .cg{display:flex;gap:6px;flex-wrap:wrap}
@@ -208,7 +208,7 @@ textarea{resize:vertical;min-height:80px}
 .fr1{display:grid;grid-template-columns:90px 140px 70px auto auto;gap:6px;align-items:center;margin-bottom:6px}
 .fr2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px}
 .fcard select,.fcard input{padding:6px 8px;font-size:13px}
-@media(max-width:768px){
+@media (max-width:768px) and (pointer:coarse){
   .fr1{grid-template-columns:1fr 1fr;gap:8px}
   .fr2{grid-template-columns:1fr;gap:8px}
   .fcard select,.fcard input{font-size:16px;padding:10px;min-height:44px}
@@ -571,7 +571,7 @@ html.pczoom .tabs .tab .ic{font-size:15px}
   #secTochi .pc-land-main{ grid-template-columns:1.15fr 1fr 0.85fr !important; }
 }
 /* スマホ(≤768)：土地情報「路線価/面積/間口」の入力欄をセル幅に収める（PC=769px以上は別ブロックで指定済・不触） */
-@media screen and (max-width:768px){
+@media screen and (max-width:768px) and (pointer:coarse){
   #secTochi .pc-land-main > div{ min-width:0; }
   #secTochi .pc-land-main #f_rosenka,
   #secTochi .pc-land-main #f_m2,
@@ -581,7 +581,7 @@ html.pczoom .tabs .tab .ic{font-size:15px}
   #secTochi .pc-land-main #f_chishaku{ flex:0 0 44px; min-width:0; }
 }
 /* スマホ(≤768)：構成確定ボタンを左・家族全体バーを右の余白いっぱいに（凡例は下段フル） */
-@media screen and (min-width:381px) and (max-width:768px){
+@media screen and (min-width:381px) and (max-width:768px) and (pointer:coarse){
   #editView .pc-fam-status{ display:grid; grid-template-columns:auto minmax(0,1fr); gap:8px; align-items:center; }
   #editView .pc-fam-status > div:has(> #famHeadcountBtn){ display:contents !important; }
   #editView .pc-fam-status #famHeadcountBtn{ order:1; grid-column:1; align-self:stretch; margin:0; }
@@ -616,13 +616,13 @@ html.pczoom .tabs .tab .ic{font-size:15px}
 body:not(.is-mob) .ar-btn.mob-only{display:none}
 .hand-toggle{width:100%;padding:9px 11px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px;font-family:inherit;background:white;min-height:40px;color:#2D3748;cursor:pointer;text-align:left}
 .hand-toggle:active{background:#edf2f7}
-@media(max-width:768px){.hand-toggle{font-size:16px;min-height:44px}}
+@media (max-width:768px) and (pointer:coarse){.hand-toggle{font-size:16px;min-height:44px}}
 .hand-seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid #cbd5e0;border-radius:8px;overflow:hidden;min-height:40px}
 .hand-seg .hand-opt{border:none;background:#fff;color:#4a5568;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;padding:9px 6px}
 .hand-seg .hand-opt+.hand-opt{border-left:1px solid #cbd5e0}
 .hand-seg .hand-opt.active{background:#2c5282;color:#fff}
 .hand-seg .hand-opt:active{filter:brightness(.95)}
-@media(max-width:768px){.hand-seg{min-height:44px}.hand-seg .hand-opt{font-size:16px}}
+@media (max-width:768px) and (pointer:coarse){.hand-seg{min-height:44px}.hand-seg .hand-opt{font-size:16px}}
 .kaiwa-btn{font-size:12px;padding:8px 2px;white-space:nowrap;text-align:center;min-width:0;overflow:hidden;text-overflow:ellipsis}
 @media(max-width:600px){
   .kaiwa-btn{font-size:11px;padding:8px 1px}
@@ -764,7 +764,7 @@ body.is-mob .mob-menu{display:inline-block}
 .z-fullov{position:fixed;inset:0;z-index:2147482000;background:rgba(8,15,30,0.55);-webkit-backdrop-filter:blur(7px) saturate(120%);backdrop-filter:blur(7px) saturate(120%)}
 .z-dashcard{width:calc(100% - 32px);max-width:980px;margin:24px auto;max-height:calc(100dvh - 48px);display:flex;flex-direction:column;background:#fff;border-radius:18px;box-shadow:0 28px 80px -16px rgba(0,0,0,.65);overflow:hidden}
 .z-dashcard > :last-child{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-bottom:calc(64px + env(safe-area-inset-bottom,0px))}
-@media(max-width:760px){
+@media (max-width:760px) and (pointer:coarse){
   .z-dashcard{width:100%;max-width:none;margin:0;max-height:100dvh;border-radius:0}
   #analysisContent,#selfDashContent{padding:10px !important}
 }
@@ -777,7 +777,7 @@ body.is-mob .mob-menu{display:inline-block}
 .zdash h3{font-size:13px;font-weight:700;color:var(--z-ink);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .zdash .z-sub{font-size:10.5px;color:var(--z-dim);margin:3px 0 12px}
 .zdash .z-grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-@media(max-width:760px){.zdash .z-grid2{grid-template-columns:1fr}}
+@media (max-width:760px) and (pointer:coarse){.zdash .z-grid2{grid-template-columns:1fr}}
 .zdash textarea{width:100%;min-height:150px;background:rgba(255,255,255,.04);border:1px solid var(--z-line);border-radius:10px;padding:10px;font-size:13px;font-family:inherit;color:var(--z-ink);resize:vertical}
 .zdash .z-mini{font-family:inherit;font-weight:700;font-size:12px;color:#06121f;border:none;border-radius:9px;padding:7px 12px;cursor:pointer;background:linear-gradient(135deg,var(--z-cyan),var(--z-lime))}
 
@@ -840,7 +840,7 @@ body.is-mob .mob-menu{display:inline-block}
 
 /* MGR kpi */
 .zdash .z-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px}
-@media(max-width:760px){.zdash .z-kpis{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:760px) and (pointer:coarse){.zdash .z-kpis{grid-template-columns:repeat(2,1fr)}}
 .zdash .z-kpi .z-klab{font-size:11px;color:var(--z-mut);font-weight:700}
 .zdash .z-kpi .z-kval{font-family:'Sora',sans-serif;font-size:29px;font-weight:800;margin:7px 0 1px}
 .zdash .z-kpi .z-kval small{font-size:13px;color:var(--z-dim);font-weight:600}
@@ -896,7 +896,7 @@ body.is-mob .mob-menu{display:inline-block}
 .zdash .z-c2{grid-column:1 / -1}.zdash .z-cf{grid-column:1 / -1}
 @media(min-width:760px){.zdash .z-c2{grid-column:span 2}.zdash .z-c3{grid-column:span 3}.zdash .z-cf{grid-column:1 / -1}}
 /* PC：ダッシュボードbentoを均一2列・順番どおりに（整合性/一団性/連続性。dense解除で左右に飛ばない／大小バラつき解消。全幅カードのみ全幅維持） */
-@media(min-width:769px){.zdash .z-bento{display:block!important;column-count:2;column-gap:14px}.zdash .z-bento>.z-card{break-inside:avoid;margin:0 0 14px;width:100%;box-sizing:border-box}.zdash .z-bento>.z-cf{column-span:all}}
+@media (min-width:769px),(pointer:fine),(pointer:none){.zdash .z-bento{display:block!important;column-count:2;column-gap:14px}.zdash .z-bento>.z-card{break-inside:avoid;margin:0 0 14px;width:100%;box-sizing:border-box}.zdash .z-bento>.z-cf{column-span:all}}
 .zdash .z-list2{display:block}@media(min-width:760px){.zdash .z-list2{display:grid;grid-template-columns:1fr 1fr;gap:0 22px;align-items:start}.zdash .z-list2>*{min-width:0}}
 /* sections */
 .zdash .z-secsub{font-size:11px;font-weight:500;color:var(--z-mut);margin-left:7px}.zdash .z-sec{margin:16px 0}.zdash .z-sec-h{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;padding:11px 14px;background:linear-gradient(90deg,rgba(255,255,255,.05),transparent);border:1px solid var(--z-line);border-radius:12px;margin:0;font-weight:800;font-size:14px;color:var(--z-ink);transition:background .15s}.zdash .z-sec:not(.z-collapsed) .z-sec-h{background:linear-gradient(90deg,rgba(52,227,208,.16),rgba(139,124,255,.10));border-bottom-left-radius:0;border-bottom-right-radius:0;border-bottom:none}
@@ -1035,8 +1035,8 @@ body.is-mob .mob-menu{display:inline-block}
    - スマホ版・印刷版には影響させない（screen限定）
    - HTML/JSは変更しない
 ========================================================= */
-@media screen{ html.pczoom{ zoom:1 !important; } }
-@media screen and (min-width:769px){
+@media screen{ html.pczoom{ zoom:1 !important; } } @media screen and (pointer:fine),screen and (pointer:none){ html.pczoom body{ min-width:1000px; } }
+@media screen and (min-width:769px),screen and (pointer:fine),screen and (pointer:none){
   :root{ --pc-list-width: min(1080px, calc(100vw - 32px)); --pc-card-width: min(940px, calc(100vw - 32px)); }
   #listView,#helpView,#setupView,#editView{ background:#e8ecf0; overflow-x:hidden; }
   #listView > *:not(.fam-mo):not(.mo):not(.z-fullov){ width:var(--pc-list-width)!important; max-width:var(--pc-list-width)!important; margin-left:auto!important; margin-right:auto!important; box-sizing:border-box; }
@@ -1072,7 +1072,7 @@ body.is-mob .mob-menu{display:inline-block}
    - #cardList を grid 2列化。HTML/JS不変・.lcard構造不変。
    - gridのデフォルト並びが行方向（左→右→次の行）= 左右左右で降りる。
    ========================================================= */
-@media screen and (min-width:769px){
+@media screen and (min-width:769px),screen and (pointer:fine),screen and (pointer:none){
   #cardList{
     display:grid;
     grid-template-columns:1fr 1fr;
@@ -1089,7 +1089,7 @@ body.is-mob .mob-menu{display:inline-block}
    - HTML/JS不変・grid(.r2/.r3/.r4)不変。各入力欄の width/max-width のみ
    - 用途地域(f_youto)は長い選択肢確保のためXL／備考memo(f_kuubi)は広いまま
 ========================================================= */
-@media screen and (min-width:769px){
+@media screen and (min-width:769px),screen and (pointer:fine),screen and (pointer:none){
   :root{ --pc-field-xs:86px; --pc-field-s:120px; --pc-field-m:170px; --pc-field-l:240px; --pc-field-xl:360px; }
   /* L：氏名・メールID */
   #f_name,#f_email_local{ flex:1 1 auto!important; width:auto!important; max-width:none!important; min-width:0; }
@@ -1115,7 +1115,7 @@ body.is-mob .mob-menu{display:inline-block}
    - 除外：ボタン群(.pbtn)行・住所(f_addr)/計画地(f_plan)行・textarea行（広いまま）
    - @media screen and (min-width:769px) 限定／スマホ・印刷・HTML・JS不変
 ========================================================= */
-@media screen and (min-width:769px){
+@media screen and (min-width:769px),screen and (pointer:fine),screen and (pointer:none){
   #editView div[style*="grid-template-columns"]:has(input:not([type=checkbox]):not([type=radio]), select):not(:has(.pbtn)):not(:has(#f_addr)):not(:has(#f_plan)):not(:has(textarea)):not(:has(#f_kouzou)):not(:has(#f_m2tanka)):not(:has(#f_oldrent)):not(:has(#f_landasset)):not(:has(#f_rosenka)):not(:has(#f_kb)):not(:has(#f_kuushitsu)):not(:has(#f_name)):not(:has(#f_tel)){
     display:flex!important;
     flex-wrap:wrap!important;
@@ -1130,7 +1130,7 @@ body.is-mob .mob-menu{display:inline-block}
    - data-pill限定（権利関係/接道方位/ステージ/判定・スマホ・印刷には非干渉）
    - @media screen and (min-width:769px) 限定／HTML・JS不変
 ========================================================= */
-@media screen and (min-width:769px){
+@media screen and (min-width:769px),screen and (pointer:fine),screen and (pointer:none){
   :root{ --pc-btn-xs:82px; --pc-btn-s:110px; --pc-btn-m:140px; --pc-btn-l:180px; }
   /* 高度地区・防火地域：均等割りを解除し、内容幅で左詰め */
   #editView div:has(> .pbtn[data-pill="kodo"]),
@@ -1166,7 +1166,7 @@ body.is-mob .mob-menu{display:inline-block}
    DOM順=Tab順=見た目順が一致（order不使用）。セル幅いっぱいに入力欄を伸ばし右空白を解消。
    ※ 計画規模2行は Step1.6 のflex対象から除外済み。
    ============================================================ */
-@media screen and (min-width:769px){
+@media screen and (min-width:769px),screen and (pointer:fine),screen and (pointer:none){
   #editView .pc-plan{
     display:grid;
     grid-template-columns:repeat(3, minmax(0,1fr));
@@ -1202,7 +1202,7 @@ body.is-mob .mob-menu{display:inline-block}
 .unit-field .usuf{color:#718096;font-size:13px;font-weight:600;flex-shrink:0;white-space:nowrap}
 .unit-field input:placeholder-shown + .usuf{visibility:hidden}
 #editView #secTochi .unit-field input{ width:auto !important; text-align:right !important; text-align-last:right !important; }
-@media screen and (min-width:769px){
+@media screen and (min-width:769px),screen and (pointer:fine),screen and (pointer:none){
   /* --- C2 資産背景：老朽/駐車/自宅(3列) ＋ 規模/想定/生産緑地(3列) --- */
   #editView .pc-asset{
     display:grid;
@@ -1254,7 +1254,7 @@ body.is-mob .mob-menu{display:inline-block}
    ※ 満室/空きは視覚的に上段へ寄せるためTab順とズレあり（短い数値欄・空白解消優先）。
    ※ 建蔽row・満室row・路線価/資産行は Step1.6 のflex対象から除外済み。
    ============================================================ */
-@media screen and (min-width:769px){
+@media screen and (min-width:769px),screen and (pointer:fine),screen and (pointer:none){
   /* --- D1 接道方向 2グリッド --- */
   #secTochi .pc-land-2grid{
     display:grid;
@@ -1300,7 +1300,7 @@ body.is-mob .mob-menu{display:inline-block}
    PC版 土地情報 再配置 v9.89（PCのみ・スマホ縦積み非干渉）
    行1=路線価+借地/面積/間口/築年数/満室/空室 ／ 行2=接道|用途・建蔽 ／ 行3=高度/防火/権利
    ============================================================ */
-@media screen and (min-width:769px){
+@media screen and (min-width:769px),screen and (pointer:fine),screen and (pointer:none){
   #secTochi .pc-land-row1{display:grid;grid-template-columns:281fr 18px 387fr 8px 184fr;column-gap:0;align-items:start}
   #secTochi .pc-land-row1 .r1c-1{grid-column:1}
   #secTochi .pc-land-row1 .r1c-2{grid-column:3}
@@ -1342,7 +1342,7 @@ body.is-mob .mob-menu{display:inline-block}
 #secTochi .pc-land-row1 #f_kuushitsu,
 #secTochi .pc-land-row1 #f_kuushitsu_aki{ text-align:center !important; }
 /* スマホ：行1=路線価|面積 ＋ 間口|築年数|満室|空き(4列) ／ 用途|建蔽(2列) ／ 高度・防火は各フル幅1行 */
-@media screen and (max-width:768px){
+@media screen and (max-width:768px) and (pointer:coarse){
   /* 行1: 路線価60|面積40 ／ 間口50|築年数50 ／ 満室50|空き50（10分割gridでspan割当） */
   #secTochi .pc-land-row1{ display:grid; grid-template-columns:repeat(10,1fr); column-gap:6px; row-gap:6px; align-items:start; }
   #secTochi .pc-land-row1 .r1c-2,#secTochi .pc-land-row1 .r1c-3{ display:contents; }
@@ -1373,7 +1373,7 @@ body.is-mob .mob-menu{display:inline-block}
    ・計画規模/資産背景：≥1200pxで6項目1行、769〜1199pxは3列×2行（下の1200pxブロック）
    PCのみ・スマホ/印刷非干渉。
    ============================================================ */
-@media screen and (min-width:769px){
+@media screen and (min-width:769px),screen and (pointer:fine),screen and (pointer:none){
   /* 名前エリア：短いプルダウン/TELをセル幅いっぱいに（右空白解消） */
   #secMikomi .mk-row #f_social,
   #secMikomi .mk-row #f_genjo,
@@ -1396,7 +1396,7 @@ body.is-mob .mob-menu{display:inline-block}
    ・家族構成：人数確定ボタン / 凡例 / 家族全体サマリ を一行
    PCのみ・スマホ/印刷非干渉。
    ============================================================ */
-@media screen and (min-width:769px){
+@media screen and (min-width:769px),screen and (pointer:fine),screen and (pointer:none){
   /* 名前：氏名(左上)・ソーシャル/現状(左下)・TEL(右上)・メール(右下) */
   #secMikomi .pc-name-contact{
     display:grid;
@@ -2351,7 +2351,7 @@ var copyHandle = null; // コピー保存先ハンドル
 var FHDB = 'prospect_fh_db';
 
 // ===== バージョン =====
-var APP_VERSION = "v10.16";
+var APP_VERSION = "v10.18";
 try{window.IS_DEV=/_dev(\b|\.|_)/i.test((location.pathname||"")+(location.search||""));if(window.IS_DEV){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("is-dev");});}}catch(_e){window.IS_DEV=false;}
 // 深掘り分析の外部追加フック（コンソールや将来のアドオンからpush可能）
 window.Z_DEEP_EXTRAS = window.Z_DEEP_EXTRAS || [];
@@ -2764,9 +2764,11 @@ function init() {
   var btnSelf=document.getElementById('btnSendSelf');
   if(btnSelf){ if(isMob){ btnSelf.innerHTML='<span class="bic">📧 </span>PCへ'; } else { btnSelf.innerHTML='<span class="bic">📧 </span>スマホへ'; } }
 
-  // 利用者情報未設定 → 初期設定
+  // 利用者情報未設定 → 初期設定（dev版はデフォルト値で素通り）
   if (!uName || !mgrEmail || !branch || !section) {
-    showSetup(); return;
+    if (window.IS_DEV) {
+      uName=uName||'開発ユーザー'; mgrEmail=mgrEmail||'dev@example.com'; branch=branch||'開発支店'; section=section||'1課'; userRole=userRole||'課長';
+    } else { showSetup(); return; }
   }
 
   applyRoleUI();
@@ -2791,8 +2793,9 @@ function init() {
     fHandle = handle || null;
     copyHandle = cHandle || null;
 
-    // 保存先未設定 → 初期設定
+    // 保存先未設定 → 初期設定（dev版はローカルデータで素通り）
     if (!fHandle || !copyHandle) {
+      if (window.IS_DEV) { readLS(); showList(); return; }
       showSetup(); return;
     }
 
@@ -13271,7 +13274,7 @@ window.updateRyokuchiBtn=function(){var btn=document.getElementById("ryokuchiBtn
   .zfa-name{font-size:11px;font-weight:800;letter-spacing:.1em;color:#2c5282;margin-bottom:8px}
   /* ===== v10.3 PC dashboard tighten ＆ modal center（min-width:769のみ／スマホは display:contents で完全現状維持） ===== */
   .zdash .z-insgrid{display:contents}.zdash .z-questgrid{display:contents}
-  @media(min-width:769px){
+  @media (min-width:769px),(pointer:fine),(pointer:none){
     .zdash h3{margin:0 0 2px}
     .zdash .z-insgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:stretch}
     .zdash .z-insgrid .z-ins{margin-bottom:0;min-width:0}
@@ -13367,7 +13370,7 @@ window.updateRyokuchiBtn=function(){var btn=document.getElementById("ryokuchiBtn
   .seltools button{border:none;background:none;color:#2c5282;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;margin-left:10px}
   .isend{margin:2px 0 8px}
   .istore{text-align:center;color:#a0aec0;font-size:12px;padding:14px 0 6px}
-  @media(min-width:769px){
+  @media (min-width:769px),(pointer:fine),(pointer:none){
     #inboxBody{max-width:1120px}
     #inboxBody .igrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;align-items:start;margin-bottom:9px}
     #inboxBody .igrid>.irow2,#inboxBody .igrid>.irow{margin-bottom:0;min-width:0}
